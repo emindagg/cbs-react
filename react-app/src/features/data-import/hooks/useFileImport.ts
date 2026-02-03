@@ -36,13 +36,13 @@ export function useFileImport() {
         })
         setShowMapper(true)
       } else if (result.items && result.items.length > 0) {
-        addItems(result.items as any)
+        addItems(result.items)
         alert(`${result.items.length} adet veri başarıyla yüklendi.`)
         if (fileInputRef.current) fileInputRef.current.value = ''
       }
     } catch (error) {
       console.error('Import Error:', error)
-      alert('Dosya yüklenirken hata oluştu: ' + (error as any).message)
+      alert('Dosya yüklenirken hata oluştu: ' + (error instanceof Error ? error.message : String(error)))
     } finally {
       setIsLoading(false)
       // Keep file input if mapper is shown
@@ -58,7 +58,7 @@ export function useFileImport() {
     const items = transformToGeoItems(mapperData.jsonData, mapping)
 
     if (items.length > 0) {
-      addItems(items as any)
+      addItems(items)
       alert(`${items.length} adet veri başarıyla yüklendi.`)
     }
 

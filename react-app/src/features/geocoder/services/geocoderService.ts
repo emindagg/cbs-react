@@ -6,11 +6,13 @@
 import type { Map } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 
+import type { AtlasGeocoderSDK } from '../types/atlasGeocoder'
+
 export interface GeocoderResult {
   type: 'Feature';
   geometry: {
     type: 'Point' | 'Polygon' | 'MultiPolygon';
-    coordinates: any;
+    coordinates: [number, number] | [number, number][] | [number, number][][] | [number, number][][][];
   };
   properties: {
     name?: string;
@@ -19,7 +21,7 @@ export interface GeocoderResult {
     locality?: string; // Mahalle/semt
     county?: string; // İlçe
     region?: string; // İl
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -47,7 +49,7 @@ interface ReverseOptions {
  */
 declare global {
   interface Window {
-    Geocoder: any;
+    Geocoder: typeof AtlasGeocoderSDK;
   }
 }
 
@@ -55,7 +57,7 @@ declare global {
  * HGM Atlas Geocoder API Client (using vanilla library)
  */
 class AtlasGeocoder {
-  private geocoder: any
+  private geocoder: typeof AtlasGeocoderSDK
 
   constructor(baseUrl: string) {
     if (typeof window.Geocoder === 'undefined') {
@@ -79,7 +81,7 @@ class AtlasGeocoder {
         query: query.trim(),
         lng,
         lat,
-        onload: (response: any, error: boolean) => {
+        onload: (response: GeocoderResponse, error: boolean) => {
           if (error) {
             console.error('❌ Geocoder API error:', response)
             reject(new Error('Arama sırasında bir hata oluştu'))
@@ -109,7 +111,7 @@ class AtlasGeocoder {
         lng,
         lat,
         type,
-        onload: (response: any, error: boolean) => {
+        onload: (response: GeocoderResponse, error: boolean) => {
           if (error) {
             console.error('❌ Reverse geocoding error:', response)
             reject(new Error('Konum bilgisi alınamadı'))
@@ -206,7 +208,7 @@ export class GeocoderManager {
   /**
    * Add search marker
    */
-  private addSearchMarker(coordinates: [number, number], properties: any): void {
+  private addSearchMarker(coordinates: [number, number], properties: Record<string, unknown>): void {
     // Remove old marker
     this.removeSearchMarker()
 
@@ -297,11 +299,11 @@ export class GeocoderManager {
     // Update or add source
     const source = this.map.getSource(this.searchResultsLayer) as maplibregl.GeoJSONSource
     if (source) {
-      source.setData(results)
+      source.setData(results as unknown as GeoJSON.FeatureCollection)
     } else {
       this.map.addSource(this.searchResultsLayer, {
         type: 'geojson',
-        data: results,
+        data: results as unknown as GeoJSON.FeatureCollection,
       })
 
       // Add layer
@@ -337,7 +339,7 @@ export class GeocoderManager {
   /**
    * Get bounds of geometry
    */
-  private getBounds(geometry: any): [[number, number], [number, number]] | null {
+  private getBounds(geometry: GeocoderResult['geometry']): [[number, number], [number, number]] | null {
     let coords: number[][] = []
 
     if (geometry.type === 'Point') {
@@ -366,20 +368,20 @@ export class GeocoderManager {
   /**
    * Format address from properties
    */
-  formatAddress(properties: any): string {
+  formatAddress(properties: Record<string, unknown>): string {
     const parts: string[] = []
 
     // Atlas API fields
-    if (properties.locality && properties.locality !== properties.name) {
-      parts.push(properties.locality)
+    if (properties.locality && String(properties.locality) !== String(properties.name)) {
+      parts.push(String(properties.locality))
     }
 
-    if (properties.county && properties.county !== properties.name) {
-      parts.push(properties.county)
+    if (properties.county && String(properties.county) !== String(properties.name)) {
+      parts.push(String(properties.county))
     }
 
-    if (properties.region && properties.region !== properties.name) {
-      parts.push(properties.region)
+    if (properties.region && String(properties.region) !== String(properties.name)) {
+      parts.push(String(properties.region))
     }
 
     return parts.filter((p) => p).join(', ')

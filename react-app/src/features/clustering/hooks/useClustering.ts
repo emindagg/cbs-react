@@ -1,3 +1,4 @@
+import type { GeoJSONSource, MapMouseEvent } from 'maplibre-gl'
 import { useEffect } from 'react'
 
 import { useDataStore } from '@/stores/useDataStore'
@@ -20,11 +21,11 @@ export function useClustering() {
     const pointFeatures = items
       .filter(item =>
         item.visible && // Sadece görünür olanları kümele
-                (item.type === 'point' ||
-                    (item.geometry && (item.geometry.type === 'Point' || item.geometry.type === 'MultiPoint'))),
+        (item.type === 'point' ||
+          (item.geometry && (item.geometry.type === 'Point' || item.geometry.type === 'MultiPoint'))),
       )
       .map(item => ({
-        type: 'Feature',
+        type: 'Feature' as const,
         geometry: item.geometry,
         properties: { ...item.properties, id: item.id },
       }))
@@ -35,16 +36,17 @@ export function useClustering() {
     const unclusteredLayerId = 'unclustered-point-layer'
 
     // Click handler tanımla (cleanup için referans gerekli)
-    const onClusterClick = (e: any) => {
+    const onClusterClick = (e: MapMouseEvent) => {
       const features = map.queryRenderedFeatures(e.point, { layers: [clusterLayerId] })
       const clusterId = features[0].properties.cluster_id
-      const source = map.getSource(sourceId) as any
+      const source = map.getSource(sourceId) as GeoJSONSource
 
       if (source && source.getClusterExpansionZoom) {
-        source.getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
+        source.getClusterExpansionZoom(clusterId, (err: unknown, zoom: number) => {
           if (err) return
+          const coords = features[0].geometry as { type: string; coordinates: [number, number] }
           map.easeTo({
-            center: (features[0].geometry as any).coordinates,
+            center: coords.coordinates,
             zoom: zoom,
           })
         })
@@ -76,7 +78,7 @@ export function useClustering() {
       type: 'geojson',
       data: {
         type: 'FeatureCollection',
-        features: pointFeatures as any,
+        features: pointFeatures,
       },
       cluster: isEnabled, // Toggle durumuna göre
       clusterMaxZoom: 14,
