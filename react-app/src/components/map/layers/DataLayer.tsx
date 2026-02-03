@@ -12,6 +12,11 @@ export default function DataLayer() {
             .filter(i => i.visible && (i.geometry.type === itemType || i.geometry.type === `Multi${itemType}`))
             .map(i => {
                 const style = i.properties.style || {};
+
+                // LEGACY DEFAULTS (Exact match from LayerStylePanel.js)
+                // Default Color: #3b82f6 (Blue-500)
+                // Default Stroke: #000000 (Black)
+
                 return {
                     type: 'Feature',
                     id: i.id,
@@ -21,12 +26,15 @@ export default function DataLayer() {
                         name: i.name,
                         id: i.id,
                         selected: i.id === activeItemId,
-                        // Flattened Styled Props with Professional Defaults (OneSoil-ish)
-                        fillColor: style.fillColor || '#4ade80', // Bright Green default
-                        strokeColor: style.strokeColor || '#ffffff', // White stroke default
-                        strokeWidth: style.strokeWidth || 2,
-                        opacity: style.opacity !== undefined ? style.opacity : 0.4,
-                        radius: style.radius || 6
+                        // Legacy Style Mapping
+                        fillColor: style.fillColor || '#3b82f6',
+                        strokeColor: style.strokeColor || '#000000',
+                        strokeWidth: style.strokeWidth || 1, // Legacy default is 1
+                        opacity: style.opacity !== undefined ? style.opacity : 0.9, // Legacy default opacity is 0.9 (lines/strokes)
+                        radius: style.radius || 4, // Legacy default is small (2-4ish)
+
+                        // Calculated Fill Opacity for Polygons (Legacy logic: opacity * 0.3)
+                        fillOpacity: (style.opacity !== undefined ? style.opacity : 0.9) * 0.3
                     }
                 }
             }) as any
@@ -57,10 +65,10 @@ export default function DataLayer() {
                     paint={{
                         'fill-color': ['case',
                             ['boolean', ['get', 'selected'], false],
-                            '#fbbf24', // Amber-400 for selected
-                            ['get', 'fillColor'] // Dynamic fill color
+                            '#f59e0b', // Amber if selected
+                            ['get', 'fillColor']
                         ],
-                        'fill-opacity': ['get', 'opacity']
+                        'fill-opacity': ['get', 'fillOpacity'] // Uses the * 0.3 logic
                     }}
                 />
                 <Layer
@@ -69,14 +77,15 @@ export default function DataLayer() {
                     paint={{
                         'line-color': ['case',
                             ['boolean', ['get', 'selected'], false],
-                            '#ffffff',
+                            '#d97706',
                             ['get', 'strokeColor']
                         ],
                         'line-width': ['case',
                             ['boolean', ['get', 'selected'], false],
-                            3,
+                            2,
                             ['get', 'strokeWidth']
-                        ]
+                        ],
+                        'line-opacity': ['get', 'opacity'] // Full opacity for outlines
                     }}
                 />
             </Source>
@@ -93,14 +102,15 @@ export default function DataLayer() {
                     paint={{
                         'line-color': ['case',
                             ['boolean', ['get', 'selected'], false],
-                            '#fbbf24',
-                            ['get', 'strokeColor'] // Re-use strokeColor for lines (default white/custom)
+                            '#f59e0b',
+                            ['get', 'fillColor'] // Lines usually use 'fillColor' property in this context as main color
                         ],
                         'line-width': ['case',
                             ['boolean', ['get', 'selected'], false],
                             4,
-                            ['get', 'strokeWidth']
-                        ]
+                            2 // Legacy default width for lines
+                        ],
+                        'line-opacity': ['get', 'opacity']
                     }}
                 />
             </Source>
@@ -114,32 +124,30 @@ export default function DataLayer() {
                         'circle-radius': ['get', 'radius'],
                         'circle-color': ['case',
                             ['boolean', ['get', 'selected'], false],
-                            '#fbbf24',
-                            ['get', 'fillColor'] // Re-use fillColor for points
+                            '#f59e0b',
+                            ['get', 'fillColor']
                         ],
-                        'circle-stroke-width': 2,
-                        'circle-stroke-color': '#ffffff'
+                        'circle-stroke-width': ['get', 'strokeWidth'],
+                        'circle-stroke-color': ['get', 'strokeColor'],
+                        'circle-opacity': ['get', 'opacity']
                     }}
                 />
 
-                {/* Labels for Points - Clean Professional Typography */}
+                {/* Labels for Points - Clean Typography (Legacy style was Noto Sans Regular, Black) */}
                 <Layer
                     id="data-layer-point-label"
                     type="symbol"
                     layout={{
                         'text-field': ['get', 'name'],
-                        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                        'text-size': 11,
-                        'text-offset': [0, 1.5],
-                        'text-anchor': 'top',
-                        'text-transform': 'uppercase',
-                        'text-letter-spacing': 0.05
+                        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], // Keep modern font or switch to Noto if available
+                        'text-size': 12,
+                        'text-offset': [0, 1.25],
+                        'text-anchor': 'top'
                     }}
                     paint={{
-                        'text-color': '#ffffff',
-                        'text-halo-color': '#000000',
-                        'text-halo-width': 2,
-                        'text-halo-blur': 0.5
+                        'text-color': '#000000', // Legacy was Black
+                        'text-halo-color': '#ffffff',
+                        'text-halo-width': 1
                     }}
                 />
             </Source>

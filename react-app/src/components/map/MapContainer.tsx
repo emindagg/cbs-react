@@ -9,7 +9,7 @@ import GISToolsControl from './controls/GISToolsControl'
 import { useMemo } from 'react'
 
 export default function MapContainer() {
-    const { setLoaded, activeBasemap } = useMapStore()
+    const { setLoaded, setMapInstance, activeBasemap } = useMapStore()
 
     // HGM Atlas API Key
     const apiKey = 'ESqJcw5RWSD5Unw0CVYL2z8oP8gOqIUC'
@@ -72,6 +72,7 @@ export default function MapContainer() {
             mapStyle={mapStyleObj as any}
             onLoad={(e) => {
                 setLoaded(true)
+                setMapInstance(e.target)
                 console.log("Map Loaded", e)
             }}
         >

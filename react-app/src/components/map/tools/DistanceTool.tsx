@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useState } from 'react'
+import { useEffect, useCallback, useMemo } from 'react'
 import { useMap, Source, Layer, Marker } from 'react-map-gl/maplibre'
 import { useToolStore } from '@/stores/useToolStore'
 import * as turf from '@turf/turf'

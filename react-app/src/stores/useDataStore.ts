@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
-import type { FeatureCollection, Feature, Geometry } from 'geojson'
+import type { Geometry } from 'geojson'
 
 export interface DataItem {
     id: string
