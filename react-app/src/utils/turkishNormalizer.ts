@@ -11,7 +11,7 @@ const PROVINCE_ALIASES = new Map<string, string>([
   ['kmaras', 'kahramanmaraş'],
   ['antep', 'gaziantep'],
   ['diyarbakir', 'diyarbakır'],
-]);
+])
 
 /**
  * Normalize Turkish text for consistent matching
@@ -28,9 +28,9 @@ const PROVINCE_ALIASES = new Map<string, string>([
  */
 export function normalizeTurkishText(
   text: string,
-  skipAliasCheck = false
+  skipAliasCheck = false,
 ): string {
-  if (!text) return '';
+  if (!text) return ''
 
   let normalized = text
     .toLowerCase()
@@ -43,14 +43,14 @@ export function normalizeTurkishText(
     // Circumflex characters
     .replace(/[â]/g, 'a')
     .replace(/[î]/g, 'i')
-    .replace(/[û]/g, 'u');
+    .replace(/[û]/g, 'u')
 
   // Unicode NFD: separate diacritics
   try {
     normalized = normalized
       .normalize('NFD')
-      .replace(/\p{Diacritic}/gu, '');
-  } catch (e) {
+      .replace(/\p{Diacritic}/gu, '')
+  } catch (_e) {
     // Fallback if Unicode property escapes not supported
   }
 
@@ -62,20 +62,20 @@ export function normalizeTurkishText(
     .replace(/ö/g, 'o')
     .replace(/ü/g, 'u')
     // Remove non-alphanumeric characters
-    .replace(/[^a-z0-9]/g, '');
+    .replace(/[^a-z0-9]/g, '')
 
   // Alias check (with recursion prevention)
   if (!skipAliasCheck && PROVINCE_ALIASES.has(normalized)) {
-    const aliasValue = PROVINCE_ALIASES.get(normalized)!;
-    return normalizeTurkishText(aliasValue, true);
+    const aliasValue = PROVINCE_ALIASES.get(normalized)!
+    return normalizeTurkishText(aliasValue, true)
   }
 
-  return normalized;
+  return normalized
 }
 
 /**
  * Get province aliases map
  */
 export function getProvinceAliases(): Map<string, string> {
-  return new Map(PROVINCE_ALIASES);
+  return new Map(PROVINCE_ALIASES)
 }

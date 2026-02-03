@@ -3,19 +3,19 @@
  * Multi-step wizard for data visualization
  */
 
-import { useVisualizationStore } from '../../../stores/useVisualizationStore';
-import WizardProgress from '../../visualization/WizardProgress';
-import VizWizardStep1 from '../../visualization/VizWizardStep1';
-import VizWizardStep2 from '../../visualization/VizWizardStep2';
-import VizWizardStep3 from '../../visualization/VizWizardStep3';
-import VizWizardStep4 from '../../visualization/VizWizardStep4';
+import { useVisualizationStore } from '../../../stores/useVisualizationStore'
+import VizWizardStep1 from '../../visualization/VizWizardStep1'
+import VizWizardStep2 from '../../visualization/VizWizardStep2'
+import VizWizardStep3 from '../../visualization/VizWizardStep3'
+import VizWizardStep4 from '../../visualization/VizWizardStep4'
+import WizardProgress from '../../visualization/WizardProgress'
 
 export default function SidebarVizWizard() {
-  const { currentStep, setCurrentStep } = useVisualizationStore();
+  const { currentStep, setCurrentStep } = useVisualizationStore()
 
   const goToStep = (step: number) => {
-    setCurrentStep(step);
-  };
+    setCurrentStep(step)
+  }
 
   return (
     <section className="rounded-lg px-2 py-2 border border-zinc-100 bg-gradient-to-br from-white to-zinc-50/30 hover:shadow-sm transition-all">
@@ -41,5 +41,5 @@ export default function SidebarVizWizard() {
         {currentStep === 4 && <VizWizardStep4 onBack={() => goToStep(3)} />}
       </div>
     </section>
-  );
+  )
 }

@@ -3,7 +3,7 @@
  * Displays detailed matching results in a table format
  */
 
-import type { MatchResults } from '../../types/visualization';
+import type { MatchResults } from '../../types/visualization'
 
 interface MatchResultsTableProps {
   matchResults: MatchResults;
@@ -15,46 +15,46 @@ export default function MatchResultsTable({ matchResults, dataColumn }: MatchRes
     ...matchResults.successful.map((r) => ({ ...r, status: 'success' as const })),
     ...matchResults.ambiguous.map((r) => ({ ...r, status: 'ambiguous' as const })),
     ...matchResults.failed.map((r) => ({ ...r, status: 'failed' as const })),
-  ];
+  ]
 
   // Sort by status (success -> ambiguous -> failed)
   allResults.sort((a, b) => {
-    const order = { success: 0, ambiguous: 1, failed: 2 };
-    return order[a.status] - order[b.status];
-  });
+    const order = { success: 0, ambiguous: 1, failed: 2 }
+    return order[a.status] - order[b.status]
+  })
 
   const getStatusIcon = (status: 'success' | 'ambiguous' | 'failed') => {
     switch (status) {
       case 'success':
-        return <i className="fa-solid fa-check-circle text-green-600"></i>;
+        return <i className="fa-solid fa-check-circle text-green-600"></i>
       case 'ambiguous':
-        return <i className="fa-solid fa-exclamation-triangle text-amber-600"></i>;
+        return <i className="fa-solid fa-exclamation-triangle text-amber-600"></i>
       case 'failed':
-        return <i className="fa-solid fa-times-circle text-red-600"></i>;
+        return <i className="fa-solid fa-times-circle text-red-600"></i>
     }
-  };
+  }
 
   const getStatusText = (status: 'success' | 'ambiguous' | 'failed') => {
     switch (status) {
       case 'success':
-        return 'Başarılı';
+        return 'Başarılı'
       case 'ambiguous':
-        return 'Belirsiz';
+        return 'Belirsiz'
       case 'failed':
-        return 'Hatalı';
+        return 'Hatalı'
     }
-  };
+  }
 
   const getStatusBgColor = (status: 'success' | 'ambiguous' | 'failed') => {
     switch (status) {
       case 'success':
-        return 'bg-green-50';
+        return 'bg-green-50'
       case 'ambiguous':
-        return 'bg-amber-50';
+        return 'bg-amber-50'
       case 'failed':
-        return 'bg-red-50';
+        return 'bg-red-50'
     }
-  };
+  }
 
   return (
     <div className="max-h-96 overflow-y-auto border border-zinc-200 rounded-lg">
@@ -133,5 +133,5 @@ export default function MatchResultsTable({ matchResults, dataColumn }: MatchRes
         </tbody>
       </table>
     </div>
-  );
+  )
 }

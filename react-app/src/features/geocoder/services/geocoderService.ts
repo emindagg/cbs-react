@@ -3,8 +3,8 @@
  * HGM Atlas API integration for place search
  */
 
-import type { Map } from 'maplibre-gl';
-import maplibregl from 'maplibre-gl';
+import type { Map } from 'maplibre-gl'
+import maplibregl from 'maplibre-gl'
 
 export interface GeocoderResult {
   type: 'Feature';
@@ -23,7 +23,7 @@ export interface GeocoderResult {
   };
 }
 
-export type AtlasFeature = GeocoderResult;
+export type AtlasFeature = GeocoderResult
 
 export interface GeocoderResponse {
   type: 'FeatureCollection';
@@ -55,23 +55,23 @@ declare global {
  * HGM Atlas Geocoder API Client (using vanilla library)
  */
 class AtlasGeocoder {
-  private geocoder: any;
+  private geocoder: any
 
   constructor(baseUrl: string) {
     if (typeof window.Geocoder === 'undefined') {
-      throw new Error('Geocoder library not loaded');
+      throw new Error('Geocoder library not loaded')
     }
-    this.geocoder = new window.Geocoder(baseUrl);
+    this.geocoder = new window.Geocoder(baseUrl)
   }
 
   /**
    * Search for a location
    */
   async search(options: SearchOptions): Promise<GeocoderResponse> {
-    const { query, lng, lat } = options;
+    const { query, lng, lat } = options
 
     if (!query || query.trim() === '') {
-      throw new Error('Lütfen bir arama terimi girin');
+      throw new Error('Lütfen bir arama terimi girin')
     }
 
     return new Promise((resolve, reject) => {
@@ -81,28 +81,28 @@ class AtlasGeocoder {
         lat,
         onload: (response: any, error: boolean) => {
           if (error) {
-            console.error('❌ Geocoder API error:', response);
-            reject(new Error('Arama sırasında bir hata oluştu'));
-            return;
+            console.error('❌ Geocoder API error:', response)
+            reject(new Error('Arama sırasında bir hata oluştu'))
+            return
           }
 
           if (!response.features || response.features.length === 0) {
-            reject(new Error(`"${query}" için sonuç bulunamadı`));
-            return;
+            reject(new Error(`"${query}" için sonuç bulunamadı`))
+            return
           }
 
-          console.log('✅ Geocoder results:', response);
-          resolve(response);
+          console.log('✅ Geocoder results:', response)
+          resolve(response)
         },
-      });
-    });
+      })
+    })
   }
 
   /**
    * Reverse geocoding - get location info from coordinates
    */
   async reverse(options: ReverseOptions): Promise<GeocoderResponse> {
-    const { lng, lat, type = 0 } = options;
+    const { lng, lat, type = 0 } = options
 
     return new Promise((resolve, reject) => {
       this.geocoder.reverse({
@@ -111,15 +111,15 @@ class AtlasGeocoder {
         type,
         onload: (response: any, error: boolean) => {
           if (error) {
-            console.error('❌ Reverse geocoding error:', response);
-            reject(new Error('Konum bilgisi alınamadı'));
-            return;
+            console.error('❌ Reverse geocoding error:', response)
+            reject(new Error('Konum bilgisi alınamadı'))
+            return
           }
 
-          resolve(response);
+          resolve(response)
         },
-      });
-    });
+      })
+    })
   }
 }
 
@@ -127,26 +127,26 @@ class AtlasGeocoder {
  * Geocoder Manager - manages search results on map
  */
 export class GeocoderManager {
-  private map: Map;
-  private geocoder: AtlasGeocoder;
-  private searchMarker: maplibregl.Marker | null = null;
-  private searchResultsLayer = 'search-results';
+  private map: Map
+  private geocoder: AtlasGeocoder
+  private searchMarker: maplibregl.Marker | null = null
+  private searchResultsLayer = 'search-results'
 
   constructor(map: Map) {
-    this.map = map;
-    this.geocoder = new AtlasGeocoder('https://atlas.harita.gov.tr/search_yeni');
+    this.map = map
+    this.geocoder = new AtlasGeocoder('https://atlas.harita.gov.tr/search_yeni')
   }
 
   /**
    * Search for a location
    */
   async search(query: string): Promise<GeocoderResponse> {
-    const center = this.map.getCenter();
+    const center = this.map.getCenter()
     return this.geocoder.search({
       query,
       lng: center.lng,
       lat: center.lat,
-    });
+    })
   }
 
   /**
@@ -154,16 +154,16 @@ export class GeocoderManager {
    */
   displayResults(results: GeocoderResponse): void {
     if (!results || !results.features || results.features.length === 0) {
-      return;
+      return
     }
 
     // Focus on first result
-    const firstResult = results.features[0];
-    this.focusOnResult(firstResult);
+    const firstResult = results.features[0]
+    this.focusOnResult(firstResult)
 
     // Mark results on map (if multiple)
     if (results.features.length > 1) {
-      this.addResultsToMap(results);
+      this.addResultsToMap(results)
     }
   }
 
@@ -172,13 +172,13 @@ export class GeocoderManager {
    */
   focusOnResult(feature: GeocoderResult): void {
     if (!feature || !feature.geometry) {
-      return;
+      return
     }
 
-    const { geometry, properties } = feature;
+    const { geometry, properties } = feature
 
     if (geometry.type === 'Point') {
-      const coordinates = geometry.coordinates as [number, number];
+      const coordinates = geometry.coordinates as [number, number]
 
       // Fly to point
       this.map.flyTo({
@@ -186,19 +186,19 @@ export class GeocoderManager {
         zoom: 14,
         duration: 1500,
         essential: true,
-      });
+      })
 
       // Add marker
-      this.addSearchMarker(coordinates, properties);
+      this.addSearchMarker(coordinates, properties)
     } else if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
       // Fit to polygon bounds
-      const bounds = this.getBounds(geometry);
+      const bounds = this.getBounds(geometry)
       if (bounds) {
         this.map.fitBounds(bounds, {
           padding: 50,
           duration: 1500,
           essential: true,
-        });
+        })
       }
     }
   }
@@ -208,11 +208,11 @@ export class GeocoderManager {
    */
   private addSearchMarker(coordinates: [number, number], properties: any): void {
     // Remove old marker
-    this.removeSearchMarker();
+    this.removeSearchMarker()
 
     // Create modern marker element
-    const el = document.createElement('div');
-    el.className = 'search-marker';
+    const el = document.createElement('div')
+    el.className = 'search-marker'
     el.innerHTML = `
       <svg width="28" height="38" viewBox="0 0 28 38" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#shadow)">
@@ -230,12 +230,12 @@ export class GeocoderManager {
           </filter>
         </defs>
       </svg>
-    `;
-    el.style.cursor = 'pointer';
+    `
+    el.style.cursor = 'pointer'
 
     // Popup content - compact and modern
-    const placeName = properties.name || properties.place_name || 'Seçili konum';
-    const address = this.formatAddress(properties);
+    const placeName = properties.name || properties.place_name || 'Seçili konum'
+    const address = this.formatAddress(properties)
 
     const popupHTML = `
       <div style="
@@ -257,7 +257,7 @@ export class GeocoderManager {
           ">${address}</div>
         ` : ''}
       </div>
-    `;
+    `
 
     // Create MapLibre marker
     this.searchMarker = new maplibregl.Marker({
@@ -272,12 +272,12 @@ export class GeocoderManager {
           closeOnClick: false,
           className: 'geocoder-marker-popup',
           maxWidth: '280px',
-        }).setHTML(popupHTML)
+        }).setHTML(popupHTML),
       )
-      .addTo(this.map);
+      .addTo(this.map)
 
     // Auto-open popup
-    this.searchMarker.togglePopup();
+    this.searchMarker.togglePopup()
   }
 
   /**
@@ -285,8 +285,8 @@ export class GeocoderManager {
    */
   removeSearchMarker(): void {
     if (this.searchMarker) {
-      this.searchMarker.remove();
-      this.searchMarker = null;
+      this.searchMarker.remove()
+      this.searchMarker = null
     }
   }
 
@@ -295,14 +295,14 @@ export class GeocoderManager {
    */
   private addResultsToMap(results: GeocoderResponse): void {
     // Update or add source
-    const source = this.map.getSource(this.searchResultsLayer) as maplibregl.GeoJSONSource;
+    const source = this.map.getSource(this.searchResultsLayer) as maplibregl.GeoJSONSource
     if (source) {
-      source.setData(results);
+      source.setData(results)
     } else {
       this.map.addSource(this.searchResultsLayer, {
         type: 'geojson',
         data: results,
-      });
+      })
 
       // Add layer
       this.map.addLayer({
@@ -315,7 +315,7 @@ export class GeocoderManager {
           'circle-stroke-color': '#ffffff',
           'circle-stroke-width': 2,
         },
-      });
+      })
     }
   }
 
@@ -323,14 +323,14 @@ export class GeocoderManager {
    * Clear search results
    */
   clearResults(): void {
-    this.removeSearchMarker();
+    this.removeSearchMarker()
 
     if (this.map.getLayer(this.searchResultsLayer)) {
-      this.map.removeLayer(this.searchResultsLayer);
+      this.map.removeLayer(this.searchResultsLayer)
     }
 
     if (this.map.getSource(this.searchResultsLayer)) {
-      this.map.removeSource(this.searchResultsLayer);
+      this.map.removeSource(this.searchResultsLayer)
     }
   }
 
@@ -338,7 +338,7 @@ export class GeocoderManager {
    * Get bounds of geometry
    */
   private getBounds(geometry: any): [[number, number], [number, number]] | null {
-    let coords: number[][] = [];
+    let coords: number[][] = []
 
     if (geometry.type === 'Point') {
       const [lng, lat] = geometry.coordinates as number[]
@@ -360,36 +360,36 @@ export class GeocoderManager {
     return [
       [Math.min(...lngs), Math.min(...lats)],
       [Math.max(...lngs), Math.max(...lats)],
-    ];
+    ]
   }
 
   /**
    * Format address from properties
    */
   formatAddress(properties: any): string {
-    const parts: string[] = [];
+    const parts: string[] = []
 
     // Atlas API fields
     if (properties.locality && properties.locality !== properties.name) {
-      parts.push(properties.locality);
+      parts.push(properties.locality)
     }
 
     if (properties.county && properties.county !== properties.name) {
-      parts.push(properties.county);
+      parts.push(properties.county)
     }
 
     if (properties.region && properties.region !== properties.name) {
-      parts.push(properties.region);
+      parts.push(properties.region)
     }
 
-    return parts.filter((p) => p).join(', ');
+    return parts.filter((p) => p).join(', ')
   }
 
   /**
    * Reverse geocoding
    */
   async reverse(lng: number, lat: number): Promise<GeocoderResponse> {
-    return this.geocoder.reverse({ lng, lat, type: 0 });
+    return this.geocoder.reverse({ lng, lat, type: 0 })
   }
 }
 
@@ -397,16 +397,16 @@ export class GeocoderManager {
  * Standalone search function
  */
 export async function searchLocation(query: string, map?: Map): Promise<GeocoderResponse> {
-  const geocoder = new AtlasGeocoder('https://atlas.harita.gov.tr/search_yeni');
+  const geocoder = new AtlasGeocoder('https://atlas.harita.gov.tr/search_yeni')
 
   // Use map center if available, otherwise use Turkey center
   const center = map
     ? map.getCenter()
-    : { lng: 35.2433, lat: 38.9637 };
+    : { lng: 35.2433, lat: 38.9637 }
 
   return geocoder.search({
     query,
     lng: center.lng,
     lat: center.lat,
-  });
+  })
 }

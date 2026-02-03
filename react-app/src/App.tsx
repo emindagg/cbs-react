@@ -1,5 +1,6 @@
-import AppLayout from '@/components/layout/AppLayout'
 import { MapProvider } from 'react-map-gl/maplibre'
+
+import AppLayout from '@/components/layout/AppLayout'
 
 function App() {
   return (

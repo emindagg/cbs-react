@@ -3,8 +3,9 @@
  * Map columns to province, district, and data
  */
 
-import { useState, useEffect } from 'react';
-import { useVisualizationStore } from '../../stores/useVisualizationStore';
+import { useState, useEffect } from 'react'
+
+import { useVisualizationStore } from '../../stores/useVisualizationStore'
 
 interface VizWizardStep2Props {
   onBack: () => void;
@@ -12,14 +13,14 @@ interface VizWizardStep2Props {
 }
 
 export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) {
-  const { rawData, columns, columnMapping, setColumnMapping } = useVisualizationStore();
+  const { rawData, columns, columnMapping, setColumnMapping } = useVisualizationStore()
 
-  const [selectedProvince, setSelectedProvince] = useState(columnMapping.locationColumn || '');
-  const [selectedDistrict, setSelectedDistrict] = useState(columnMapping.districtColumn || '');
-  const [selectedData, setSelectedData] = useState(columnMapping.dataColumn || '');
+  const [selectedProvince, setSelectedProvince] = useState(columnMapping.locationColumn || '')
+  const [selectedDistrict, setSelectedDistrict] = useState(columnMapping.districtColumn || '')
+  const [selectedData, setSelectedData] = useState(columnMapping.dataColumn || '')
   const [locationLevel, setLocationLevel] = useState<'province' | 'mixed'>(
-    columnMapping.locationLevel === 'district' ? 'province' : columnMapping.locationLevel
-  );
+    columnMapping.locationLevel === 'district' ? 'province' : columnMapping.locationLevel,
+  )
 
   // Update store when selections change
   useEffect(() => {
@@ -28,53 +29,53 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
       districtColumn: selectedDistrict || null,
       dataColumn: selectedData || null,
       locationLevel,
-    });
-  }, [selectedProvince, selectedDistrict, selectedData, locationLevel, setColumnMapping]);
+    })
+  }, [selectedProvince, selectedDistrict, selectedData, locationLevel, setColumnMapping])
 
   // Get numeric columns
   const numericColumns = columns.filter((col) => {
-    if (!rawData || rawData.length === 0) return false;
-    const sample = rawData.slice(0, Math.min(10, rawData.length));
+    if (!rawData || rawData.length === 0) return false
+    const sample = rawData.slice(0, Math.min(10, rawData.length))
     const numericCount = sample.filter((row) => {
-      const value = row[col];
-      return typeof value === 'number' || !isNaN(Number(value));
-    }).length;
-    return numericCount / sample.length > 0.8;
-  });
+      const value = row[col]
+      return typeof value === 'number' || !isNaN(Number(value))
+    }).length
+    return numericCount / sample.length > 0.8
+  })
 
   const handleNext = () => {
     if (!selectedData) {
-      alert('Lütfen veri sütunu seçin!');
-      return;
+      alert('Lütfen veri sütunu seçin!')
+      return
     }
 
     if (locationLevel === 'province' && !selectedProvince) {
-      alert('Lütfen il sütunu seçin!');
-      return;
+      alert('Lütfen il sütunu seçin!')
+      return
     }
 
     if (locationLevel === 'mixed' && (!selectedProvince || !selectedDistrict)) {
-      alert('Lütfen il ve ilçe sütunlarını seçin!');
-      return;
+      alert('Lütfen il ve ilçe sütunlarını seçin!')
+      return
     }
 
-    onNext();
-  };
+    onNext()
+  }
 
   const showPreview = () => {
-    if (!rawData || rawData.length === 0) return null;
+    if (!rawData || rawData.length === 0) return null
 
-    const preview = rawData.slice(0, 3);
+    const preview = rawData.slice(0, 3)
     return preview.map((row, i) => {
-      const cols = Object.entries(row).slice(0, 3);
+      const cols = Object.entries(row).slice(0, 3)
       return (
         <div key={i} className="text-[10px] text-zinc-600">
           <span className="font-medium text-zinc-700">#{i + 1}</span>{' '}
           {cols.map(([k, v]) => `${k}: ${v}`).join(', ')}...
         </div>
-      );
-    });
-  };
+      )
+    })
+  }
 
   return (
     <div className="space-y-3">
@@ -86,9 +87,9 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
           <label className={`
             flex-1 flex items-center justify-center gap-1.5 px-3 py-2 cursor-pointer transition-colors
             ${locationLevel === 'province'
-              ? 'bg-slate-700 text-white'
-              : 'bg-white text-zinc-700 hover:bg-zinc-50'
-            }
+      ? 'bg-slate-700 text-white'
+      : 'bg-white text-zinc-700 hover:bg-zinc-50'
+    }
           `}>
             <input
               type="radio"
@@ -109,9 +110,9 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
           <label className={`
             flex-1 flex items-center justify-center gap-1.5 px-3 py-2 cursor-pointer transition-colors
             ${locationLevel === 'mixed'
-              ? 'bg-slate-700 text-white'
-              : 'bg-white text-zinc-700 hover:bg-zinc-50'
-            }
+      ? 'bg-slate-700 text-white'
+      : 'bg-white text-zinc-700 hover:bg-zinc-50'
+    }
           `}>
             <input
               type="radio"
@@ -211,5 +212,5 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
         </button>
       </div>
     </div>
-  );
+  )
 }

@@ -3,60 +3,61 @@
  * Manages visualization wizard state and data
  */
 
-import { create } from 'zustand';
+import { create } from 'zustand'
+
 import type {
   ColumnMapping,
   MatchResults,
   VisualizationSettings,
   CurrentVisualization,
-} from '../types/visualization';
+} from '../types/visualization'
 
 interface VisualizationStore {
   // Wizard state
-  currentStep: number;
-  setCurrentStep: (step: number) => void;
-  goToStep: (step: number) => void;
+  currentStep: number
+  setCurrentStep: (step: number) => void
+  goToStep: (step: number) => void
 
   // File data
-  rawData: any[] | null;
-  columns: string[];
-  setFileData: (data: any[], columns: string[]) => void;
-  clearFileData: () => void;
+  rawData: Record<string, unknown>[] | null
+  columns: string[]
+  setFileData: (data: Record<string, unknown>[], columns: string[]) => void
+  clearFileData: () => void
 
   // Column mapping
-  columnMapping: ColumnMapping;
-  setColumnMapping: (mapping: Partial<ColumnMapping>) => void;
-  resetColumnMapping: () => void;
+  columnMapping: ColumnMapping
+  setColumnMapping: (mapping: Partial<ColumnMapping>) => void
+  resetColumnMapping: () => void
 
   // Match results
-  matchResults: MatchResults;
-  setMatchResults: (results: MatchResults) => void;
-  clearMatchResults: () => void;
+  matchResults: MatchResults
+  setMatchResults: (results: MatchResults) => void
+  clearMatchResults: () => void
 
   // Visualization settings
-  vizSettings: VisualizationSettings;
-  setVizSettings: (settings: Partial<VisualizationSettings>) => void;
-  resetVizSettings: () => void;
+  vizSettings: VisualizationSettings
+  setVizSettings: (settings: Partial<VisualizationSettings>) => void
+  resetVizSettings: () => void
 
   // GeoJSON cache
-  provincesGeoJSON: any | null;
-  districtsGeoJSON: any | null;
-  setProvincesGeoJSON: (data: any) => void;
-  setDistrictsGeoJSON: (data: any) => void;
+  provincesGeoJSON: Record<string, unknown> | null
+  districtsGeoJSON: Record<string, unknown> | null
+  setProvincesGeoJSON: (data: Record<string, unknown>) => void
+  setDistrictsGeoJSON: (data: Record<string, unknown>) => void
 
   // Province and district indexes
-  provinceIndex: Record<string, any> | null;
-  districtIndex: Record<string, any[]> | null;
-  setProvinceIndex: (index: Record<string, any>) => void;
-  setDistrictIndex: (index: Record<string, any[]>) => void;
+  provinceIndex: Record<string, unknown> | null
+  districtIndex: Record<string, unknown[]> | null
+  setProvinceIndex: (index: Record<string, unknown>) => void
+  setDistrictIndex: (index: Record<string, unknown[]>) => void
 
   // Current visualization
-  currentVisualization: CurrentVisualization;
-  setCurrentVisualization: (viz: Partial<CurrentVisualization>) => void;
-  clearCurrentVisualization: () => void;
+  currentVisualization: CurrentVisualization
+  setCurrentVisualization: (viz: Partial<CurrentVisualization>) => void
+  clearCurrentVisualization: () => void
 
   // Reset everything
-  reset: () => void;
+  reset: () => void
 }
 
 const defaultColumnMapping: ColumnMapping = {
@@ -64,7 +65,7 @@ const defaultColumnMapping: ColumnMapping = {
   districtColumn: null,
   dataColumn: null,
   locationLevel: 'province',
-};
+}
 
 const defaultVizSettings: VisualizationSettings = {
   type: 'choropleth',
@@ -72,19 +73,19 @@ const defaultVizSettings: VisualizationSettings = {
   classificationMethod: 'quantile',
   colorScheme: 'viridis',
   legendType: 'discrete',
-};
+}
 
 const defaultMatchResults: MatchResults = {
   successful: [],
   ambiguous: [],
   failed: [],
-};
+}
 
 const defaultCurrentVisualization: CurrentVisualization = {
   type: null,
   data: null,
   column: null,
-};
+}
 
 export const useVisualizationStore = create<VisualizationStore>((set) => ({
   // Wizard state
@@ -151,4 +152,4 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
       vizSettings: defaultVizSettings,
       currentVisualization: defaultCurrentVisualization,
     }),
-}));
+}))

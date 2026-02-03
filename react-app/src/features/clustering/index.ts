@@ -1,2 +1,2 @@
-export * from './stores/useClusteringStore';
-export * from './hooks/useClustering';
+export * from './stores/useClusteringStore'
+export * from './hooks/useClustering'

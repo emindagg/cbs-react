@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react'
+
 import { useGlobeView } from '../hooks/useGlobeView'
 
 interface GlobeToggleButtonProps {
-    className?: string
-    style?: React.CSSProperties
+  className?: string
+  style?: React.CSSProperties
 }
 
 /**
@@ -11,29 +12,29 @@ interface GlobeToggleButtonProps {
  * 2D/3D projection toggle button
  */
 export function GlobeToggleButton({ className, style }: GlobeToggleButtonProps) {
-    const [isGlobeMode, setIsGlobeMode] = useState(false)
-    const { toggle } = useGlobeView()
+  const [isGlobeMode, setIsGlobeMode] = useState(false)
+  const { toggle } = useGlobeView()
 
-    const handleClick = useCallback(() => {
-        toggle()
-        setIsGlobeMode(prev => !prev)
-    }, [toggle])
+  const handleClick = useCallback(() => {
+    toggle()
+    setIsGlobeMode(prev => !prev)
+  }, [toggle])
 
-    return (
-        <button
-            id="globe-toggle-btn"
-            onClick={handleClick}
-            className={`w-9 h-9 bg-[#1c1c1e] rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-xs font-medium hover:bg-black/90 active:scale-95 transition-all cursor-pointer ${className || ''}`}
-            style={{
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                letterSpacing: '-0.5px',
-                ...style
-            }}
-            title="Küre Görünümü"
-        >
-            <span>{isGlobeMode ? '3D' : '2D'}</span>
-        </button>
-    )
+  return (
+    <button
+      id="globe-toggle-btn"
+      onClick={handleClick}
+      className={`w-9 h-9 bg-[#1c1c1e] rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-xs font-medium hover:bg-black/90 active:scale-95 transition-all cursor-pointer ${className || ''}`}
+      style={{
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        letterSpacing: '-0.5px',
+        ...style,
+      }}
+      title="Küre Görünümü"
+    >
+      <span>{isGlobeMode ? '3D' : '2D'}</span>
+    </button>
+  )
 }
 
 export default GlobeToggleButton

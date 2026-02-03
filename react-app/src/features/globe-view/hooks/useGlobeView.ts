@@ -1,11 +1,12 @@
 import { useRef, useCallback } from 'react'
+
 import { useMapStore } from '@/stores/useMapStore'
 
 export interface GlobeViewState {
-    isGlobeMode: boolean
-    toggle: () => void
-    enable: () => void
-    disable: () => void
+  isGlobeMode: boolean
+  toggle: () => void
+  enable: () => void
+  disable: () => void
 }
 
 /**
@@ -14,79 +15,79 @@ export interface GlobeViewState {
  * Legacy GlobeView pattern ported to React
  */
 export function useGlobeView(): GlobeViewState {
-    const mapInstance = useMapStore((state) => state.mapInstance)
-    const previousZoomRef = useRef<number | null>(null)
-    const isGlobeModeRef = useRef(false)
+  const mapInstance = useMapStore((state) => state.mapInstance)
+  const previousZoomRef = useRef<number | null>(null)
+  const isGlobeModeRef = useRef(false)
 
-    const enable = useCallback(() => {
-        if (!mapInstance) {
-            console.warn('Globe: Map instance not available')
-            return
-        }
-
-        if (typeof mapInstance.setProjection !== 'function') {
-            console.warn('⚠️ Globe projection not supported. MapLibre GL JS 2.0+ required.')
-            return
-        }
-
-        if (isGlobeModeRef.current) return
-
-        try {
-            // Save current zoom
-            previousZoomRef.current = mapInstance.getZoom()
-
-            // Set globe projection
-            mapInstance.setProjection({ type: 'globe' })
-
-            // Optimize for globe view
-            if (mapInstance.getZoom() > 2) {
-                mapInstance.setZoom(2)
-            }
-            mapInstance.setCenter([0, 0])
-
-            isGlobeModeRef.current = true
-            console.log('🌍 Globe mode enabled')
-        } catch (error) {
-            console.error('❌ Failed to enable globe:', error)
-        }
-    }, [mapInstance])
-
-    const disable = useCallback(() => {
-        if (!mapInstance) return
-
-        if (typeof mapInstance.setProjection !== 'function') return
-
-        try {
-            mapInstance.setProjection({ type: 'mercator' })
-
-            // Restore previous zoom or default to Turkey
-            if (previousZoomRef.current !== null) {
-                mapInstance.setZoom(previousZoomRef.current)
-                previousZoomRef.current = null
-            } else {
-                mapInstance.setZoom(6)
-            }
-            mapInstance.setCenter([33.41, 39])
-
-            isGlobeModeRef.current = false
-            console.log('🗺️ Mercator mode enabled')
-        } catch (error) {
-            console.error('❌ Failed to disable globe:', error)
-        }
-    }, [mapInstance])
-
-    const toggle = useCallback(() => {
-        if (isGlobeModeRef.current) {
-            disable()
-        } else {
-            enable()
-        }
-    }, [enable, disable])
-
-    return {
-        isGlobeMode: isGlobeModeRef.current,
-        toggle,
-        enable,
-        disable
+  const enable = useCallback(() => {
+    if (!mapInstance) {
+      console.warn('Globe: Map instance not available')
+      return
     }
+
+    if (typeof mapInstance.setProjection !== 'function') {
+      console.warn('⚠️ Globe projection not supported. MapLibre GL JS 2.0+ required.')
+      return
+    }
+
+    if (isGlobeModeRef.current) return
+
+    try {
+      // Save current zoom
+      previousZoomRef.current = mapInstance.getZoom()
+
+      // Set globe projection
+      mapInstance.setProjection({ type: 'globe' })
+
+      // Optimize for globe view
+      if (mapInstance.getZoom() > 2) {
+        mapInstance.setZoom(2)
+      }
+      mapInstance.setCenter([0, 0])
+
+      isGlobeModeRef.current = true
+      console.log('🌍 Globe mode enabled')
+    } catch (error) {
+      console.error('❌ Failed to enable globe:', error)
+    }
+  }, [mapInstance])
+
+  const disable = useCallback(() => {
+    if (!mapInstance) return
+
+    if (typeof mapInstance.setProjection !== 'function') return
+
+    try {
+      mapInstance.setProjection({ type: 'mercator' })
+
+      // Restore previous zoom or default to Turkey
+      if (previousZoomRef.current !== null) {
+        mapInstance.setZoom(previousZoomRef.current)
+        previousZoomRef.current = null
+      } else {
+        mapInstance.setZoom(6)
+      }
+      mapInstance.setCenter([33.41, 39])
+
+      isGlobeModeRef.current = false
+      console.log('🗺️ Mercator mode enabled')
+    } catch (error) {
+      console.error('❌ Failed to disable globe:', error)
+    }
+  }, [mapInstance])
+
+  const toggle = useCallback(() => {
+    if (isGlobeModeRef.current) {
+      disable()
+    } else {
+      enable()
+    }
+  }, [enable, disable])
+
+  return {
+    isGlobeMode: isGlobeModeRef.current,
+    toggle,
+    enable,
+    disable,
+  }
 }

@@ -3,9 +3,10 @@
  * Full-screen modal showing detailed matching results with tabs and CSV export
  */
 
-import { useState } from 'react';
-import { createPortal } from 'react-dom';
-import type { MatchResults } from '../../types/visualization';
+import { useState } from 'react'
+import { createPortal } from 'react-dom'
+
+import type { MatchResults } from '../../types/visualization'
 
 interface MatchResultsModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ interface MatchResultsModalProps {
   dataColumn: string | null;
 }
 
-type TabType = 'all' | 'success' | 'ambiguous' | 'failed';
+type TabType = 'all' | 'success' | 'ambiguous' | 'failed'
 
 export default function MatchResultsModal({
   isOpen,
@@ -22,9 +23,9 @@ export default function MatchResultsModal({
   matchResults,
   dataColumn,
 }: MatchResultsModalProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('all');
+  const [activeTab, setActiveTab] = useState<TabType>('all')
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   // Get filtered results based on active tab
   const getFilteredResults = () => {
@@ -32,42 +33,42 @@ export default function MatchResultsModal({
       ...matchResults.successful.map((r) => ({ ...r, status: 'success' as const })),
       ...matchResults.ambiguous.map((r) => ({ ...r, status: 'ambiguous' as const })),
       ...matchResults.failed.map((r) => ({ ...r, status: 'failed' as const })),
-    ];
+    ]
 
     switch (activeTab) {
       case 'success':
-        return allResults.filter((r) => r.status === 'success');
+        return allResults.filter((r) => r.status === 'success')
       case 'ambiguous':
-        return allResults.filter((r) => r.status === 'ambiguous');
+        return allResults.filter((r) => r.status === 'ambiguous')
       case 'failed':
-        return allResults.filter((r) => r.status === 'failed');
+        return allResults.filter((r) => r.status === 'failed')
       default:
-        return allResults;
+        return allResults
     }
-  };
+  }
 
-  const filteredResults = getFilteredResults();
+  const filteredResults = getFilteredResults()
 
   const getStatusIcon = (status: 'success' | 'ambiguous' | 'failed') => {
     switch (status) {
       case 'success':
-        return <i className="fa-solid fa-check text-green-600"></i>;
+        return <i className="fa-solid fa-check text-green-600"></i>
       case 'ambiguous':
-        return <i className="fa-solid fa-exclamation-triangle text-amber-600"></i>;
+        return <i className="fa-solid fa-exclamation-triangle text-amber-600"></i>
       case 'failed':
-        return <i className="fa-solid fa-times text-red-600"></i>;
+        return <i className="fa-solid fa-times text-red-600"></i>
     }
-  };
+  }
 
   const exportToCSV = () => {
     const allResults = [
       ...matchResults.successful.map((r) => ({ ...r, status: 'Başarılı' })),
       ...matchResults.ambiguous.map((r) => ({ ...r, status: 'Belirsiz' })),
       ...matchResults.failed.map((r) => ({ ...r, status: 'Hatalı' })),
-    ];
+    ]
 
     // CSV Headers
-    const headers = ['Sıra', 'Durum', 'Konum', 'İl', 'İlçe', dataColumn || 'Veri', 'Mesaj'];
+    const headers = ['Sıra', 'Durum', 'Konum', 'İl', 'İlçe', dataColumn || 'Veri', 'Mesaj']
     const csvContent = [
       headers.join(','),
       ...allResults.map((r, index) => {
@@ -79,25 +80,25 @@ export default function MatchResultsModal({
           r.district || '',
           dataColumn ? r.originalData[dataColumn] || '' : '',
           r.status === 'Belirsiz' ? 'Birden fazla eşleşme' : r.status === 'Hatalı' ? 'Eşleşme yok' : 'Başarılı',
-        ];
-        return row.map((cell) => `"${cell}"`).join(',');
+        ]
+        return row.map((cell) => `"${cell}"`).join(',')
       }),
-    ].join('\n');
+    ].join('\n')
 
     // Download
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `esleme-onizlemesi-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  };
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `esleme-onizlemesi-${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+  }
 
   return createPortal(
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
-          onClose();
+          onClose()
         }
       }}
     >
@@ -226,8 +227,8 @@ export default function MatchResultsModal({
                       {result.status === 'success'
                         ? 'Başarılı eşleşme'
                         : result.status === 'ambiguous'
-                        ? 'Birden fazla eşleşme'
-                        : 'Eşleşme bulunamadı'}
+                          ? 'Birden fazla eşleşme'
+                          : 'Eşleşme bulunamadı'}
                     </td>
                   </tr>
                 ))
@@ -259,6 +260,6 @@ export default function MatchResultsModal({
         </div>
       </div>
     </div>,
-    document.body
-  );
+    document.body,
+  )
 }

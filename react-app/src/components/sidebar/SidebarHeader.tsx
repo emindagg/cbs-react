@@ -1,9 +1,9 @@
 export default function SidebarHeader() {
-    return (
-        <div className="bg-white border-b border-zinc-200 px-3 py-2.5 flex-shrink-0">
-            <div className="flex items-center justify-center w-full">
-                <img src="/ogm-logo.svg" className="h-[70px]" alt="OGM Logo" />
-            </div>
-        </div>
-    )
+  return (
+    <div className="bg-white border-b border-zinc-200 px-3 py-2.5 flex-shrink-0">
+      <div className="flex items-center justify-center w-full">
+        <img src="/ogm-logo.svg" className="h-[70px]" alt="OGM Logo" />
+      </div>
+    </div>
+  )
 }

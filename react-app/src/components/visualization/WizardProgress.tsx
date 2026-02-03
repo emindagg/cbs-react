@@ -12,7 +12,7 @@ const STEPS = [
   { num: 2, label: 'Eşleştir', icon: 'fa-table-columns' },
   { num: 3, label: 'Sonuçlar', icon: 'fa-check-double' },
   { num: 4, label: 'Görselleştir', icon: 'fa-map' },
-];
+]
 
 export default function WizardProgress({ currentStep }: WizardProgressProps) {
   return (
@@ -36,12 +36,12 @@ export default function WizardProgress({ currentStep }: WizardProgressProps) {
                 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold
                 transition-all duration-300 border-2
                 ${
-                  step.num === currentStep
-                    ? 'bg-emerald-600 border-emerald-600 text-white scale-110 shadow-sm'
-                    : step.num < currentStep
-                    ? 'bg-emerald-500 border-emerald-500 text-white'
-                    : 'bg-white border-zinc-300 text-zinc-400'
-                }
+          step.num === currentStep
+            ? 'bg-emerald-600 border-emerald-600 text-white scale-110 shadow-sm'
+            : step.num < currentStep
+              ? 'bg-emerald-500 border-emerald-500 text-white'
+              : 'bg-white border-zinc-300 text-zinc-400'
+          }
               `}
             >
               {step.num < currentStep ? (
@@ -64,5 +64,5 @@ export default function WizardProgress({ currentStep }: WizardProgressProps) {
         ))}
       </div>
     </div>
-  );
+  )
 }

@@ -3,58 +3,59 @@
  * Upload Excel/CSV file
  */
 
-import { useState } from 'react';
-import { ColumnMapper } from '../../utils/columnMapper';
-import { useVisualizationStore } from '../../stores/useVisualizationStore';
+import { useState } from 'react'
+
+import { useVisualizationStore } from '../../stores/useVisualizationStore'
+import { ColumnMapper } from '../../utils/columnMapper'
 
 interface VizWizardStep1Props {
   onNext: () => void;
 }
 
 export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [fileInfo, setFileInfo] = useState<{ rowCount: number; columns: string[] } | null>(null);
+  const [isLoading, setIsLoading] = useState(false)
+  const [fileName, setFileName] = useState<string | null>(null)
+  const [fileInfo, setFileInfo] = useState<{ rowCount: number; columns: string[] } | null>(null)
 
-  const { setFileData, setColumnMapping } = useVisualizationStore();
+  const { setFileData, setColumnMapping } = useVisualizationStore()
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    setIsLoading(true);
-    setFileName(file.name);
+    setIsLoading(true)
+    setFileName(file.name)
 
     try {
-      const mapper = new ColumnMapper();
-      const result = await mapper.loadFile(file);
+      const mapper = new ColumnMapper()
+      const result = await mapper.loadFile(file)
 
       // Store data in store
-      setFileData(mapper.rawData || [], mapper.columns);
+      setFileData(mapper.rawData || [], mapper.columns)
 
       // Auto-detect columns
-      const suggestions = mapper.detectColumns();
+      const suggestions = mapper.detectColumns()
       if (suggestions) {
         setColumnMapping({
           locationColumn: suggestions.locationColumn,
           districtColumn: suggestions.districtColumn,
           dataColumn: suggestions.dataColumn,
           locationLevel: suggestions.locationLevel as 'province' | 'district' | 'mixed',
-        });
+        })
       }
 
-      setFileInfo({ rowCount: result.rowCount, columns: result.columns });
+      setFileInfo({ rowCount: result.rowCount, columns: result.columns })
 
       // Auto-advance to next step after successful load
       setTimeout(() => {
-        onNext();
-      }, 500);
+        onNext()
+      }, 500)
     } catch (error: any) {
-      alert('Dosya yüklenemedi: ' + error.message);
+      alert('Dosya yüklenemedi: ' + error.message)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="space-y-3">
@@ -118,5 +119,5 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
         </div>
       )}
     </div>
-  );
+  )
 }

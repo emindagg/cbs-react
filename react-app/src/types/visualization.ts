@@ -3,9 +3,9 @@
  * Type definitions for visualization wizard and rendering
  */
 
-export type VizType = 'choropleth' | 'bubble' | 'dot';
+export type VizType = 'choropleth' | 'bubble' | 'dot'
 
-export type LocationLevel = 'province' | 'district' | 'mixed';
+export type LocationLevel = 'province' | 'district' | 'mixed'
 
 export type ClassificationMethod =
   | 'quantile'
@@ -13,7 +13,7 @@ export type ClassificationMethod =
   | 'jenks'
   | 'rounded'
   | 'logarithmic'
-  | 'custom';
+  | 'custom'
 
 export type ColorScheme =
   | 'viridis'
@@ -23,14 +23,14 @@ export type ColorScheme =
   | 'reds'
   | 'blues'
   | 'oranges'
-  | 'purples';
+  | 'purples'
 
 export type LegendType =
   | 'discrete'
   | 'continuous'
   | 'quantized'
   | 'diverging'
-  | 'categorical';
+  | 'categorical'
 
 export interface ColumnMapping {
   locationColumn: string | null;
@@ -51,10 +51,10 @@ export interface MatchResult {
   ambiguousOptions?: Array<{
     name: string;
     province: string;
-    properties: any;
-    geometry: any;
+    properties: Record<string, unknown>;
+    geometry: Record<string, unknown>;
   }>;
-  originalData: any;
+  originalData: Record<string, unknown>;
 }
 
 export interface MatchResults {
@@ -74,28 +74,28 @@ export interface VisualizationSettings {
 
 export interface CurrentVisualization {
   type: VizType | null;
-  data: any[] | null;
+  data: Record<string, unknown>[] | null;
   column: string | null;
 }
 
 export interface ProvinceInfo {
   name: string;
-  properties: any;
-  geometry: any;
+  properties: Record<string, unknown>;
+  geometry: Record<string, unknown>;
 }
 
 export interface DistrictInfo {
   name: string;
   province: string;
   compositeKey: string;
-  properties: any;
-  geometry: any;
+  properties: Record<string, unknown>;
+  geometry: Record<string, unknown>;
 }
 
 export interface FileInfo {
   rowCount: number;
   columns: string[];
-  preview: any[];
+  preview: Record<string, unknown>[];
 }
 
 export interface MatchSummary {

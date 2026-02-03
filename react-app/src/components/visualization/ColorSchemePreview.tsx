@@ -3,7 +3,7 @@
  * Shows a preview of the selected color scheme
  */
 
-import type { ColorScheme } from '../../types/visualization';
+import type { ColorScheme } from '../../types/visualization'
 
 const COLOR_SCHEMES_DATA: Record<ColorScheme, string[]> = {
   viridis: [
@@ -94,14 +94,14 @@ const COLOR_SCHEMES_DATA: Record<ColorScheme, string[]> = {
     '#54278f',
     '#3f007d',
   ],
-};
+}
 
 interface ColorSchemePreviewProps {
   colorScheme: ColorScheme;
 }
 
 export default function ColorSchemePreview({ colorScheme }: ColorSchemePreviewProps) {
-  const colors = COLOR_SCHEMES_DATA[colorScheme];
+  const colors = COLOR_SCHEMES_DATA[colorScheme]
 
   return (
     <div className="mt-1.5 rounded overflow-hidden shadow-sm">
@@ -112,5 +112,5 @@ export default function ColorSchemePreview({ colorScheme }: ColorSchemePreviewPr
         }}
       ></div>
     </div>
-  );
+  )
 }

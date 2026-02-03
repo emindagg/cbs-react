@@ -3,13 +3,14 @@
  * Configure visualization settings and render
  */
 
-import { useState, useEffect } from 'react';
-import { useVisualizationStore } from '../../stores/useVisualizationStore';
-import { useMapStore } from '../../stores/useMapStore';
-import { VisualizationManager } from '../../services/VisualizationManager';
-import ColorSchemePreview from './ColorSchemePreview';
-import { suggestClassificationMethod } from '../../utils/classificationMethods';
-import type { ColorScheme, ClassificationMethod } from '../../types/visualization';
+import { useState, useEffect } from 'react'
+
+import ColorSchemePreview from './ColorSchemePreview'
+import { VisualizationManager } from '../../services/VisualizationManager'
+import { useMapStore } from '../../stores/useMapStore'
+import { useVisualizationStore } from '../../stores/useVisualizationStore'
+import type { ColorScheme, ClassificationMethod } from '../../types/visualization'
+import { suggestClassificationMethod } from '../../utils/classificationMethods'
 
 interface VizWizardStep4Props {
   onBack: () => void;
@@ -24,7 +25,7 @@ const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
   { value: 'blues', label: 'Mavi Tonları' },
   { value: 'oranges', label: 'Turuncu Tonları' },
   { value: 'purples', label: 'Mor Tonları' },
-];
+]
 
 const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; description: string }[] = [
   {
@@ -44,67 +45,67 @@ const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; desc
     description: 'Güzel yuvarlak sayılar (10, 20, 50...)',
   },
   { value: 'logarithmic', label: 'Logaritmik', description: 'Üstel dağılımlı veriler için' },
-];
+]
 
 export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
-  const [isRendering, setIsRendering] = useState(false);
-  const [hasRendered, setHasRendered] = useState(false);
+  const [isRendering, setIsRendering] = useState(false)
+  const [hasRendered, setHasRendered] = useState(false)
   const [suggestion, setSuggestion] = useState<{
     method: ClassificationMethod;
     reason: string;
     emoji: string;
     warning?: string;
-  } | null>(null);
-  const [showSuggestion, setShowSuggestion] = useState(true);
+  } | null>(null)
+  const [showSuggestion, setShowSuggestion] = useState(true)
 
-  const { matchResults, columnMapping, vizSettings, setVizSettings } = useVisualizationStore();
-  const { mapInstance: map } = useMapStore();
+  const { matchResults, columnMapping, vizSettings, setVizSettings } = useVisualizationStore()
+  const { mapInstance: map } = useMapStore()
 
   // Calculate suggestion when data changes
   useEffect(() => {
     if (!matchResults.successful.length || !columnMapping.dataColumn) {
-      setSuggestion(null);
-      return;
+      setSuggestion(null)
+      return
     }
 
     try {
       // Extract values from successful matches
       const values = matchResults.successful
         .map((m) => parseFloat(m.originalData[columnMapping.dataColumn!]))
-        .filter((v) => !isNaN(v) && v !== 0);
+        .filter((v) => !isNaN(v) && v !== 0)
 
       if (values.length === 0) {
-        setSuggestion(null);
-        return;
+        setSuggestion(null)
+        return
       }
 
       // Get suggestion
-      const methodSuggestion = suggestClassificationMethod(values);
-      setSuggestion(methodSuggestion);
-      setShowSuggestion(true);
+      const methodSuggestion = suggestClassificationMethod(values)
+      setSuggestion(methodSuggestion)
+      setShowSuggestion(true)
     } catch (error) {
-      console.error('Suggestion calculation error:', error);
-      setSuggestion(null);
+      console.error('Suggestion calculation error:', error)
+      setSuggestion(null)
     }
-  }, [matchResults, columnMapping.dataColumn]);
+  }, [matchResults, columnMapping.dataColumn])
 
   const handleApplySuggestion = () => {
     if (suggestion) {
-      setVizSettings({ classificationMethod: suggestion.method });
-      setShowSuggestion(false);
+      setVizSettings({ classificationMethod: suggestion.method })
+      setShowSuggestion(false)
     }
-  };
+  }
 
   const handleRender = async () => {
     if (!map) {
-      alert('Harita bulunamadı!');
-      return;
+      alert('Harita bulunamadı!')
+      return
     }
 
-    setIsRendering(true);
+    setIsRendering(true)
 
     try {
-      const vizManager = new VisualizationManager(map);
+      const vizManager = new VisualizationManager(map)
 
       // Get successful matches only
       const successfulData = matchResults.successful.map((m) => ({
@@ -112,11 +113,11 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
         province: m.province,
         district: m.district,
         ...m.originalData,
-      }));
+      }))
 
       if (successfulData.length === 0) {
-        alert('Görselleştirilecek veri yok!');
-        return;
+        alert('Görselleştirilecek veri yok!')
+        return
       }
 
       // Render choropleth
@@ -124,17 +125,17 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
         successfulData,
         columnMapping.dataColumn!,
         vizSettings,
-        columnMapping.locationLevel === 'province' ? 'province' : 'district'
-      );
+        columnMapping.locationLevel === 'province' ? 'province' : 'district',
+      )
 
-      setHasRendered(true);
+      setHasRendered(true)
     } catch (error: any) {
-      console.error('Render error:', error);
-      alert('Görselleştirme hatası: ' + error.message);
+      console.error('Render error:', error)
+      alert('Görselleştirme hatası: ' + error.message)
     } finally {
-      setIsRendering(false);
+      setIsRendering(false)
     }
-  };
+  }
 
   return (
     <div className="space-y-3">
@@ -190,9 +191,9 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
               className={`
                 flex-1 px-2.5 py-1.5 rounded-md text-[11px] font-semibold transition-all
                 ${vizSettings.classCount === count
-                  ? 'bg-slate-700 text-white shadow-sm'
-                  : 'bg-white border border-zinc-200 text-zinc-600 hover:border-slate-300 hover:bg-zinc-50'
-                }
+              ? 'bg-slate-700 text-white shadow-sm'
+              : 'bg-white border border-zinc-200 text-zinc-600 hover:border-slate-300 hover:bg-zinc-50'
+            }
               `}
             >
               {count}
@@ -293,5 +294,5 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -3,12 +3,13 @@
  * Show matching results and resolve ambiguities
  */
 
-import { useState, useEffect } from 'react';
-import { useVisualizationStore } from '../../stores/useVisualizationStore';
-import { useMapStore } from '../../stores/useMapStore';
-import { VisualizationManager } from '../../services/VisualizationManager';
-import { ColumnMapper } from '../../utils/columnMapper';
-import MatchResultsModal from './MatchResultsModal';
+import { useState, useEffect } from 'react'
+
+import MatchResultsModal from './MatchResultsModal'
+import { VisualizationManager } from '../../services/VisualizationManager'
+import { useMapStore } from '../../stores/useMapStore'
+import { useVisualizationStore } from '../../stores/useVisualizationStore'
+import { ColumnMapper } from '../../utils/columnMapper'
 
 interface VizWizardStep3Props {
   onBack: () => void;
@@ -16,9 +17,9 @@ interface VizWizardStep3Props {
 }
 
 export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) {
-  const [isMatching, setIsMatching] = useState(false);
-  const [hasMatched, setHasMatched] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [isMatching, setIsMatching] = useState(false)
+  const [hasMatched, setHasMatched] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
   const {
     rawData,
@@ -33,52 +34,52 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
     districtIndex,
     setProvinceIndex,
     setDistrictIndex,
-  } = useVisualizationStore();
+  } = useVisualizationStore()
 
-  const { mapInstance: map } = useMapStore();
+  const { mapInstance: map } = useMapStore()
 
   useEffect(() => {
     if (!hasMatched) {
-      performMatching();
+      performMatching()
     }
-  }, []);
+  }, [])
 
   const performMatching = async () => {
-    console.log('🔍 performMatching called', { rawData: !!rawData, map: !!map });
+    console.log('🔍 performMatching called', { rawData: !!rawData, map: !!map })
 
     if (!rawData || !map) {
-      console.warn('⚠️ Missing data:', { rawData: !!rawData, map: !!map });
-      return;
+      console.warn('⚠️ Missing data:', { rawData: !!rawData, map: !!map })
+      return
     }
 
-    setIsMatching(true);
-    console.log('📊 Starting matching process...');
+    setIsMatching(true)
+    console.log('📊 Starting matching process...')
 
     try {
       // Create VisualizationManager
-      const vizManager = new VisualizationManager(map);
+      const vizManager = new VisualizationManager(map)
 
       // Track indexes locally
-      let localProvinceIndex = provinceIndex;
-      let localDistrictIndex = districtIndex;
+      let localProvinceIndex = provinceIndex
+      let localDistrictIndex = districtIndex
 
       // Load GeoJSON based on location level
       if (columnMapping.locationLevel === 'province') {
         if (!provincesGeoJSON) {
-          const geojson = await vizManager.loadProvincesGeoJSON();
-          setProvincesGeoJSON(geojson);
-          const provIndex = vizManager.getProvinceIndex();
+          const geojson = await vizManager.loadProvincesGeoJSON()
+          setProvincesGeoJSON(geojson)
+          const provIndex = vizManager.getProvinceIndex()
           if (provIndex) {
-            setProvinceIndex(provIndex);
-            localProvinceIndex = provIndex;
+            setProvinceIndex(provIndex)
+            localProvinceIndex = provIndex
           }
         } else if (!localProvinceIndex) {
           // GeoJSON exists but index not loaded
-          await vizManager.loadProvincesGeoJSON();
-          const provIndex = vizManager.getProvinceIndex();
+          await vizManager.loadProvincesGeoJSON()
+          const provIndex = vizManager.getProvinceIndex()
           if (provIndex) {
-            setProvinceIndex(provIndex);
-            localProvinceIndex = provIndex;
+            setProvinceIndex(provIndex)
+            localProvinceIndex = provIndex
           }
         }
       } else if (
@@ -86,80 +87,80 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
         columnMapping.locationLevel === 'mixed'
       ) {
         if (!districtsGeoJSON) {
-          const geojson = await vizManager.loadDistrictsGeoJSON();
-          setDistrictsGeoJSON(geojson);
-          const distIndex = vizManager.getDistrictIndex();
+          const geojson = await vizManager.loadDistrictsGeoJSON()
+          setDistrictsGeoJSON(geojson)
+          const distIndex = vizManager.getDistrictIndex()
           if (distIndex) {
-            setDistrictIndex(distIndex);
-            localDistrictIndex = distIndex;
+            setDistrictIndex(distIndex)
+            localDistrictIndex = distIndex
           }
         } else if (!localDistrictIndex) {
           // GeoJSON exists but index not loaded
-          await vizManager.loadDistrictsGeoJSON();
-          const distIndex = vizManager.getDistrictIndex();
+          await vizManager.loadDistrictsGeoJSON()
+          const distIndex = vizManager.getDistrictIndex()
           if (distIndex) {
-            setDistrictIndex(distIndex);
-            localDistrictIndex = distIndex;
+            setDistrictIndex(distIndex)
+            localDistrictIndex = distIndex
           }
         }
 
         if (columnMapping.locationLevel === 'mixed') {
           if (!provincesGeoJSON) {
-            const geojson = await vizManager.loadProvincesGeoJSON();
-            setProvincesGeoJSON(geojson);
-            const provIndex = vizManager.getProvinceIndex();
+            const geojson = await vizManager.loadProvincesGeoJSON()
+            setProvincesGeoJSON(geojson)
+            const provIndex = vizManager.getProvinceIndex()
             if (provIndex) {
-              setProvinceIndex(provIndex);
-              localProvinceIndex = provIndex;
+              setProvinceIndex(provIndex)
+              localProvinceIndex = provIndex
             }
           } else if (!localProvinceIndex) {
             // GeoJSON exists but index not loaded
-            await vizManager.loadProvincesGeoJSON();
-            const provIndex = vizManager.getProvinceIndex();
+            await vizManager.loadProvincesGeoJSON()
+            const provIndex = vizManager.getProvinceIndex()
             if (provIndex) {
-              setProvinceIndex(provIndex);
-              localProvinceIndex = provIndex;
+              setProvinceIndex(provIndex)
+              localProvinceIndex = provIndex
             }
           }
         }
       }
 
       // Create ColumnMapper and perform matching
-      const mapper = new ColumnMapper();
-      mapper.rawData = rawData;
-      mapper.columns = Object.keys(rawData[0]);
-      mapper.setColumnMapping(columnMapping);
-      mapper.setIndexes(localProvinceIndex, localDistrictIndex);
+      const mapper = new ColumnMapper()
+      mapper.rawData = rawData
+      mapper.columns = Object.keys(rawData[0])
+      mapper.setColumnMapping(columnMapping)
+      mapper.setIndexes(localProvinceIndex, localDistrictIndex)
 
       console.log('🎯 Performing match with indexes:', {
         provinceIndex: !!localProvinceIndex,
-        districtIndex: !!localDistrictIndex
-      });
+        districtIndex: !!localDistrictIndex,
+      })
 
-      const results = mapper.matchData();
-      console.log('✅ Match results:', results);
+      const results = mapper.matchData()
+      console.log('✅ Match results:', results)
 
-      setMatchResults(results);
-      setHasMatched(true);
+      setMatchResults(results)
+      setHasMatched(true)
     } catch (error: any) {
-      console.error('❌ Matching error:', error);
-      alert('Eşleştirme hatası: ' + error.message);
+      console.error('❌ Matching error:', error)
+      alert('Eşleştirme hatası: ' + error.message)
     } finally {
-      setIsMatching(false);
-      console.log('📍 Matching complete, hasMatched:', true);
+      setIsMatching(false)
+      console.log('📍 Matching complete, hasMatched:', true)
     }
-  };
+  }
 
   const handleNext = () => {
     if (matchResults.ambiguous.length > 0) {
       const proceed = confirm(
-        `${matchResults.ambiguous.length} belirsiz eşleşme var. Bunlar görselleştirmede göz ardı edilecek. Devam edilsin mi?`
-      );
-      if (!proceed) return;
+        `${matchResults.ambiguous.length} belirsiz eşleşme var. Bunlar görselleştirmede göz ardı edilecek. Devam edilsin mi?`,
+      )
+      if (!proceed) return
     }
 
-    onNext();
-  };
+    onNext()
+  }
 
   return (
     <div className="space-y-3">
@@ -300,5 +301,5 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
         </div>
       )}
     </div>
-  );
+  )
 }
