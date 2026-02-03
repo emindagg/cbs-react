@@ -1,64 +1,84 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { useMapStore } from '@/stores/useMapStore'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { LAYOUT } from '@/constants/layout'
+
+// Feature imports
 import Sidebar from '@/components/sidebar/Sidebar'
 import MapContainer from '@/components/map/MapContainer'
-import BasemapSwitcher from '@/components/map/controls/BasemapSwitcher'
+import { MapControlStack } from '@/features/map'
+import { SearchContainer } from '@/features/geocoder'
 
+/**
+ * AppLayout Component
+ * Main application layout - orchestrates features
+ * Refactored to Feature-Based Architecture
+ */
 export default function AppLayout() {
     const [isSidebarOpen, setSidebarOpen] = useState(false)
+    const mapInstance = useMapStore((state) => state.mapInstance)
+    const isMdUp = useMediaQuery('(min-width: 768px)')
 
-    // Toggle Function for Sidebar
+    // Toggle sidebar and resize map
     const toggleSidebar = () => {
         setSidebarOpen(!isSidebarOpen)
+        setTimeout(() => {
+            mapInstance?.resize?.()
+        }, LAYOUT.ANIMATION_DURATION)
     }
+
+    // Dynamic left positioning for controls
+    const controlsLeft = useMemo(() => (
+        isSidebarOpen && isMdUp
+            ? `${LAYOUT.SIDEBAR_WIDTH + LAYOUT.SIDEBAR_GAP}px`
+            : `${LAYOUT.BASE_OFFSET}px`
+    ), [isSidebarOpen, isMdUp])
+
+    // Search container offset (after hamburger button)
+    const searchLeft = useMemo(() => {
+        const base = isSidebarOpen && isMdUp
+            ? LAYOUT.SIDEBAR_WIDTH + LAYOUT.SIDEBAR_GAP
+            : LAYOUT.BASE_OFFSET
+        return `${base + LAYOUT.HAMBURGER_OFFSET}px`
+    }, [isSidebarOpen, isMdUp])
 
     return (
         <div className="relative h-screen w-full overflow-hidden bg-zinc-50">
 
-            {/* SIDEBAR - Mobile & Desktop Responsive via CSS classes (already ported from legacy) */}
+            {/* Sidebar */}
             <aside
                 id="sidebar"
-                className={`fixed left-0 top-0 z-[1350] w-full md:w-72 bg-white shadow-xl h-screen flex flex-col transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-[-100%]'}`}
-                style={{ maxWidth: '288px' }} // md:max-w-[288px] equivalent
+                className={`
+                    fixed left-0 top-0 z-[1350] 
+                    w-full md:w-72 bg-white shadow-xl h-screen 
+                    flex flex-col transition-transform duration-300 ease-in-out
+                    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                `}
+                style={{ maxWidth: `${LAYOUT.SIDEBAR_WIDTH}px` }}
             >
                 <Sidebar onClose={() => setSidebarOpen(false)} />
             </aside>
 
-            {/* MAP AREA */}
+            {/* Map */}
             <main id="map-main" className="h-full w-full relative z-map">
                 <MapContainer />
             </main>
 
-            {/* OVERLAY CONTROLS - Top Left */}
+            {/* Map Control Stack (Vertical) */}
             <div
                 id="map-control-container"
-                className={`fixed top-3 z-[1400] transition-all duration-300 ease-in-out left-3`}
+                className="fixed top-3 z-[1400] transition-all duration-300 ease-in-out"
+                style={{ left: controlsLeft }}
             >
-                <div className="flex flex-col gap-2.5">
-                    {/* Sidebar Toggle Button */}
-                    <button
-                        id="open-sidebar"
-                        onClick={toggleSidebar}
-                        className="h-10 w-10 bg-white rounded-xl shadow-[0_10px_18px_-16px_rgba(15,23,42,0.4)] border border-slate-200/60 flex items-center justify-center text-[#1f2937] hover:bg-slate-50 active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                        title="Kontrol panelini aç/kapat"
-                    >
-                        <i className="fa-solid fa-bars text-lg"></i>
-                    </button>
-
-                    {/* Zoom Controls */}
-                    <div className="flex flex-col bg-[#1c1c1e] rounded-[18px] overflow-hidden shadow-lg border-none w-9 zoom-control-custom">
-                        <button type="button" className="h-9 w-9 text-white hover:bg-white/10 flex items-center justify-center text-lg font-medium" aria-label="Yakınlaştır">
-                            <span aria-hidden="true">+</span>
-                        </button>
-                        <div className="h-[1px] bg-white/15 w-full"></div>
-                        <button type="button" className="h-9 w-9 text-white hover:bg-white/10 flex items-center justify-center text-lg font-medium" aria-label="Uzaklaştır">
-                            <span aria-hidden="true">−</span>
-                        </button>
-                    </div>
-
-                    {/* Extra Buttons (Basemap, Astro) */}
-                    <BasemapSwitcher />
-                </div>
+                <MapControlStack
+                    isSidebarOpen={isSidebarOpen}
+                    onToggleSidebar={toggleSidebar}
+                />
             </div>
+
+            {/* Search Container (Horizontal) */}
+            <SearchContainer leftPosition={searchLeft} />
+
         </div>
     )
 }

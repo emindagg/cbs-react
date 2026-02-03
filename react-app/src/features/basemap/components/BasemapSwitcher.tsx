@@ -2,6 +2,10 @@ import { useState, useRef, useEffect } from 'react'
 import { useMapStore } from '@/stores/useMapStore'
 import type { BasemapType } from '@/stores/useMapStore'
 
+/**
+ * BasemapSwitcher Component
+ * Dropdown to select basemap/tile layer
+ */
 export default function BasemapSwitcher() {
     const { activeBasemap, setActiveBasemap } = useMapStore()
     const [isOpen, setIsOpen] = useState(false)
@@ -35,7 +39,7 @@ export default function BasemapSwitcher() {
 
     return (
         <div className="relative" ref={panelRef}>
-            {/* Trigger Button - DARK ROUND BTN STYLE */}
+            {/* Trigger Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-9 h-9 bg-[#1c1c1e] rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm hover:bg-black/90 active:scale-95 transition-all outline-none cursor-pointer"
@@ -57,9 +61,9 @@ export default function BasemapSwitcher() {
                                 key={bm.id}
                                 onClick={() => handleSelect(bm.id)}
                                 className={`
-                      flex items-center gap-2 px-4 py-2 text-sm text-left transition-colors
-                      ${activeBasemap === bm.id ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}
-                   `}
+                                    flex items-center gap-2 px-4 py-2 text-sm text-left transition-colors
+                                    ${activeBasemap === bm.id ? 'bg-emerald-50 text-emerald-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}
+                                `}
                             >
                                 <i className={`fa-solid ${bm.icon} w-5 text-center ${activeBasemap === bm.id ? 'text-emerald-600' : 'text-gray-400'}`}></i>
                                 <span>{bm.label}</span>
