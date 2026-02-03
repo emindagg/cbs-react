@@ -1,0 +1,733 @@
+🎯 Teknik Dokümantasyon: StoryMap Paylaşım Sorunu ve Çözümü
+
+  📋 Özet
+
+  Sorun: Kullanıcılar harita paylaşım linkini açtığında noktalar ve harita görünmüyordu. Timeline ve Route template'lerinde ek hatalar oluşuyordu.
+
+  Kök Neden:
+  1. Backend API'nin case-insensitive response döndürmesi
+  2. view.html sayfasının eksik HTML yapısı
+  3. View mode'da gereksiz component'lerin oluşturulması
+  4. Template-specific manager'ların view mode'da kullanılması
+
+  Sonuç: 4 dosyada toplam 7 düzeltme ile tüm sorunlar çözüldü.
+
+  ---
+  🔍 Sorunların Detaylı Analizi
+
+  1. Backend Response Case Sensitivity Sorunu ⭐ KRİTİK
+
+  Lokasyon: storymap/src/viewMain.js:92
+
+  Problem:
+  // Eski kod - sadece büyük harf arıyordu
+  jsonData = JSON.parse(backendData.Jsondata);
+
+  Backend API response'u:
+  {
+    "jsondata": "{...}",  // küçük harf
+    "sablon": "point",    // küçük harf
+    "baslik": "...",      // küçük harf
+    "publickey": "..."    // küçük harf
+  }
+
+  Etki: Parse işlemi başarısız oluyor, tüm noktalar kayboluyor, harita boş görünüyor.
+
+  Çözüm:
+  // Yeni kod - hem büyük hem küçük harf kontrolü
+  const jsondataField = backendData.Jsondata || backendData.jsondata;
+
+  // Tüm fieldler için fallback pattern
+  return {
+      id: backendData.Id || backendData.id,
+      title: backendData.Baslik || backendData.baslik,
+      desc: backendData.Aciklama || backendData.aciklama,
+      templateName: backendData.Sablon || backendData.sablon,
+      // ...
+  };
+
+  ---
+  2. Paylaşım URL Formatı Hatası ⭐ KRİTİK
+
+  Lokasyon: storymap/src/components/toolbar/panels/SharePanel.js:292
+
+  Problem:
+  // Eski kod
+  return `${window.location.origin}/view.html?code=${this.publicKey}`;
+  // Ürettiği link: https://ogmmateryal.eba.gov.tr/view.html?code=...
+  // ❌ 404 NOT FOUND
+
+  Beklenen Format:
+  https://ogmmateryal.eba.gov.tr/cbs/storymap/view.html?code=...
+
+  Etki: Paylaşım linki 404 hatası veriyor, hiçbir kullanıcı haritayı göremiyor.
+
+  Çözüm:
+  // Yeni kod
+  return `${window.location.origin}/cbs/storymap/view.html?code=${this.publicKey}`;
+
+  // Fallback link de düzeltildi
+  return `${window.location.origin}/cbs/storymap/app.html?mode=view&id=${this.currentStoryId}`;
+
+  ---
+  3. view.html - Eksik HTML Container'lar ⭐ KRİTİK
+
+  Lokasyon: storymap/view.html
+
+  Problem: ModalComponent'in ihtiyaç duyduğu DOM elementleri mevcut değildi:
+  - #map-container ❌
+  - #sidebar-container ❌
+  - #toolbar-container ❌
+  - #timelinejs-container ❌
+
+  Hata:
+  TypeError: Cannot read properties of null (reading 'querySelector')
+  at ModalComponent.startGame (ModalComponent.js:152:42)
+
+  Etki: querySelector null hatası, harita ve sidebar render edilemiyor.
+
+  Çözüm:
+  <!-- Map and Sidebar Containers for ModalComponent -->
+  <div id="map-container" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;"></div>
+  <div id="sidebar-container" style="display: none; position: fixed; top: 0; right: 0; width: 400px; height: 100%; z-index: 2;"></div>
+
+  <!-- Toolbar Container -->
+  <div id="toolbar-container" style="display: none; position: fixed; top: 20px; left: 20px; z-index: 1000;"></div>
+
+  <!-- Timeline Container (for timeline template) -->
+  <div id="timelinejs-container" style="display: none; position: fixed; bottom: 0; left: 0; right: 400px; height: 300px; z-index: 100;">
+      <div id="timeline-embed" style="width: 100%; height: 100%;"></div>
+  </div>
+
+  Not: Tüm container'lar display: none ile başlar, ModalComponent.startGame() bunları gösterecek.
+
+  ---
+  4. ToolbarComponent View Mode Uyumsuzluğu
+
+  Lokasyon: storymap/src/components/ModalComponent.js:190
+
+  Problem:
+  // Eski kod - her zaman toolbar oluşturuluyordu
+  this.toolbarComponent = new ToolbarComponent(this.viewMode);
+
+  View mode'da:
+  - Toolbar gereksiz (kullanıcı sadece görüntüleyecek, edit etmeyecek)
+  - #map-toolbar elementi view.html'de yok
+  - SearchManager.js:19 → this.toolbar.querySelector('#toolbar-search') → NULL
+
+  Hata:
+  TypeError: Cannot read properties of null (reading 'querySelector')
+  at SearchManager.setupUI (SearchManager.js:19:42)
+  at new SearchManager (SearchManager.js:11:14)
+  at new ToolbarComponent (ToolbarComponent.js:11:30)
+
+  Etki: Sayfa yüklenemiyor, white screen.
+
+  Çözüm:
+  // Yeni kod - sadece edit mode'da toolbar oluştur
+  if (!this.viewMode) {
+      this.toolbarComponent = new ToolbarComponent(this.viewMode);
+      this.toolbarComponent.init(this.mapComponent, this.sidebarComponent, this.viewMode);
+      this.toolbarComponent.show();
+
+      // Toolbar callbacks (paylaşım, undo/redo)
+      if (this.toolbarComponent.actionManager) {
+          this.toolbarComponent.actionManager.onBeforeShare = async () => {
+              if (this.sidebarComponent && this.sidebarComponent.onSave) {
+                  await this.sidebarComponent.onSave();
+              }
+          };
+      }
+
+      this.sidebarComponent.onActionAdd = (action) => {
+          this.toolbarComponent.addAction(action);
+      };
+  }
+
+  ---
+  5. Timeline Template - View Mode Statistics Hatası
+
+  Lokasyon: storymap/src/components/ModalComponent.js:2223
+
+  Problem:
+  // Eski kod - her zaman çalışıyordu
+  const timelineData = this.mapComponent.timelineManager.getTimelineData();
+
+  View mode'da:
+  - TimelineManager sadece edit mode'da oluşturuluyor
+  - View mode'da this.mapComponent.timelineManager var ama getTimelineData() metodu yok
+
+  Hata:
+  TypeError: this.mapComponent.timelineManager.getTimelineData is not a function
+  at ModalComponent.loadStoryForViewMode (ModalComponent.js:2223:80)
+
+  Etki: Timeline template'leri view mode'da açıldığında hata veriyor, statistics güncellenemiyor.
+
+  Çözüm:
+  // Yeni kod - sadece edit mode'da statistics güncelle
+  if (!this.viewMode) {
+      try {
+          const timelineData = this.mapComponent.timelineManager.getTimelineData();
+          console.log('[ModalComponent] Timeline data:', timelineData);
+          if (timelineData) {
+              this.sidebarComponent.updateTimelineData(timelineData);
+              console.log('[ModalComponent] ✓ Timeline statistics güncellendi');
+          }
+      } catch (error) {
+          console.error('[ModalComponent] ✗ Timeline statistics güncellenirken hata:', error);
+      }
+  } else {
+      console.log('[ModalComponent] View mode: Timeline statistics atlandı');
+  }
+
+  ---
+  6. Route Template - View Mode Statistics Hatası
+
+  Lokasyon: storymap/src/components/ModalComponent.js:2176
+
+  Problem:
+  // Eski kod - her zaman route statistics güncelliyordu
+  const routeData = {
+      totalDistance: this.mapComponent.getRouteTotalDistance(),
+      daySummary: this.mapComponent.getRouteDaySummary(),
+      // ...
+  };
+  this.sidebarComponent.updateRouteData(routeData);
+
+  View mode'da sidebar'da statistics paneli yok, güncelleme gereksiz.
+
+  Etki: Gereksiz hesaplamalar, potansiyel hatalar.
+
+  Çözüm:
+  // Yeni kod - sadece edit mode'da statistics güncelle
+  try {
+      await this.mapComponent.routeManager.updateRouteLine(routePoints);
+      console.log('[ModalComponent] ✓ Rota çizgileri çizildi');
+
+      // Route statistics güncelle (sadece edit mode'da)
+      if (!this.viewMode) {
+          const routeData = {
+              totalDistance: this.mapComponent.getRouteTotalDistance(),
+              daySummary: this.mapComponent.getRouteDaySummary(),
+              displacement: this.mapComponent.getRouteDisplacement(),
+              bearingAngle: this.mapComponent.getRouteBearingAngle(),
+              hasPoints: true
+          };
+          console.log('[ModalComponent] Route data:', routeData);
+          this.sidebarComponent.updateRouteData(routeData);
+          console.log('[ModalComponent] ✓ Rota statistics güncellendi');
+      } else {
+          console.log('[ModalComponent] View mode: Route statistics atlandı');
+      }
+  } catch (error) {
+      console.error('[ModalComponent] ✗ Rota çizgileri çizilirken hata:', error);
+  }
+
+  ---
+  📝 Değiştirilen Dosyalar ve Satırlar
+
+  ✅ 1. storymap/src/viewMain.js
+
+  Toplam Değişiklik: 3 bölge
+
+  A) Case-insensitive backend field okuma (Satır 93-95)
+  // Backend field'i hem büyük hem küçük harfle dene
+  const jsondataField = backendData.Jsondata || backendData.jsondata;
+
+  B) Tüm backend fieldleri için fallback (Satır 103-112)
+  return {
+      id: backendData.Id || backendData.id,
+      title: backendData.Baslik || backendData.baslik,
+      desc: backendData.Aciklama || backendData.aciklama,
+      templateName: backendData.Sablon || backendData.sablon,
+      mapData: jsonData.mapData || {},
+      steps: jsonData.steps || [],
+      points: jsonData.points || [],
+      publicKey: backendData.Publickey || backendData.publickey,
+      isShared: backendData.Isshared || backendData.isshared,
+      createdAt: backendData.Olusturmaturihi || backendData.olusturmaturihi,
+      source: 'backend'
+  };
+
+  C) Debug try-catch bloğu (Satır 196-208)
+  try {
+      console.log('[PublicViewer] Creating ModalComponent...');
+      this.modal = new ModalComponent('app-container', {
+          viewMode: true,
+          storyData: this.storyData
+      });
+      console.log('[PublicViewer] ModalComponent created successfully');
+
+      console.log('[PublicViewer] Calling startGame...');
+      this.modal.startGame(this.storyData);
+      console.log('[PublicViewer] startGame called successfully');
+  } catch (error) {
+      console.error('[PublicViewer] Error in loadNormalViewer:', error);
+      this.showError('Render Hatası', 'Harita görüntülenirken bir hata oluştu: ' + error.message);
+  }
+
+  Etki: Backend büyük/küçük harf duyarlılığından bağımsız çalışır, hatalar yakalanır.
+
+  ---
+  ✅ 2. storymap/src/components/toolbar/panels/SharePanel.js
+
+  Toplam Değişiklik: 1 fonksiyon
+
+  Paylaşım URL formatı düzeltmesi (Satır 289-299)
+  generateShareLink() {
+      if (this.publicKey) {
+          // Use public key for shared maps
+          return `${window.location.origin}/cbs/storymap/view.html?code=${this.publicKey}`;
+      } else if (this.currentStoryId) {
+          // Fallback: use view mode with ID (IndexedDB)
+          return `${window.location.origin}/cbs/storymap/app.html?mode=view&id=${this.currentStoryId}`;
+      }
+      // Fallback: no story
+      return window.location.origin;
+  }
+
+  Etki: Paylaşım linkleri doğru /cbs/storymap/ path'inde açılıyor.
+
+  ---
+  ✅ 3. storymap/view.html
+
+  Toplam Değişiklik: 4 container eklendi
+
+  Gerekli container'lar (Satır 153-166)
+  <!-- App Container (will be filled by viewMain.js) -->
+  <div id="app-container"></div>
+
+  <!-- Map and Sidebar Containers for ModalComponent -->
+  <div id="map-container" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;"></div>
+  <div id="sidebar-container" style="display: none; position: fixed; top: 0; right: 0; width: 400px; height: 100%; z-index: 2;"></div>
+
+  <!-- Toolbar Container -->
+  <div id="toolbar-container" style="display: none; position: fixed; top: 20px; left: 20px; z-index: 1000;"></div>
+
+  <!-- Timeline Container (for timeline template) -->
+  <div id="timelinejs-container" style="display: none; position: fixed; bottom: 0; left: 0; right: 400px; height: 300px; z-index: 100;">
+      <div id="timeline-embed" style="width: 100%; height: 100%;"></div>
+  </div>
+
+  Etki: ModalComponent tüm gerekli DOM elementlerini buluyor.
+
+  ---
+  ✅ 4. storymap/src/components/ModalComponent.js
+
+  Toplam Değişiklik: 3 bölge
+
+  A) View mode'da toolbar devre dışı (Satır 190-209)
+  // Toolbar'ı başlat ve göster (sadece edit mode'da)
+  if (!this.viewMode) {
+      this.toolbarComponent = new ToolbarComponent(this.viewMode);
+      this.toolbarComponent.init(this.mapComponent, this.sidebarComponent, this.viewMode);
+      this.toolbarComponent.show();
+
+      // Paylaşmadan önce kaydetme callback'i
+      if (this.toolbarComponent.actionManager) {
+          this.toolbarComponent.actionManager.onBeforeShare = async () => {
+              if (this.sidebarComponent && this.sidebarComponent.onSave) {
+                  await this.sidebarComponent.onSave();
+              }
+          };
+      }
+
+      // Undo/Redo için SidebarComponent callback'i
+      this.sidebarComponent.onActionAdd = (action) => {
+          this.toolbarComponent.addAction(action);
+      };
+  }
+
+  B) Route statistics view mode koruması (Satır 2175-2188)
+  try {
+      await this.mapComponent.routeManager.updateRouteLine(routePoints);
+      console.log('[ModalComponent] ✓ Rota çizgileri çizildi');
+
+      // Route statistics güncelle (sadece edit mode'da)
+      if (!this.viewMode) {
+          const routeData = {
+              totalDistance: this.mapComponent.getRouteTotalDistance(),
+              daySummary: this.mapComponent.getRouteDaySummary(),
+              displacement: this.mapComponent.getRouteDisplacement(),
+              bearingAngle: this.mapComponent.getRouteBearingAngle(),
+              hasPoints: true
+          };
+          this.sidebarComponent.updateRouteData(routeData);
+      } else {
+          console.log('[ModalComponent] View mode: Route statistics atlandı');
+      }
+  } catch (error) {
+      console.error('[ModalComponent] ✗ Rota çizgileri çizilirken hata:', error);
+  }
+
+  C) Timeline statistics view mode koruması (Satır 2221-2237)
+  // Timeline statistics güncelle (sadece edit mode'da)
+  if (!this.viewMode) {
+      try {
+          const timelineData = this.mapComponent.timelineManager.getTimelineData();
+          console.log('[ModalComponent] Timeline data:', timelineData);
+          if (timelineData) {
+              this.sidebarComponent.updateTimelineData(timelineData);
+              console.log('[ModalComponent] ✓ Timeline statistics güncellendi');
+          } else {
+              console.warn('[ModalComponent] ✗ Timeline data boş');
+          }
+      } catch (error) {
+          console.error('[ModalComponent] ✗ Timeline statistics güncellenirken hata:', error);
+      }
+  } else {
+      console.log('[ModalComponent] View mode: Timeline statistics atlandı');
+  }
+
+  Etki:
+  - View mode'da gereksiz component'ler oluşturulmuyor
+  - Timeline/Route template'leri view mode'da sorunsuz çalışıyor
+  - SearchManager null hatası engellenmiş
+
+  ---
+  🧪 Test Senaryoları
+
+  ✅ Test 1: Point Template (Nokta Bazlı)
+
+  Adımlar:
+  1. Kullanıcı point template ile harita oluşturur
+  2. 3 nokta ekler
+  3. "Kaydet" → Backend'e kaydedilir
+  4. "Paylaş" → Toggle aktif → Link kopyalar
+  5. Linki yeni sekmede açar
+
+  Beklenen Sonuç:
+  ✅ Backend response parse edilir
+  ✅ 3 nokta haritada görünür
+  ✅ Harita etkileşimsiz (view mode)
+  ✅ Toolbar görünmez
+
+  Console Log:
+  [PublicViewer] Loading storymap with public key: ABC123
+  [PublicViewer] Loading normal viewer with points: 3
+  [PublicViewer] Creating ModalComponent...
+  [PublicViewer] ModalComponent created successfully
+  [PublicViewer] Calling startGame...
+  [ModalComponent] Existing storymap loaded, hasSaved flag set to true
+  [PublicViewer] startGame called successfully
+  [MapComponent] View mode: Etkileşimler devre dışı bırakılıyor...
+  [ModalComponent] View mode: Story data yükleniyor...
+  [ModalComponent] 3 nokta yükleniyor...
+
+  ---
+  ✅ Test 2: Timeline Template (Zaman Çizelgesi Bazlı)
+
+  Adımlar:
+  1. Kullanıcı timeline template ile harita oluşturur
+  2. 5 tarihli event ekler
+  3. "Kaydet" → Backend'e kaydedilir
+  4. "Paylaş" → Link kopyalar
+  5. Linki yeni sekmede açar
+
+  Beklenen Sonuç:
+  ✅ 5 event haritada görünür
+  ✅ Timeline çizgileri çizilmiş
+  ✅ Timeline statistics hatası yok
+  ✅ View mode: Timeline statistics atlandı
+
+  Console Log:
+  [PublicViewer] Rendering with template: timeline isStoryMap: false
+  [PublicViewer] Loading normal viewer with points: 5
+  [ModalComponent] Template name: Timeline Bazlı
+  [ModalComponent] isTimelineTemplate: true
+  [ModalComponent] 5 nokta yükleniyor...
+  [ModalComponent] View mode: Timeline template algılandı
+  [ModalComponent] TimelineManager bulundu, çizgiler çiziliyor...
+  [ModalComponent] ✓ Timeline çizgileri çizildi
+  [ModalComponent] View mode: Timeline statistics atlandı ✅
+
+  ---
+  ✅ Test 3: Route Template (Rota Bazlı)
+
+  Adımlar:
+  1. Kullanıcı route template ile harita oluşturur
+  2. 4 noktalı rota oluşturur
+  3. "Kaydet" → Backend'e kaydedilir
+  4. "Paylaş" → Link kopyalar
+  5. Linki yeni sekmede açar
+
+  Beklenen Sonuç:
+  ✅ 4 nokta haritada görünür
+  ✅ Rota çizgileri çizilmiş
+  ✅ Route statistics hatası yok
+  ✅ View mode: Route statistics atlandı
+
+  Console Log:
+  [ModalComponent] Template name: Rota Bazlı
+  [ModalComponent] isRouteTemplate: true
+  [ModalComponent] Rota çizgileri çiziliyor...
+  [ModalComponent] ✓ Rota çizgileri çizildi
+  [ModalComponent] View mode: Route statistics atlandı ✅
+
+  ---
+  🚀 Deployment Checklist
+
+  Production'a Deploy Edilecek Dosyalar:
+
+  - storymap/src/viewMain.js ⭐ KRİTİK
+  - storymap/src/components/toolbar/panels/SharePanel.js ⭐ KRİTİK
+  - storymap/view.html ⭐ KRİTİK
+  - storymap/src/components/ModalComponent.js ⭐ KRİTİK
+
+  Deployment Sonrası Kontroller:
+
+  1. Cache Temizliği:
+  - Tüm kullanıcılar için hard refresh (CTRL+SHIFT+R)
+  - Veya CDN cache invalidation (eğer kullanılıyorsa)
+
+  2. URL Formatı Kontrolü:
+  - Yeni paylaşım linki /cbs/storymap/view.html?code=... formatında
+  - Eski linkler redirect ediliyor (opsiyonel)
+
+  3. Fonksiyonel Testler:
+  - Point template paylaşımı çalışıyor
+  - Timeline template paylaşımı çalışıyor (hata yok)
+  - Route template paylaşımı çalışıyor (hata yok)
+  - Noktalar ve harita render ediliyor
+  - View mode'da düzenleme yapılamıyor
+
+  4. Console Hata Kontrolü:
+  - Kırmızı hata mesajı yok
+  - TypeError yok
+  - Cannot read properties of null yok
+  - is not a function yok
+
+  ---
+  🔧 Teknik Detaylar
+
+  Backend API Response Formatı:
+
+  Endpoint: GET /api/Storymap/public/{publicKey}
+
+  Response:
+  {
+    "data": {
+      "id": "guid-string",
+      "sablon": "point",           // ⚠️ küçük harf
+      "baslik": "Harita Başlığı",  // ⚠️ küçük harf
+      "aciklama": "Açıklama",      // ⚠️ küçük harf
+      "jsondata": "{...}",         // ⚠️ küçük harf
+      "publickey": "ABC123",       // ⚠️ küçük harf
+      "isshared": true             // ⚠️ küçük harf
+    }
+  }
+
+  Not: Backend C# API olmasına rağmen tüm field'leri camelCase (küçük harfle başlayan) döndürüyor. Bu muhtemelen JSON serializer ayarlarından kaynaklanıyor.
+
+  Frontend Parse Stratejisi:
+
+  // Defensive programming pattern - fallback strategy
+  const field = backendData.FieldName || backendData.fieldname;
+
+  Bu pattern şu dosyalarda kullanılıyor:
+  - viewMain.js - Public viewer için (satır 93-112)
+  - storageManager.js - Edit mode için (satır 146-160)
+
+  Avantaj: Backend case formatting değişse bile kod çalışmaya devam eder.
+
+  ---
+  🐛 Yakalanan Hatalar ve Çözümleri
+
+  Hata 1: Jsondata Parse Hatası
+
+  [PublicViewer] Failed to parse Jsondata: SyntaxError: "undefined" is not valid JSON
+  Çözüm: Case-insensitive field okuma (viewMain.js:93)
+
+  ---
+  Hata 2: Container Bulunamadı
+
+  TypeError: Cannot read properties of null (reading 'style')
+  at ModalComponent.startGame (ModalComponent.js:152:42)
+  Çözüm: view.html'e container'lar eklendi (satır 153-166)
+
+  ---
+  Hata 3: SearchManager Hatası
+
+  TypeError: Cannot read properties of null (reading 'querySelector')
+  at SearchManager.setupUI (SearchManager.js:19:42)
+  Çözüm: View mode'da toolbar oluşturulmaz (ModalComponent.js:190)
+
+  ---
+  Hata 4: Timeline Statistics Hatası
+
+  TypeError: this.mapComponent.timelineManager.getTimelineData is not a function
+  Çözüm: View mode'da timeline statistics atlandı (ModalComponent.js:2222)
+
+  ---
+  Hata 5: Route Statistics Hatası
+
+  (Potansiyel hata - önlendi)
+  Çözüm: View mode'da route statistics atlandı (ModalComponent.js:2175)
+
+  ---
+  📌 Özet ve Öneriler
+
+  ✅ Çözülen Sorunlar:
+  ┌─────┬────────────────────────────┬───────────────────┬────────────┐
+  │  #  │           Sorun            │       Dosya       │   Durum    │
+  ├─────┼────────────────────────────┼───────────────────┼────────────┤
+  │ 1   │ Backend case sensitivity   │ viewMain.js       │ ✅ Çözüldü │
+  ├─────┼────────────────────────────┼───────────────────┼────────────┤
+  │ 2   │ Paylaşım URL formatı       │ SharePanel.js     │ ✅ Çözüldü │
+  ├─────┼────────────────────────────┼───────────────────┼────────────┤
+  │ 3   │ Eksik HTML container'lar   │ view.html         │ ✅ Çözüldü │
+  ├─────┼────────────────────────────┼───────────────────┼────────────┤
+  │ 4   │ View mode toolbar hatası   │ ModalComponent.js │ ✅ Çözüldü │
+  ├─────┼────────────────────────────┼───────────────────┼────────────┤
+  │ 5   │ Timeline statistics hatası │ ModalComponent.js │ ✅ Çözüldü │
+  ├─────┼────────────────────────────┼───────────────────┼────────────┤
+  │ 6   │ Route statistics hatası    │ ModalComponent.js │ ✅ Çözüldü │
+  └─────┴────────────────────────────┴───────────────────┴────────────┘
+  💡 Gelecek İçin Öneriler:
+
+  1. Backend API Standardizasyonu:
+
+  // Backend tarafı - JSON serializer ayarları
+  services.AddControllers()
+      .AddJsonOptions(options => {
+          options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+          // Veya
+          options.JsonSerializerOptions.PropertyNamingPolicy = null; // PascalCase kalsın
+      });
+
+  Fayda: Tüm API'lerde tutarlı field isimleri.
+
+  2. Frontend Type Safety:
+
+  // TypeScript interface ekleyelim
+  interface BackendStorymapResponse {
+      id: string;
+      sablon: string;
+      baslik: string;
+      jsondata: string;
+      publickey: string;
+      isshared: boolean;
+  }
+
+  Fayda: Compile-time'da field isim hatalarını yakalarız.
+
+  3. Test Coverage Artırımı:
+
+  // E2E test örneği (Playwright/Cypress)
+  test('Paylaşım linki açılır ve noktalar görünür', async ({ page }) => {
+      // 1. Harita oluştur
+      await page.goto('/cbs/storymap/app.html');
+      await page.click('[data-template="point"]');
+      await page.fill('#title-input', 'Test Harita');
+      await page.click('#start-btn');
+
+      // 2. Nokta ekle
+      await page.click('[data-tool="marker"]');
+      await page.click('.maplibregl-canvas', { position: { x: 400, y: 300 } });
+
+      // 3. Kaydet
+      await page.click('#save-btn');
+      await page.waitForSelector('.toast--success');
+
+      // 4. Paylaş
+      await page.click('#share-btn');
+      await page.click('#share-toggle');
+      const shareLink = await page.inputValue('#share-link');
+
+      // 5. Paylaşım linkini aç
+      await page.goto(shareLink);
+
+      // 6. Kontroller
+      await expect(page.locator('.maplibregl-marker')).toBeVisible();
+      await expect(page.locator('.maplibregl-canvas')).toBeVisible();
+
+      // 7. Console hata kontrolü
+      const errors = [];
+      page.on('pageerror', err => errors.push(err));
+      expect(errors).toHaveLength(0);
+  });
+
+  4. Monitoring ve Alerting:
+
+  // Sentry entegrasyonu
+  Sentry.init({
+      dsn: "YOUR_DSN",
+      environment: "production",
+      beforeSend(event, hint) {
+          // View mode hatalarını filtrele ve önceliklend
+          if (event.tags?.viewMode === 'true') {
+              event.level = 'error';
+          }
+          return event;
+      }
+  });
+
+  // Custom error tracking
+  if (error instanceof BackendParseError) {
+      Sentry.captureException(error, {
+          tags: {
+              component: 'viewMain',
+              action: 'parse',
+              backend_field: 'jsondata'
+          }
+      });
+  }
+
+  5. User Analytics:
+
+  // Paylaşım metrikleri
+  analytics.track('share_link_opened', {
+      publicKey: publicKey,
+      template: templateName,
+      pointCount: points.length,
+      parseSuccess: jsonData !== null,
+      renderSuccess: document.querySelectorAll('.maplibregl-marker').length > 0
+  });
+
+  // Hata metrikleri
+  analytics.track('view_mode_error', {
+      errorType: error.name,
+      errorMessage: error.message,
+      template: templateName,
+      step: 'loadStoryForViewMode'
+  });
+
+  ---
+  📊 Performans İyileştirmeleri
+
+  Öneri 1: Lazy Loading
+
+  // view.html - Sadece gerekli script'leri yükle
+  if (templateName === 'timeline') {
+      await import('./src/components/timeline/TimelineJS.js');
+  }
+
+  Öneri 2: CDN Caching
+
+  <!-- Statik asset'ler için CDN -->
+  <link rel="stylesheet" href="https://cdn.example.com/storymap/v1.0/styles.css">
+  <script src="https://cdn.example.com/storymap/v1.0/viewMain.js"></script>
+
+  Öneri 3: Service Worker
+
+  // Offline support için
+  if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(() => {
+          console.log('Offline mode ready');
+      });
+  }
+
+  ---
+  📧 Dokümantasyon Bilgileri
+
+  Geliştirici: Claude (Anthropic)
+  Tarih: 16 Ocak 2026
+  Versiyon: 2.0 (Güncellenmiş)
+  Son Güncelleme: Timeline/Route template sorunları eklendi
+
+  Değişiklik Geçmişi:
+  - v1.0 (16 Ocak 2026): İlk versiyon - Point template çözümü
+  - v2.0 (16 Ocak 2026): Timeline ve Route template sorunları eklendi
+
+  ---
+  EOF

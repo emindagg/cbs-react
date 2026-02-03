@@ -1,0 +1,167 @@
+{
+  "name": "atlasglcopy",
+  "version": "1.0.0",
+  "description": "Web tabanlı Coğrafi Bilgi Sistemi - OGM CBS Eğitim Platformu",
+  "main": "index.html",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint assets/js/**/*.js",
+    "lint:fix": "eslint assets/js/**/*.js --fix",
+    "serve": "http-server -p 8000 -c-1",
+    "start": "npm run serve"
+  },
+  "keywords": [
+    "gis",
+    "cbs",
+    "maplibre",
+    "spatial-analysis",
+    "visualization",
+    "astronomy",
+    "geospatial"
+  ],
+  "author": "OGM",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "babel-jest": "^29.7.0",
+    "eslint": "^8.50.0",
+    "http-server": "^14.1.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "assets/js/**/*.js",
+      "!assets/js/**/*.test.js",
+      "!assets/js/**/*.spec.js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js",
+      "**/tests/**/*.spec.js"
+    ],
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/assets/js/$1"
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "globals": {
+      "window": {}
+    }
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ]
+    ]
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2021": true,
+      "node": true,
+      "jest": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-unused-vars": "warn",
+      "no-console": "off",
+      "no-undef": "off",
+      "no-empty": "warn",
+      "no-prototype-builtins": "warn",
+      "no-setter-return": "warn",
+      "no-case-declarations": "warn",
+      "no-extra-semi": "warn"
+    },
+    "globals": {
+      "maplibregl": "readonly",
+      "turf": "readonly",
+      "XLSX": "readonly",
+      "JSZip": "readonly",
+      "shp": "readonly",
+      "SunCalc": "readonly",
+      "Astronomy": "readonly",
+      "interact": "readonly",
+      "Logger": "readonly",
+      "showEducationalFeedback": "readonly",
+      "showFeedback": "readonly",
+      "DataManager": "readonly",
+      "MarkerManager": "readonly",
+      "DataDrawing": "readonly",
+      "UIComponents": "readonly",
+      "LabelManager": "readonly",
+      "TimelineManager": "readonly",
+      "VisualizationManager": "readonly",
+      "ImportExport": "readonly",
+      "ReportGeneration": "readonly",
+      "EventHandlers": "readonly",
+      "DataEventHandlers": "readonly",
+      "CatalogEventHandlers": "readonly",
+      "AnalysisEventHandlers": "readonly",
+      "MeasurementEventHandlers": "readonly",
+      "ToolsEventHandlers": "readonly",
+      "MapInteractions": "readonly",
+      "MapClickOrchestrator": "readonly",
+      "ApplicationCore": "readonly",
+      "LegacyAdapter": "readonly",
+      "AppConfig": "readonly",
+      "StateManager": "readonly",
+      "EventBus": "readonly",
+      "DependencyContainer": "readonly",
+      "ModuleRegistry": "readonly",
+      "ProgressModal": "readonly",
+      "DistanceMeasurement": "readonly",
+      "ColumnMapper": "readonly",
+      "MapConfig": "readonly",
+      "getProvince": "readonly",
+      "findProvinceCoordinates": "readonly",
+      "normalizeName": "readonly",
+      "formatNumber": "readonly",
+      "unformatNumber": "readonly",
+      "initializeGlobalState": "readonly",
+      "initializeMapCore": "readonly",
+      "initializeMapSources": "readonly",
+      "initializeMapLayers": "readonly",
+      "initializeOrchestrators": "readonly",
+      "initializeUIPanels": "readonly",
+      "initializeTimeline": "readonly",
+      "initializeMap": "readonly",
+      "isElementHidden": "readonly",
+      "setStorageItem": "readonly",
+      "getStorageItem": "readonly",
+      "App": "readonly",
+      "L": "readonly"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emindagg/atlascopy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/emindagg/atlascopy/issues"
+  },
+  "homepage": "https://github.com/emindagg/atlascopy#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}
