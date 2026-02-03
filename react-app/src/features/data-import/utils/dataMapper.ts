@@ -3,8 +3,8 @@ import type { ColumnMapping, GeoItem } from '../types'
 /**
  * Transform raw JSON data to GeoItems using column mapping
  */
-export function transformToGeoItems(jsonData: any[], mapping: ColumnMapping): GeoItem[] {
-  return jsonData.map((row: any, index: number) => {
+export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping: ColumnMapping): GeoItem[] {
+  return jsonData.map((row: Record<string, unknown>, index: number) => {
     let geometry: GeoJSON.Geometry | null = null
 
     // Parse geometry string if exists (format: "lat,lon;lat,lon")
@@ -19,9 +19,9 @@ export function transformToGeoItems(jsonData: any[], mapping: ColumnMapping): Ge
         if (points.length > 0) {
           const type = mapping.type ? row[mapping.type] : 'point'
           if (type === 'polygon' || type === 'area' || type === 'alan') {
-            geometry = { type: 'Polygon', coordinates: [points.map((p: any) => [p.lon, p.lat])] }
+            geometry = { type: 'Polygon', coordinates: [points.map((p: { lat: number; lon: number }) => [p.lon, p.lat])] }
           } else if (type === 'line' || type === 'route' || type === 'rota') {
-            geometry = { type: 'LineString', coordinates: points.map((p: any) => [p.lon, p.lat]) }
+            geometry = { type: 'LineString', coordinates: points.map((p: { lat: number; lon: number }) => [p.lon, p.lat]) }
           } else {
             geometry = { type: 'Point', coordinates: [points[0].lon, points[0].lat] }
           }

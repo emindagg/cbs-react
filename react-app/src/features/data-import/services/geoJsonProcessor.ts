@@ -1,23 +1,36 @@
 import type { GeoItem } from '../types'
 
+interface GeoJSONInput {
+  type?: string
+  features?: Array<GeoJSONFeature>
+  geometries?: Array<Record<string, unknown>>
+  geometry?: GeoJSON.Geometry
+}
+
+interface GeoJSONFeature {
+  type: string
+  geometry?: GeoJSON.Geometry
+  properties?: Record<string, unknown>
+}
+
 /**
  * Process GeoJSON data into GeoItems
  */
-export function parseGeoJSON(geojson: any, fileName: string): GeoItem[] {
-  let features: any[] = []
+export function parseGeoJSON(geojson: GeoJSONInput, fileName: string): GeoItem[] {
+  let features: GeoJSONFeature[] = []
 
-  if (geojson.type === 'FeatureCollection') {
+  if (geojson.type === 'FeatureCollection' && geojson.features) {
     features = geojson.features
-  } else if (geojson.type === 'Feature') {
-    features = [geojson]
-  } else if (geojson.type === 'GeometryCollection') {
-    features = geojson.geometries.map((geom: any) => ({
+  } else if (geojson.type === 'Feature' && geojson.geometry) {
+    features = [{ type: 'Feature', geometry: geojson.geometry, properties: geojson as Record<string, unknown> }]
+  } else if (geojson.type === 'GeometryCollection' && geojson.geometries) {
+    features = geojson.geometries.map((geom) => ({
       type: 'Feature',
-      geometry: geom,
+      geometry: geom as GeoJSON.Geometry,
       properties: {},
     }))
-  } else {
-    features = [{ type: 'Feature', geometry: geojson, properties: {} }]
+  } else if (geojson.geometry) {
+    features = [{ type: 'Feature', geometry: geojson.geometry, properties: {} }]
   }
 
   const items: GeoItem[] = []
@@ -32,7 +45,7 @@ export function parseGeoJSON(geojson: any, fileName: string): GeoItem[] {
       else if (gType === 'Polygon' || gType === 'MultiPolygon') type = 'polygon'
 
       items.push({
-        name: feature.properties?.name || `${fileName} - ${index + 1}`,
+        name: (feature.properties?.name as string) || `${fileName} - ${index + 1}`,
         type: type,
         geometry: feature.geometry,
         properties: feature.properties || {},

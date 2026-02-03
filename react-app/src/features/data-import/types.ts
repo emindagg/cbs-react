@@ -6,7 +6,7 @@ export interface GeoItem {
   name: string;
   type: 'point' | 'line' | 'polygon' | 'circle';
   geometry: GeoJSON.Geometry;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   date: string;
   visible: boolean;
 }
@@ -22,16 +22,16 @@ export interface ColumnMapping {
 export interface ParseResult {
   items?: GeoItem[];
   needsMapping?: boolean;
-  data?: any[];
+  data?: Record<string, unknown>[];
   headers?: string[];
   mapping?: ColumnMapping;
 }
 
 export interface MapperData {
   headers: string[];
-  previewData: any[];
+  previewData: Record<string, unknown>[];
   initialMapping: ColumnMapping;
-  jsonData: any[];
+  jsonData: Record<string, unknown>[];
 }
 
 export type FileFormat = 'geojson' | 'excel' | 'kml' | 'shapefile'

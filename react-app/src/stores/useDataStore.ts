@@ -8,7 +8,7 @@ export interface DataItem {
   type: 'point' | 'polygon' | 'line' | 'circle'
   date?: string
   geometry: Geometry
-  properties: Record<string, any>
+  properties: Record<string, unknown>
   visible: boolean
 }
 
