@@ -101,7 +101,7 @@ export default function SidebarProjectManagement() {
 
             return {
                 name: map.name ? row[map.name] : `Item ${index + 1}`,
-                type: (map.type ? row[map.type] : 'point')?.toLowerCase()?.replace('rota', 'line').replace('alan', 'polygon') || 'point',
+                type: String(map.type ? row[map.type] : 'point')?.toLowerCase()?.replace('rota', 'line').replace('alan', 'polygon') || 'point',
                 geometry: geometry,
                 properties: row,
                 visible: true,
@@ -125,10 +125,11 @@ export default function SidebarProjectManagement() {
 
         headers.forEach(h => {
             const lower = h.toLowerCase();
-            if (lower.includes('lat') || lower.includes('enlem')) map.lat = h;
-            else if (lower.includes('lon') || lower.includes('boylam') || lower.includes('lng')) map.lon = h;
-            else if (lower.includes('name') || lower.includes('ad') || lower.includes('isim')) map.name = h;
-            else if (lower.includes('type') || lower.includes('tur') || lower.includes('tür')) map.type = h;
+            // More robust detection for Turkish characters and potential encoding issues
+            if (lower.includes('lat') || lower.includes('enlem') || lower.includes('nlem')) map.lat = h;
+            else if (lower.includes('lon') || lower.includes('boylam') || lower.includes('lng') || lower.includes('oylam')) map.lon = h;
+            else if (lower.includes('name') || lower.includes('ad') || lower.includes('isim') || lower.includes('sim') || lower.includes('il') || lower.includes('sehir')) map.name = h;
+            else if (lower.includes('type') || lower.includes('tur') || lower.includes('tür') || lower.includes('tip')) map.type = h;
             else if (lower.includes('geometry') || lower.includes('geometri')) map.geometry = h;
         });
 
