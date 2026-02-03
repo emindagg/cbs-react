@@ -8,8 +8,8 @@ import Sidebar from '@/components/sidebar/Sidebar'
 import MapContainer from '@/components/map/MapContainer'
 import { MapControlStack } from '@/features/map'
 import { SearchContainer } from '@/features/geocoder/components/SearchContainer'
-import { useAstroMap } from '@/features/astronomy'
-import { AstroPanel } from '@/features/astronomy/components/AstroPanel'
+import { useAstroMap, AstroPanel } from '@/features/astronomy'
+import { useClustering } from '@/features/clustering'
 
 /**
  * AppLayout Component
@@ -23,6 +23,8 @@ export default function AppLayout() {
 
     // Initialize astronomy hook
     useAstroMap();
+    // Initialize clustering hook
+    useClustering();
 
     // Toggle sidebar and resize map
     const toggleSidebar = () => {

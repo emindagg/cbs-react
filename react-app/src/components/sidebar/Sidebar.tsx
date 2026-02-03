@@ -2,7 +2,6 @@ import SidebarHeader from './SidebarHeader'
 import SidebarProjectPurpose from './sections/SidebarProjectPurpose'
 import SidebarTools from './sections/SidebarTools'
 import SidebarDataCreation from './sections/SidebarDataCreation'
-import SidebarFileUpload from './sections/SidebarFileUpload'
 import SidebarDataCatalog from './sections/SidebarDataCatalog'
 import SidebarVizWizard from './sections/SidebarVizWizard'
 import SidebarProjectManagement from './sections/SidebarProjectManagement'
@@ -22,7 +21,6 @@ export default function Sidebar({ }: SidebarProps) {
                 <SidebarProjectPurpose />
                 <SidebarTools />
                 <SidebarDataCreation />
-                <SidebarFileUpload />
                 <SidebarDataCatalog />
                 <SidebarVizWizard />
                 <SidebarProjectManagement />

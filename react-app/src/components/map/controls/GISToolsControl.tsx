@@ -3,6 +3,7 @@ import { useToolStore } from '@/stores/useToolStore'
 import { useDataStore } from '@/stores/useDataStore'
 import { useMap } from 'react-map-gl/maplibre'
 import * as turf from '@turf/turf'
+import { useClusteringStore } from '@/features/clustering'
 
 /**
  * GISToolsControl Component
@@ -14,6 +15,9 @@ export default function GISToolsControl() {
     const [showBufferModal, setShowBufferModal] = useState(false)
     const containerRef = useRef<HTMLDivElement>(null)
     const { current: map } = useMap()
+
+    // Clustering Store
+    const { isEnabled: isClusteringEnabled, toggle: toggleClustering } = useClusteringStore()
 
     const {
         isToolsMenuOpen,
@@ -64,6 +68,9 @@ export default function GISToolsControl() {
     const handleToolSelect = (tool: any) => {
         if (tool === 'buffer') {
             setShowBufferModal(true)
+            setIsToolsMenuOpen(false)
+        } else if (tool === 'clustering') {
+            toggleClustering()
             setIsToolsMenuOpen(false)
         } else if (tool === 'screenshot') {
             handleScreenshot()
@@ -145,7 +152,13 @@ export default function GISToolsControl() {
                                 color="text-purple-500"
                                 onClick={() => handleToolSelect('buffer')}
                             />
-                            <CompactMenuItem icon="fa-layer-group" label="Nokta Kümeleri" color="text-slate-400" disabled />
+                            <CompactMenuItem
+                                icon="fa-layer-group"
+                                label={isClusteringEnabled ? "Kümeleri Kapat" : "Nokta Kümeleri"}
+                                color="text-blue-500"
+                                onClick={() => handleToolSelect('clustering')}
+                                active={isClusteringEnabled}
+                            />
                             <CompactMenuItem icon="fa-vector-square" label="Dış Sınır" color="text-orange-400" disabled />
                             <CompactMenuItem icon="fa-border-all" label="En Yakın Alanlar" color="text-teal-400" disabled />
                             <CompactMenuItem icon="fa-fire" label="Isı Haritası" color="text-red-400" disabled />

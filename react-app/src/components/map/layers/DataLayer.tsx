@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 import { useDataStore } from '@/stores/useDataStore'
+import { useClusteringStore } from '@/features/clustering/stores/useClusteringStore'
 import type { FeatureCollection } from 'geojson'
 
 export default function DataLayer() {
     const { items, activeItemId } = useDataStore()
+    const { isEnabled: isClusteringEnabled } = useClusteringStore()
 
     // Helper to flatten properties and inject consistent style defaults
     const prepareFeatures = (itemType: 'Point' | 'LineString' | 'Polygon') => {
@@ -116,41 +118,27 @@ export default function DataLayer() {
             </Source>
 
             {/* --- POINTS --- */}
-            <Source id="data-points" type="geojson" data={pointData}>
-                <Layer
-                    id="data-layer-point"
-                    type="circle"
-                    paint={{
-                        'circle-radius': ['get', 'radius'],
-                        'circle-color': ['case',
-                            ['boolean', ['get', 'selected'], false],
-                            '#f59e0b',
-                            ['get', 'fillColor']
-                        ],
-                        'circle-stroke-width': ['get', 'strokeWidth'],
-                        'circle-stroke-color': ['get', 'strokeColor'],
-                        'circle-opacity': ['get', 'opacity']
-                    }}
-                />
+            {/* Only render points here if clustering is DISABLED to avoid duplicates */}
+            {!isClusteringEnabled && (
+                <Source id="data-points" type="geojson" data={pointData}>
+                    <Layer
+                        id="data-layer-point"
+                        type="circle"
+                        paint={{
+                            'circle-radius': ['get', 'radius'],
+                            'circle-color': ['case',
+                                ['boolean', ['get', 'selected'], false],
+                                '#f59e0b',
+                                ['get', 'fillColor']
+                            ],
+                            'circle-stroke-width': ['get', 'strokeWidth'],
+                            'circle-stroke-color': ['get', 'strokeColor'],
+                            'circle-opacity': ['get', 'opacity']
+                        }}
+                    />
 
-                {/* Labels for Points - Clean Typography (Legacy style was Noto Sans Regular, Black) */}
-                <Layer
-                    id="data-layer-point-label"
-                    type="symbol"
-                    layout={{
-                        'text-field': ['get', 'name'],
-                        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], // Keep modern font or switch to Noto if available
-                        'text-size': 12,
-                        'text-offset': [0, 1.25],
-                        'text-anchor': 'top'
-                    }}
-                    paint={{
-                        'text-color': '#000000', // Legacy was Black
-                        'text-halo-color': '#ffffff',
-                        'text-halo-width': 1
-                    }}
-                />
-            </Source>
+                </Source>
+            )}
         </>
     )
 }

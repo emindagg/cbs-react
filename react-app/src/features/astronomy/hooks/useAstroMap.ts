@@ -13,21 +13,17 @@ export function useAstroMap() {
     // Initialize Sources and Layers
     useEffect(() => {
         if (!map || !isEnabled) {
-            console.log('AstroMap: Skipping setup - map:', !!map, 'isEnabled:', isEnabled);
             return;
         }
 
-        console.log('AstroMap: Initializing layers on map');
 
         const setupAstroLayers = () => {
             if (!map.getStyle()) {
-                console.log('AstroMap: Map style not ready yet');
                 return;
             }
 
             // Terminator Source
             if (!map.getSource('astro-terminator')) {
-                console.log('AstroMap: Adding astro-terminator source and layers');
                 map.addSource('astro-terminator', {
                     type: 'geojson',
                     data: { type: 'FeatureCollection', features: [] }
@@ -60,7 +56,6 @@ export function useAstroMap() {
 
             // Sun Position Source
             if (!map.getSource('astro-sun-position')) {
-                console.log('AstroMap: Adding astro-sun-position source and layers');
                 map.addSource('astro-sun-position', {
                     type: 'geojson',
                     data: { type: 'FeatureCollection', features: [] }
@@ -81,7 +76,6 @@ export function useAstroMap() {
 
             // Moon Position Source
             if (!map.getSource('astro-moon-position')) {
-                console.log('AstroMap: Adding astro-moon-position source and layers');
                 map.addSource('astro-moon-position', {
                     type: 'geojson',
                     data: { type: 'FeatureCollection', features: [] }
@@ -119,7 +113,6 @@ export function useAstroMap() {
 
             // Axial Tilt Source
             if (!map.getSource('astro-axial-tilt')) {
-                console.log('AstroMap: Adding astro-axial-tilt source and layers');
                 map.addSource('astro-axial-tilt', {
                     type: 'geojson',
                     data: {
@@ -167,7 +160,6 @@ export function useAstroMap() {
         }
 
         return () => {
-            console.log('AstroMap: Cleaning up layers');
             const layers = [
                 'astro-night-shadow',
                 'astro-terminator-line',
