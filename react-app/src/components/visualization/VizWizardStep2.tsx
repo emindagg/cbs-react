@@ -17,8 +17,8 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
   const [selectedProvince, setSelectedProvince] = useState(columnMapping.locationColumn || '');
   const [selectedDistrict, setSelectedDistrict] = useState(columnMapping.districtColumn || '');
   const [selectedData, setSelectedData] = useState(columnMapping.dataColumn || '');
-  const [locationLevel, setLocationLevel] = useState<'province' | 'district' | 'mixed'>(
-    columnMapping.locationLevel
+  const [locationLevel, setLocationLevel] = useState<'province' | 'mixed'>(
+    columnMapping.locationLevel === 'district' ? 'province' : columnMapping.locationLevel
   );
 
   // Update store when selections change
@@ -53,11 +53,6 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
       return;
     }
 
-    if (locationLevel === 'district' && !selectedDistrict) {
-      alert('Lütfen ilçe sütunu seçin!');
-      return;
-    }
-
     if (locationLevel === 'mixed' && (!selectedProvince || !selectedDistrict)) {
       alert('Lütfen il ve ilçe sütunlarını seçin!');
       return;
@@ -73,8 +68,8 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
     return preview.map((row, i) => {
       const cols = Object.entries(row).slice(0, 3);
       return (
-        <div key={i} className="text-xs text-zinc-700 mb-1">
-          <strong>Satır {i + 1}:</strong>{' '}
+        <div key={i} className="text-[10px] text-zinc-600">
+          <span className="font-medium text-zinc-700">#{i + 1}</span>{' '}
           {cols.map(([k, v]) => `${k}: ${v}`).join(', ')}...
         </div>
       );
@@ -82,43 +77,52 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Location level selection */}
       <div>
-        <label className="block text-xs font-medium text-zinc-700 mb-2">Konum Seviyesi</label>
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 cursor-pointer">
+        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Konum Seviyesi</label>
+        <div className="inline-flex rounded-md border border-zinc-200 overflow-hidden w-full">
+          {/* Province only option */}
+          <label className={`
+            flex-1 flex items-center justify-center gap-1.5 px-3 py-2 cursor-pointer transition-colors
+            ${locationLevel === 'province'
+              ? 'bg-slate-700 text-white'
+              : 'bg-white text-zinc-700 hover:bg-zinc-50'
+            }
+          `}>
             <input
               type="radio"
               name="location-level"
               value="province"
               checked={locationLevel === 'province'}
               onChange={(e) => setLocationLevel(e.target.value as 'province')}
-              className="text-emerald-600"
+              className="sr-only"
             />
-            <span className="text-xs text-zinc-700">Sadece İl</span>
+            <i className={`fa-solid fa-map-location-dot text-[9px] ${locationLevel === 'province' ? 'text-white' : 'text-zinc-400'}`}></i>
+            <span className="text-[10px] font-medium">Sadece İl</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="location-level"
-              value="district"
-              checked={locationLevel === 'district'}
-              onChange={(e) => setLocationLevel(e.target.value as 'district')}
-              className="text-emerald-600"
-            />
-            <span className="text-xs text-zinc-700">Sadece İlçe</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
+
+          {/* Divider */}
+          <div className="w-px bg-zinc-200"></div>
+
+          {/* Mixed option */}
+          <label className={`
+            flex-1 flex items-center justify-center gap-1.5 px-3 py-2 cursor-pointer transition-colors
+            ${locationLevel === 'mixed'
+              ? 'bg-slate-700 text-white'
+              : 'bg-white text-zinc-700 hover:bg-zinc-50'
+            }
+          `}>
             <input
               type="radio"
               name="location-level"
               value="mixed"
               checked={locationLevel === 'mixed'}
               onChange={(e) => setLocationLevel(e.target.value as 'mixed')}
-              className="text-emerald-600"
+              className="sr-only"
             />
-            <span className="text-xs text-zinc-700">Karışık (İl + İlçe)</span>
+            <i className={`fa-solid fa-layer-group text-[9px] ${locationLevel === 'mixed' ? 'text-white' : 'text-zinc-400'}`}></i>
+            <span className="text-[10px] font-medium">İl + İlçe</span>
           </label>
         </div>
       </div>
@@ -126,13 +130,13 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
       {/* Province column (if needed) */}
       {(locationLevel === 'province' || locationLevel === 'mixed') && (
         <div>
-          <label className="block text-xs font-medium text-zinc-700 mb-2">İl Sütunu</label>
+          <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">İl Sütunu</label>
           <select
             value={selectedProvince}
             onChange={(e) => setSelectedProvince(e.target.value)}
-            className="w-full text-xs border border-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
           >
-            <option value="">İl sütunu seçin...</option>
+            <option value="">Seçin...</option>
             {columns.map((col) => (
               <option key={col} value={col}>
                 {col}
@@ -142,16 +146,16 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
         </div>
       )}
 
-      {/* District column (if needed) */}
-      {(locationLevel === 'district' || locationLevel === 'mixed') && (
+      {/* District column (only for mixed mode) */}
+      {locationLevel === 'mixed' && (
         <div>
-          <label className="block text-xs font-medium text-zinc-700 mb-2">İlçe Sütunu</label>
+          <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">İlçe Sütunu</label>
           <select
             value={selectedDistrict}
             onChange={(e) => setSelectedDistrict(e.target.value)}
-            className="w-full text-xs border border-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
           >
-            <option value="">İlçe sütunu seçin...</option>
+            <option value="">Seçin...</option>
             {columns.map((col) => (
               <option key={col} value={col}>
                 {col}
@@ -163,45 +167,47 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
 
       {/* Data column */}
       <div>
-        <label className="block text-xs font-medium text-zinc-700 mb-2">Veri Sütunu</label>
+        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Veri Sütunu</label>
         <select
           value={selectedData}
           onChange={(e) => setSelectedData(e.target.value)}
-          className="w-full text-xs border border-zinc-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
         >
-          <option value="">Veri sütunu seçin...</option>
+          <option value="">Seçin...</option>
           {numericColumns.map((col) => (
             <option key={col} value={col}>
               {col}
             </option>
           ))}
         </select>
-        <p className="text-xs text-zinc-500 mt-1">Sadece sayısal sütunlar gösteriliyor</p>
+        <p className="text-[10px] text-zinc-400 mt-1">Sadece sayısal sütunlar</p>
       </div>
 
       {/* Preview */}
       {rawData && rawData.length > 0 && (
-        <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3">
-          <p className="text-xs font-semibold text-zinc-700 mb-2">Veri Önizlemesi</p>
-          {showPreview()}
+        <div className="bg-zinc-50/50 rounded-md p-2">
+          <p className="text-[10px] font-semibold text-zinc-600 mb-1.5">Veri Önizlemesi</p>
+          <div className="space-y-0.5">
+            {showPreview()}
+          </div>
         </div>
       )}
 
       {/* Navigation buttons */}
-      <div className="flex gap-2 pt-2">
+      <div className="flex gap-1.5 pt-1">
         <button
           onClick={onBack}
-          className="flex-1 px-4 py-2 text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors"
+          className="flex-1 px-3 py-1.5 text-[11px] font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors"
         >
-          <i className="fa-solid fa-arrow-left mr-1"></i>
+          <i className="fa-solid fa-chevron-left mr-1 text-[9px]"></i>
           Geri
         </button>
         <button
           onClick={handleNext}
-          className="flex-1 px-4 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors"
+          className="flex-1 px-3 py-1.5 text-[11px] font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors"
         >
           İleri
-          <i className="fa-solid fa-arrow-right ml-1"></i>
+          <i className="fa-solid fa-chevron-right ml-1 text-[9px]"></i>
         </button>
       </div>
     </div>

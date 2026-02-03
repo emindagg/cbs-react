@@ -1,6 +1,7 @@
-import { useState } from 'react'
 import { ZoomControls } from './ZoomControls'
 import BasemapSwitcher from '@/features/basemap/components/BasemapSwitcher'
+import { useAstroStore } from '@/features/astronomy'
+
 
 interface MapControlStackProps {
     isSidebarOpen: boolean
@@ -12,7 +13,8 @@ interface MapControlStackProps {
  * Vertical control stack: sidebar toggle, zoom, basemap, astronomy
  */
 export function MapControlStack({ isSidebarOpen, onToggleSidebar }: MapControlStackProps) {
-    const [isAstroOpen, setIsAstroOpen] = useState(false)
+    const { isEnabled, setIsEnabled } = useAstroStore()
+
 
     return (
         <div className="flex flex-col border-0 box-border" style={{ gap: '0.65rem' }}>
@@ -35,14 +37,16 @@ export function MapControlStack({ isSidebarOpen, onToggleSidebar }: MapControlSt
             {/* Basemap Switcher */}
             <BasemapSwitcher />
 
+
+
             {/* Astronomy Toggle */}
             <button
                 id="toggle-astro-button"
-                onClick={() => setIsAstroOpen(!isAstroOpen)}
-                className={`w-9 h-9 bg-[#1c1c1e] rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm hover:bg-black/90 active:scale-95 transition-all cursor-pointer ${isAstroOpen ? 'ring-2 ring-emerald-400' : ''}`}
+                onClick={() => setIsEnabled(!isEnabled)}
+                className={`w-9 h-9 bg-[#1c1c1e] rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm hover:bg-black/90 active:scale-95 transition-all cursor-pointer ${isEnabled ? 'ring-2 ring-emerald-400' : ''}`}
                 title="Astronomi görünümlerini aç/kapat"
             >
-                <i className="fa-solid fa-globe"></i>
+                <i className="fa-solid fa-satellite-dish"></i>
             </button>
 
         </div>

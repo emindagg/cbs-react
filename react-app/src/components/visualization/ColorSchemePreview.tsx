@@ -104,9 +104,9 @@ export default function ColorSchemePreview({ colorScheme }: ColorSchemePreviewPr
   const colors = COLOR_SCHEMES_DATA[colorScheme];
 
   return (
-    <div className="mt-2 rounded-lg overflow-hidden border border-zinc-200">
+    <div className="mt-1.5 rounded overflow-hidden shadow-sm">
       <div
-        className="h-6"
+        className="h-4"
         style={{
           background: `linear-gradient(to right, ${colors.join(', ')})`,
         }}

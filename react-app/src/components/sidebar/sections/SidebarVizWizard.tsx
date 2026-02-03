@@ -18,16 +18,22 @@ export default function SidebarVizWizard() {
   };
 
   return (
-    <section className="hover:bg-zinc-50 rounded-lg px-2.5 py-1.5 transition-colors group">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-900 mb-2 group-hover:text-emerald-700 transition-colors">
-        Veri Görselleştirme
-      </h3>
+    <section className="rounded-lg px-2 py-2 border border-zinc-100 bg-gradient-to-br from-white to-zinc-50/30 hover:shadow-sm transition-all">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-2.5 px-0.5">
+        <div className="flex items-center justify-center w-5 h-5 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded shadow-sm">
+          <i className="fa-solid fa-chart-area text-[10px] text-white"></i>
+        </div>
+        <h3 className="text-[11px] font-bold text-zinc-800 tracking-tight">
+          Veri Görselleştirme
+        </h3>
+      </div>
 
       {/* Wizard Progress */}
       <WizardProgress currentStep={currentStep} />
 
       {/* Step Content */}
-      <div className="mt-4">
+      <div className="mt-3">
         {currentStep === 1 && <VizWizardStep1 onNext={() => goToStep(2)} />}
         {currentStep === 2 && (
           <VizWizardStep2 onBack={() => goToStep(1)} onNext={() => goToStep(3)} />

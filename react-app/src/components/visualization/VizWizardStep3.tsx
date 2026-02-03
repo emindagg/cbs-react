@@ -162,28 +162,23 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Map not ready warning */}
       {!map && !isMatching && !hasMatched && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-          <p className="text-xs text-amber-800">
-            <i className="fa-solid fa-exclamation-triangle mr-1"></i>
-            Harita henüz hazır değil. Lütfen bekleyin...
-          </p>
+        <div className="bg-amber-50/50 rounded-md p-2 flex items-center gap-2">
+          <i className="fa-solid fa-clock text-amber-600 text-xs"></i>
+          <p className="text-[11px] text-amber-700">Harita hazırlanıyor...</p>
         </div>
       )}
 
       {/* Manual trigger button if matching didn't start */}
       {!isMatching && !hasMatched && map && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <p className="text-xs text-blue-800 mb-2">
-            Otomatik eşleştirme başlamadı mı? Manuel olarak başlatın:
-          </p>
+        <div>
           <button
             onClick={() => performMatching()}
-            className="w-full px-4 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            className="w-full px-3 py-2 text-[11px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
           >
-            <i className="fa-solid fa-play mr-1"></i>
+            <i className="fa-solid fa-play mr-1.5 text-[10px]"></i>
             Eşleştirmeyi Başlat
           </button>
         </div>
@@ -191,60 +186,54 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
 
       {/* Loading indicator */}
       {isMatching && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
-          <p className="text-xs text-blue-700">Veri eşleştiriliyor...</p>
+        <div className="bg-blue-50/50 rounded-md p-2.5 flex items-center gap-2">
+          <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-500 border-t-transparent"></div>
+          <p className="text-[11px] text-blue-700">Eşleştiriliyor...</p>
         </div>
       )}
 
       {/* Match results summary */}
       {!isMatching && hasMatched && (
         <>
-          <div className="bg-white border border-zinc-200 rounded-lg p-3">
-            <div className="flex items-center gap-2 mb-3">
-              <i className="fa-solid fa-check-circle text-emerald-600 text-lg"></i>
-              <span className="text-sm font-semibold text-zinc-800">Eşleştirme Sonuçları</span>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <i className="fa-solid fa-check text-green-600"></i>
-                  <span className="text-xs text-zinc-700">Başarılı:</span>
-                </div>
-                <span className="text-sm font-bold text-green-700">
+          <div className="bg-white border border-zinc-100 rounded-md p-2.5 shadow-sm">
+            {/* Stats grid */}
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              <div className="text-center">
+                <div className="text-lg font-bold text-emerald-600">
                   {matchResults.successful.length}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <i className="fa-solid fa-exclamation-triangle text-amber-600"></i>
-                  <span className="text-xs text-zinc-700">Belirsiz:</span>
                 </div>
-                <span className="text-sm font-bold text-amber-700">
+                <div className="text-[9px] text-zinc-500 flex items-center justify-center gap-1">
+                  <i className="fa-solid fa-check"></i>
+                  Başarılı
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-amber-600">
                   {matchResults.ambiguous.length}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <i className="fa-solid fa-times text-red-600"></i>
-                  <span className="text-xs text-zinc-700">Hatalı:</span>
                 </div>
-                <span className="text-sm font-bold text-red-700">
+                <div className="text-[9px] text-zinc-500 flex items-center justify-center gap-1">
+                  <i className="fa-solid fa-triangle-exclamation"></i>
+                  Belirsiz
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-red-600">
                   {matchResults.failed.length}
-                </span>
+                </div>
+                <div className="text-[9px] text-zinc-500 flex items-center justify-center gap-1">
+                  <i className="fa-solid fa-xmark"></i>
+                  Hatalı
+                </div>
               </div>
             </div>
 
             {/* Detaylı Önizleme Button */}
             <button
               onClick={() => setShowModal(true)}
-              className="w-full mt-3 px-4 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full px-3 py-1.5 text-[10px] font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded transition-colors flex items-center justify-center gap-1.5"
             >
-              <i className="fa-solid fa-table-list"></i>
-              Detaylı Önizleme
+              <i className="fa-solid fa-table-list text-[9px]"></i>
+              Detaylı Görüntüle
             </button>
           </div>
         </>
@@ -258,57 +247,55 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
         dataColumn={columnMapping.dataColumn}
       />
 
-      {/* Ambiguous matches warning */}
-      {!isMatching && hasMatched && matchResults.ambiguous.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-          <p className="text-xs text-amber-800">
-            <i className="fa-solid fa-exclamation-triangle mr-1"></i>
-            <strong>{matchResults.ambiguous.length} belirsiz eşleşme</strong> bulundu. Örneğin
-            "Merkez" ilçesi birden fazla ilde var. Bu satırlar görselleştirmede göz ardı
-            edilecek.
-          </p>
-        </div>
-      )}
+      {/* Warnings and info - compact */}
+      {!isMatching && hasMatched && (
+        <div className="space-y-1.5">
+          {matchResults.ambiguous.length > 0 && (
+            <div className="bg-amber-50/50 rounded p-1.5 flex items-start gap-1.5">
+              <i className="fa-solid fa-triangle-exclamation text-amber-600 text-[10px] mt-0.5"></i>
+              <p className="text-[10px] text-amber-700 leading-relaxed">
+                {matchResults.ambiguous.length} belirsiz eşleşme göz ardı edilecek
+              </p>
+            </div>
+          )}
 
-      {/* Failed matches info */}
-      {!isMatching && hasMatched && matchResults.failed.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <p className="text-xs text-red-800">
-            <i className="fa-solid fa-times-circle mr-1"></i>
-            <strong>{matchResults.failed.length} hatalı eşleşme</strong> bulundu. Bu satırlarda
-            konum veya veri değeri eksik/geçersiz.
-          </p>
-        </div>
-      )}
+          {matchResults.failed.length > 0 && (
+            <div className="bg-red-50/50 rounded p-1.5 flex items-start gap-1.5">
+              <i className="fa-solid fa-circle-xmark text-red-600 text-[10px] mt-0.5"></i>
+              <p className="text-[10px] text-red-700 leading-relaxed">
+                {matchResults.failed.length} hatalı kayıt göz ardı edilecek
+              </p>
+            </div>
+          )}
 
-      {/* Success message */}
-      {!isMatching && hasMatched && matchResults.successful.length > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-          <p className="text-xs text-green-800">
-            <i className="fa-solid fa-check-circle mr-1"></i>
-            {matchResults.successful.length} konum başarıyla eşleştirildi ve görselleştirmeye
-            hazır!
-          </p>
+          {matchResults.successful.length > 0 && (
+            <div className="bg-emerald-50/50 rounded p-1.5 flex items-start gap-1.5">
+              <i className="fa-solid fa-circle-check text-emerald-600 text-[10px] mt-0.5"></i>
+              <p className="text-[10px] text-emerald-700 leading-relaxed">
+                {matchResults.successful.length} konum görselleştirmeye hazır
+              </p>
+            </div>
+          )}
         </div>
       )}
 
       {/* Navigation buttons */}
       {!isMatching && hasMatched && (
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-1.5 pt-1">
           <button
             onClick={onBack}
-            className="flex-1 px-4 py-2 text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors"
+            className="flex-1 px-3 py-1.5 text-[11px] font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors"
           >
-            <i className="fa-solid fa-arrow-left mr-1"></i>
+            <i className="fa-solid fa-chevron-left mr-1 text-[9px]"></i>
             Geri
           </button>
           <button
             onClick={handleNext}
             disabled={matchResults.successful.length === 0}
-            className="flex-1 px-4 py-2 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-3 py-1.5 text-[11px] font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             İleri
-            <i className="fa-solid fa-arrow-right ml-1"></i>
+            <i className="fa-solid fa-chevron-right ml-1 text-[9px]"></i>
           </button>
         </div>
       )}

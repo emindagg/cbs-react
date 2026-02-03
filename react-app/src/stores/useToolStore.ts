@@ -18,9 +18,11 @@ interface ToolState {
     drawCenter: [number, number] | null // For Circle
     drawRadius: number | null // For Circle
     isDrawing: boolean
+    isToolsMenuOpen: boolean
 
     // Actions
     setActiveTool: (tool: ToolType) => void
+    setIsToolsMenuOpen: (isOpen: boolean) => void
     setDistancePoints: (points: [number, number][]) => void
     setDistanceGhostPoint: (point: [number, number] | null) => void
     setIsDrawingDistance: (isDrawing: boolean) => void
@@ -49,6 +51,7 @@ export const useToolStore = create<ToolState>((set) => ({
     drawCenter: null,
     drawRadius: null,
     isDrawing: false,
+    isToolsMenuOpen: false,
 
     setActiveTool: (tool) => set((state) => {
         // Reset other tools when switching
@@ -57,6 +60,8 @@ export const useToolStore = create<ToolState>((set) => ({
         }
         return { activeTool: tool }
     }),
+
+    setIsToolsMenuOpen: (isOpen) => set({ isToolsMenuOpen: isOpen }),
 
     setDistancePoints: (points) => set({ distancePoints: points }),
     setDistanceGhostPoint: (point) => set({ distanceGhostPoint: point }),

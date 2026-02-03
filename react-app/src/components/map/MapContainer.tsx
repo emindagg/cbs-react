@@ -1,4 +1,4 @@
-import Map, { NavigationControl, ScaleControl, Source, Layer } from 'react-map-gl/maplibre'
+import Map, { ScaleControl, Source, Layer } from 'react-map-gl/maplibre'
 import maplibregl from 'maplibre-gl'
 import { useMapStore } from '@/stores/useMapStore'
 import DistanceTool from './tools/DistanceTool'
@@ -87,7 +87,7 @@ export default function MapContainer() {
                 </Source>
             )}
 
-            <NavigationControl position="top-right" />
+
             <ScaleControl position="bottom-right" />
             <DistanceTool />
             <DrawTool />

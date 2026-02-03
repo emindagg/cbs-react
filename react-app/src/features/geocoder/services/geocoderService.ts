@@ -23,6 +23,8 @@ export interface GeocoderResult {
   };
 }
 
+export type AtlasFeature = GeocoderResult;
+
 export interface GeocoderResponse {
   type: 'FeatureCollection';
   features: GeocoderResult[];
@@ -339,15 +341,15 @@ export class GeocoderManager {
     let coords: number[][] = [];
 
     if (geometry.type === 'Point') {
-        const [lng, lat] = geometry.coordinates as number[]
-        return [[lng, lat], [lng, lat]]
+      const [lng, lat] = geometry.coordinates as number[]
+      return [[lng, lat], [lng, lat]]
     } else if (geometry.type === 'Polygon') {
-        coords = (geometry.coordinates as number[][][])[0]
+      coords = (geometry.coordinates as number[][][])[0]
     } else if (geometry.type === 'MultiPolygon') {
-        const multiCoords = geometry.coordinates as unknown as number[][][][]
-        multiCoords.forEach(polygon => {
-            coords = coords.concat(polygon[0])
-        })
+      const multiCoords = geometry.coordinates as unknown as number[][][][]
+      multiCoords.forEach(polygon => {
+        coords = coords.concat(polygon[0])
+      })
     }
 
     if (coords.length === 0) return null

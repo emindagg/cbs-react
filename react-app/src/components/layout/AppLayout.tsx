@@ -7,7 +7,9 @@ import { LAYOUT } from '@/constants/layout'
 import Sidebar from '@/components/sidebar/Sidebar'
 import MapContainer from '@/components/map/MapContainer'
 import { MapControlStack } from '@/features/map'
-import { SearchContainer } from '@/features/geocoder'
+import { SearchContainer } from '@/features/geocoder/components/SearchContainer'
+import { useAstroMap } from '@/features/astronomy'
+import { AstroPanel } from '@/features/astronomy/components/AstroPanel'
 
 /**
  * AppLayout Component
@@ -18,6 +20,9 @@ export default function AppLayout() {
     const [isSidebarOpen, setSidebarOpen] = useState(false)
     const mapInstance = useMapStore((state) => state.mapInstance)
     const isMdUp = useMediaQuery('(min-width: 768px)')
+
+    // Initialize astronomy hook
+    useAstroMap();
 
     // Toggle sidebar and resize map
     const toggleSidebar = () => {
@@ -78,6 +83,9 @@ export default function AppLayout() {
 
             {/* Search Container (Horizontal) */}
             <SearchContainer leftPosition={searchLeft} />
+
+            {/* Astronomy Feature */}
+            <AstroPanel />
 
         </div>
     )

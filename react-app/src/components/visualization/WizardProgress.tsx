@@ -1,64 +1,65 @@
 /**
  * Wizard Progress Component
- * Shows current step and progress bar
+ * Compact step progress indicator
  */
 
 interface WizardProgressProps {
   currentStep: number;
 }
 
-const STEP_TITLES = ['Dosya Yükle', 'Sütun Eşleştir', 'Sonuçlar', 'Görselleştir'];
+const STEPS = [
+  { num: 1, label: 'Dosya', icon: 'fa-file-arrow-up' },
+  { num: 2, label: 'Eşleştir', icon: 'fa-table-columns' },
+  { num: 3, label: 'Sonuçlar', icon: 'fa-check-double' },
+  { num: 4, label: 'Görselleştir', icon: 'fa-map' },
+];
 
 export default function WizardProgress({ currentStep }: WizardProgressProps) {
   return (
-    <div className="mb-4 pb-4 border-b border-zinc-200">
-      {/* Step title */}
-      <h3 className="text-sm font-semibold text-zinc-900 mb-3">
-        Adım {currentStep}: {STEP_TITLES[currentStep - 1]}
-      </h3>
+    <div className="relative mb-3">
+      {/* Progress bar background */}
+      <div className="absolute top-2.5 left-0 right-0 h-0.5 bg-zinc-200" />
 
-      {/* Progress indicators */}
-      <div className="flex items-center justify-between">
-        {[1, 2, 3, 4].map((step, index) => (
-          <div key={step} className="flex items-center flex-1">
-            {/* Step circle */}
+      {/* Active progress bar */}
+      <div
+        className="absolute top-2.5 left-0 h-0.5 bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-300"
+        style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
+      />
+
+      {/* Steps */}
+      <div className="relative flex items-center justify-between">
+        {STEPS.map((step) => (
+          <div key={step.num} className="flex flex-col items-center gap-1">
+            {/* Step indicator */}
             <div
               className={`
-                w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors
+                w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold
+                transition-all duration-300 border-2
                 ${
-                  step <= currentStep
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-zinc-300 text-zinc-600'
+                  step.num === currentStep
+                    ? 'bg-emerald-600 border-emerald-600 text-white scale-110 shadow-sm'
+                    : step.num < currentStep
+                    ? 'bg-emerald-500 border-emerald-500 text-white'
+                    : 'bg-white border-zinc-300 text-zinc-400'
                 }
               `}
             >
-              {step}
+              {step.num < currentStep ? (
+                <i className="fa-solid fa-check text-[8px]" />
+              ) : (
+                <i className={`fa-solid ${step.icon} text-[8px]`} />
+              )}
             </div>
 
-            {/* Connecting line (except last step) */}
-            {index < 3 && (
-              <div
-                className={`
-                  h-0.5 flex-1 mx-1 transition-colors
-                  ${step < currentStep ? 'bg-emerald-600' : 'bg-zinc-300'}
-                `}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Step labels */}
-      <div className="flex items-center justify-between mt-2">
-        {STEP_TITLES.map((title, index) => (
-          <div key={index} className="flex-1 text-center">
-            <p
-              className={`text-xs transition-colors ${
-                index + 1 === currentStep ? 'text-emerald-700 font-semibold' : 'text-zinc-500'
-              }`}
+            {/* Step label */}
+            <span
+              className={`
+                text-[9px] font-medium transition-colors whitespace-nowrap
+                ${step.num === currentStep ? 'text-emerald-700' : 'text-zinc-400'}
+              `}
             >
-              {title}
-            </p>
+              {step.label}
+            </span>
           </div>
         ))}
       </div>

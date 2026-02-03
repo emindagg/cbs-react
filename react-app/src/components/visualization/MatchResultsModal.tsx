@@ -94,102 +94,104 @@ export default function MatchResultsModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={(e) => {
-        // Close modal when clicking on overlay (not the modal content)
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
     >
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-100 bg-gradient-to-r from-zinc-50 to-white">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-800">Eşleşme Önizlemesi</h2>
-            <p className="text-xs text-zinc-500 mt-1">Tüm satırların eşleşme durumu</p>
+            <h2 className="text-base font-bold text-zinc-800 flex items-center gap-2">
+              <i className="fa-solid fa-table-list text-emerald-600"></i>
+              Eşleşme Önizlemesi
+            </h2>
+            <p className="text-[11px] text-zinc-500 mt-0.5">Tüm satırların detaylı eşleşme durumu</p>
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-600 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
           >
-            <i className="fa-solid fa-times text-xl"></i>
+            <i className="fa-solid fa-xmark text-lg"></i>
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 px-6 py-3 border-b border-zinc-200 bg-zinc-50">
+        {/* Tabs - Compact */}
+        <div className="flex gap-1.5 px-5 py-2.5 border-b border-zinc-100 bg-zinc-50/50">
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${
+            className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-all ${
               activeTab === 'all'
-                ? 'bg-blue-100 text-blue-700 border border-blue-300'
-                : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-white text-zinc-600 hover:bg-zinc-100'
             }`}
           >
             Tümü ({matchResults.successful.length + matchResults.ambiguous.length + matchResults.failed.length})
           </button>
           <button
             onClick={() => setActiveTab('success')}
-            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${
+            className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-all ${
               activeTab === 'success'
-                ? 'bg-green-100 text-green-700 border border-green-300'
-                : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-white text-zinc-600 hover:bg-zinc-100'
             }`}
           >
-            <i className="fa-solid fa-check mr-1"></i>
+            <i className="fa-solid fa-check mr-1 text-[9px]"></i>
             Başarılı ({matchResults.successful.length})
           </button>
           <button
             onClick={() => setActiveTab('ambiguous')}
-            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${
+            className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-all ${
               activeTab === 'ambiguous'
-                ? 'bg-amber-100 text-amber-700 border border-amber-300'
-                : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+                ? 'bg-amber-600 text-white shadow-sm'
+                : 'bg-white text-zinc-600 hover:bg-zinc-100'
             }`}
           >
-            <i className="fa-solid fa-exclamation-triangle mr-1"></i>
+            <i className="fa-solid fa-triangle-exclamation mr-1 text-[9px]"></i>
             Belirsiz ({matchResults.ambiguous.length})
           </button>
           <button
             onClick={() => setActiveTab('failed')}
-            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${
+            className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-all ${
               activeTab === 'failed'
-                ? 'bg-red-100 text-red-700 border border-red-300'
-                : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+                ? 'bg-red-600 text-white shadow-sm'
+                : 'bg-white text-zinc-600 hover:bg-zinc-100'
             }`}
           >
-            <i className="fa-solid fa-times mr-1"></i>
+            <i className="fa-solid fa-circle-xmark mr-1 text-[9px]"></i>
             Hatalı ({matchResults.failed.length})
           </button>
         </div>
 
-        {/* Table */}
-        <div className="flex-1 overflow-auto px-6 py-4">
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-100 sticky top-0">
+        {/* Table - Compact */}
+        <div className="flex-1 overflow-auto px-5 py-3">
+          <table className="w-full text-xs">
+            <thead className="bg-zinc-50 sticky top-0 z-10">
               <tr>
-                <th className="px-3 py-2 text-left font-medium text-zinc-700 border-b border-zinc-200">
+                <th className="px-2.5 py-2 text-left text-[10px] font-semibold text-zinc-600 border-b-2 border-zinc-200">
                   #
                 </th>
-                <th className="px-3 py-2 text-left font-medium text-zinc-700 border-b border-zinc-200">
+                <th className="px-2.5 py-2 text-left text-[10px] font-semibold text-zinc-600 border-b-2 border-zinc-200">
                   Durum
                 </th>
-                <th className="px-3 py-2 text-left font-medium text-zinc-700 border-b border-zinc-200">
+                <th className="px-2.5 py-2 text-left text-[10px] font-semibold text-zinc-600 border-b-2 border-zinc-200">
                   Konum
                 </th>
-                <th className="px-3 py-2 text-left font-medium text-zinc-700 border-b border-zinc-200">
+                <th className="px-2.5 py-2 text-left text-[10px] font-semibold text-zinc-600 border-b-2 border-zinc-200">
                   İl
                 </th>
-                <th className="px-3 py-2 text-left font-medium text-zinc-700 border-b border-zinc-200">
+                <th className="px-2.5 py-2 text-left text-[10px] font-semibold text-zinc-600 border-b-2 border-zinc-200">
                   İlçe
                 </th>
                 {dataColumn && (
-                  <th className="px-3 py-2 text-right font-medium text-zinc-700 border-b border-zinc-200">
+                  <th className="px-2.5 py-2 text-right text-[10px] font-semibold text-zinc-600 border-b-2 border-zinc-200">
                     Veri
                   </th>
                 )}
-                <th className="px-3 py-2 text-left font-medium text-zinc-700 border-b border-zinc-200">
+                <th className="px-2.5 py-2 text-left text-[10px] font-semibold text-zinc-600 border-b-2 border-zinc-200">
                   Mesaj
                 </th>
               </tr>
@@ -197,7 +199,8 @@ export default function MatchResultsModal({
             <tbody>
               {filteredResults.length === 0 ? (
                 <tr>
-                  <td colSpan={dataColumn ? 7 : 6} className="px-3 py-8 text-center text-zinc-500">
+                  <td colSpan={dataColumn ? 7 : 6} className="px-2.5 py-8 text-center text-zinc-400 text-xs">
+                    <i className="fa-solid fa-inbox text-2xl mb-2 block text-zinc-300"></i>
                     Bu kategoride sonuç yok
                   </td>
                 </tr>
@@ -205,26 +208,26 @@ export default function MatchResultsModal({
                 filteredResults.map((result, index) => (
                   <tr
                     key={index}
-                    className="border-b border-zinc-100 hover:bg-zinc-50"
+                    className="border-b border-zinc-100 hover:bg-emerald-50/30 transition-colors"
                   >
-                    <td className="px-3 py-2 text-zinc-600">{index + 1}</td>
-                    <td className="px-3 py-2">{getStatusIcon(result.status)}</td>
-                    <td className="px-3 py-2 font-medium">{result.location || '-'}</td>
-                    <td className="px-3 py-2">{result.province || '-'}</td>
-                    <td className="px-3 py-2">{result.district || '-'}</td>
+                    <td className="px-2.5 py-2 text-zinc-500">{index + 1}</td>
+                    <td className="px-2.5 py-2">{getStatusIcon(result.status)}</td>
+                    <td className="px-2.5 py-2 font-medium text-zinc-800">{result.location || '-'}</td>
+                    <td className="px-2.5 py-2 text-zinc-600">{result.province || '-'}</td>
+                    <td className="px-2.5 py-2 text-zinc-600">{result.district || '-'}</td>
                     {dataColumn && (
-                      <td className="px-3 py-2 text-right font-mono">
+                      <td className="px-2.5 py-2 text-right font-mono text-zinc-800">
                         {result.originalData[dataColumn] !== undefined
                           ? Number(result.originalData[dataColumn]).toLocaleString('tr-TR')
                           : '-'}
                       </td>
                     )}
-                    <td className="px-3 py-2 text-xs text-zinc-600">
+                    <td className="px-2.5 py-2 text-[10px] text-zinc-500">
                       {result.status === 'success'
-                        ? 'Başarılı'
+                        ? 'Başarılı eşleşme'
                         : result.status === 'ambiguous'
                         ? 'Birden fazla eşleşme'
-                        : 'Eşleşme yok'}
+                        : 'Eşleşme bulunamadı'}
                     </td>
                   </tr>
                 ))
@@ -234,20 +237,25 @@ export default function MatchResultsModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-zinc-200 bg-zinc-50">
-          <button
-            onClick={exportToCSV}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2"
-          >
-            <i className="fa-solid fa-download"></i>
-            Dışa Aktar (CSV)
-          </button>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-100 rounded-lg transition-colors"
-          >
-            Kapat
-          </button>
+        <div className="flex items-center justify-between px-5 py-3 border-t border-zinc-100 bg-zinc-50/50">
+          <p className="text-[10px] text-zinc-500">
+            Toplam {filteredResults.length} kayıt gösteriliyor
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={exportToCSV}
+              className="px-3 py-1.5 text-[11px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors flex items-center gap-1.5 shadow-sm"
+            >
+              <i className="fa-solid fa-download text-[9px]"></i>
+              CSV İndir
+            </button>
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 text-[11px] font-medium text-zinc-700 bg-white border border-zinc-200 hover:bg-zinc-50 rounded-md transition-colors"
+            >
+              Kapat
+            </button>
+          </div>
         </div>
       </div>
     </div>,
