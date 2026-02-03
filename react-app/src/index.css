@@ -32,7 +32,7 @@ body {
     width: 100%;
 }
 
-.logo{
+.logo {
     height: 70px;
 }
 
@@ -202,7 +202,7 @@ body {
     justify-content: center;
     font-size: 9px;
     border: 1px solid white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     transition: transform 0.2s ease;
 }
 
@@ -246,6 +246,7 @@ body {
         transform: translateX(-50%) translateY(-100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(-50%) translateY(0);
         opacity: 1;
@@ -342,17 +343,39 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Z-Index Management */
-.z-map { z-index: 1; }
-.z-controls { z-index: 1000; }
-.z-panels { z-index: 1300; }
-.z-mobile-buttons { z-index: 1400; }
-.z-modal { z-index: 2000; }
-.z-toast { z-index: 3000; }
+.z-map {
+    z-index: 1;
+}
+
+.z-controls {
+    z-index: 1000;
+}
+
+.z-panels {
+    z-index: 1300;
+}
+
+.z-mobile-buttons {
+    z-index: 1400;
+}
+
+.z-modal {
+    z-index: 2000;
+}
+
+.z-toast {
+    z-index: 3000;
+}
 
 
 /* ==========================================
@@ -363,13 +386,16 @@ body {
 .sidebar-content::-webkit-scrollbar {
     width: 6px;
 }
+
 .sidebar-content::-webkit-scrollbar-track {
     background: transparent;
 }
+
 .sidebar-content::-webkit-scrollbar-thumb {
     background: #71717a;
     border-radius: 3px;
 }
+
 .sidebar-content::-webkit-scrollbar-thumb:hover {
     background: #10b981;
 }
@@ -621,10 +647,10 @@ body {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.toggle-checkbox:checked + .toggle-bg {
+.toggle-checkbox:checked+.toggle-bg {
     background-color: #1f2937;
 }
 
-.toggle-checkbox:checked + .toggle-bg::before {
+.toggle-checkbox:checked+.toggle-bg::before {
     transform: translate3d(0.875rem, 0, 0);
 }

@@ -8,7 +8,7 @@ import { useVisualizationStore } from '../../stores/useVisualizationStore';
 import { useMapStore } from '../../stores/useMapStore';
 import { VisualizationManager } from '../../services/VisualizationManager';
 import { ColumnMapper } from '../../utils/columnMapper';
-import MatchResultsTable from './MatchResultsTable';
+import MatchResultsModal from './MatchResultsModal';
 
 interface VizWizardStep3Props {
   onBack: () => void;
@@ -18,7 +18,7 @@ interface VizWizardStep3Props {
 export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) {
   const [isMatching, setIsMatching] = useState(false);
   const [hasMatched, setHasMatched] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const {
     rawData,
@@ -240,29 +240,23 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
 
             {/* Detaylı Önizleme Button */}
             <button
-              onClick={() => setShowDetails(!showDetails)}
+              onClick={() => setShowModal(true)}
               className="w-full mt-3 px-4 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               <i className="fa-solid fa-table-list"></i>
-              {showDetails ? 'Önizlemeyi Gizle' : 'Detaylı Önizleme'}
+              Detaylı Önizleme
             </button>
           </div>
-
-          {/* Detailed Table */}
-          {showDetails && (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-zinc-700">
-                <i className="fa-solid fa-info-circle mr-1 text-blue-600"></i>
-                Toplam {matchResults.successful.length + matchResults.ambiguous.length + matchResults.failed.length} satır
-              </p>
-              <MatchResultsTable
-                matchResults={matchResults}
-                dataColumn={columnMapping.dataColumn}
-              />
-            </div>
-          )}
         </>
       )}
+
+      {/* Match Results Modal */}
+      <MatchResultsModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        matchResults={matchResults}
+        dataColumn={columnMapping.dataColumn}
+      />
 
       {/* Ambiguous matches warning */}
       {!isMatching && hasMatched && matchResults.ambiguous.length > 0 && (

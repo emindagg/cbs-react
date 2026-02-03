@@ -67,7 +67,7 @@ export default function AppLayout() {
             {/* Map Control Stack (Vertical) */}
             <div
                 id="map-control-container"
-                className="fixed top-3 z-[1400] transition-all duration-300 ease-in-out"
+                className="fixed top-3 z-[10001] transition-all duration-300 ease-in-out"
                 style={{ left: controlsLeft }}
             >
                 <MapControlStack

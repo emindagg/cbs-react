@@ -1,23 +1,113 @@
-import { useGeocoder } from '../hooks/useGeocoder'
-import { GlobeToggleButton } from '@/features/globe-view'
+import { useState, useEffect, useRef } from 'react';
+import { useGeocoder } from '../hooks/useGeocoder';
+import { GlobeToggleButton } from '@/features/globe-view';
+import { useMapStore } from '@/stores/useMapStore';
+import { GeocoderManager, type GeocoderResponse, type GeocoderResult } from '../services/geocoderService';
 
 interface SearchContainerProps {
-    leftPosition: string
+    leftPosition: string;
 }
+
+const MIN_QUERY_LENGTH = 3;
+const DEBOUNCE_DELAY = 500; // ms
 
 /**
  * SearchContainer Component
  * Horizontal search bar with geocoder, layers, globe, storymap buttons
  */
 export function SearchContainer({ leftPosition }: SearchContainerProps) {
-    const { isOpen, query, setQuery, open, close, inputRef } = useGeocoder()
+    const { isOpen, query, setQuery, open, close, inputRef } = useGeocoder();
+    const { mapInstance } = useMapStore();
+    const [results, setResults] = useState<GeocoderResponse | null>(null);
+    const [isSearching, setIsSearching] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const geocoderManagerRef = useRef<GeocoderManager | null>(null);
 
-    const handleSearchSubmit = () => {
-        if (query.trim()) {
-            console.log('Searching for:', query)
-            // TODO: Implement geocoder search
+    // Initialize GeocoderManager when map is ready
+    useEffect(() => {
+        if (mapInstance && !geocoderManagerRef.current) {
+            geocoderManagerRef.current = new GeocoderManager(mapInstance);
         }
-    }
+    }, [mapInstance]);
+
+    const handleSearchSubmit = async () => {
+        const trimmedQuery = query.trim();
+
+        if (trimmedQuery.length < MIN_QUERY_LENGTH) {
+            setError(`En az ${MIN_QUERY_LENGTH} harf girmelisiniz`);
+            return;
+        }
+
+        if (!geocoderManagerRef.current) {
+            setError('Harita henüz hazır değil');
+            return;
+        }
+
+        setIsSearching(true);
+        setError(null);
+        setResults(null);
+
+        try {
+            const searchResults = await geocoderManagerRef.current.search(query);
+            setResults(searchResults);
+
+            // Don't auto-focus on first result - let user click on desired location
+        } catch (err: any) {
+            console.error('Search error:', err);
+            setError(err.message || 'Arama sırasında bir hata oluştu');
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleResultClick = (feature: GeocoderResult) => {
+        if (!geocoderManagerRef.current) return;
+
+        geocoderManagerRef.current.focusOnResult(feature);
+        setResults(null);
+        close();
+    };
+
+    const handleClose = () => {
+        // Clear map markers and results
+        if (geocoderManagerRef.current) {
+            geocoderManagerRef.current.clearResults();
+        }
+
+        // Clear UI state
+        close();
+        setResults(null);
+        setError(null);
+    };
+
+    // Auto-search when query changes (debounced)
+    useEffect(() => {
+        // Clear previous timer
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+
+        // Reset results if query is too short
+        if (query.trim().length < MIN_QUERY_LENGTH) {
+            setResults(null);
+            setError(null);
+            setIsSearching(false);
+            return;
+        }
+
+        // Set new timer for debounced search
+        debounceTimerRef.current = setTimeout(() => {
+            handleSearchSubmit();
+        }, DEBOUNCE_DELAY);
+
+        // Cleanup on unmount or query change
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, [query, mapInstance]); // Dependencies: query and map
 
     return (
         <div
@@ -98,17 +188,67 @@ export function SearchContainer({ leftPosition }: SearchContainerProps) {
                         </button>
                         <button
                             id="geocoder-close-btn"
-                            onClick={close}
+                            onClick={handleClose}
                             className="py-2.5 px-3 bg-transparent border-none text-white/70 cursor-pointer hover:bg-white/10 hover:text-white"
                             title="Kapat"
                         >
                             <i className="fa-solid fa-times"></i>
                         </button>
                     </div>
+
+                    {/* Search Results Dropdown */}
+                    {(results || error || isSearching) && (
+                        <div className="bg-white rounded-b-lg shadow-lg max-h-80 overflow-y-auto">
+                            {isSearching && (
+                                <div className="p-4 text-center text-sm text-zinc-500">
+                                    <i className="fa-solid fa-spinner fa-spin mr-2"></i>
+                                    Aranıyor...
+                                </div>
+                            )}
+
+                            {error && !isSearching && (
+                                <div className="p-4 text-center text-sm text-red-600">
+                                    <i className="fa-solid fa-exclamation-circle mr-2"></i>
+                                    {error}
+                                </div>
+                            )}
+
+                            {results && !isSearching && results.features.length > 0 && (
+                                <div className="divide-y divide-zinc-100">
+                                    {results.features.map((feature, index) => {
+                                        const name = feature.properties.name || feature.properties.place_name || 'İsimsiz konum';
+                                        const address = geocoderManagerRef.current?.formatAddress(feature.properties) || '';
+
+                                        return (
+                                            <button
+                                                key={index}
+                                                onClick={() => handleResultClick(feature)}
+                                                className="w-full flex items-start gap-3 px-4 py-3 hover:bg-zinc-50 transition-colors cursor-pointer text-left"
+                                            >
+                                                <div className="flex-shrink-0 mt-0.5">
+                                                    <i className="fa-solid fa-location-dot text-blue-500"></i>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm font-medium text-zinc-900 truncate">
+                                                        {name}
+                                                    </div>
+                                                    {address && (
+                                                        <div className="text-xs text-zinc-500 truncate mt-0.5">
+                                                            {address}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
-    )
+    );
 }
 
 export default SearchContainer
