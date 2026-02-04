@@ -8,11 +8,17 @@ import { useVizRender } from './hooks/useVizRender'
 import { useVizSuggestion } from './hooks/useVizSuggestion'
 import { useMapStore } from '../../stores/useMapStore'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
-import type { ColorScheme, ClassificationMethod } from '../../types/visualization'
+import type { ColorScheme, ClassificationMethod, VizType } from '../../types/visualization'
 
 interface VizWizardStep4Props {
   onBack: () => void;
 }
+
+const VIZ_TYPES: { value: VizType; label: string; description: string }[] = [
+  { value: 'choropleth', label: 'Koroplet Harita', description: 'Bölgeleri renklendirerek veriyi göster' },
+  { value: 'bubble', label: 'Kabarcık Harita', description: 'Değeri daire boyutuyla göster' },
+  { value: 'dot', label: 'Nokta Yoğunluk', description: 'Sabit boyutlu noktalarla göster' },
+]
 
 const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
   { value: 'viridis', label: 'Viridis' },
@@ -74,10 +80,27 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
 
   return (
     <div className="space-y-3">
-      {/* Visualization type badge */}
-      <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 rounded-sm text-[10px] text-emerald-700">
-        <i className="fa-solid fa-map text-[9px]"></i>
-        <span className="font-medium">Choropleth Map</span>
+      {/* Visualization type selector */}
+      <div>
+        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">
+          Görselleştirme Türü
+        </label>
+        <select
+          value={vizSettings.type}
+          onChange={(e) =>
+            setVizSettings({ type: e.target.value as VizType })
+          }
+          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+        >
+          {VIZ_TYPES.map((type) => (
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
+          ))}
+        </select>
+        <p className="text-[9px] text-zinc-400 mt-1">
+          {VIZ_TYPES.find(t => t.value === vizSettings.type)?.description}
+        </p>
       </div>
 
       {/* Smart Suggestion Panel - Compact */}

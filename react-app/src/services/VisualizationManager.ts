@@ -13,11 +13,15 @@ import type {
 import type { ClassificationMethod, VisualizationSettings } from '../types/visualization'
 import { suggestClassificationMethod } from '../utils/classificationMethods'
 import { normalizeTurkishText } from '../utils/turkishNormalizer'
+import { BubbleRenderer } from './renderers/BubbleRenderer'
 import { ChoroplethRenderer } from './renderers/ChoroplethRenderer'
+import { PointRenderer } from './renderers/PointRenderer'
 
 export class VisualizationManager {
   private map: Map
   private choroplethRenderer: ChoroplethRenderer
+  private pointRenderer: PointRenderer
+  private bubbleRenderer: BubbleRenderer
 
   // Cached GeoJSON data
   private provincesGeoJSON: GeoJSONFeatureCollection | null = null
@@ -30,6 +34,8 @@ export class VisualizationManager {
   constructor(map: Map) {
     this.map = map
     this.choroplethRenderer = new ChoroplethRenderer(map)
+    this.pointRenderer = new PointRenderer(map)
+    this.bubbleRenderer = new BubbleRenderer(map)
   }
 
   /**
@@ -214,6 +220,58 @@ export class VisualizationManager {
   }
 
   /**
+   * Render point/dot map
+   */
+  async renderPoint(
+    userData: Record<string, unknown>[],
+    dataColumn: string,
+    settings: VisualizationSettings,
+    locationLevel: 'province' | 'district' = 'province',
+  ): Promise<void> {
+    console.debug('Rendering point map:', { userData, dataColumn, settings, locationLevel })
+
+    // Load appropriate GeoJSON
+    const geojson =
+      locationLevel === 'province'
+        ? await this.loadProvincesGeoJSON()
+        : await this.loadDistrictsGeoJSON()
+
+    if (!geojson) {
+      console.error('❌ GeoJSON data not loaded')
+      return
+    }
+
+    // Render using PointRenderer
+    await this.pointRenderer.render(geojson, userData, dataColumn, settings, locationLevel)
+  }
+
+  /**
+   * Render bubble map
+   */
+  async renderBubble(
+    userData: Record<string, unknown>[],
+    dataColumn: string,
+    settings: VisualizationSettings,
+    locationLevel: 'province' | 'district' = 'province',
+  ): Promise<void> {
+    console.debug('Rendering bubble map:', { userData, dataColumn, settings, locationLevel })
+
+    // Load appropriate GeoJSON
+    const geojson =
+      locationLevel === 'province'
+        ? await this.loadProvincesGeoJSON()
+        : await this.loadDistrictsGeoJSON()
+
+    if (!geojson) {
+      console.error('❌ GeoJSON data not loaded')
+      return
+    }
+
+    // Render using BubbleRenderer
+    await this.bubbleRenderer.render(geojson, userData, dataColumn, settings, locationLevel)
+  }
+
+  /**
    * Clear visualization
    */
   clearVisualization(): void {
@@ -227,8 +285,8 @@ export class VisualizationManager {
     if (this.map.getLayer('bubble-circles')) {
       this.map.removeLayer('bubble-circles')
     }
-    if (this.map.getLayer('dot-density-points')) {
-      this.map.removeLayer('dot-density-points')
+    if (this.map.getLayer('dot-circles')) {
+      this.map.removeLayer('dot-circles')
     }
 
     // Remove sources
@@ -238,8 +296,8 @@ export class VisualizationManager {
     if (this.map.getSource('bubble-source')) {
       this.map.removeSource('bubble-source')
     }
-    if (this.map.getSource('dot-density-source')) {
-      this.map.removeSource('dot-density-source')
+    if (this.map.getSource('dot-source')) {
+      this.map.removeSource('dot-source')
     }
   }
 

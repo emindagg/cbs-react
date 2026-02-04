@@ -54,13 +54,27 @@ export function useVizRender({
         return
       }
 
-      // Render choropleth
-      await vizManager.renderChoropleth(
-        successfulData,
-        columnMapping.dataColumn!,
-        vizSettings,
-        columnMapping.locationLevel === 'province' ? 'province' : 'district',
-      )
+      // Determine location level
+      const locationLevel = columnMapping.locationLevel === 'province' ? 'province' : 'district'
+
+      // Route based on visualization type
+      switch (vizSettings.type) {
+        case 'choropleth':
+          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn!, vizSettings, locationLevel)
+          break
+
+        case 'dot':
+          await vizManager.renderPoint(successfulData, columnMapping.dataColumn!, vizSettings, locationLevel)
+          break
+
+        case 'bubble':
+          await vizManager.renderBubble(successfulData, columnMapping.dataColumn!, vizSettings, locationLevel)
+          break
+
+        default:
+          // Fallback to choropleth
+          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn!, vizSettings, locationLevel)
+      }
 
       setHasRendered(true)
     } catch (error: unknown) {
