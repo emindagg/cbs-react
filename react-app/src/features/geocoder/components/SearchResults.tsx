@@ -49,7 +49,7 @@ export function SearchResults({
                 onClick={() => onResultClick(feature)}
                 className="w-full flex items-start gap-3 px-4 py-3 hover:bg-zinc-50 transition-colors cursor-pointer text-left group"
               >
-                <div className="flex-shrink-0 mt-0.5">
+                <div className="shrink-0 mt-0.5">
                   <i className="fa-solid fa-location-dot text-blue-500 group-hover:scale-110 transition-transform"></i>
                 </div>
                 <div className="flex-1 min-w-0">

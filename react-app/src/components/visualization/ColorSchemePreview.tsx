@@ -104,7 +104,7 @@ export default function ColorSchemePreview({ colorScheme }: ColorSchemePreviewPr
   const colors = COLOR_SCHEMES_DATA[colorScheme]
 
   return (
-    <div className="mt-1.5 rounded overflow-hidden shadow-sm">
+    <div className="mt-1.5 rounded-sm overflow-hidden shadow-xs">
       <div
         className="h-4"
         style={{

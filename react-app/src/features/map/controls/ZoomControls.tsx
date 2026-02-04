@@ -26,7 +26,7 @@ export function ZoomControls() {
       >
         <span aria-hidden="true">+</span>
       </button>
-      <div className="h-[1px] bg-white/15 w-full"></div>
+      <div className="h-px bg-white/15 w-full"></div>
       <button
         type="button"
         id="zoom-out-button"

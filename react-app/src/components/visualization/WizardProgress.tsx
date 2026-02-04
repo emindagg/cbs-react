@@ -22,7 +22,7 @@ export default function WizardProgress({ currentStep }: WizardProgressProps) {
 
       {/* Active progress bar */}
       <div
-        className="absolute top-2.5 left-0 h-0.5 bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-300"
+        className="absolute top-2.5 left-0 h-0.5 bg-linear-to-r from-emerald-500 to-emerald-600 transition-all duration-300"
         style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
       />
 
@@ -37,7 +37,7 @@ export default function WizardProgress({ currentStep }: WizardProgressProps) {
                 transition-all duration-300 border-2
                 ${
           step.num === currentStep
-            ? 'bg-emerald-600 border-emerald-600 text-white scale-110 shadow-sm'
+            ? 'bg-emerald-600 border-emerald-600 text-white scale-110 shadow-xs'
             : step.num < currentStep
               ? 'bg-emerald-500 border-emerald-500 text-white'
               : 'bg-white border-zinc-300 text-zinc-400'

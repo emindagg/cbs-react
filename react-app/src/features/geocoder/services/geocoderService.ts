@@ -94,7 +94,6 @@ class AtlasGeocoder {
             return
           }
 
-          console.log('✅ Geocoder results:', geocoderResponse)
           resolve(geocoderResponse)
         },
       })

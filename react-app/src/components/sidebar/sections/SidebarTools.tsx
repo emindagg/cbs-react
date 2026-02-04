@@ -26,7 +26,7 @@ export default function SidebarTools() {
             type="checkbox"
             checked={activeTool === 'measure-distance'}
             onChange={() => handleToolToggle('measure-distance')}
-            className="rounded border-zinc-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-500 mr-2.5 h-4 w-4"
+            className="rounded-sm border-zinc-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-500 mr-2.5 h-4 w-4"
           />
           <div className="flex items-center">
             <i className="fa-solid fa-ruler text-emerald-600 mr-2 text-sm w-4 text-center"></i>
@@ -39,7 +39,7 @@ export default function SidebarTools() {
             type="checkbox"
             checked={activeTool === 'analysis'}
             onChange={() => handleToolToggle('analysis')}
-            className="rounded border-zinc-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-500 mr-2.5 h-4 w-4"
+            className="rounded-sm border-zinc-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-500 mr-2.5 h-4 w-4"
           />
           <div className="flex items-center">
             <i className="fa-solid fa-chart-line text-emerald-600 mr-2 text-sm w-4 text-center"></i>
@@ -52,7 +52,7 @@ export default function SidebarTools() {
             type="checkbox"
             checked={activeTool === 'timeline'}
             onChange={() => handleToolToggle('timeline')}
-            className="rounded border-zinc-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-500 mr-2.5 h-4 w-4"
+            className="rounded-sm border-zinc-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-500 mr-2.5 h-4 w-4"
           />
           <div className="flex items-center">
             <i className="fa-solid fa-clock text-emerald-600 mr-2 text-sm w-4 text-center"></i>

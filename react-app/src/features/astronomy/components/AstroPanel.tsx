@@ -40,7 +40,7 @@ export function AstroPanel() {
         initial={{ opacity: 0, y: 10, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, scale: 0.98 }}
-        className="fixed top-20 right-4 z-[10002] w-[240px] font-['Outfit']"
+        className="fixed top-20 right-4 z-10002 w-[240px] font-['Outfit']"
       >
         {/* Enterprise Light Container - Compact */}
         <div className="relative overflow-hidden bg-white rounded-[24px] border border-zinc-200 shadow-[0_15px_30px_rgba(0,0,0,0.1)]">
@@ -67,7 +67,7 @@ export function AstroPanel() {
                   key={mode}
                   onClick={() => setTimeMode(mode as 'local' | 'utc')}
                   className={`px-2 py-0.5 text-[8px] font-bold rounded-full transition-all duration-300 ${timeMode === mode
-                    ? 'bg-white text-zinc-900 shadow-sm'
+                    ? 'bg-white text-zinc-900 shadow-xs'
                     : 'text-zinc-400 hover:text-zinc-600'
                   }`}
                 >
@@ -95,7 +95,7 @@ export function AstroPanel() {
                   type="datetime-local"
                   value={inputValue}
                   onChange={handleDateChange}
-                  className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 text-[10px] font-['JetBrains_Mono'] text-zinc-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500/40 outline-none transition-all"
+                  className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-3 py-2 text-[10px] font-['JetBrains_Mono'] text-zinc-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500/40 outline-hidden transition-all"
                 />
               </div>
             </div>
@@ -104,7 +104,7 @@ export function AstroPanel() {
             <div className="space-y-3 pt-1">
               <div className="flex items-center justify-between">
                 <label className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">Hız</label>
-                <span className="text-[10px] font-['JetBrains_Mono'] font-bold text-zinc-900 bg-white border border-zinc-100 px-1.5 py-0.5 rounded shadow-sm">
+                <span className="text-[10px] font-['JetBrains_Mono'] font-bold text-zinc-900 bg-white border border-zinc-100 px-1.5 py-0.5 rounded-sm shadow-xs">
                   {speed.toFixed(1)}x
                 </span>
               </div>

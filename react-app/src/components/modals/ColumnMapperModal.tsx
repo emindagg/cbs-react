@@ -27,8 +27,8 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
   if (!isOpen) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-[50rem] max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-99999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-200 max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="bg-zinc-900 text-white px-5 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
@@ -62,7 +62,7 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
               <select
                 value={mapping.lat}
                 onChange={(e) => setMapping({ ...mapping, lat: e.target.value })}
-                className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-sm"
+                className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-hidden text-sm"
               >
                 <option value="">Seçin...</option>
                 {headers.map(h => (
@@ -77,7 +77,7 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
               <select
                 value={mapping.lon}
                 onChange={(e) => setMapping({ ...mapping, lon: e.target.value })}
-                className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-sm"
+                className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-hidden text-sm"
               >
                 <option value="">Seçin...</option>
                 {headers.map(h => (
@@ -92,7 +92,7 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
               <select
                 value={mapping.name}
                 onChange={(e) => setMapping({ ...mapping, name: e.target.value })}
-                className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-sm"
+                className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-hidden text-sm"
               >
                 <option value="">Otomatik (Sıra No)</option>
                 {headers.map(h => (
@@ -107,7 +107,7 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
               <select
                 value={mapping.type}
                 onChange={(e) => setMapping({ ...mapping, type: e.target.value })}
-                className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-sm"
+                className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-hidden text-sm"
               >
                 <option value="">Varsayılan (Point)</option>
                 {headers.map(h => (
@@ -129,8 +129,8 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
                     {headers.map(h => (
                       <th key={h} className="px-3 py-2 whitespace-nowrap">
                         {h}
-                        {h === mapping.lat && <span className="ml-1 text-[10px] text-emerald-600 bg-emerald-100 px-1 rounded">Enlem</span>}
-                        {h === mapping.lon && <span className="ml-1 text-[10px] text-blue-600 bg-blue-100 px-1 rounded">Boylam</span>}
+                        {h === mapping.lat && <span className="ml-1 text-[10px] text-emerald-600 bg-emerald-100 px-1 rounded-sm">Enlem</span>}
+                        {h === mapping.lon && <span className="ml-1 text-[10px] text-blue-600 bg-blue-100 px-1 rounded-sm">Boylam</span>}
                       </th>
                     ))}
                   </tr>
@@ -164,7 +164,7 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
             onClick={() => onConfirm(mapping)}
             disabled={!isValid}
             className={`
-                            px-4 py-1.5 text-xs text-white rounded-lg font-medium shadow-sm transition-all flex items-center
+                            px-4 py-1.5 text-xs text-white rounded-lg font-medium shadow-xs transition-all flex items-center
                             ${isValid
                               ? 'bg-emerald-600 hover:bg-emerald-700 hover:scale-105 active:scale-95'
                               : 'bg-zinc-300 cursor-not-allowed'}

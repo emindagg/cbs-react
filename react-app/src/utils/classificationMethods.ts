@@ -198,7 +198,7 @@ export function calculateBreaks(
   }
 
   // Rounded Values
-  if (method === 'rounded') {
+  if (method === 'rounded-sm') {
     const step = (max - min) / classCount
     const breaks = [min]
 

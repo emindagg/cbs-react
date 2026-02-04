@@ -10,7 +10,7 @@ export default function SidebarDataCreation() {
     drawMode, setDrawMode,
     drawPoints, drawCenter, drawRadius,
     resetDraw,
-  } = useToolStore() // eslint-disable-line
+  } = useToolStore()
 
   const { addItem } = useDataStore()
 
@@ -25,6 +25,7 @@ export default function SidebarDataCreation() {
 
   const handleAddData = () => {
     if (!name) {
+      // eslint-disable-next-line no-alert
       alert('Lütfen bir isim giriniz.')
       return
     }
@@ -60,13 +61,15 @@ export default function SidebarDataCreation() {
         resetDraw()
         setName('')
         setDate('')
+        // eslint-disable-next-line no-alert
         alert('Veri başarıyla eklendi!')
       } else {
+        // eslint-disable-next-line no-alert
         alert('Lütfen harita üzerinde çizim yapınız.')
       }
 
-    } catch (error) {
-      console.error('Geometry creation error:', error)
+    } catch (_error) {
+      // eslint-disable-next-line no-alert
       alert('Geometri oluşturulurken hata oluştu.')
     }
   }
@@ -80,7 +83,7 @@ export default function SidebarDataCreation() {
           <select
             value={drawMode}
             onChange={handleModeChange}
-            className="w-full px-2.5 py-2 border-2 border-zinc-200 bg-white rounded-lg text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium hover:border-zinc-300"
+            className="w-full px-2.5 py-2 border-2 border-zinc-200 bg-white rounded-lg text-sm text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium hover:border-zinc-300"
           >
             <option value="none">Seçim Yapınız</option>
             <option value="point">Nokta Verisi Ekle</option>
@@ -92,7 +95,7 @@ export default function SidebarDataCreation() {
 
         {drawMode !== 'none' && (
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="bg-blue-50 text-blue-800 p-2 rounded text-xs border border-blue-100">
+            <div className="bg-blue-50 text-blue-800 p-2 rounded-sm text-xs border border-blue-100">
               {drawMode === 'point' && 'Haritaya tıklayarak nokta ekleyin.'}
               {drawMode === 'polygon' && 'Haritaya tıklayarak alan çizin. Çift tıklayarak bitirin.'}
               {drawMode === 'line' && 'Haritaya tıklayarak çizgi çizin. Çift tıklayarak bitirin.'}
@@ -106,7 +109,7 @@ export default function SidebarDataCreation() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Örn: Tarihi Müze, Hastane, Park..."
-                className="w-full px-2.5 py-1.5 border border-zinc-300 bg-zinc-50 rounded-lg text-xs text-zinc-900 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                className="w-full px-2.5 py-1.5 border border-zinc-300 bg-zinc-50 rounded-lg text-xs text-zinc-900 placeholder-zinc-500 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
               />
             </div>
             <div>
@@ -115,7 +118,7 @@ export default function SidebarDataCreation() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-2.5 py-1.5 border border-zinc-300 bg-zinc-50 rounded-lg text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                className="w-full px-2.5 py-1.5 border border-zinc-300 bg-zinc-50 rounded-lg text-xs text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
               />
             </div>
             <button

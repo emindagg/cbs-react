@@ -1,16 +1,16 @@
-import type maplibregl from 'maplibre-gl'
 import { useEffect, useRef } from 'react'
 
 import { useMapStore } from '@/stores/useMapStore'
 
+import { updateAstroData } from './useAstroData'
+import { cleanupAstroLayers, setupAstroLayers } from './useAstroLayers'
 import { useAstroStore } from '../stores/useAstroStore'
-import { computeTerminator, getSunDeclination, getSunHourAngle, getAxialTiltLines, getMoonPosition } from '../utils/astroUtils'
 
 export function useAstroMap() {
   const map = useMapStore(state => state.mapInstance)
   const { isEnabled, currentDate, features, isPlaying, speed, setCurrentDate } = useAstroStore()
   const animationFrameRef = useRef<number | null>(null)
-  const lastUpdateRef = useRef<number>(Date.now())
+  const lastUpdateRef = useRef<number>(0)
 
   // Initialize Sources and Layers
   useEffect(() => {
@@ -18,167 +18,18 @@ export function useAstroMap() {
       return
     }
 
-
-    const setupAstroLayers = () => {
-      if (!map.getStyle()) {
-        return
-      }
-
-      // Terminator Source
-      if (!map.getSource('astro-terminator')) {
-        map.addSource('astro-terminator', {
-          type: 'geojson',
-          data: { type: 'FeatureCollection', features: [] },
-        })
-
-        map.addLayer({
-          id: 'astro-night-shadow',
-          type: 'fill',
-          source: 'astro-terminator',
-          filter: ['==', ['get', 'description'], 'Gece Bölgesi'],
-          paint: {
-            'fill-color': '#000000',
-            'fill-opacity': 0.3,
-          },
-        })
-
-        map.addLayer({
-          id: 'astro-terminator-line',
-          type: 'line',
-          source: 'astro-terminator',
-          filter: ['==', ['get', 'description'], 'Gece/Gündüz Sınır Çizgisi (Terminator)'],
-          paint: {
-            'line-color': '#FFB700',
-            'line-width': 2,
-            'line-dasharray': [2, 2],
-            'line-opacity': 0.8,
-          },
-        })
-      }
-
-      // Sun Position Source
-      if (!map.getSource('astro-sun-position')) {
-        map.addSource('astro-sun-position', {
-          type: 'geojson',
-          data: { type: 'FeatureCollection', features: [] },
-        })
-
-        map.addLayer({
-          id: 'astro-sun-marker',
-          type: 'circle',
-          source: 'astro-sun-position',
-          paint: {
-            'circle-radius': 10,
-            'circle-color': '#FFD700',
-            'circle-stroke-width': 2,
-            'circle-stroke-color': '#FFA500',
-          },
-        })
-      }
-
-      // Moon Position Source
-      if (!map.getSource('astro-moon-position')) {
-        map.addSource('astro-moon-position', {
-          type: 'geojson',
-          data: { type: 'FeatureCollection', features: [] },
-        })
-
-        map.addLayer({
-          id: 'astro-moon-marker',
-          type: 'circle',
-          source: 'astro-moon-position',
-          paint: {
-            'circle-radius': 8,
-            'circle-color': '#e2e8f0',
-            'circle-stroke-width': 2,
-            'circle-stroke-color': '#94a3b8',
-          },
-        })
-
-        map.addLayer({
-          id: 'astro-moon-label',
-          type: 'symbol',
-          source: 'astro-moon-position',
-          layout: {
-            'text-field': ['get', 'phaseName'],
-            'text-size': 10,
-            'text-offset': [0, 1.5],
-            'text-anchor': 'top',
-          },
-          paint: {
-            'text-color': '#475569',
-            'text-halo-color': '#ffffff',
-            'text-halo-width': 1,
-          },
-        })
-      }
-
-      // Axial Tilt Source
-      if (!map.getSource('astro-axial-tilt')) {
-        map.addSource('astro-axial-tilt', {
-          type: 'geojson',
-          data: {
-            type: 'FeatureCollection',
-            features: getAxialTiltLines(),
-          },
-        })
-
-        map.addLayer({
-          id: 'astro-axial-line',
-          type: 'line',
-          source: 'astro-axial-tilt',
-          paint: {
-            'line-color': '#10b981',
-            'line-width': 1,
-            'line-dasharray': [4, 1],
-            'line-opacity': 0.6,
-          },
-        })
-
-        map.addLayer({
-          id: 'astro-axial-label',
-          type: 'symbol',
-          source: 'astro-axial-tilt',
-          layout: {
-            'text-field': ['get', 'name'],
-            'text-size': 10,
-            'text-offset': [0, 1],
-            'text-anchor': 'top',
-            'symbol-placement': 'line-center',
-          },
-          paint: {
-            'text-color': '#10b981',
-            'text-halo-color': '#ffffff',
-            'text-halo-width': 1,
-          },
-        })
-      }
+    const setupLayers = () => {
+      setupAstroLayers(map)
     }
 
     if (map.isStyleLoaded()) {
-      setupAstroLayers()
+      setupLayers()
     } else {
-      map.once('style.load', setupAstroLayers)
+      map.once('style.load', setupLayers)
     }
 
     return () => {
-      const layers = [
-        'astro-night-shadow',
-        'astro-terminator-line',
-        'astro-sun-marker',
-        'astro-moon-marker',
-        'astro-moon-label',
-        'astro-axial-line',
-        'astro-axial-label',
-      ]
-      const sources = ['astro-terminator', 'astro-sun-position', 'astro-moon-position', 'astro-axial-tilt']
-
-      layers.forEach(id => {
-        if (map.getLayer(id)) map.removeLayer(id)
-      })
-      sources.forEach(id => {
-        if (map.getSource(id)) map.removeSource(id)
-      })
+      cleanupAstroLayers(map)
     }
   }, [map, isEnabled])
 
@@ -204,60 +55,7 @@ export function useAstroMap() {
   // Update Data
   useEffect(() => {
     if (!map || !isEnabled) return
-
-    // Update Terminator
-    const terminatorSource = map.getSource('astro-terminator') as maplibregl.GeoJSONSource
-    if (terminatorSource) {
-      const data = computeTerminator(currentDate)
-      terminatorSource.setData({
-        type: 'FeatureCollection',
-        features: [data.line, data.nightPolygon],
-      })
-    }
-
-    // Update Sun
-    const sunSource = map.getSource('astro-sun-position') as maplibregl.GeoJSONSource
-    if (sunSource) {
-      const lat = getSunDeclination(currentDate)
-      const lon = getSunHourAngle(currentDate)
-      sunSource.setData({
-        type: 'FeatureCollection',
-        features: [{
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: [lon, lat] },
-          properties: { name: 'Güneş' },
-        }],
-      })
-    }
-
-    // Update Moon
-    const moonSource = map.getSource('astro-moon-position') as maplibregl.GeoJSONSource
-    if (moonSource) {
-      const moonData = getMoonPosition(currentDate)
-      const phase = moonData.illumination.phase
-      let phaseName = 'Ay'
-      if (phase < 0.05 || phase > 0.95) phaseName = 'Yeni Ay'
-      else if (phase < 0.2) phaseName = 'Hilal (Büyüyen)'
-      else if (phase < 0.3) phaseName = 'İlk Dördün'
-      else if (phase < 0.45) phaseName = 'Şişkin Ay (Büyüyen)'
-      else if (phase < 0.55) phaseName = 'Dolunay'
-      else if (phase < 0.7) phaseName = 'Şişkin Ay (Küçülen)'
-      else if (phase < 0.8) phaseName = 'Son Dördün'
-      else phaseName = 'Hilal (Küçülen)'
-
-      moonSource.setData({
-        type: 'FeatureCollection',
-        features: [{
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: [moonData.lon, moonData.lat] },
-          properties: {
-            name: 'Ay',
-            phase: phase,
-            phaseName: phaseName,
-          },
-        }],
-      })
-    }
+    updateAstroData(map, currentDate)
   }, [map, isEnabled, currentDate])
 
   // Animation Loop
@@ -265,6 +63,11 @@ export function useAstroMap() {
     if (!isPlaying || !isEnabled) {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
       return
+    }
+
+    // Initialize lastUpdateRef on first play
+    if (lastUpdateRef.current === 0) {
+      lastUpdateRef.current = Date.now()
     }
 
     const animate = () => {

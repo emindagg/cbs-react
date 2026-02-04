@@ -12,10 +12,24 @@ export async function parseShapefile(buffer: ArrayBuffer, fileName: string): Pro
 
   if (Array.isArray(geojson)) {
     geojson.forEach(g => {
-      items = [...items, ...parseGeoJSON(g, fileName)]
+      const safeGeoJSON = {
+        ...g,
+        features: g.features?.map((f: { geometry: unknown; properties: unknown }) => ({
+          ...f,
+          geometry: f.geometry || undefined,
+        })) || [],
+      }
+      items = [...items, ...parseGeoJSON(safeGeoJSON as unknown as Parameters<typeof parseGeoJSON>[0], fileName)]
     })
   } else {
-    items = parseGeoJSON(geojson, fileName)
+    const safeGeoJSON = {
+      ...geojson,
+      features: geojson.features?.map((f: { geometry: unknown; properties: unknown }) => ({
+        ...f,
+        geometry: f.geometry || undefined,
+      })) || [],
+    }
+    items = parseGeoJSON(safeGeoJSON as unknown as Parameters<typeof parseGeoJSON>[0], fileName)
   }
 
   return items

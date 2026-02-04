@@ -1,6 +1,6 @@
 export default function SidebarFooter() {
   return (
-    <div className="border-t border-zinc-200 bg-white px-3 py-2 pb-6 flex-shrink-0 z-10">
+    <div className="border-t border-zinc-200 bg-white px-3 py-2 pb-6 shrink-0 z-10">
       <div className="flex items-center justify-between text-[10px] text-zinc-600 mb-2">
         <div className="flex items-center">
           <i className="fa-solid fa-globe text-emerald-600 mr-1"></i>

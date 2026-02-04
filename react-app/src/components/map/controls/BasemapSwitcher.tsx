@@ -39,7 +39,7 @@ export default function BasemapSwitcher() {
       {/* Trigger Button - DARK ROUND BTN STYLE */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-9 h-9 bg-[#1c1c1e] rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm hover:bg-black/90 active:scale-95 transition-all outline-none cursor-pointer"
+        className="w-9 h-9 bg-[#1c1c1e] rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm hover:bg-black/90 active:scale-95 transition-all outline-hidden cursor-pointer"
         title="Altlık haritayı değiştir"
       >
         <i className="fa-solid fa-layer-group"></i>

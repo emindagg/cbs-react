@@ -43,7 +43,7 @@ export class VisualizationManager {
         'https://raw.githubusercontent.com/emindagg/turkiye_json/main/turkiye.geojson',
       )
       this.provincesGeoJSON = await response.json()
-      console.debug('✅ Province GeoJSON loaded:', this.provincesGeoJSON.features.length, 'provinces')
+      console.debug('✅ Province GeoJSON loaded:', this.provincesGeoJSON?.features?.length ?? 0, 'provinces')
 
       // Build province index
       this.buildProvinceIndex()
@@ -66,7 +66,7 @@ export class VisualizationManager {
         'https://raw.githubusercontent.com/emindagg/turkiye_json/main/Hgk_ilce_FeaturesToJSON.geojson',
       )
       this.districtsGeoJSON = await response.json()
-      console.debug('✅ District GeoJSON loaded:', this.districtsGeoJSON.features.length, 'districts')
+      console.debug('✅ District GeoJSON loaded:', this.districtsGeoJSON?.features?.length ?? 0, 'districts')
 
       // Build district index
       this.buildDistrictIndex()

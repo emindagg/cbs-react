@@ -76,7 +76,6 @@ export default function MapContainer() {
       onLoad={(e) => {
         setLoaded(true)
         setMapInstance(e.target)
-        console.log('Map Loaded', e)
       }}
     >
       {/* Render Basemap Raster Layer if not NONE */}

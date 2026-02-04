@@ -3,7 +3,7 @@
  * Handles choropleth map rendering with classification and coloring
  */
 
-import type { Map } from 'maplibre-gl'
+import type { GeoJSONSource, Map } from 'maplibre-gl'
 
 import { getColorForValue, getColorPalette } from '../../constants/colorSchemes'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
@@ -56,7 +56,10 @@ export class ChoroplethRenderer {
 
     const allFeaturesGeoJSON: GeoJSONFeatureCollection = {
       type: 'FeatureCollection',
-      features: allFeatures,
+      features: allFeatures.map(f => ({
+        ...f,
+        properties: f.properties || {},
+      })),
     }
 
     console.debug(
@@ -182,16 +185,34 @@ export class ChoroplethRenderer {
   private renderToMap(geojson: GeoJSONFeatureCollection): void {
     const sourceId = 'choropleth-source'
 
+    // Convert to MapLibre-compatible GeoJSON
+    const safeGeoJSON: GeoJSON.FeatureCollection = {
+      type: 'FeatureCollection',
+      features: geojson.features.map(f => {
+        const props = f.properties
+        // Ensure properties is a valid object (not null)
+        const safeProps: Record<string, unknown> =
+          props && typeof props === 'object' && !Array.isArray(props) && props !== null
+            ? props as Record<string, unknown>
+            : {}
+        return {
+          type: 'Feature' as const,
+          properties: safeProps,
+          geometry: f.geometry as GeoJSON.Geometry,
+        }
+      }),
+    }
+
     // Add or update source
     if (this.map.getSource(sourceId)) {
-      const source = this.map.getSource(sourceId)
+      const source = this.map.getSource(sourceId) as GeoJSONSource
       if (source && source.type === 'geojson') {
-        source.setData(geojson)
+        source.setData(safeGeoJSON)
       }
     } else {
       this.map.addSource(sourceId, {
         type: 'geojson',
-        data: geojson,
+        data: safeGeoJSON,
       })
     }
 

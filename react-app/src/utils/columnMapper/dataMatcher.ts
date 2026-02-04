@@ -127,7 +127,12 @@ function matchDistrict(
     } else {
       // Ambiguous - multiple districts with same name
       result.ambiguous = true
-      result.ambiguousOptions = districtMatches
+      result.ambiguousOptions = districtMatches.map(d => ({
+        name: d.name,
+        province: d.province,
+        properties: d.properties as Record<string, unknown>,
+        geometry: d.geometry as unknown as Record<string, unknown>,
+      }))
       result.location = String(locationValue)
       results.ambiguous.push(result)
     }
@@ -180,7 +185,12 @@ function matchMixed(
     } else {
       // Ambiguous - district found but province mismatch
       result.ambiguous = true
-      result.ambiguousOptions = districtMatches
+      result.ambiguousOptions = districtMatches.map(d => ({
+        name: d.name,
+        province: d.province,
+        properties: d.properties as Record<string, unknown>,
+        geometry: d.geometry as unknown as Record<string, unknown>,
+      }))
       result.location = String(districtValue)
       results.ambiguous.push(result)
     }

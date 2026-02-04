@@ -3,14 +3,12 @@
  * Configure visualization settings and render
  */
 
-import { useState, useEffect } from 'react'
-
 import ColorSchemePreview from './ColorSchemePreview'
-import { VisualizationManager } from '../../services/VisualizationManager'
+import { useVizRender } from './hooks/useVizRender'
+import { useVizSuggestion } from './hooks/useVizSuggestion'
 import { useMapStore } from '../../stores/useMapStore'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
 import type { ColorScheme, ClassificationMethod } from '../../types/visualization'
-import { suggestClassificationMethod } from '../../utils/classificationMethods'
 
 interface VizWizardStep4Props {
   onBack: () => void;
@@ -40,7 +38,7 @@ const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; desc
     description: 'Verideki doğal grupları bulur',
   },
   {
-    value: 'rounded',
+    value: 'rounded-sm',
     label: 'Yuvarlanmış (Rounded)',
     description: 'Güzel yuvarlak sayılar (10, 20, 50...)',
   },
@@ -48,107 +46,43 @@ const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; desc
 ]
 
 export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
-  const [isRendering, setIsRendering] = useState(false)
-  const [hasRendered, setHasRendered] = useState(false)
-  const [suggestion, setSuggestion] = useState<{
-    method: ClassificationMethod;
-    reason: string;
-    emoji: string;
-    warning?: string;
-  } | null>(null)
-  const [showSuggestion, setShowSuggestion] = useState(true)
-
   const { matchResults, columnMapping, vizSettings, setVizSettings } = useVisualizationStore()
   const { mapInstance: map } = useMapStore()
 
-  // Calculate suggestion when data changes
-  useEffect(() => {
-    if (!matchResults.successful.length || !columnMapping.dataColumn) {
-      setSuggestion(null)
-      return
-    }
+  const {
+    suggestion,
+    showSuggestion,
+    setShowSuggestion,
+    handleApplySuggestion,
+  } = useVizSuggestion({
+    matchResults,
+    dataColumn: columnMapping.dataColumn,
+  })
 
-    try {
-      // Extract values from successful matches
-      const values = matchResults.successful
-        .map((m) => parseFloat(m.originalData[columnMapping.dataColumn!]))
-        .filter((v) => !isNaN(v) && v !== 0)
+  const { isRendering, hasRendered, handleRender } = useVizRender({
+    matchResults,
+    columnMapping,
+    vizSettings,
+    map,
+  })
 
-      if (values.length === 0) {
-        setSuggestion(null)
-        return
-      }
-
-      // Get suggestion
-      const methodSuggestion = suggestClassificationMethod(values)
-      setSuggestion(methodSuggestion)
-      setShowSuggestion(true)
-    } catch (error) {
-      console.error('Suggestion calculation error:', error)
-      setSuggestion(null)
-    }
-  }, [matchResults, columnMapping.dataColumn])
-
-  const handleApplySuggestion = () => {
-    if (suggestion) {
-      setVizSettings({ classificationMethod: suggestion.method })
-      setShowSuggestion(false)
-    }
-  }
-
-  const handleRender = async () => {
-    if (!map) {
-      alert('Harita bulunamadı!')
-      return
-    }
-
-    setIsRendering(true)
-
-    try {
-      const vizManager = new VisualizationManager(map)
-
-      // Get successful matches only
-      const successfulData = matchResults.successful.map((m) => ({
-        location: m.location,
-        province: m.province,
-        district: m.district,
-        ...m.originalData,
-      }))
-
-      if (successfulData.length === 0) {
-        alert('Görselleştirilecek veri yok!')
-        return
-      }
-
-      // Render choropleth
-      await vizManager.renderChoropleth(
-        successfulData,
-        columnMapping.dataColumn!,
-        vizSettings,
-        columnMapping.locationLevel === 'province' ? 'province' : 'district',
-      )
-
-      setHasRendered(true)
-    } catch (error: unknown) {
-      console.error('Render error:', error)
-      const message = error instanceof Error ? error.message : String(error)
-      alert('Görselleştirme hatası: ' + message)
-    } finally {
-      setIsRendering(false)
-    }
+  const onApplySuggestion = () => {
+    handleApplySuggestion((method) => {
+      setVizSettings({ classificationMethod: method })
+    })
   }
 
   return (
     <div className="space-y-3">
       {/* Visualization type badge */}
-      <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 rounded text-[10px] text-emerald-700">
+      <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 rounded-sm text-[10px] text-emerald-700">
         <i className="fa-solid fa-map text-[9px]"></i>
         <span className="font-medium">Choropleth Map</span>
       </div>
 
       {/* Smart Suggestion Panel - Compact */}
       {suggestion && showSuggestion && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-md p-2">
+        <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-md p-2">
           <div className="flex items-start gap-2">
             <div className="text-lg">{suggestion.emoji}</div>
             <div className="flex-1 min-w-0">
@@ -162,15 +96,15 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
               )}
               <div className="flex gap-1">
                 <button
-                  onClick={handleApplySuggestion}
-                  className="px-2 py-0.5 text-[10px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+                  onClick={onApplySuggestion}
+                  className="px-2 py-0.5 text-[10px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-sm transition-colors"
                 >
                   <i className="fa-solid fa-check mr-1 text-[8px]"></i>
                   Uygula
                 </button>
                 <button
                   onClick={() => setShowSuggestion(false)}
-                  className="px-2 py-0.5 text-[10px] font-medium text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                  className="px-2 py-0.5 text-[10px] font-medium text-blue-600 hover:bg-blue-100 rounded-sm transition-colors"
                 >
                   <i className="fa-solid fa-xmark mr-1 text-[8px]"></i>
                   Kapat
@@ -192,9 +126,9 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
               className={`
                 flex-1 px-2.5 py-1.5 rounded-md text-[11px] font-semibold transition-all
                 ${vizSettings.classCount === count
-              ? 'bg-slate-700 text-white shadow-sm'
-              : 'bg-white border border-zinc-200 text-zinc-600 hover:border-slate-300 hover:bg-zinc-50'
-            }
+                  ? 'bg-slate-700 text-white shadow-xs'
+                  : 'bg-white border border-zinc-200 text-zinc-600 hover:border-slate-300 hover:bg-zinc-50'
+                }
               `}
             >
               {count}
@@ -214,7 +148,7 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
               classificationMethod: e.target.value as ClassificationMethod,
             })
           }
-          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
         >
           {CLASSIFICATION_METHODS.map((method) => (
             <option key={method.value} value={method.value}>
@@ -238,7 +172,7 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
           onChange={(e) =>
             setVizSettings({ colorScheme: e.target.value as ColorScheme })
           }
-          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
         >
           {COLOR_SCHEMES.map((scheme) => (
             <option key={scheme.value} value={scheme.value}>
@@ -253,9 +187,9 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
       <div className="space-y-1.5 pt-1">
         {/* Render button */}
         <button
-          onClick={handleRender}
+          onClick={() => handleRender()}
           disabled={isRendering}
-          className="w-full px-3 py-2 text-[11px] font-semibold text-white bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          className="w-full px-3 py-2 text-[11px] font-semibold text-white bg-linear-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
         >
           {isRendering ? (
             <>

@@ -11,7 +11,7 @@ export type ClassificationMethod =
   | 'quantile'
   | 'equal'
   | 'jenks'
-  | 'rounded'
+  | 'rounded-sm'
   | 'logarithmic'
   | 'custom'
 

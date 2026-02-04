@@ -57,14 +57,14 @@ export default function AppLayout() {
       <aside
         id="sidebar"
         className={`
-                    fixed left-0 top-0 z-[1350] 
+                    fixed left-0 top-0 z-1350 
                     w-full md:w-72 bg-white shadow-xl h-screen 
                     flex flex-col transition-transform duration-300 ease-in-out
                     ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                 `}
         style={{ maxWidth: `${LAYOUT.SIDEBAR_WIDTH}px` }}
       >
-        <Sidebar onClose={() => setSidebarOpen(false)} />
+        <Sidebar />
       </aside>
 
       {/* Map */}
@@ -75,7 +75,7 @@ export default function AppLayout() {
       {/* Map Control Stack (Vertical) */}
       <div
         id="map-control-container"
-        className="fixed top-3 z-[10001] transition-all duration-300 ease-in-out"
+        className="fixed top-3 z-10001 transition-all duration-300 ease-in-out"
         style={{ left: controlsLeft }}
       >
         <MapControlStack

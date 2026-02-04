@@ -5,11 +5,12 @@
 
 import { useState, useEffect } from 'react'
 
+import { MatchResultsSummary } from './components/MatchResultsSummary'
+import { MatchResultsWarnings } from './components/MatchResultsWarnings'
+import { useMatching } from './hooks/useMatching'
 import MatchResultsModal from './MatchResultsModal'
-import { VisualizationManager } from '../../services/VisualizationManager'
 import { useMapStore } from '../../stores/useMapStore'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
-import { ColumnMapper } from '../../utils/columnMapper'
 
 interface VizWizardStep3Props {
   onBack: () => void;
@@ -17,8 +18,6 @@ interface VizWizardStep3Props {
 }
 
 export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) {
-  const [isMatching, setIsMatching] = useState(false)
-  const [hasMatched, setHasMatched] = useState(false)
   const [showModal, setShowModal] = useState(false)
 
   const {
@@ -38,122 +37,34 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
 
   const { mapInstance: map } = useMapStore()
 
+  const { isMatching, hasMatched, performMatching } = useMatching({
+    rawData,
+    columnMapping,
+    map,
+    provincesGeoJSON,
+    districtsGeoJSON,
+    provinceIndex,
+    districtIndex,
+    setProvincesGeoJSON,
+    setDistrictsGeoJSON,
+    setProvinceIndex,
+    setDistrictIndex,
+  })
+
   useEffect(() => {
     if (!hasMatched) {
-      performMatching()
-    }
-  }, [])
-
-  const performMatching = async () => {
-    console.log('🔍 performMatching called', { rawData: !!rawData, map: !!map })
-
-    if (!rawData || !map) {
-      console.warn('⚠️ Missing data:', { rawData: !!rawData, map: !!map })
-      return
-    }
-
-    setIsMatching(true)
-    console.log('📊 Starting matching process...')
-
-    try {
-      // Create VisualizationManager
-      const vizManager = new VisualizationManager(map)
-
-      // Track indexes locally
-      let localProvinceIndex = provinceIndex
-      let localDistrictIndex = districtIndex
-
-      // Load GeoJSON based on location level
-      if (columnMapping.locationLevel === 'province') {
-        if (!provincesGeoJSON) {
-          const geojson = await vizManager.loadProvincesGeoJSON()
-          setProvincesGeoJSON(geojson)
-          const provIndex = vizManager.getProvinceIndex()
-          if (provIndex) {
-            setProvinceIndex(provIndex)
-            localProvinceIndex = provIndex
-          }
-        } else if (!localProvinceIndex) {
-          // GeoJSON exists but index not loaded
-          await vizManager.loadProvincesGeoJSON()
-          const provIndex = vizManager.getProvinceIndex()
-          if (provIndex) {
-            setProvinceIndex(provIndex)
-            localProvinceIndex = provIndex
-          }
+      performMatching().then(results => {
+        if (results) {
+          setMatchResults(results)
         }
-      } else if (
-        columnMapping.locationLevel === 'district' ||
-        columnMapping.locationLevel === 'mixed'
-      ) {
-        if (!districtsGeoJSON) {
-          const geojson = await vizManager.loadDistrictsGeoJSON()
-          setDistrictsGeoJSON(geojson)
-          const distIndex = vizManager.getDistrictIndex()
-          if (distIndex) {
-            setDistrictIndex(distIndex)
-            localDistrictIndex = distIndex
-          }
-        } else if (!localDistrictIndex) {
-          // GeoJSON exists but index not loaded
-          await vizManager.loadDistrictsGeoJSON()
-          const distIndex = vizManager.getDistrictIndex()
-          if (distIndex) {
-            setDistrictIndex(distIndex)
-            localDistrictIndex = distIndex
-          }
-        }
-
-        if (columnMapping.locationLevel === 'mixed') {
-          if (!provincesGeoJSON) {
-            const geojson = await vizManager.loadProvincesGeoJSON()
-            setProvincesGeoJSON(geojson)
-            const provIndex = vizManager.getProvinceIndex()
-            if (provIndex) {
-              setProvinceIndex(provIndex)
-              localProvinceIndex = provIndex
-            }
-          } else if (!localProvinceIndex) {
-            // GeoJSON exists but index not loaded
-            await vizManager.loadProvincesGeoJSON()
-            const provIndex = vizManager.getProvinceIndex()
-            if (provIndex) {
-              setProvinceIndex(provIndex)
-              localProvinceIndex = provIndex
-            }
-          }
-        }
-      }
-
-      // Create ColumnMapper and perform matching
-      const mapper = new ColumnMapper()
-      mapper.rawData = rawData
-      mapper.columns = Object.keys(rawData[0])
-      mapper.setColumnMapping(columnMapping)
-      mapper.setIndexes(localProvinceIndex, localDistrictIndex)
-
-      console.log('🎯 Performing match with indexes:', {
-        provinceIndex: !!localProvinceIndex,
-        districtIndex: !!localDistrictIndex,
       })
-
-      const results = mapper.matchData()
-      console.log('✅ Match results:', results)
-
-      setMatchResults(results)
-      setHasMatched(true)
-    } catch (error: unknown) {
-      console.error('❌ Matching error:', error)
-      const message = error instanceof Error ? error.message : String(error)
-      alert('Eşleştirme hatası: ' + message)
-    } finally {
-      setIsMatching(false)
-      console.log('📍 Matching complete, hasMatched:', true)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleNext = () => {
     if (matchResults.ambiguous.length > 0) {
+      // eslint-disable-next-line no-alert
       const proceed = confirm(
         `${matchResults.ambiguous.length} belirsiz eşleşme var. Bunlar görselleştirmede göz ardı edilecek. Devam edilsin mi?`,
       )
@@ -196,49 +107,10 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
 
       {/* Match results summary */}
       {!isMatching && hasMatched && (
-        <>
-          <div className="bg-white border border-zinc-100 rounded-md p-2.5 shadow-sm">
-            {/* Stats grid */}
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              <div className="text-center">
-                <div className="text-lg font-bold text-emerald-600">
-                  {matchResults.successful.length}
-                </div>
-                <div className="text-[9px] text-zinc-500 flex items-center justify-center gap-1">
-                  <i className="fa-solid fa-check"></i>
-                  Başarılı
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-amber-600">
-                  {matchResults.ambiguous.length}
-                </div>
-                <div className="text-[9px] text-zinc-500 flex items-center justify-center gap-1">
-                  <i className="fa-solid fa-triangle-exclamation"></i>
-                  Belirsiz
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-red-600">
-                  {matchResults.failed.length}
-                </div>
-                <div className="text-[9px] text-zinc-500 flex items-center justify-center gap-1">
-                  <i className="fa-solid fa-xmark"></i>
-                  Hatalı
-                </div>
-              </div>
-            </div>
-
-            {/* Detaylı Önizleme Button */}
-            <button
-              onClick={() => setShowModal(true)}
-              className="w-full px-3 py-1.5 text-[10px] font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded transition-colors flex items-center justify-center gap-1.5"
-            >
-              <i className="fa-solid fa-table-list text-[9px]"></i>
-              Detaylı Görüntüle
-            </button>
-          </div>
-        </>
+        <MatchResultsSummary
+          matchResults={matchResults}
+          onShowDetails={() => setShowModal(true)}
+        />
       )}
 
       {/* Match Results Modal */}
@@ -251,34 +123,7 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
 
       {/* Warnings and info - compact */}
       {!isMatching && hasMatched && (
-        <div className="space-y-1.5">
-          {matchResults.ambiguous.length > 0 && (
-            <div className="bg-amber-50/50 rounded p-1.5 flex items-start gap-1.5">
-              <i className="fa-solid fa-triangle-exclamation text-amber-600 text-[10px] mt-0.5"></i>
-              <p className="text-[10px] text-amber-700 leading-relaxed">
-                {matchResults.ambiguous.length} belirsiz eşleşme göz ardı edilecek
-              </p>
-            </div>
-          )}
-
-          {matchResults.failed.length > 0 && (
-            <div className="bg-red-50/50 rounded p-1.5 flex items-start gap-1.5">
-              <i className="fa-solid fa-circle-xmark text-red-600 text-[10px] mt-0.5"></i>
-              <p className="text-[10px] text-red-700 leading-relaxed">
-                {matchResults.failed.length} hatalı kayıt göz ardı edilecek
-              </p>
-            </div>
-          )}
-
-          {matchResults.successful.length > 0 && (
-            <div className="bg-emerald-50/50 rounded p-1.5 flex items-start gap-1.5">
-              <i className="fa-solid fa-circle-check text-emerald-600 text-[10px] mt-0.5"></i>
-              <p className="text-[10px] text-emerald-700 leading-relaxed">
-                {matchResults.successful.length} konum görselleştirmeye hazır
-              </p>
-            </div>
-          )}
-        </div>
+        <MatchResultsWarnings matchResults={matchResults} />
       )}
 
       {/* Navigation buttons */}

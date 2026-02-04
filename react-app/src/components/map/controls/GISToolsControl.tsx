@@ -1,12 +1,11 @@
-
-import * as turf from '@turf/turf'
-import type { Geometry, GeometryCollection } from 'geojson'
 import { useState, useRef, useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
 import { useClusteringStore } from '@/features/clustering'
 import { useDataStore } from '@/stores/useDataStore'
 import { useToolStore, type ToolType } from '@/stores/useToolStore'
+
+import { BufferModal } from './GISToolsControl.buffer'
 
 /**
  * GISToolsControl Component
@@ -31,12 +30,7 @@ export default function GISToolsControl() {
     resetDraw,
   } = useToolStore()
 
-  const { items, addItem, clearAll } = useDataStore()
-
-  // Buffer State
-  const [selectedLayerId, setSelectedLayerId] = useState('')
-  const [bufferRadius, setBufferRadius] = useState(500)
-  const [bufferUnit, setBufferUnit] = useState<turf.Units>('meters')
+  const { clearAll } = useDataStore()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -87,29 +81,9 @@ export default function GISToolsControl() {
     }
   }
 
-  const handleBufferAnalyze = () => {
-    if (!selectedLayerId) return
-    const selectedItem = items.find(i => i.id === selectedLayerId)
-    if (!selectedItem || !selectedItem.geometry) return
-    try {
-      const buffered = turf.buffer(selectedItem.geometry as Exclude<Geometry, GeometryCollection>, bufferRadius, { units: bufferUnit })
-      if (buffered) {
-        addItem({
-          name: `Buffer(${bufferRadius} ${bufferUnit}) - ${selectedItem.name} `,
-          date: new Date().toISOString(),
-          type: 'polygon',
-          geometry: buffered.geometry,
-          properties: { analysis: 'buffer' },
-        })
-        setShowBufferModal(false)
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  }
 
   return (
-    <div ref={containerRef} className="absolute top-3 right-3 z-[10002] flex flex-col items-end">
+    <div ref={containerRef} className="absolute top-3 right-3 z-10002 flex flex-col items-end">
       {/* Main Toggle Button */}
       <button
         id="toggle-gis-tools"
@@ -117,17 +91,10 @@ export default function GISToolsControl() {
           e.stopPropagation()
           setIsToolsMenuOpen(!isToolsMenuOpen)
         }}
-        className={`
-w - 9 h - 9 flex items - center justify - center rounded - full transition - all duration - 300
-      ${isToolsMenuOpen
-            ? 'bg-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)]'
-            : 'bg-[#1c1c1e] hover:bg-black shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
-          }
-border - none text - white cursor - pointer
-  `}
+        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 border-none text-white cursor-pointer ${isToolsMenuOpen ? 'bg-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)]' : 'bg-[#1c1c1e] hover:bg-black shadow-[0_2px_8px_rgba(0,0,0,0.3)]'}`}
         title="CBS Araçları"
       >
-        <i className={`fa - solid fa - screwdriver - wrench text - [13px] ${isToolsMenuOpen ? 'rotate-45' : ''} transition - transform duration - 300`}></i>
+        <i className={`fa-solid fa-screwdriver-wrench text-[13px] ${isToolsMenuOpen ? 'rotate-45' : ''} transition-transform duration-300`}></i>
       </button>
 
       {/* Compact Light List Dropdown */}
@@ -203,77 +170,11 @@ border - none text - white cursor - pointer
         </div>
       )}
 
-      {/* Compact Buffer Modal */}
-      {showBufferModal && (
-        <div className="fixed inset-0 bg-black/30 z-[10003] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[300px] overflow-hidden animate-in zoom-in-95 duration-200 border border-zinc-100">
-            <div className="px-4 py-3 border-b border-zinc-50 flex items-center justify-between bg-zinc-50/50">
-              <h3 className="text-xs font-bold text-zinc-900 uppercase tracking-tight flex items-center gap-2">
-                <i className="fa-solid fa-circle-dot text-purple-500"></i>
-                Etki Alanı Analizi
-              </h3>
-              <button onClick={() => setShowBufferModal(false)} className="text-zinc-400 hover:text-zinc-600 transition-colors">
-                <i className="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-
-            <div className="p-4 space-y-3">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Katman</label>
-                <select
-                  className="w-full h-8 px-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-                  value={selectedLayerId}
-                  onChange={e => setSelectedLayerId(e.target.value)}
-                >
-                  <option value="">Seçiniz</option>
-                  {items.filter(i => i.visible).map(i => (
-                    <option key={i.id} value={i.id}>{i.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Mesafe</label>
-                  <input
-                    type="number"
-                    value={bufferRadius}
-                    onChange={e => setBufferRadius(Number(e.target.value))}
-                    className="w-full h-8 px-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:ring-1 focus:ring-purple-500 outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Birim</label>
-                  <select
-                    value={bufferUnit}
-                    onChange={e => setBufferUnit(e.target.value as turf.Units)}
-                    className="w-full h-8 px-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:ring-1 focus:ring-purple-500 outline-none"
-                  >
-                    <option value="meters">Metre</option>
-                    <option value="kilometers">Kilometre</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-3 bg-zinc-50/50 flex gap-2">
-              <button
-                onClick={() => setShowBufferModal(false)}
-                className="flex-1 h-8 text-xs font-medium text-zinc-500 hover:bg-zinc-200 rounded-lg transition-colors"
-              >
-                İptal
-              </button>
-              <button
-                onClick={handleBufferAnalyze}
-                disabled={!selectedLayerId}
-                className="flex-[2] h-8 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold shadow-sm disabled:opacity-50 transition-all"
-              >
-                Analiz Yap
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Buffer Modal */}
+      <BufferModal
+        isOpen={showBufferModal}
+        onClose={() => setShowBufferModal(false)}
+      />
     </div>
   )
 }
@@ -295,20 +196,12 @@ function CompactMenuItem({ icon, label, onClick, active, color, disabled }: Comp
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`
-w - full flex items - center gap - 3 px - 3 py - 1.5 transition - colors text - left
-      ${active
-          ? 'bg-blue-50 text-blue-600'
-          : disabled
-            ? 'opacity-40 cursor-not-allowed text-zinc-400'
-            : 'hover:bg-zinc-50 text-zinc-700 cursor-pointer'
-        }
-`}
+      className={`w-full flex items-center gap-3 px-3 py-1.5 transition-colors text-left ${active ? 'bg-blue-50 text-blue-600' : disabled ? 'opacity-40 cursor-not-allowed text-zinc-400' : 'hover:bg-zinc-50 text-zinc-700 cursor-pointer'}`}
     >
-      <i className={`fa - solid ${icon} ${active ? 'text-blue-600' : color} w - 4 text - center text - [12px]`}></i>
-      <span className={`text - [11px] ${active ? 'font-bold' : 'font-medium'} truncate`}>{label}</span>
+      <i className={`fa-solid ${icon} ${active ? 'text-blue-600' : color} w-4 text-center text-[12px]`}></i>
+      <span className={`text-[11px] ${active ? 'font-bold' : 'font-medium'} truncate`}>{label}</span>
       {active && <div className="ml-auto w-1 h-1 rounded-full bg-blue-600"></div>}
-      {disabled && <span className="ml-auto text-[8px] bg-zinc-100 text-zinc-400 px-1 py-0.5 rounded uppercase">Yakında</span>}
+      {disabled && <span className="ml-auto text-[8px] bg-zinc-100 text-zinc-400 px-1 py-0.5 rounded-sm uppercase">Yakında</span>}
     </button>
   )
 }

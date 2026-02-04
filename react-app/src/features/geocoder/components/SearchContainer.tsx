@@ -106,7 +106,7 @@ export function SearchContainer({ leftPosition }: SearchContainerProps) {
   return (
     <div
       id="search-container"
-      className="fixed top-3 z-[10000] transition-all duration-300 ease-in-out"
+      className="fixed top-3 z-10000 transition-all duration-300 ease-in-out"
       style={{ left: leftPosition }}
     >
       {!isOpen && (
@@ -163,7 +163,7 @@ export function SearchContainer({ leftPosition }: SearchContainerProps) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-                className="w-full py-2.5 px-4 text-sm bg-transparent border-none text-white outline-none placeholder:text-white/50"
+                className="w-full py-2.5 px-4 text-sm bg-transparent border-none text-white outline-hidden placeholder:text-white/50"
                 autoComplete="off"
               />
             </div>

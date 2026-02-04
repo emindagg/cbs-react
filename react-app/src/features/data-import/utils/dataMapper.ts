@@ -10,20 +10,24 @@ export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping
     // Parse geometry string if exists (format: "lat,lon;lat,lon")
     if (mapping.geometry && row[mapping.geometry]) {
       try {
-        const points = row[mapping.geometry].split(';').map((p: string) => {
+        const geometryValue = String(row[mapping.geometry])
+        const points = geometryValue.split(';').map((p: string) => {
           const [lat, lon] = p.split(',').map(Number)
           if (!isNaN(lat) && !isNaN(lon)) return { lat, lon }
           return null
-        }).filter(Boolean)
+        }).filter((p): p is { lat: number; lon: number } => p !== null)
 
         if (points.length > 0) {
           const type = mapping.type ? row[mapping.type] : 'point'
           if (type === 'polygon' || type === 'area' || type === 'alan') {
-            geometry = { type: 'Polygon', coordinates: [points.map((p: { lat: number; lon: number }) => [p.lon, p.lat])] }
+            geometry = { type: 'Polygon', coordinates: [points.map((p) => [p.lon, p.lat])] }
           } else if (type === 'line' || type === 'route' || type === 'rota') {
-            geometry = { type: 'LineString', coordinates: points.map((p: { lat: number; lon: number }) => [p.lon, p.lat]) }
+            geometry = { type: 'LineString', coordinates: points.map((p) => [p.lon, p.lat]) }
           } else {
-            geometry = { type: 'Point', coordinates: [points[0].lon, points[0].lat] }
+            const firstPoint = points[0]
+            if (firstPoint) {
+              geometry = { type: 'Point', coordinates: [firstPoint.lon, firstPoint.lat] }
+            }
           }
         }
       } catch (e) {

@@ -1,10 +1,20 @@
-import * as turf from '@turf/turf'
 import type { FeatureCollection, LineString, Polygon } from 'geojson'
-import { useEffect, useCallback, useMemo } from 'react'
+import type maplibregl from 'maplibre-gl'
+import { useEffect, useMemo } from 'react'
 import { useMap, Source, Layer, Marker } from 'react-map-gl/maplibre'
 import type { LayerProps } from 'react-map-gl/maplibre'
 
 import { useToolStore } from '@/stores/useToolStore'
+
+import { MeasurementPanel } from './DistanceTool.display'
+import { useDistanceHandlers } from './DistanceTool.handlers'
+import {
+  calculateMeasurement,
+  calculatePerimeter,
+  calculateTempDistance,
+  formatArea,
+  formatDistance,
+} from './DistanceTool.utils'
 
 export default function DistanceTool() {
   const { current: map } = useMap()
@@ -13,9 +23,6 @@ export default function DistanceTool() {
     distancePoints,
     distanceGhostPoint,
     isDrawingDistance,
-    setDistancePoints,
-    setDistanceGhostPoint,
-    setIsDrawingDistance,
     resetDistance,
   } = useToolStore()
 
@@ -29,107 +36,43 @@ export default function DistanceTool() {
     return first[0] === last[0] && first[1] === last[1]
   }, [distancePoints])
 
-  // --- Interaction Logic ---
-
-  const handleMouseMove = useCallback((e: maplibregl.MapMouseEvent) => {
-    if (!isActive || !isDrawingDistance) return
-    setDistanceGhostPoint([e.lngLat.lng, e.lngLat.lat])
-    if (map) map.getCanvas().style.cursor = 'crosshair'
-  }, [isActive, isDrawingDistance, map, setDistanceGhostPoint])
-
-  const handleClick = useCallback((e: maplibregl.MapMouseEvent) => {
-    if (!isActive) return
-
-    // Click on map - Add point
-    if (!isDrawingDistance) {
-      resetDistance()
-      setIsDrawingDistance(true)
-      setDistancePoints([[e.lngLat.lng, e.lngLat.lat]])
-    } else {
-      // Normal add point
-      setDistancePoints([...distancePoints, [e.lngLat.lng, e.lngLat.lat]])
-    }
-  }, [isActive, isDrawingDistance, distancePoints, setDistancePoints, setIsDrawingDistance, resetDistance])
-
-  const handleDblClick = useCallback((e: maplibregl.MapMouseEvent) => {
-    if (!isActive || !isDrawingDistance) return
-    e.preventDefault()
-
-    // Finish drawing
-    setIsDrawingDistance(false)
-    setDistanceGhostPoint(null)
-    if (map) map.getCanvas().style.cursor = 'grab'
-  }, [isActive, isDrawingDistance, map, setIsDrawingDistance, setDistanceGhostPoint])
-
-  const handleFirstPointClick = (e: { originalEvent?: Event } | Event) => {
-    // react-map-gl Marker onClick passes an object with originalEvent
-    const hasOriginalEvent = (evt: unknown): evt is { originalEvent: Event; stopPropagation?: never } =>
-      typeof evt === 'object' && evt !== null && 'originalEvent' in evt
-
-    if (hasOriginalEvent(e) && e.originalEvent && typeof e.originalEvent.stopPropagation === 'function') {
-      e.originalEvent.stopPropagation()
-    } else if (e && typeof (e as Event).stopPropagation === 'function') {
-      (e as Event).stopPropagation()
-    }
-
-    if (isActive && isDrawingDistance && distancePoints.length >= 3) {
-      // Close loop
-      setDistancePoints([...distancePoints, distancePoints[0]])
-      setIsDrawingDistance(false)
-      setDistanceGhostPoint(null)
-      if (map) map.getCanvas().style.cursor = 'grab'
-    }
-  }
-
-  const handleMarkerDrag = (idx: number, e: { lngLat: { lng: number; lat: number } }) => {
-    const newPoints = [...distancePoints]
-    const lng = e.lngLat.lng
-    const lat = e.lngLat.lat
-
-    newPoints[idx] = [lng, lat]
-
-    // If closed, sync start/end points
-    if (isClosed) {
-      if (idx === 0) {
-        newPoints[newPoints.length - 1] = [lng, lat]
-      } else if (idx === newPoints.length - 1) {
-        newPoints[0] = [lng, lat]
-      }
-    }
-
-    setDistancePoints(newPoints)
-  }
-
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!isActive) return
-    if (e.key === 'Escape') {
-      if (isDrawingDistance || distancePoints.length > 0) {
-        resetDistance()
-        if (map) map.getCanvas().style.cursor = 'grab'
-      } else {
-        // Close the tool if hit ESC while empty
-        useToolStore.setState({ activeTool: 'none' })
-      }
-    }
-  }, [isActive, isDrawingDistance, distancePoints.length, map, resetDistance])
+  // Event handlers
+  const {
+    handleMouseMove,
+    handleClick,
+    handleDblClick,
+    handleFirstPointClick,
+    handleMarkerDrag,
+    handleKeyDown,
+  } = useDistanceHandlers({
+    isActive,
+    isDrawingDistance,
+    distancePoints,
+    isClosed,
+  })
 
   // Attach/Detach Listeners
   useEffect(() => {
     if (!map || !isActive) return
 
-    map.on('mousemove', handleMouseMove)
-    map.on('click', handleClick)
-    map.on('dblclick', handleDblClick)
+    const mapInstance = map as unknown as maplibregl.Map
+
+    mapInstance.on('mousemove', handleMouseMove)
+    mapInstance.on('click', handleClick)
+    mapInstance.on('dblclick', handleDblClick)
     document.addEventListener('keydown', handleKeyDown)
 
-    if (isDrawingDistance) map.getCanvas().style.cursor = 'crosshair'
+    // Set cursor
+    if (isDrawingDistance) {
+      mapInstance.getCanvas().style.cursor = 'crosshair'
+    }
 
     return () => {
-      map.off('mousemove', handleMouseMove)
-      map.off('click', handleClick)
-      map.off('dblclick', handleDblClick)
+      mapInstance.off('mousemove', handleMouseMove)
+      mapInstance.off('click', handleClick)
+      mapInstance.off('dblclick', handleDblClick)
       document.removeEventListener('keydown', handleKeyDown)
-      if (map) map.getCanvas().style.cursor = ''
+      mapInstance.getCanvas().style.cursor = ''
     }
   }, [map, isActive, handleMouseMove, handleClick, handleDblClick, handleKeyDown, isDrawingDistance])
 
@@ -146,7 +89,7 @@ export default function DistanceTool() {
           type: 'Feature',
           geometry: {
             type: 'Polygon',
-            coordinates: [distancePoints],
+            coordinates: [distancePoints as [number, number][]],
           },
           properties: {},
         }],
@@ -159,7 +102,7 @@ export default function DistanceTool() {
         type: 'Feature',
         geometry: {
           type: 'LineString',
-          coordinates: distancePoints,
+          coordinates: distancePoints as [number, number][],
         },
         properties: {},
       }],
@@ -171,7 +114,8 @@ export default function DistanceTool() {
       return { type: 'FeatureCollection', features: [] }
     }
 
-    const lastPoint = distancePoints[distancePoints.length - 1]
+    const lastPoint = distancePoints[distancePoints.length - 1] as [number, number]
+    const ghost = distanceGhostPoint as [number, number]
 
     return {
       type: 'FeatureCollection',
@@ -179,52 +123,28 @@ export default function DistanceTool() {
         type: 'Feature',
         geometry: {
           type: 'LineString',
-          coordinates: [lastPoint, distanceGhostPoint],
+          coordinates: [lastPoint, ghost],
         },
         properties: {},
       }],
     }
   }, [distancePoints, distanceGhostPoint, isDrawingDistance])
 
-  // --- Calculations ---
+  // Calculations
+  const measurementValue = useMemo(
+    () => calculateMeasurement(distancePoints, isClosed),
+    [distancePoints, isClosed],
+  )
 
-  const measurementValue = useMemo(() => {
-    if (distancePoints.length < 2) return 0
+  const perimeterValue = useMemo(
+    () => calculatePerimeter(distancePoints, isClosed),
+    [distancePoints, isClosed],
+  )
 
-    if (isClosed) {
-      const poly = turf.polygon([distancePoints])
-      return turf.area(poly)
-    } else {
-      const line = turf.lineString(distancePoints)
-      return turf.length(line, { units: 'kilometers' })
-    }
-  }, [distancePoints, isClosed])
-
-  const perimeterValue = useMemo(() => {
-    if (!isClosed) return 0
-    const line = turf.lineString(distancePoints)
-    return turf.length(line, { units: 'kilometers' })
-  }, [distancePoints, isClosed])
-
-  const formatDistance = (val: number) => {
-    // Turkish locale for comma separator
-    if (val < 1) return `${(val * 1000).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`
-    return `${val.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} km`
-  }
-
-  const formatArea = (val: number) => {
-    if (val >= 1000000) return `${(val / 1000000).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} km²`
-    return `${val.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m²`
-  }
-
-  // Temporary distance (including ghost point)
-  const tempTotalDistance = useMemo(() => {
-    if (!distanceGhostPoint || distancePoints.length === 0) return 0
-    const currentPoints = [...distancePoints, distanceGhostPoint]
-    if (currentPoints.length < 2) return 0
-    const line = turf.lineString(currentPoints)
-    return turf.length(line, { units: 'kilometers' })
-  }, [distancePoints, distanceGhostPoint])
+  const tempTotalDistance = useMemo(
+    () => calculateTempDistance(distancePoints, distanceGhostPoint),
+    [distancePoints, distanceGhostPoint],
+  )
 
 
   // STRICT VISIBILITY & CLEAN START
@@ -265,58 +185,16 @@ export default function DistanceTool() {
 
   return (
     <>
-      {/* Centered Top Floating Panel - Legacy OneSoil Style */}
-      <style>{`
-                @keyframes slideDownFade {
-                    from { transform: translate(-50%, -20px); opacity: 0; }
-                    to { transform: translate(-50%, 0); opacity: 1; }
-                }
-            `}</style>
-      <div
-        className="fixed top-[70px] left-1/2 transform -translate-x-1/2 flex items-center gap-[8px] z-[2001] font-sans pointer-events-auto"
-        style={{
-          backgroundColor: 'rgba(17, 24, 39, 0.95)',
-          backdropFilter: 'blur(8px)',
-          padding: '7px 11px',
-          borderRadius: '8px',
-          boxShadow: '0 3px 14px rgba(0, 0, 0, 0.3)',
-          minHeight: '31px',
-          animation: 'slideDownFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        }}
-      >
-        <button
-          onClick={resetDistance}
-          className="flex items-center gap-[4px] text-white/70 text-[10px] font-medium px-[6px] py-[3px] rounded-[4px] hover:bg-white/10 hover:text-white transition-colors border-none bg-transparent cursor-pointer"
-        >
-          ESC
-        </button>
-
-        <div className="w-[1px] h-[17px] bg-white/20"></div>
-
-        {isClosed ? (
-          <div className="flex items-center gap-[8px]">
-            <div className="flex items-center gap-[6px]">
-              <span className="text-white/60 text-[10px] font-normal">Çevre</span>
-              <span className="text-white text-[11px] font-bold tracking-[0.3px]">{formatDistance(perimeterValue)}</span>
-            </div>
-            <div className="w-[1px] h-[17px] bg-white/20"></div>
-            <div className="flex items-center gap-[6px]">
-              <span className="text-white/60 text-[10px] font-normal">Alan</span>
-              <span className="text-white text-[13px] font-bold tracking-[0.3px]">{formatArea(measurementValue)}</span>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-[6px]">
-            <span className="text-white/60 text-[10px] font-normal">Mesafe</span>
-            <span className="text-white text-[13px] font-bold tracking-[0.3px]">
-              {isDrawingDistance
-                ? formatDistance(tempTotalDistance)
-                : formatDistance(measurementValue)
-              }
-            </span>
-          </div>
-        )}
-      </div>
+      <MeasurementPanel
+        isClosed={isClosed}
+        perimeterValue={perimeterValue}
+        measurementValue={measurementValue}
+        tempTotalDistance={tempTotalDistance}
+        isDrawingDistance={isDrawingDistance}
+        formatDistance={formatDistance}
+        formatArea={formatArea}
+        onReset={resetDistance}
+      />
 
       {/* Main Geometry */}
       <Source id="measure-source" type="geojson" data={mainGeoJSON}>
@@ -346,7 +224,7 @@ export default function DistanceTool() {
             className={`box-content rounded-full cursor-move ${idx === 0 && isDrawingDistance && distancePoints.length >= 3
               ? 'ring-2 ring-emerald-500 ring-offset-2'
               : ''
-            }`}
+              }`}
             style={{
               width: '10px',
               height: '10px',

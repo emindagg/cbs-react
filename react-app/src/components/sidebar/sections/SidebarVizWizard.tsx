@@ -18,7 +18,7 @@ export default function SidebarVizWizard() {
   }
 
   return (
-    <section className="rounded-lg px-2 py-2 border border-zinc-100 bg-gradient-to-br from-white to-zinc-50/30 hover:shadow-sm transition-all">
+    <section className="rounded-lg px-2 py-2 border border-zinc-100 bg-linear-to-br from-white to-zinc-50/30 hover:shadow-xs transition-all">
       {/* Header */}
       <div className="mb-2.5 px-0.5">
         <h3 className="text-[11px] font-bold text-zinc-800 tracking-tight">

@@ -26,7 +26,7 @@ export function parseGeoJSON(geojson: GeoJSONInput, fileName: string): GeoItem[]
   } else if (geojson.type === 'GeometryCollection' && geojson.geometries) {
     features = geojson.geometries.map((geom) => ({
       type: 'Feature',
-      geometry: geom as GeoJSON.Geometry,
+      geometry: geom as unknown as GeoJSON.Geometry,
       properties: {},
     }))
   } else if (geojson.geometry) {

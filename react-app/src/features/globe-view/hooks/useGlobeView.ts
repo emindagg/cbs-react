@@ -46,7 +46,6 @@ export function useGlobeView(): GlobeViewState {
       mapInstance.setCenter([0, 0])
 
       setIsGlobeMode(true)
-      console.log('🌍 Globe mode enabled')
     } catch (error) {
       console.error('❌ Failed to enable globe:', error)
     }
@@ -70,7 +69,6 @@ export function useGlobeView(): GlobeViewState {
       mapInstance.setCenter([33.41, 39])
 
       setIsGlobeMode(false)
-      console.log('🗺️ Mercator mode enabled')
     } catch (error) {
       console.error('❌ Failed to disable globe:', error)
     }

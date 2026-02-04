@@ -21,7 +21,7 @@ export function ExportControls({ exportFormat, onFormatChange, onExport }: Expor
           <select
             value={exportFormat}
             onChange={(e) => onFormatChange(e.target.value as ExportFormat)}
-            className="w-full px-3 py-2 border border-zinc-300 bg-white rounded-lg text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all appearance-none"
+            className="w-full px-3 py-2 border border-zinc-300 bg-white rounded-lg text-sm text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all appearance-none"
           >
             {EXPORT_FORMATS.map(format => (
               <option key={format.value} value={format.value}>
@@ -37,7 +37,7 @@ export function ExportControls({ exportFormat, onFormatChange, onExport }: Expor
 
       <button
         onClick={onExport}
-        className="w-full bg-zinc-900 hover:bg-black text-white font-medium py-2 px-3 rounded-lg transition-all flex items-center justify-center hover:scale-[1.02] active:scale-95 shadow-sm mb-2"
+        className="w-full bg-zinc-900 hover:bg-black text-white font-medium py-2 px-3 rounded-lg transition-all flex items-center justify-center hover:scale-[1.02] active:scale-95 shadow-xs mb-2"
       >
         <i className="fa-solid fa-download mr-2"></i>Projeyi İndir
       </button>

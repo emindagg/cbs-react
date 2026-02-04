@@ -15,7 +15,7 @@ export default function Sidebar() {
       <SidebarHeader />
 
       {/* Content Area with custom scrollbar */}
-      <div className="flex-grow overflow-y-auto sidebar-content bg-white px-2.5 py-4 pb-20 space-y-4">
+      <div className="grow overflow-y-auto sidebar-content bg-white px-2.5 py-4 pb-20 space-y-4">
         <SidebarProjectPurpose />
         <SidebarTools />
         <SidebarDataCreation />

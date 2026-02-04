@@ -12,7 +12,7 @@ export async function parseExcel(file: File): Promise<ParseResult> {
   const workbook = XLSX.read(buffer, { type: 'array' })
   const sheetName = workbook.SheetNames[0]
   const sheet = workbook.Sheets[sheetName]
-  const jsonData = XLSX.utils.sheet_to_json(sheet)
+  const jsonData = XLSX.utils.sheet_to_json(sheet) as Record<string, unknown>[]
 
   if (jsonData.length === 0) {
     return { items: [] }

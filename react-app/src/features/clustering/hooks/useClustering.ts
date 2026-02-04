@@ -42,13 +42,14 @@ export function useClustering() {
       const source = map.getSource(sourceId) as GeoJSONSource
 
       if (source && source.getClusterExpansionZoom) {
-        source.getClusterExpansionZoom(clusterId, (err: unknown, zoom: number) => {
-          if (err) return
+        source.getClusterExpansionZoom(clusterId).then((zoom: number) => {
           const coords = features[0].geometry as { type: string; coordinates: [number, number] }
           map.easeTo({
             center: coords.coordinates,
             zoom: zoom,
           })
+        }).catch(() => {
+          // Ignore errors
         })
       }
     }

@@ -45,16 +45,19 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
 
   const handleNext = () => {
     if (!selectedData) {
+      // eslint-disable-next-line no-alert
       alert('Lütfen veri sütunu seçin!')
       return
     }
 
     if (locationLevel === 'province' && !selectedProvince) {
+      // eslint-disable-next-line no-alert
       alert('Lütfen il sütunu seçin!')
       return
     }
 
     if (locationLevel === 'mixed' && (!selectedProvince || !selectedDistrict)) {
+      // eslint-disable-next-line no-alert
       alert('Lütfen il ve ilçe sütunlarını seçin!')
       return
     }
@@ -135,7 +138,7 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
           <select
             value={selectedProvince}
             onChange={(e) => setSelectedProvince(e.target.value)}
-            className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+            className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
           >
             <option value="">Seçin...</option>
             {columns.map((col) => (
@@ -154,7 +157,7 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
           <select
             value={selectedDistrict}
             onChange={(e) => setSelectedDistrict(e.target.value)}
-            className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+            className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
           >
             <option value="">Seçin...</option>
             {columns.map((col) => (
@@ -172,7 +175,7 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
         <select
           value={selectedData}
           onChange={(e) => setSelectedData(e.target.value)}
-          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
         >
           <option value="">Seçin...</option>
           {numericColumns.map((col) => (
