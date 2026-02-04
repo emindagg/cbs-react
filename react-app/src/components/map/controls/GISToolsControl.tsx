@@ -1,10 +1,12 @@
+
 import * as turf from '@turf/turf'
+import type { Geometry, GeometryCollection } from 'geojson'
 import { useState, useRef, useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
 import { useClusteringStore } from '@/features/clustering'
 import { useDataStore } from '@/stores/useDataStore'
-import { useToolStore } from '@/stores/useToolStore'
+import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
 /**
  * GISToolsControl Component
@@ -56,7 +58,7 @@ export default function GISToolsControl() {
       const dataURL = canvas.toDataURL('image/png')
       const a = document.createElement('a')
       a.href = dataURL
-      a.download = `harita-goruntusu-${new Date().toISOString().slice(0, 19).replace('T', '_')}.png`
+      a.download = `harita - goruntusu - ${new Date().toISOString().slice(0, 19).replace('T', '_')}.png`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -66,7 +68,7 @@ export default function GISToolsControl() {
     }
   }
 
-  const handleToolSelect = (tool: any) => {
+  const handleToolSelect = (tool: ToolType | string) => {
     if (tool === 'buffer') {
       setShowBufferModal(true)
       setIsToolsMenuOpen(false)
@@ -80,7 +82,7 @@ export default function GISToolsControl() {
       resetDraw()
       setIsToolsMenuOpen(false)
     } else {
-      setActiveTool(tool)
+      setActiveTool(tool as ToolType)
       setIsToolsMenuOpen(false)
     }
   }
@@ -90,10 +92,10 @@ export default function GISToolsControl() {
     const selectedItem = items.find(i => i.id === selectedLayerId)
     if (!selectedItem || !selectedItem.geometry) return
     try {
-      const buffered = turf.buffer(selectedItem.geometry as any, bufferRadius, { units: bufferUnit })
+      const buffered = turf.buffer(selectedItem.geometry as Exclude<Geometry, GeometryCollection>, bufferRadius, { units: bufferUnit })
       if (buffered) {
         addItem({
-          name: `Buffer (${bufferRadius} ${bufferUnit}) - ${selectedItem.name}`,
+          name: `Buffer(${bufferRadius} ${bufferUnit}) - ${selectedItem.name} `,
           date: new Date().toISOString(),
           type: 'polygon',
           geometry: buffered.geometry,
@@ -116,16 +118,16 @@ export default function GISToolsControl() {
           setIsToolsMenuOpen(!isToolsMenuOpen)
         }}
         className={`
-                    w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300
-                    ${isToolsMenuOpen
-      ? 'bg-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)]'
-      : 'bg-[#1c1c1e] hover:bg-black shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
-    }
-                    border-none text-white cursor-pointer
-                `}
+w - 9 h - 9 flex items - center justify - center rounded - full transition - all duration - 300
+      ${isToolsMenuOpen
+            ? 'bg-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)]'
+            : 'bg-[#1c1c1e] hover:bg-black shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+          }
+border - none text - white cursor - pointer
+  `}
         title="CBS Araçları"
       >
-        <i className={`fa-solid fa-screwdriver-wrench text-[13px] ${isToolsMenuOpen ? 'rotate-45' : ''} transition-transform duration-300`}></i>
+        <i className={`fa - solid fa - screwdriver - wrench text - [13px] ${isToolsMenuOpen ? 'rotate-45' : ''} transition - transform duration - 300`}></i>
       </button>
 
       {/* Compact Light List Dropdown */}
@@ -244,7 +246,7 @@ export default function GISToolsControl() {
                   <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Birim</label>
                   <select
                     value={bufferUnit}
-                    onChange={e => setBufferUnit(e.target.value as any)}
+                    onChange={e => setBufferUnit(e.target.value as turf.Units)}
                     className="w-full h-8 px-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:ring-1 focus:ring-purple-500 outline-none"
                   >
                     <option value="meters">Metre</option>
@@ -279,23 +281,32 @@ export default function GISToolsControl() {
 /**
  * Compact List MenuItem
  */
-function CompactMenuItem({ icon, label, onClick, active, color, disabled }: any) {
+interface CompactMenuItemProps {
+  icon: string
+  label: string
+  onClick?: () => void
+  active?: boolean
+  color: string
+  disabled?: boolean
+}
+
+function CompactMenuItem({ icon, label, onClick, active, color, disabled }: CompactMenuItemProps) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={`
-                w-full flex items-center gap-3 px-3 py-1.5 transition-colors text-left
-                ${active
-      ? 'bg-blue-50 text-blue-600'
-      : disabled
-        ? 'opacity-40 cursor-not-allowed text-zinc-400'
-        : 'hover:bg-zinc-50 text-zinc-700 cursor-pointer'
-    }
-            `}
+w - full flex items - center gap - 3 px - 3 py - 1.5 transition - colors text - left
+      ${active
+          ? 'bg-blue-50 text-blue-600'
+          : disabled
+            ? 'opacity-40 cursor-not-allowed text-zinc-400'
+            : 'hover:bg-zinc-50 text-zinc-700 cursor-pointer'
+        }
+`}
     >
-      <i className={`fa-solid ${icon} ${active ? 'text-blue-600' : color} w-4 text-center text-[12px]`}></i>
-      <span className={`text-[11px] ${active ? 'font-bold' : 'font-medium'} truncate`}>{label}</span>
+      <i className={`fa - solid ${icon} ${active ? 'text-blue-600' : color} w - 4 text - center text - [12px]`}></i>
+      <span className={`text - [11px] ${active ? 'font-bold' : 'font-medium'} truncate`}>{label}</span>
       {active && <div className="ml-auto w-1 h-1 rounded-full bg-blue-600"></div>}
       {disabled && <span className="ml-auto text-[8px] bg-zinc-100 text-zinc-400 px-1 py-0.5 rounded uppercase">Yakında</span>}
     </button>

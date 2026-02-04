@@ -5,7 +5,7 @@ interface SearchResultsProps {
   isSearching: boolean;
   error: string | null;
   onResultClick: (feature: AtlasFeature) => void;
-  formatAddress: (properties: any) => string;
+  formatAddress: (properties: Record<string, unknown>) => string;
 }
 
 /**

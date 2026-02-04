@@ -1,5 +1,5 @@
-import type { FeatureCollection } from 'geojson'
-import { useMemo } from 'react'
+import type { FeatureCollection, Feature } from 'geojson'
+import { useMemo, useCallback } from 'react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 
 import { useClusteringStore } from '@/features/clustering/stores/useClusteringStore'
@@ -10,11 +10,12 @@ export default function DataLayer() {
   const { isEnabled: isClusteringEnabled } = useClusteringStore()
 
   // Helper to flatten properties and inject consistent style defaults
-  const prepareFeatures = (itemType: 'Point' | 'LineString' | 'Polygon') => {
+  const prepareFeatures = useCallback((itemType: 'Point' | 'LineString' | 'Polygon') => {
     return items
       .filter(i => i.visible && (i.geometry.type === itemType || i.geometry.type === `Multi${itemType}`))
       .map(i => {
-        const style = i.properties.style || {}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const style = (i.properties.style || {}) as any
 
         // LEGACY DEFAULTS (Exact match from LayerStylePanel.js)
         // Default Color: #3b82f6 (Blue-500)
@@ -40,23 +41,23 @@ export default function DataLayer() {
             fillOpacity: (style.opacity !== undefined ? style.opacity : 0.9) * 0.3,
           },
         }
-      }) as any
-  }
+      }) as unknown as Feature[]
+  }, [items, activeItemId])
 
   const pointData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: prepareFeatures('Point'),
-  }), [items, activeItemId])
+  }), [prepareFeatures])
 
   const lineData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: prepareFeatures('LineString'),
-  }), [items, activeItemId])
+  }), [prepareFeatures])
 
   const polygonData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: prepareFeatures('Polygon'),
-  }), [items, activeItemId])
+  }), [prepareFeatures])
 
   return (
     <>

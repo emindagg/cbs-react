@@ -129,9 +129,10 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
       )
 
       setHasRendered(true)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Render error:', error)
-      alert('Görselleştirme hatası: ' + error.message)
+      const message = error instanceof Error ? error.message : String(error)
+      alert('Görselleştirme hatası: ' + message)
     } finally {
       setIsRendering(false)
     }

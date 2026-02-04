@@ -10,7 +10,7 @@ export default function SidebarDataCreation() {
     drawMode, setDrawMode,
     drawPoints, drawCenter, drawRadius,
     resetDraw,
-  } = useToolStore()
+  } = useToolStore() // eslint-disable-line
 
   const { addItem } = useDataStore()
 
@@ -29,7 +29,7 @@ export default function SidebarDataCreation() {
       return
     }
 
-    let geometry: any = null
+    let geometry: GeoJSON.Geometry | null = null
 
     try {
       if (drawMode === 'point' && drawPoints.length > 0) {
@@ -51,7 +51,7 @@ export default function SidebarDataCreation() {
         addItem({
           name,
           date,
-          type: drawMode as any,
+          type: (drawMode === 'circle' ? 'polygon' : drawMode === 'none' ? 'point' : drawMode) as 'point' | 'line' | 'polygon' | 'circle',
           geometry,
           properties: { created_at: new Date().toISOString() },
         })

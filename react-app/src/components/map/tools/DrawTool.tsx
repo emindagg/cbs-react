@@ -117,7 +117,7 @@ export default function DrawTool() {
   // --- GeoJSON Generation ---
 
   const drawGeoJSON = useMemo((): FeatureCollection<LineString | Polygon | Point> => {
-    const features: any[] = []
+    const features: GeoJSON.Feature<LineString | Polygon | Point>[] = []
 
     // Points (Vertices)
     // Show vertices for line/polygon while drawing

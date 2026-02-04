@@ -7,11 +7,9 @@ import SidebarVizWizard from './sections/SidebarVizWizard'
 import SidebarFooter from './SidebarFooter'
 import SidebarHeader from './SidebarHeader'
 
-interface SidebarProps {
-  onClose?: () => void
-}
 
-export default function Sidebar({ }: SidebarProps) {
+
+export default function Sidebar() {
   return (
     <>
       <SidebarHeader />

@@ -1,13 +1,15 @@
 import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 
+import type { ColumnMapping } from '@/features/data-import/types'
+
 interface ColumnMapperModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (mapping: any) => void
+  onConfirm: (mapping: ColumnMapping) => void
   headers: string[]
-  previewData: any[]
-  initialMapping?: any
+  previewData: Record<string, unknown>[]
+  initialMapping?: ColumnMapping
 }
 
 export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers, previewData, initialMapping }: ColumnMapperModalProps) {

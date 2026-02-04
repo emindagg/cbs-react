@@ -50,8 +50,9 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
       setTimeout(() => {
         onNext()
       }, 500)
-    } catch (error: any) {
-      alert('Dosya yüklenemedi: ' + error.message)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
+      alert('Dosya yüklenemedi: ' + message)
     } finally {
       setIsLoading(false)
     }

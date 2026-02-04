@@ -61,12 +61,15 @@ export default function DistanceTool() {
     if (map) map.getCanvas().style.cursor = 'grab'
   }, [isActive, isDrawingDistance, map, setIsDrawingDistance, setDistanceGhostPoint])
 
-  const handleFirstPointClick = (e: any) => {
+  const handleFirstPointClick = (e: { originalEvent?: Event } | Event) => {
     // react-map-gl Marker onClick passes an object with originalEvent
-    if (e && e.originalEvent && typeof e.originalEvent.stopPropagation === 'function') {
+    const hasOriginalEvent = (evt: unknown): evt is { originalEvent: Event; stopPropagation?: never } =>
+      typeof evt === 'object' && evt !== null && 'originalEvent' in evt
+
+    if (hasOriginalEvent(e) && e.originalEvent && typeof e.originalEvent.stopPropagation === 'function') {
       e.originalEvent.stopPropagation()
-    } else if (e && typeof e.stopPropagation === 'function') {
-      e.stopPropagation()
+    } else if (e && typeof (e as Event).stopPropagation === 'function') {
+      (e as Event).stopPropagation()
     }
 
     if (isActive && isDrawingDistance && distancePoints.length >= 3) {
@@ -78,7 +81,7 @@ export default function DistanceTool() {
     }
   }
 
-  const handleMarkerDrag = (idx: number, e: any) => {
+  const handleMarkerDrag = (idx: number, e: { lngLat: { lng: number; lat: number } }) => {
     const newPoints = [...distancePoints]
     const lng = e.lngLat.lng
     const lat = e.lngLat.lat

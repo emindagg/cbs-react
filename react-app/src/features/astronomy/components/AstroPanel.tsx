@@ -65,7 +65,7 @@ export function AstroPanel() {
               {['local', 'utc'].map((mode) => (
                 <button
                   key={mode}
-                  onClick={() => setTimeMode(mode as any)}
+                  onClick={() => setTimeMode(mode as 'local' | 'utc')}
                   className={`px-2 py-0.5 text-[8px] font-bold rounded-full transition-all duration-300 ${timeMode === mode
                     ? 'bg-white text-zinc-900 shadow-sm'
                     : 'text-zinc-400 hover:text-zinc-600'
@@ -182,7 +182,15 @@ export function AstroPanel() {
   )
 }
 
-function MatrixToggle({ icon, label, checked, onChange, activeColor }: any) {
+interface MatrixToggleProps {
+  icon: string
+  label: string
+  checked: boolean
+  onChange: () => void
+  activeColor: string
+}
+
+function MatrixToggle({ icon, label, checked, onChange, activeColor }: MatrixToggleProps) {
   return (
     <label className={`flex items-center justify-between p-2 rounded-[14px] cursor-pointer transition-all border group ${checked
       ? 'border-emerald-200 bg-emerald-50/10'

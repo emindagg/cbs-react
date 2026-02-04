@@ -72,7 +72,7 @@ export default function MapContainer() {
         zoom: 6,
       }}
       style={{ width: '100%', height: '100vh' }}
-      mapStyle={mapStyleObj as any}
+      mapStyle={mapStyleObj as maplibregl.StyleSpecification}
       onLoad={(e) => {
         setLoaded(true)
         setMapInstance(e.target)
@@ -81,7 +81,7 @@ export default function MapContainer() {
     >
       {/* Render Basemap Raster Layer if not NONE */}
       {basemapSource && (
-        <Source id="basemap-source" {...basemapSource as any}>
+        <Source id="basemap-source" {...(basemapSource as maplibregl.SourceSpecification)}>
           <Layer
             id="basemap-layer"
             type="raster"

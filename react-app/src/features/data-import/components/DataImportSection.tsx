@@ -11,11 +11,24 @@ import { useUrlImport } from '../hooks/useUrlImport'
  * Main data import section component
  */
 export function DataImportSection() {
-  const fileImport = useFileImport()
-  const urlImport = useUrlImport()
+  const {
+    isLoading: fileLoading,
+    fileInputRef,
+    showMapper,
+    mapperData,
+    handleFileImport,
+    handleMapperConfirm,
+    closeMapper,
+  } = useFileImport()
+
+  const {
+    isLoading: urlLoading,
+    handleUrlImport,
+  } = useUrlImport()
+
   const dataExport = useDataExport()
 
-  const isLoading = fileImport.isLoading || urlImport.isLoading
+  const isLoading = fileLoading || urlLoading
 
   return (
     <>
@@ -30,41 +43,38 @@ export function DataImportSection() {
           onExport={dataExport.handleExport}
         />
 
-        <div className="grid grid-cols-2 gap-2">
-          <label className={`bg-zinc-700 hover:bg-zinc-800 text-white font-medium py-2 px-3 rounded-lg text-center cursor-pointer text-sm transition-all flex items-center justify-center hover:scale-[1.02] active:scale-95 shadow-sm ${isLoading ? 'opacity-70 pointer-events-none' : ''}`}>
-            <i className={`fa-solid ${isLoading ? 'fa-spinner fa-spin' : 'fa-upload'} mr-1.5`}></i>
-            {isLoading ? 'Yükleniyor...' : 'Yükle'}
-            <input
-              ref={fileImport.fileInputRef}
-              type="file"
-              className="hidden"
-              accept={FILE_ACCEPT_PATTERN}
-              onChange={fileImport.handleFileImport}
-            />
-          </label>
-          <button
-            className="border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50 font-medium py-2 px-2 rounded-lg text-xs transition-all opacity-50 cursor-not-allowed flex items-center justify-center"
-            disabled
-          >
-            <i className="fa-solid fa-chart-bar mr-1"></i>Rapor
-          </button>
-        </div>
+        <label
+          htmlFor="file-upload"
+          className="w-full px-2.5 py-2 bg-zinc-900 hover:bg-black text-white font-medium text-xs rounded-lg transition-all flex items-center justify-center mt-2 cursor-pointer transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-disabled={isLoading}
+        >
+          {isLoading ? 'Yükleniyor...' : 'Yükle'}
+          <input
+            ref={fileInputRef}
+            id="file-upload"
+            type="file"
+            className="hidden"
+            accept={FILE_ACCEPT_PATTERN}
+            onChange={handleFileImport}
+            disabled={isLoading}
+          />
+        </label>
 
         <UrlImporter
-          onImport={urlImport.handleUrlImport}
-          isLoading={urlImport.isLoading}
+          onImport={handleUrlImport}
+          isLoading={urlLoading}
         />
       </section>
 
       {/* Column Mapper Modal */}
-      {fileImport.mapperData && (
+      {mapperData && (
         <ColumnMapperModal
-          isOpen={fileImport.showMapper}
-          onClose={fileImport.closeMapper}
-          onConfirm={fileImport.handleMapperConfirm}
-          headers={fileImport.mapperData.headers}
-          previewData={fileImport.mapperData.previewData}
-          initialMapping={fileImport.mapperData.initialMapping}
+          isOpen={showMapper}
+          onClose={closeMapper}
+          onConfirm={handleMapperConfirm}
+          headers={mapperData.headers}
+          previewData={mapperData.previewData}
+          initialMapping={mapperData.initialMapping}
         />
       )}
     </>

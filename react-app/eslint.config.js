@@ -9,7 +9,7 @@ import stylistic from '@stylistic/eslint-plugin'
 export default [
   // Ignore patterns
   {
-    ignores: ['dist/**', 'node_modules/**', '*.config.js', '*.config.ts'],
+    ignores: ['dist/**', 'node_modules/**', '*.config.js', '*.config.ts', 'public/**'],
   },
 
   // Base config for all TypeScript files

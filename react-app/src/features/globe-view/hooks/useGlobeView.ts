@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useState } from 'react'
 
 import { useMapStore } from '@/stores/useMapStore'
 
@@ -17,7 +17,7 @@ export interface GlobeViewState {
 export function useGlobeView(): GlobeViewState {
   const mapInstance = useMapStore((state) => state.mapInstance)
   const previousZoomRef = useRef<number | null>(null)
-  const isGlobeModeRef = useRef(false)
+  const [isGlobeMode, setIsGlobeMode] = useState(false)
 
   const enable = useCallback(() => {
     if (!mapInstance) {
@@ -30,7 +30,7 @@ export function useGlobeView(): GlobeViewState {
       return
     }
 
-    if (isGlobeModeRef.current) return
+    if (isGlobeMode) return
 
     try {
       // Save current zoom
@@ -45,12 +45,12 @@ export function useGlobeView(): GlobeViewState {
       }
       mapInstance.setCenter([0, 0])
 
-      isGlobeModeRef.current = true
+      setIsGlobeMode(true)
       console.log('🌍 Globe mode enabled')
     } catch (error) {
       console.error('❌ Failed to enable globe:', error)
     }
-  }, [mapInstance])
+  }, [mapInstance, isGlobeMode])
 
   const disable = useCallback(() => {
     if (!mapInstance) return
@@ -69,7 +69,7 @@ export function useGlobeView(): GlobeViewState {
       }
       mapInstance.setCenter([33.41, 39])
 
-      isGlobeModeRef.current = false
+      setIsGlobeMode(false)
       console.log('🗺️ Mercator mode enabled')
     } catch (error) {
       console.error('❌ Failed to disable globe:', error)
@@ -77,15 +77,15 @@ export function useGlobeView(): GlobeViewState {
   }, [mapInstance])
 
   const toggle = useCallback(() => {
-    if (isGlobeModeRef.current) {
+    if (isGlobeMode) {
       disable()
     } else {
       enable()
     }
-  }, [enable, disable])
+  }, [enable, disable, isGlobeMode])
 
   return {
-    isGlobeMode: isGlobeModeRef.current,
+    isGlobeMode,
     toggle,
     enable,
     disable,

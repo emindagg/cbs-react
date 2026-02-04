@@ -18,6 +18,15 @@ export function useGeocoder(): GeocoderState {
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const open = useCallback(() => {
+    setIsOpen(true)
+  }, [])
+
+  const close = useCallback(() => {
+    setIsOpen(false)
+    setQuery('') // Clear on close (legacy behavior)
+  }, [])
+
   // ESC key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -27,23 +36,7 @@ export function useGeocoder(): GeocoderState {
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen])
-
-  // Auto-focus on open
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus()
-    }
-  }, [isOpen])
-
-  const open = useCallback(() => {
-    setIsOpen(true)
-  }, [])
-
-  const close = useCallback(() => {
-    setIsOpen(false)
-    setQuery('') // Clear on close (legacy behavior)
-  }, [])
+  }, [isOpen, close])
 
   return {
     isOpen,

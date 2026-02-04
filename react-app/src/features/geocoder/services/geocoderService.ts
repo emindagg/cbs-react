@@ -49,7 +49,7 @@ interface ReverseOptions {
  */
 declare global {
   interface Window {
-    Geocoder: typeof AtlasGeocoderSDK;
+    Geocoder: new (baseUrl: string) => AtlasGeocoderSDK;
   }
 }
 
@@ -57,7 +57,7 @@ declare global {
  * HGM Atlas Geocoder API Client (using vanilla library)
  */
 class AtlasGeocoder {
-  private geocoder: typeof AtlasGeocoderSDK
+  private geocoder: AtlasGeocoderSDK
 
   constructor(baseUrl: string) {
     if (typeof window.Geocoder === 'undefined') {
@@ -81,20 +81,21 @@ class AtlasGeocoder {
         query: query.trim(),
         lng,
         lat,
-        onload: (response: GeocoderResponse, error: boolean) => {
+        onload: (response: unknown, error: boolean) => {
+          const geocoderResponse = response as GeocoderResponse
           if (error) {
-            console.error('❌ Geocoder API error:', response)
+            console.error('❌ Geocoder API error:', geocoderResponse)
             reject(new Error('Arama sırasında bir hata oluştu'))
             return
           }
 
-          if (!response.features || response.features.length === 0) {
+          if (!geocoderResponse.features || geocoderResponse.features.length === 0) {
             reject(new Error(`"${query}" için sonuç bulunamadı`))
             return
           }
 
-          console.log('✅ Geocoder results:', response)
-          resolve(response)
+          console.log('✅ Geocoder results:', geocoderResponse)
+          resolve(geocoderResponse)
         },
       })
     })
@@ -111,14 +112,15 @@ class AtlasGeocoder {
         lng,
         lat,
         type,
-        onload: (response: GeocoderResponse, error: boolean) => {
+        onload: (response: unknown, error: boolean) => {
+          const geocoderResponse = response as GeocoderResponse
           if (error) {
-            console.error('❌ Reverse geocoding error:', response)
+            console.error('❌ Reverse geocoding error:', geocoderResponse)
             reject(new Error('Konum bilgisi alınamadı'))
             return
           }
 
-          resolve(response)
+          resolve(geocoderResponse)
         },
       })
     })

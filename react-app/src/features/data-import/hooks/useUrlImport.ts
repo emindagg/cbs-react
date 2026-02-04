@@ -6,6 +6,8 @@ import { parseGeoJSON } from '../services/geoJsonProcessor'
 import { parseKML } from '../services/kmlProcessor'
 import { parseShapefile } from '../services/shapefileProcessor'
 
+type GeoItem = ReturnType<typeof parseGeoJSON>[number]
+
 /**
  * Hook for URL import logic
  */
@@ -21,7 +23,7 @@ export function useUrlImport() {
       const response = await fetch(urlInput)
       if (!response.ok) throw new Error('Dosya indirilemedi')
 
-      let items: any[] = []
+      let items: GeoItem[] = []
 
       if (urlInput.endsWith('.zip')) {
         const buffer = await response.arrayBuffer()

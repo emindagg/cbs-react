@@ -142,9 +142,10 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
 
       setMatchResults(results)
       setHasMatched(true)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Matching error:', error)
-      alert('Eşleştirme hatası: ' + error.message)
+      const message = error instanceof Error ? error.message : String(error)
+      alert('Eşleştirme hatası: ' + message)
     } finally {
       setIsMatching(false)
       console.log('📍 Matching complete, hasMatched:', true)

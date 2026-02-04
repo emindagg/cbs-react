@@ -54,9 +54,10 @@ export function SearchContainer({ leftPosition }: SearchContainerProps) {
     try {
       const searchResults = await geocoderManagerRef.current.search(query)
       setResults(searchResults)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Search error:', err)
-      setError(err.message || 'Arama sırasında bir hata oluştu')
+      const errorMessage = err instanceof Error ? err.message : 'Arama sırasında bir hata oluştu'
+      setError(errorMessage)
     } finally {
       setIsSearching(false)
     }
