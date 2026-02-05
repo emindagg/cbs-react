@@ -1589,18 +1589,31 @@ const AstroGlobe = {
     },
     
     /**
-     * Declination'a göre mevsimi belirle
+     * Tarihe göre mevsimi belirle (orta kuşak için)
      */
     getSeason(declination) {
-        // Kuzey Yarıküre için mevsimler
-        if (declination > 20) {
-            return { name: 'Kuzey Yarıküre: Yaz / Güney: Kış', hemisphere: 'north', season: 'summer' };
-        } else if (declination < -20) {
-            return { name: 'Kuzey Yarıküre: Kış / Güney: Yaz', hemisphere: 'north', season: 'winter' };
-        } else if (declination > 0) {
-            return { name: 'Kuzey Yarıküre: İlkbahar / Güney: Sonbahar', hemisphere: 'north', season: 'spring' };
+        // Yılın gününü hesapla (mevsim belirleme için tarihe bakmak gerekir)
+        const dayOfYear = this.getDayOfYear(this.currentDate);
+        
+        // Mevsim geçiş günleri (yaklaşık):
+        // 21 Mart (80. gün): İlkbahar Ekinoksu
+        // 21 Haziran (172. gün): Yaz Gündönümü  
+        // 23 Eylül (266. gün): Sonbahar Ekinoksu
+        // 21 Aralık (355. gün): Kış Gündönümü
+        
+        // Orta kuşak (ılıman bölge) için mevsimler
+        if (dayOfYear >= 80 && dayOfYear < 172) {
+            // 21 Mart - 21 Haziran: İlkbahar
+            return { name: 'KYK orta kuşakta ilkbahar, GYK orta kuşakta sonbahar', hemisphere: 'north', season: 'spring' };
+        } else if (dayOfYear >= 172 && dayOfYear < 266) {
+            // 21 Haziran - 23 Eylül: Yaz
+            return { name: 'KYK orta kuşakta yaz, GYK orta kuşakta kış', hemisphere: 'north', season: 'summer' };
+        } else if (dayOfYear >= 266 && dayOfYear < 355) {
+            // 23 Eylül - 21 Aralık: Sonbahar
+            return { name: 'KYK orta kuşakta sonbahar, GYK orta kuşakta ilkbahar', hemisphere: 'north', season: 'autumn' };
         } else {
-            return { name: 'Kuzey Yarıküre: Sonbahar / Güney: İlkbahar', hemisphere: 'north', season: 'autumn' };
+            // 21 Aralık - 21 Mart: Kış
+            return { name: 'KYK orta kuşakta kış, GYK orta kuşakta yaz', hemisphere: 'north', season: 'winter' };
         }
     },
     

@@ -19,7 +19,12 @@
       "Bash(npm run build:*)",
       "Bash(npm uninstall:*)",
       "Bash(npm run lint)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(git log:*)",
+      "Bash(dir:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
