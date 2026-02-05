@@ -568,9 +568,21 @@ class MarkerManager {
         // Remove circle editor if exists
         if (this.circleEditors.has(dataId)) {
             const editor = this.circleEditors.get(dataId);
-            editor.centerMarker.remove();
-            editor.edgeMarker.remove();
+            
+            // Get element references before removing
+            const centerEl = editor.centerMarker ? editor.centerMarker.getElement() : null;
+            const edgeEl = editor.edgeMarker ? editor.edgeMarker.getElement() : null;
+            
+            if (editor.centerMarker) editor.centerMarker.remove();
+            if (editor.edgeMarker) editor.edgeMarker.remove();
+            
             this.circleEditors.delete(dataId);
+            
+            // Force DOM cleanup (fallback)
+            setTimeout(() => {
+                if (centerEl && centerEl.parentNode) centerEl.parentNode.removeChild(centerEl);
+                if (edgeEl && edgeEl.parentNode) edgeEl.parentNode.removeChild(edgeEl);
+            }, 100);
         }
         
         // Remove geometry if exists (for area/route/circle)
