@@ -493,9 +493,9 @@ class MarkerManager {
             properties: {
                 id: data.id,
                 name: data.name,
-                fillColor: '#3b82f6', // Atlas Mavi
+                fillColor: circleColor, // Kullanıcı rengini kullan
                 fillOpacity: 0.15, // Hafif şeffaflık
-                strokeColor: '#2563EB', // Koyu Atlas Mavi
+                strokeColor: circleColor, // Kullanıcı rengini kullan
                 strokeWidth: 2,
                 dashArray: [6, 4], // 6px çizgi, 4px boşluk
                 type: 'circle',
@@ -692,7 +692,7 @@ class MarkerManager {
                 }
             }
             
-            // Update geometry color
+            // Update geometry color (includes circles, areas, routes)
             if (this.geometries.includes(markerData.id)) {
                 const source = this.map.getSource('catalog-geometries');
                 if (source) {
@@ -702,19 +702,6 @@ class MarkerManager {
                         feature.properties.strokeColor = newColor;
                         source.setData(this.catalogGeoJSON);
                     }
-                }
-            }
-            
-            // Update circle color
-            const circleSource = this.map.getSource('catalog-geometries');
-            if (circleSource) {
-                const circleFeature = this.catalogGeoJSON.features.find(f => 
-                    f.properties.id === markerData.id && f.properties.type === 'circle'
-                );
-                if (circleFeature) {
-                    circleFeature.properties.fillColor = newColor;
-                    circleFeature.properties.strokeColor = newColor;
-                    circleSource.setData(this.catalogGeoJSON);
                 }
             }
             
