@@ -141,3 +141,68 @@ export interface MatchSummary {
   ambiguous: number;
   failed: number;
 }
+
+/**
+ * Datawrapper-style Interpolation Types
+ */
+export type InterpolationMethod =
+  | 'equidistant'      // Linear/Equal intervals
+  | 'quantiles-5'      // Quartiles (4 classes)
+  | 'quantiles-6'      // Quintiles (5 classes)
+  | 'quantiles-11'     // Deciles (10 classes)
+  | 'natural-9'        // Natural breaks (Jenks)
+
+export type ColorScaleType = 'steps' | 'continuous'
+
+export interface CustomRange {
+  enabled: boolean;
+  min: number | null;
+  center: number | null;
+  max: number | null;
+}
+
+/**
+ * Legend Configuration
+ */
+export type LegendPosition =
+  | 'above'
+  | 'below'
+  | 'inside-left-top'
+  | 'inside-center-top'
+  | 'inside-right-top'
+  | 'inside-left-bottom'
+  | 'inside-center-bottom'
+  | 'inside-right-bottom'
+
+export type LegendOrientation = 'horizontal' | 'vertical'
+export type LegendLabelType = 'ruler' | 'ranges' | 'custom'
+
+export interface LegendConfiguration {
+  visible: boolean;
+  position: LegendPosition;
+  size: number; // pixels
+  orientation: LegendOrientation;
+  labels: {
+    type: LegendLabelType;
+    customLabels?: string[];
+  };
+  format: string; // numeral.js format string
+  title?: {
+    show: boolean;
+    text: string;
+  };
+  highlightOnHover: boolean;
+  reverseOrder: boolean;
+}
+
+/**
+ * Complete Color Configuration (Datawrapper-style)
+ */
+export interface ColorConfiguration {
+  column: string | null;
+  palette: ColorScheme;
+  scaleType: ColorScaleType;
+  interpolation: InterpolationMethod;
+  customRange?: CustomRange;
+  legend: LegendConfiguration;
+}

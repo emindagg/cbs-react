@@ -10,6 +10,9 @@ import type {
   MatchResults,
   VisualizationSettings,
   CurrentVisualization,
+  ColorConfiguration,
+  LegendConfiguration,
+  CustomRange,
 } from '../types/visualization'
 
 interface VisualizationStore {
@@ -57,6 +60,12 @@ interface VisualizationStore {
   setCurrentVisualization: (viz: Partial<CurrentVisualization>) => void
   clearCurrentVisualization: () => void
 
+  // Color configuration (Datawrapper-style)
+  colorConfig: ColorConfiguration
+  setColorConfig: (config: Partial<ColorConfiguration>) => void
+  setLegendConfig: (config: Partial<LegendConfiguration>) => void
+  setCustomRange: (range: Partial<CustomRange>) => void
+
   // Reset everything
   reset: () => void
 }
@@ -86,6 +95,39 @@ const defaultCurrentVisualization: CurrentVisualization = {
   type: null,
   data: null,
   column: null,
+}
+
+const defaultLegendConfig: LegendConfiguration = {
+  visible: true,
+  position: 'above',
+  size: 170,
+  orientation: 'horizontal',
+  labels: {
+    type: 'ruler',
+  },
+  format: '0a',
+  title: {
+    show: false,
+    text: '',
+  },
+  highlightOnHover: false,
+  reverseOrder: false,
+}
+
+const defaultCustomRange: CustomRange = {
+  enabled: false,
+  min: null,
+  center: null,
+  max: null,
+}
+
+const defaultColorConfig: ColorConfiguration = {
+  column: null,
+  palette: 'viridis',
+  scaleType: 'steps',
+  interpolation: 'equidistant',
+  customRange: defaultCustomRange,
+  legend: defaultLegendConfig,
 }
 
 export const useVisualizationStore = create<VisualizationStore>((set) => ({
@@ -143,6 +185,27 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
   clearCurrentVisualization: () =>
     set({ currentVisualization: defaultCurrentVisualization }),
 
+  // Color configuration (Datawrapper-style)
+  colorConfig: defaultColorConfig,
+  setColorConfig: (config) =>
+    set((state) => ({
+      colorConfig: { ...state.colorConfig, ...config },
+    })),
+  setLegendConfig: (config) =>
+    set((state) => ({
+      colorConfig: {
+        ...state.colorConfig,
+        legend: { ...state.colorConfig.legend, ...config },
+      },
+    })),
+  setCustomRange: (range) =>
+    set((state) => ({
+      colorConfig: {
+        ...state.colorConfig,
+        customRange: { ...state.colorConfig.customRange!, ...range },
+      },
+    })),
+
   // Reset everything
   reset: () =>
     set({
@@ -153,5 +216,6 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
       matchResults: defaultMatchResults,
       vizSettings: defaultVizSettings,
       currentVisualization: defaultCurrentVisualization,
+      colorConfig: defaultColorConfig,
     }),
 }))

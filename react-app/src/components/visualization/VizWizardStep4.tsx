@@ -7,7 +7,9 @@ import { useState } from 'react'
 
 import ColorScaleConfig from './ColorScaleConfig'
 import ColorSchemePreview from './ColorSchemePreview'
+import CustomRangeConfig from './CustomRangeConfig'
 import DataDistributionPreview from './DataDistributionPreview'
+import LegendConfig from './LegendConfig'
 import { useVizRender } from './hooks/useVizRender'
 import { useVizSuggestion } from './hooks/useVizSuggestion'
 import { useMapStore } from '../../stores/useMapStore'
@@ -86,21 +88,20 @@ const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; desc
 ]
 
 export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
-  const { matchResults, columnMapping, vizSettings, setVizSettings } = useVisualizationStore()
+  const {
+    matchResults,
+    columnMapping,
+    vizSettings,
+    setVizSettings,
+    colorConfig,
+    setColorConfig,
+    setCustomRange,
+    setLegendConfig,
+  } = useVisualizationStore()
   const { mapInstance: map } = useMapStore()
 
   const [showDataPreview, setShowDataPreview] = useState(false)
-  const [scaleType, setScaleType] = useState<'steps' | 'continuous'>('steps')
-
-  // Determine if current method is continuous
-  const isContinuous = vizSettings.classificationMethod.startsWith('continuous-')
-
-  // Sync scale type with classification method
-  if (isContinuous && scaleType !== 'continuous') {
-    setScaleType('continuous')
-  } else if (!isContinuous && scaleType !== 'steps') {
-    setScaleType('steps')
-  }
+  const [showLegendConfig, setShowLegendConfig] = useState(false)
 
   const {
     suggestion,
@@ -159,9 +160,11 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
       <ColorScaleConfig
         colorScheme={vizSettings.colorScheme}
         classCount={vizSettings.classCount}
-        scaleType={scaleType}
+        scaleType={colorConfig.scaleType}
+        interpolation={colorConfig.interpolation}
         onScaleTypeChange={(type) => {
-          setScaleType(type)
+          // Update store's color config
+          setColorConfig({ scaleType: type })
           // Update classification method based on scale type
           if (type === 'continuous') {
             setVizSettings({ classificationMethod: 'continuous-linear' })
@@ -170,13 +173,15 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
           }
         }}
         onInterpolationChange={(interpolation) => {
+          // Update store's interpolation
+          setColorConfig({ interpolation })
           // Map interpolation to continuous classification method
           const methodMap: Record<string, ClassificationMethod> = {
-            linear: 'continuous-linear',
-            quartiles: 'continuous-quantile',
-            quintiles: 'continuous-quantile',
-            deciles: 'continuous-quantile',
-            natural: 'continuous-natural',
+            equidistant: 'continuous-linear',
+            'quantiles-5': 'continuous-quantile',
+            'quantiles-6': 'continuous-quantile',
+            'quantiles-11': 'continuous-quantile',
+            'natural-9': 'continuous-natural',
           }
           setVizSettings({ classificationMethod: methodMap[interpolation] || 'continuous-linear' })
         }}
@@ -342,7 +347,7 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
       )}
 
       {/* Steps section - only for stepped scales */}
-      {scaleType === 'steps' && (
+      {colorConfig.scaleType === 'steps' && (
         <div className="bg-white border border-zinc-200 rounded-lg p-3 space-y-3">
           {/* Steps count and classification method */}
           <div>
@@ -422,7 +427,41 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
         </div>
       )}
 
+      {/* Custom Range Configuration - Only for continuous scales */}
+      {colorConfig.scaleType === 'continuous' && (
+        <div className="bg-white border border-zinc-200 rounded-lg p-3">
+          <h4 className="text-[11px] font-semibold text-zinc-700 mb-2">Değer Aralığı</h4>
+          <CustomRangeConfig
+            customRange={colorConfig.customRange!}
+            autoMin={dataValues.length > 0 ? Math.min(...dataValues) : 0}
+            autoMax={dataValues.length > 0 ? Math.max(...dataValues) : 100}
+            onChange={(range) => setCustomRange(range)}
+          />
+        </div>
+      )}
 
+      {/* Legend Configuration Panel */}
+      <div className="bg-white border border-zinc-200 rounded-lg">
+        <button
+          onClick={() => setShowLegendConfig(!showLegendConfig)}
+          className="w-full px-3 py-2 flex items-center justify-between hover:bg-zinc-50 transition-colors rounded-t-lg"
+        >
+          <div className="flex items-center gap-2">
+            <i className="fa-solid fa-list text-[10px] text-zinc-500"></i>
+            <span className="text-[11px] font-semibold text-zinc-700">Lejant Ayarları</span>
+          </div>
+          <i className={`fa-solid fa-chevron-${showLegendConfig ? 'up' : 'down'} text-[9px] text-zinc-400`}></i>
+        </button>
+
+        {showLegendConfig && (
+          <div className="px-3 pb-3 pt-2 border-t border-zinc-100">
+            <LegendConfig
+              config={colorConfig.legend}
+              onChange={(config) => setLegendConfig(config)}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Data Distribution Preview Toggle */}
       {dataValues.length > 0 && (

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 // Feature imports
 import MapContainer from '@/components/map/MapContainer'
 import Sidebar from '@/components/sidebar/Sidebar'
+import LegendContainer from '@/components/visualization/LegendContainer'
 import { LAYOUT } from '@/constants/layout'
 import { useAstroMap, AstroPanel } from '@/features/astronomy'
 import { useClustering } from '@/features/clustering'
@@ -89,6 +90,9 @@ export default function AppLayout() {
 
       {/* Astronomy Feature */}
       <AstroPanel />
+
+      {/* Visualization Legend */}
+      <LegendContainer />
 
     </div>
   )

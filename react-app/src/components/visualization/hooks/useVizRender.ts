@@ -7,6 +7,7 @@ import type maplibregl from 'maplibre-gl'
 import { useState } from 'react'
 
 import { VisualizationManager } from '../../../services/VisualizationManager'
+import { useVisualizationStore } from '../../../stores/useVisualizationStore'
 import type { MatchResults, VisualizationSettings } from '../../../types/visualization'
 
 interface UseVizRenderProps {
@@ -27,6 +28,7 @@ export function useVizRender({
 }: UseVizRenderProps) {
   const [isRendering, setIsRendering] = useState(false)
   const [hasRendered, setHasRendered] = useState(false)
+  const { setCurrentVisualization } = useVisualizationStore()
 
   const handleRender = async () => {
     if (!map) {
@@ -75,6 +77,13 @@ export function useVizRender({
           // Fallback to choropleth
           await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn!, vizSettings, locationLevel)
       }
+
+      // Update current visualization to trigger legend display
+      setCurrentVisualization({
+        type: vizSettings.type,
+        data: successfulData,
+        column: columnMapping.dataColumn,
+      })
 
       setHasRendered(true)
     } catch (error: unknown) {

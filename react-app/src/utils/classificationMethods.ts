@@ -1,9 +1,10 @@
 /**
  * Classification Methods
  * Statistical classification algorithms for choropleth maps
+ * Enhanced with Datawrapper-style interpolation support
  */
 
-import type { ClassificationMethod } from '../types/visualization'
+import type { ClassificationMethod, InterpolationMethod } from '../types/visualization'
 
 /**
  * Calculate variance for a subset of values
@@ -506,4 +507,128 @@ export function suggestClassificationMethod(values: number[]): {
     emoji: '📊',
     warning: `Veriler dengeli dağılımlı (CV: ${stats.cv.toFixed(1)}%). Quantile yöntemi önerilir.`,
   }
+}
+
+/**
+ * Datawrapper-style Interpolation Methods
+ * These are used for continuous color scales
+ */
+
+/**
+ * Calculate breaks using Datawrapper-style interpolation methods
+ */
+export function calculateBreaksFromInterpolation(
+  values: number[],
+  interpolation: InterpolationMethod,
+): number[] {
+  const sorted = [...values].sort((a, b) => a - b)
+
+  switch (interpolation) {
+    case 'equidistant':
+      // Linear - equal intervals
+      return calculateBreaks(sorted, 'equal', 5)
+
+    case 'quantiles-5':
+      // Quartiles - 4 classes
+      return calculateBreaks(sorted, 'quantile', 4)
+
+    case 'quantiles-6':
+      // Quintiles - 5 classes
+      return calculateBreaks(sorted, 'quantile', 5)
+
+    case 'quantiles-11':
+      // Deciles - 10 classes
+      return calculateBreaks(sorted, 'quantile', 10)
+
+    case 'natural-9':
+      // Natural breaks - 9 classes (Datawrapper default)
+      return calculateBreaks(sorted, 'jenks', 9)
+
+    default:
+      return calculateBreaks(sorted, 'equal', 5)
+  }
+}
+
+/**
+ * Get number of classes from interpolation method
+ */
+export function getClassCountFromInterpolation(interpolation: InterpolationMethod): number {
+  switch (interpolation) {
+    case 'quantiles-5':
+      return 4
+    case 'quantiles-6':
+      return 5
+    case 'quantiles-11':
+      return 10
+    case 'natural-9':
+      return 9
+    default:
+      return 5
+  }
+}
+
+/**
+ * Interpolation method metadata
+ */
+export const INTERPOLATION_INFO: Record<
+  InterpolationMethod,
+  { name: string; description: string; classes: number }
+> = {
+  'equidistant': {
+    name: 'Doğrusal',
+    description: 'Eşit aralıklarla değer dağılımı',
+    classes: 5,
+  },
+  'quantiles-5': {
+    name: 'Çeyrekler',
+    description: 'Her sınıfta eşit sayıda gözlem (4 grup)',
+    classes: 4,
+  },
+  'quantiles-6': {
+    name: 'Beşlikler',
+    description: 'Her sınıfta eşit sayıda gözlem (5 grup)',
+    classes: 5,
+  },
+  'quantiles-11': {
+    name: 'Onluklar',
+    description: 'Her sınıfta eşit sayıda gözlem (10 grup)',
+    classes: 10,
+  },
+  'natural-9': {
+    name: 'Doğal Kırılmalar',
+    description: 'Verideki doğal kümelenmelere göre (9 grup)',
+    classes: 9,
+  },
+}
+
+/**
+ * Normalize value to 0-1 range for continuous interpolation
+ */
+export function normalizeValue(
+  value: number,
+  min: number,
+  max: number,
+  interpolation: InterpolationMethod = 'equidistant',
+  values?: number[],
+): number {
+  if (max === min) return 0.5
+
+  // For equidistant (linear), simple normalization
+  if (interpolation === 'equidistant') {
+    return (value - min) / (max - min)
+  }
+
+  // For quantile-based methods, find position in sorted values
+  if (values && (interpolation.startsWith('quantiles') || interpolation === 'natural-9')) {
+    const sorted = [...values].sort((a, b) => a - b)
+    const index = sorted.findIndex((v) => v >= value)
+
+    if (index === -1) return 1 // Value is greater than max
+    if (index === 0) return 0 // Value is less than min
+
+    return index / (sorted.length - 1)
+  }
+
+  // Fallback to linear
+  return (value - min) / (max - min)
 }

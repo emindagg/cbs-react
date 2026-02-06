@@ -6,42 +6,67 @@
 import { useState } from 'react'
 
 import { COLOR_SCHEMES } from '../../constants/colorSchemes'
-import type { ColorScheme } from '../../types/visualization'
+import type { ColorScheme, InterpolationMethod, ColorScaleType } from '../../types/visualization'
+import { INTERPOLATION_INFO } from '../../utils/classificationMethods'
 import { generateColorScale } from '../../utils/colorInterpolation'
 
 interface ColorScaleConfigProps {
   colorScheme: ColorScheme;
   classCount: number;
-  scaleType: 'steps' | 'continuous';
-  onScaleTypeChange?: (type: 'steps' | 'continuous') => void;
-  onInterpolationChange?: (interpolation: ContinuousInterpolation) => void;
+  scaleType: ColorScaleType;
+  interpolation?: InterpolationMethod;
+  onScaleTypeChange?: (type: ColorScaleType) => void;
+  onInterpolationChange?: (interpolation: InterpolationMethod) => void;
 }
 
-type ContinuousInterpolation = 'linear' | 'quartiles' | 'quintiles' | 'deciles' | 'natural'
-
-const INTERPOLATION_OPTIONS: { value: ContinuousInterpolation; label: string; description: string }[] = [
-  { value: 'linear', label: 'Doğrusal', description: 'Değere orantılı doğrusal dağılım' },
-  { value: 'quartiles', label: 'Çeyrekler', description: 'Çeyreklere göre dağılım (4 grup)' },
-  { value: 'quintiles', label: 'Beşlikler', description: 'Beşliklere göre dağılım (5 grup)' },
-  { value: 'deciles', label: 'Onluklar', description: 'Onluklara göre dağılım (10 grup)' },
-  { value: 'natural', label: 'Doğal', description: 'Doğal kırılmalara göre sürekli dağılım' },
+const INTERPOLATION_OPTIONS: Array<{
+  value: InterpolationMethod;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: 'equidistant',
+    label: INTERPOLATION_INFO['equidistant'].name,
+    description: INTERPOLATION_INFO['equidistant'].description,
+  },
+  {
+    value: 'quantiles-5',
+    label: INTERPOLATION_INFO['quantiles-5'].name,
+    description: INTERPOLATION_INFO['quantiles-5'].description,
+  },
+  {
+    value: 'quantiles-6',
+    label: INTERPOLATION_INFO['quantiles-6'].name,
+    description: INTERPOLATION_INFO['quantiles-6'].description,
+  },
+  {
+    value: 'quantiles-11',
+    label: INTERPOLATION_INFO['quantiles-11'].name,
+    description: INTERPOLATION_INFO['quantiles-11'].description,
+  },
+  {
+    value: 'natural-9',
+    label: INTERPOLATION_INFO['natural-9'].name,
+    description: INTERPOLATION_INFO['natural-9'].description,
+  },
 ]
 
 export default function ColorScaleConfig({
   colorScheme,
   classCount,
   scaleType,
+  interpolation = 'equidistant',
   onScaleTypeChange,
   onInterpolationChange,
 }: ColorScaleConfigProps) {
-  const [interpolation, setInterpolation] = useState<ContinuousInterpolation>('linear')
+  const [localInterpolation, setLocalInterpolation] = useState<InterpolationMethod>(interpolation)
 
   // Generate preview colors
   const steppedColors = COLOR_SCHEMES[colorScheme].slice(0, classCount)
   const continuousColors = generateColorScale(COLOR_SCHEMES[colorScheme], 30, 'lab')
 
-  const handleInterpolationChange = (newInterpolation: ContinuousInterpolation) => {
-    setInterpolation(newInterpolation)
+  const handleInterpolationChange = (newInterpolation: InterpolationMethod) => {
+    setLocalInterpolation(newInterpolation)
     onInterpolationChange?.(newInterpolation)
   }
 
@@ -154,8 +179,8 @@ export default function ColorScaleConfig({
           </div>
 
           <select
-            value={interpolation}
-            onChange={(e) => handleInterpolationChange(e.target.value as ContinuousInterpolation)}
+            value={localInterpolation}
+            onChange={(e) => handleInterpolationChange(e.target.value as InterpolationMethod)}
             className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded bg-white hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all"
           >
             {INTERPOLATION_OPTIONS.map((option) => (
@@ -167,7 +192,7 @@ export default function ColorScaleConfig({
 
           {/* Description */}
           <p className="text-[9px] text-zinc-400 mt-1 leading-relaxed">
-            {INTERPOLATION_OPTIONS.find((o) => o.value === interpolation)?.description}
+            {INTERPOLATION_OPTIONS.find((o) => o.value === localInterpolation)?.description}
           </p>
         </div>
       )}
