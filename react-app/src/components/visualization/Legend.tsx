@@ -14,6 +14,7 @@ interface LegendProps {
   colors: string[];
   scaleType: ColorScaleType;
   onHover?: (index: number | null) => void;
+  onTitleChange?: (title: string) => void;
 }
 
 export default function Legend({
@@ -22,12 +23,15 @@ export default function Legend({
   colors,
   scaleType,
   onHover,
+  onTitleChange,
 }: LegendProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const legendRef = useRef<HTMLDivElement>(null)
+  const titleInputRef = useRef<HTMLInputElement>(null)
 
   if (!config.visible) return null
 
@@ -38,8 +42,36 @@ export default function Legend({
     }
   }
 
+  // Title editing handlers
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus()
+      titleInputRef.current.select()
+    }
+  }, [isEditingTitle])
+
+  const handleTitleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (onTitleChange) {
+      setIsEditingTitle(true)
+    }
+  }
+
+  const handleTitleBlur = () => {
+    setIsEditingTitle(false)
+  }
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditingTitle(false)
+    } else if (e.key === 'Escape') {
+      setIsEditingTitle(false)
+    }
+  }
+
   // Drag handlers
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isEditingTitle) return
     if (!legendRef.current) return
 
     const rect = legendRef.current.getBoundingClientRect()
@@ -127,9 +159,28 @@ export default function Legend({
         } : {}),
       }}
     >
-      {config.title?.show && config.title.text && (
-        <div className="legend-title text-xs font-bold mb-2 text-zinc-900 drop-shadow-sm">
-          {config.title.text}
+      {config.title?.show && (
+        <div className="legend-title mb-2">
+          {isEditingTitle ? (
+            <input
+              ref={titleInputRef}
+              type="text"
+              value={config.title.text || ''}
+              onChange={(e) => onTitleChange?.(e.target.value)}
+              onBlur={handleTitleBlur}
+              onKeyDown={handleTitleKeyDown}
+              onClick={(e) => e.stopPropagation()}
+              placeholder="Lejant ismi giriniz"
+              className="text-xs font-bold text-zinc-900 bg-white/80 backdrop-blur-sm px-2 py-1 rounded border-2 border-blue-500 outline-none min-w-[150px] text-center"
+            />
+          ) : (
+            <div
+              onClick={handleTitleClick}
+              className={`text-xs font-bold text-zinc-900 drop-shadow-sm ${onTitleChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}
+            >
+              {config.title.text || 'Lejant ismi giriniz'}
+            </div>
+          )}
         </div>
       )}
 

@@ -13,6 +13,7 @@ import type {
   ColorConfiguration,
   LegendConfiguration,
   CustomRange,
+  MapTitleConfiguration,
 } from '../types/visualization'
 
 interface VisualizationStore {
@@ -65,6 +66,10 @@ interface VisualizationStore {
   setColorConfig: (config: Partial<ColorConfiguration>) => void
   setLegendConfig: (config: Partial<LegendConfiguration>) => void
   setCustomRange: (range: Partial<CustomRange>) => void
+
+  // Map title configuration
+  mapTitle: MapTitleConfiguration
+  setMapTitle: (config: Partial<MapTitleConfiguration>) => void
 
   // Reset everything
   reset: () => void
@@ -128,6 +133,13 @@ const defaultColorConfig: ColorConfiguration = {
   interpolation: 'equidistant',
   customRange: defaultCustomRange,
   legend: defaultLegendConfig,
+}
+
+const defaultMapTitle: MapTitleConfiguration = {
+  visible: false,
+  title: 'Harita Başlığı',
+  subtitle: '',
+  position: 'top-center',
 }
 
 export const useVisualizationStore = create<VisualizationStore>((set) => ({
@@ -206,6 +218,13 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
       },
     })),
 
+  // Map title configuration
+  mapTitle: defaultMapTitle,
+  setMapTitle: (config) =>
+    set((state) => ({
+      mapTitle: { ...state.mapTitle, ...config },
+    })),
+
   // Reset everything
   reset: () =>
     set({
@@ -217,5 +236,6 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
       vizSettings: defaultVizSettings,
       currentVisualization: defaultCurrentVisualization,
       colorConfig: defaultColorConfig,
+      mapTitle: defaultMapTitle,
     }),
 }))

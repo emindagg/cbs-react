@@ -196,6 +196,16 @@ export interface LegendConfiguration {
 }
 
 /**
+ * Map Title Configuration
+ */
+export interface MapTitleConfiguration {
+  visible: boolean;
+  title: string;
+  subtitle?: string;
+  position: 'top-left' | 'top-center' | 'top-right';
+}
+
+/**
  * Complete Color Configuration (Datawrapper-style)
  */
 export interface ColorConfiguration {

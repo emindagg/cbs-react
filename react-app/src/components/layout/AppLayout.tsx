@@ -5,6 +5,7 @@ import { useState, useMemo } from 'react'
 import MapContainer from '@/components/map/MapContainer'
 import Sidebar from '@/components/sidebar/Sidebar'
 import LegendContainer from '@/components/visualization/LegendContainer'
+import MapTitle from '@/components/visualization/MapTitle'
 import { LAYOUT } from '@/constants/layout'
 import { useAstroMap, AstroPanel } from '@/features/astronomy'
 import { useClustering } from '@/features/clustering'
@@ -12,6 +13,7 @@ import { SearchContainer } from '@/features/geocoder/components/SearchContainer'
 import { MapControlStack } from '@/features/map'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMapStore } from '@/stores/useMapStore'
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
 /**
  * AppLayout Component
@@ -22,6 +24,7 @@ export default function AppLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(false)
   const mapInstance = useMapStore((state) => state.mapInstance)
   const isMdUp = useMediaQuery('(min-width: 768px)')
+  const { mapTitle, setMapTitle } = useVisualizationStore()
 
   // Initialize astronomy hook
   useAstroMap()
@@ -90,6 +93,16 @@ export default function AppLayout() {
 
       {/* Astronomy Feature */}
       <AstroPanel />
+
+      {/* Map Title */}
+      <MapTitle
+        title={mapTitle.title}
+        subtitle={mapTitle.subtitle}
+        visible={mapTitle.visible}
+        position={mapTitle.position}
+        onTitleChange={(title) => setMapTitle({ title })}
+        onSubtitleChange={(subtitle) => setMapTitle({ subtitle })}
+      />
 
       {/* Visualization Legend */}
       <LegendContainer />

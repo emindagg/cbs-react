@@ -11,7 +11,7 @@ import { calculateBreaks } from '../../utils/classificationMethods'
 import Legend from './Legend'
 
 export default function LegendContainer() {
-  const { colorConfig, vizSettings, matchResults, currentVisualization } = useVisualizationStore()
+  const { colorConfig, vizSettings, matchResults, currentVisualization, setLegendConfig } = useVisualizationStore()
 
   // Extract data values - ALWAYS call hooks before any conditional returns
   const dataValues = useMemo(() => {
@@ -72,6 +72,14 @@ export default function LegendContainer() {
       breaks={breaks}
       colors={colors}
       scaleType={colorConfig.scaleType}
+      onTitleChange={(title) => {
+        setLegendConfig({
+          title: {
+            show: colorConfig.legend.title?.show ?? true,
+            text: title,
+          },
+        })
+      }}
     />
   )
 }
