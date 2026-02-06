@@ -300,7 +300,7 @@ export default function Legend({
   }
 
   function generateContinuousItems() {
-    // For continuous scales, show gradient with key values
+    // For continuous scales, show only min and max (like Datawrapper)
     const items: Array<{ color: string; label: string }> = []
 
     if (breaks.length < 2) {
@@ -310,18 +310,15 @@ export default function Legend({
     const min = breaks[0]
     const max = breaks[breaks.length - 1]
 
-    // Generate 5 evenly spaced labels for better readability
-    const numLabels = 5
-    for (let i = 0; i < numLabels; i++) {
-      const ratio = i / (numLabels - 1)
-      const value = min + (max - min) * ratio
-      const colorIndex = Math.floor(ratio * (colors.length - 1))
+    items.push({
+      color: colors[0],
+      label: formatNumber(min, config.format as NumberFormat),
+    })
 
-      items.push({
-        color: colors[colorIndex] || colors[0],
-        label: formatNumber(value, config.format as NumberFormat),
-      })
-    }
+    items.push({
+      color: colors[colors.length - 1],
+      label: formatNumber(max, config.format as NumberFormat),
+    })
 
     return items
   }
