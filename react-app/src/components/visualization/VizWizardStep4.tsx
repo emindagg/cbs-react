@@ -80,6 +80,11 @@ const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; desc
     description: 'Benzer değerleri otomatik gruplar',
   },
   {
+    value: 'logarithmic',
+    label: 'Logaritmik',
+    description: 'Çok geniş değer aralıkları için logaritmik ölçekleme',
+  },
+  {
     value: 'rounded-sm',
     label: 'Yuvarlanmış Değerler',
     description: 'Güzel yuvarlak sayılar (10, 20, 50...)',
