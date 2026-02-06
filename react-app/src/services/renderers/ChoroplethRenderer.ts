@@ -5,7 +5,7 @@
 
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
-import { getColorForValue, getColorPalette } from '../../constants/colorSchemes'
+import { getColorForValue, getColorPalette, getContinuousColorForValue } from '../../constants/colorSchemes'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBreaks } from '../../utils/classificationMethods'
@@ -41,6 +41,7 @@ export class ChoroplethRenderer {
     // Calculate breaks
     const breaks = calculateBreaks(values, settings.classificationMethod, settings.classCount, settings.customBreaks)
     const colorPalette = getColorPalette(settings.colorScheme, settings.classCount)
+    const isContinuous = settings.legendType === 'continuous'
 
     // Create data map
     const dataMap = this.createDataMap(userData, dataColumn, locationLevel)
@@ -52,6 +53,9 @@ export class ChoroplethRenderer {
       breaks,
       colorPalette,
       locationLevel,
+      values,
+      isContinuous,
+      settings,
     )
 
     const allFeaturesGeoJSON: GeoJSONFeatureCollection = {
@@ -109,6 +113,9 @@ export class ChoroplethRenderer {
     breaks: number[],
     colorPalette: string[],
     locationLevel: 'province' | 'district',
+    allValues: number[],
+    isContinuous: boolean,
+    settings: VisualizationSettings,
   ): { allFeatures: GeoJSONFeature[]; featuresWithData: GeoJSONFeature[] } {
     const allFeatures: GeoJSONFeature[] = []
     const featuresWithData: GeoJSONFeature[] = []
@@ -127,7 +134,12 @@ export class ChoroplethRenderer {
       if (dataValue !== undefined && dataValue !== 0) {
         feature.properties.value = dataValue
         feature.properties.dataValue = dataValue
-        feature.properties.color = getColorForValue(dataValue, breaks, colorPalette)
+        // Choose color based on mode: continuous or steps
+        if (isContinuous) {
+          feature.properties.color = getContinuousColorForValue(dataValue, allValues, settings.colorScheme)
+        } else {
+          feature.properties.color = getColorForValue(dataValue, breaks, colorPalette)
+        }
         feature.properties.hasData = true
         featuresWithData.push(feature)
       } else {
@@ -216,28 +228,31 @@ export class ChoroplethRenderer {
       })
     }
 
-    // Add fill layer
+    // Add fill layer (only features with data)
     if (!this.map.getLayer('choropleth-fill')) {
       this.map.addLayer({
         id: 'choropleth-fill',
         type: 'fill',
         source: sourceId,
+        filter: ['==', ['get', 'hasData'], true],
         paint: {
           'fill-color': ['get', 'color'],
           'fill-opacity': 1,
         },
       })
     } else {
+      this.map.setFilter('choropleth-fill', ['==', ['get', 'hasData'], true])
       this.map.setPaintProperty('choropleth-fill', 'fill-color', ['get', 'color'])
       this.map.setPaintProperty('choropleth-fill', 'fill-opacity', 1)
     }
 
-    // Add outline layer
+    // Add outline layer (only features with data)
     if (!this.map.getLayer('choropleth-outline')) {
       this.map.addLayer({
         id: 'choropleth-outline',
         type: 'line',
         source: sourceId,
+        filter: ['==', ['get', 'hasData'], true],
         paint: {
           'line-color': '#6b7280',
           'line-width': 1,
@@ -245,6 +260,7 @@ export class ChoroplethRenderer {
         },
       })
     } else {
+      this.map.setFilter('choropleth-outline', ['==', ['get', 'hasData'], true])
       this.map.setPaintProperty('choropleth-outline', 'line-color', '#6b7280')
       this.map.setPaintProperty('choropleth-outline', 'line-width', 1)
       this.map.setPaintProperty('choropleth-outline', 'line-opacity', 0.8)

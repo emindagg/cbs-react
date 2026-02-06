@@ -86,7 +86,7 @@ const defaultVizSettings: VisualizationSettings = {
   type: 'choropleth',
   classCount: 5,
   classificationMethod: 'quantile',
-  colorScheme: 'viridis',
+  colorScheme: 'greenBlue',
   legendType: 'discrete',
 }
 
@@ -128,7 +128,7 @@ const defaultCustomRange: CustomRange = {
 
 const defaultColorConfig: ColorConfiguration = {
   column: null,
-  palette: 'viridis',
+  palette: 'greenBlue',
   scaleType: 'steps',
   interpolation: 'equidistant',
   customRange: defaultCustomRange,

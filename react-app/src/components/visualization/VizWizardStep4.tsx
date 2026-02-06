@@ -3,7 +3,7 @@
  * Configure visualization settings and render
  */
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 import ColorScaleConfig from './ColorScaleConfig'
 import ColorSchemePreview from './ColorSchemePreview'
@@ -205,29 +205,6 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
             Sembol Ayarları
           </div>
 
-          {/* Scaling method */}
-          <div>
-            <label className="block text-[10px] font-medium text-zinc-600 mb-1">
-              Ölçekleme Yöntemi
-            </label>
-            <select
-              value={vizSettings.symbolScaling || 'sqrt'}
-              onChange={(e) =>
-                setVizSettings({ symbolScaling: e.target.value as 'linear' | 'sqrt' | 'log' })
-              }
-              className="w-full text-[10px] border border-zinc-200 rounded-md px-2 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-            >
-              <option value="linear">Doğrusal (Linear)</option>
-              <option value="sqrt">Karekök (Square Root) - Önerilen</option>
-              <option value="log">Logaritmik (Logarithmic)</option>
-            </select>
-            <p className="text-[9px] text-zinc-400 mt-0.5">
-              {vizSettings.symbolScaling === 'linear' && 'Değerle doğru orantılı boyut'}
-              {(vizSettings.symbolScaling === 'sqrt' || !vizSettings.symbolScaling) && 'Alan-tabanlı ölçekleme, görsel denge için en iyi'}
-              {vizSettings.symbolScaling === 'log' && 'Geniş veri aralıkları için ideal'}
-            </p>
-          </div>
-
           {/* Size range */}
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -238,12 +215,15 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
                 type="number"
                 min="2"
                 max="20"
-                value={vizSettings.symbolMinSize || 5}
-                onChange={(e) => {
+                defaultValue={vizSettings.symbolMinSize ?? 5}
+                onBlur={(e) => {
                   const val = parseInt(e.target.value)
-                  if (val >= 2 && val <= 20) {
-                    setVizSettings({ symbolMinSize: val })
-                  }
+                  const clamped = isNaN(val) ? 5 : Math.max(2, Math.min(20, val))
+                  e.target.value = String(clamped)
+                  setVizSettings({ symbolMinSize: clamped })
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
                 }}
                 className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
@@ -256,12 +236,15 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
                 type="number"
                 min="20"
                 max="80"
-                value={vizSettings.symbolMaxSize || 40}
-                onChange={(e) => {
+                defaultValue={vizSettings.symbolMaxSize ?? 40}
+                onBlur={(e) => {
                   const val = parseInt(e.target.value)
-                  if (val >= 20 && val <= 80) {
-                    setVizSettings({ symbolMaxSize: val })
-                  }
+                  const clamped = isNaN(val) ? 40 : Math.max(20, Math.min(80, val))
+                  e.target.value = String(clamped)
+                  setVizSettings({ symbolMaxSize: clamped })
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
                 }}
                 className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />

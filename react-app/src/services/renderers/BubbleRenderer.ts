@@ -5,7 +5,7 @@
 
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
-import { getColorForValue, getColorPalette } from '../../constants/colorSchemes'
+import { getColorForValue, getColorPalette, getContinuousColorForValue } from '../../constants/colorSchemes'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBreaks } from '../../utils/classificationMethods'
@@ -42,9 +42,10 @@ export class BubbleRenderer {
       return
     }
 
-    // Calculate breaks for color
+    // Calculate breaks for color (used in steps mode)
     const breaks = calculateBreaks(values, settings.classificationMethod, settings.classCount, settings.customBreaks)
     const colorPalette = getColorPalette(settings.colorScheme, settings.classCount)
+    const isContinuous = settings.legendType === 'continuous'
 
     // Find min/max for size scaling
     const minValue = Math.min(...values)
@@ -63,6 +64,8 @@ export class BubbleRenderer {
       maxValue,
       locationLevel,
       settings,
+      values,
+      isContinuous,
     )
 
     console.debug(
@@ -115,6 +118,8 @@ export class BubbleRenderer {
     maxValue: number,
     locationLevel: 'province' | 'district',
     settings: VisualizationSettings,
+    allValues: number[],
+    isContinuous: boolean,
   ): GeoJSON.FeatureCollection {
     const bubbleFeatures: GeoJSON.Feature[] = []
 
@@ -124,6 +129,9 @@ export class BubbleRenderer {
 
       // Get data value
       const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
+
+      // Skip features without data
+      if (dataValue === undefined || dataValue === 0) return
 
       // Calculate centroid
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -140,6 +148,8 @@ export class BubbleRenderer {
         maxValue,
         centroid,
         settings,
+        allValues,
+        isContinuous,
       )
 
       bubbleFeatures.push(bubbleFeature)
@@ -164,19 +174,29 @@ export class BubbleRenderer {
     maxValue: number,
     centroid: [number, number],
     settings: VisualizationSettings,
+    allValues: number[],
+    isContinuous: boolean,
   ): GeoJSON.Feature {
     let color: string
     let radius: number
     let hasData: boolean
 
     if (dataValue !== undefined && dataValue !== 0) {
-      color = getColorForValue(dataValue, breaks, colorPalette)
+      // Choose color based on mode: continuous or steps
+      if (isContinuous) {
+        color = getContinuousColorForValue(dataValue, allValues, settings.colorScheme)
+      } else {
+        color = getColorForValue(dataValue, breaks, colorPalette)
+      }
       radius = this.calculateSymbolSizeValue(dataValue, minValue, maxValue, settings)
       hasData = true
     } else {
-      color = '#dddddd'
-      radius = settings.symbolMinSize || BubbleRenderer.MIN_RADIUS
-      hasData = false
+      // Should not reach here since we filter in processFeatures
+      return {
+        type: 'Feature',
+        properties: { displayName: featureName, name: featureName, value: 0, dataValue: 0, color: 'transparent', radius: 0, hasData: false },
+        geometry: { type: 'Point', coordinates: centroid },
+      }
     }
 
     return {
@@ -280,6 +300,7 @@ export class BubbleRenderer {
         id: layerId,
         type: 'circle',
         source: sourceId,
+        filter: ['==', ['get', 'hasData'], true],
         paint: {
           'circle-radius': ['get', 'radius'],
           'circle-color': ['get', 'color'],
@@ -289,6 +310,7 @@ export class BubbleRenderer {
         },
       })
     } else {
+      this.map.setFilter(layerId, ['==', ['get', 'hasData'], true])
       this.map.setPaintProperty(layerId, 'circle-radius', ['get', 'radius'])
       this.map.setPaintProperty(layerId, 'circle-color', ['get', 'color'])
       this.map.setPaintProperty(layerId, 'circle-opacity', opacity)
@@ -296,101 +318,4 @@ export class BubbleRenderer {
       this.map.setPaintProperty(layerId, 'circle-stroke-width', strokeWidth)
     }
   }
-}
-
-/**
- * Color Interpolation Utilities
- * Powered by chroma-js (same library used by Datawrapper)
- * Supports multiple color spaces (RGB, HSL, LAB, HCL) and interpolation methods
- */
-
-import chroma from 'chroma-js'
-
-export type ColorSpace = 'rgb' | 'hsl' | 'lab' | 'hcl'
-export type InterpolationMode = 'linear' | 'bezier' | 'basis'
-
-interface RGB {
-  r: number
-  g: number
-  b: number
-}
-
-/**
- * Convert hex color to RGB (0-1 range)
- */
-export function hexToRgb(hex: string): RGB {
-  const [r, g, b] = chroma(hex).gl()
-  return { r, g, b }
-}
-
-/**
- * Convert RGB (0-1 range) to hex
- */
-export function rgbToHex(rgb: RGB): string {
-  return chroma.gl(rgb.r, rgb.g, rgb.b).hex()
-}
-
-/**
- * Interpolate between two hex colors in the specified color space
- */
-export function interpolateColor(
-  hex1: string,
-  hex2: string,
-  t: number,
-  colorSpace: ColorSpace = 'lab',
-): string {
-  return chroma.mix(hex1, hex2, t, colorSpace).hex()
-}
-
-/**
- * Generate a continuous color scale between multiple colors
- */
-export function generateColorScale(
-  colors: string[],
-  steps: number,
-  colorSpace: ColorSpace = 'lab',
-): string[] {
-  if (colors.length === 0) return []
-  if (colors.length === 1) return Array(steps).fill(colors[0])
-
-  return chroma.scale(colors).mode(colorSpace).colors(steps)
-}
-
-/**
- * Generate a diverging color scale with a neutral midpoint
- */
-export function generateDivergingScale(
-  startColor: string,
-  midColor: string,
-  endColor: string,
-  steps: number,
-  colorSpace: ColorSpace = 'lab',
-): string[] {
-  return chroma.scale([startColor, midColor, endColor]).mode(colorSpace).colors(steps)
-}
-
-/**
- * Bezier interpolation for smoother color transitions
- * Uses chroma.bezier for perceptually smooth gradients
- */
-export function bezierInterpolate(colors: string[], t: number, _colorSpace: ColorSpace = 'lab'): string {
-  if (colors.length === 2) {
-    return chroma.mix(colors[0], colors[1], t, 'lab').hex()
-  }
-  const bezScale = chroma.bezier(colors)
-  return bezScale(t).hex()
-}
-
-/**
- * Generate a color scale using Bezier interpolation
- */
-export function generateBezierColorScale(
-  colors: string[],
-  steps: number,
-  _colorSpace: ColorSpace = 'lab',
-): string[] {
-  if (colors.length < 2) return colors.length === 1 ? Array(steps).fill(colors[0]) : []
-
-  const bezScale = chroma.bezier(colors).scale()
-  return bezScale.colors(steps)
 }

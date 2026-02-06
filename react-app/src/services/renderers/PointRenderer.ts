@@ -141,8 +141,12 @@ export class PointRenderer {
       color = getColorForValue(dataValue, breaks, colorPalette)
       hasData = true
     } else {
-      color = '#dddddd'
-      hasData = false
+      // Skip features without data - make invisible
+      return {
+        type: 'Feature',
+        properties: { displayName: featureName, name: featureName, value: 0, dataValue: 0, color: 'transparent', hasData: false },
+        geometry: { type: 'Point', coordinates: centroid },
+      }
     }
 
     return {
@@ -218,12 +222,13 @@ export class PointRenderer {
       })
     }
 
-    // Add circle layer
+    // Add circle layer (only features with data)
     if (!this.map.getLayer(layerId)) {
       this.map.addLayer({
         id: layerId,
         type: 'circle',
         source: sourceId,
+        filter: ['==', ['get', 'hasData'], true],
         paint: {
           'circle-radius': PointRenderer.POINT_RADIUS,
           'circle-color': ['get', 'color'],
@@ -232,6 +237,7 @@ export class PointRenderer {
         },
       })
     } else {
+      this.map.setFilter(layerId, ['==', ['get', 'hasData'], true])
       this.map.setPaintProperty(layerId, 'circle-radius', PointRenderer.POINT_RADIUS)
       this.map.setPaintProperty(layerId, 'circle-color', ['get', 'color'])
       this.map.setPaintProperty(layerId, 'circle-stroke-color', '#ffffff')
