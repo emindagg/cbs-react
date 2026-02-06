@@ -28,22 +28,12 @@ export default function MapTitle({
   const titleRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  if (!visible) return null
-
   // Position classes
   const positionClasses: Record<string, string> = {
     'top-left': 'top-4 left-4',
     'top-center': 'top-4 left-1/2 -translate-x-1/2',
     'top-right': 'top-4 right-4',
   }
-
-  // Focus input when editing starts
-  useEffect(() => {
-    if (isEditingTitle && inputRef.current) {
-      inputRef.current.focus()
-      inputRef.current.select()
-    }
-  }, [isEditingTitle])
 
   // Drag handlers
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -77,6 +67,15 @@ export default function MapTitle({
     setIsDragging(false)
   }
 
+  // Focus input when editing starts
+  useEffect(() => {
+    if (isEditingTitle && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [isEditingTitle])
+
+  // Add/remove drag event listeners
   useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove)
@@ -87,6 +86,9 @@ export default function MapTitle({
       }
     }
   }, [isDragging, dragOffset])
+
+  // NOW we can do conditional returns after all hooks are called
+  if (!visible) return null
 
   const handleTitleClick = () => {
     setIsEditingTitle(true)
