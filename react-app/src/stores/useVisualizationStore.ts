@@ -112,8 +112,8 @@ const defaultLegendConfig: LegendConfiguration = {
   },
   format: '0a',
   title: {
-    show: false,
-    text: '',
+    show: true,
+    text: 'Lejant',
   },
   highlightOnHover: false,
   reverseOrder: false,
