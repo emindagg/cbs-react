@@ -3,7 +3,7 @@
  * Flexible legend with position, orientation, and format options
  */
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 import type { LegendConfiguration, ColorScaleType } from '../../types/visualization'
 import { formatNumber, type NumberFormat } from '../../utils/numberFormatter'
@@ -24,6 +24,10 @@ export default function Legend({
   onHover,
 }: LegendProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const legendRef = useRef<HTMLDivElement>(null)
 
   if (!config.visible) return null
 
@@ -33,6 +37,50 @@ export default function Legend({
       onHover?.(index)
     }
   }
+
+  // Drag handlers
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!legendRef.current) return
+
+    const rect = legendRef.current.getBoundingClientRect()
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+    setIsDragging(true)
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return
+
+    const x = e.clientX - dragOffset.x
+    const y = e.clientY - dragOffset.y
+
+    // Keep within viewport bounds
+    const maxX = window.innerWidth - (legendRef.current?.offsetWidth || 0)
+    const maxY = window.innerHeight - (legendRef.current?.offsetHeight || 0)
+
+    setPosition({
+      x: Math.max(0, Math.min(x, maxX)),
+      y: Math.max(0, Math.min(y, maxY)),
+    })
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  // Add/remove mouse event listeners
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove)
+        window.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging, dragOffset])
 
   // Generate legend items
   const items = scaleType === 'steps' ? generateSteppedItems() : generateContinuousItems()
@@ -59,15 +107,24 @@ export default function Legend({
 
   return (
     <div
+      ref={legendRef}
+      onMouseDown={handleMouseDown}
       className={`
         fixed z-[1000]
         rounded-lg
         p-3
-        ${positionClasses[config.position] || positionClasses['above']}
+        ${position ? '' : (positionClasses[config.position] || positionClasses['above'])}
+        ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}
+        select-none
       `}
       style={{
         width: config.orientation === 'horizontal' ? `${config.size}px` : 'auto',
         maxWidth: config.orientation === 'vertical' ? '200px' : undefined,
+        ...(position ? {
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          transform: 'none',
+        } : {}),
       }}
     >
       {config.title?.show && config.title.text && (
