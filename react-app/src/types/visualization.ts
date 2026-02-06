@@ -23,37 +23,20 @@ export type ClassificationMethod =
   | 'continuous-natural'
 
 export type ColorScheme =
-  // Original
   | 'viridis'
-  // ColorBrewer Sequential
-  | 'ylorbr'
-  | 'ylorrd'
-  | 'ylgnbu'
-  | 'ylgn'
-  | 'reds'
-  | 'rdpu'
-  | 'purples'
-  | 'purd'
-  | 'pubugn'
-  | 'pubu'
-  | 'orrd'
-  | 'oranges'
-  | 'greys'
-  | 'greens'
-  | 'gnbu'
-  | 'bupu'
-  | 'bugn'
-  | 'blues'
-  // ColorBrewer Diverging
-  | 'spectral'
-  | 'rdylgn'
-  | 'rdylbu'
-  | 'rdgy'
-  | 'rdbu'
-  | 'puor'
-  | 'prgn'
-  | 'piyg'
-  | 'brbg'
+  // Datawrapper Sequential
+  | 'greenBlue'
+  | 'sunset'
+  | 'plasma'
+  | 'yellowGreen'
+  | 'pinkPurple'
+  | 'yellowBlue'
+  | 'rosePurple'
+  // Datawrapper Diverging
+  | 'brownTeal'
+  | 'pinkGreen'
+  | 'redBlue'
+  | 'redTeal'
 
 export type LegendType =
   | 'discrete'

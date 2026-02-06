@@ -30,36 +30,20 @@ const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
   // Original
   { value: 'viridis', label: 'Viridis' },
 
-  // Sequential
-  { value: 'ylorbr', label: 'Sarı-Turuncu-Kahve' },
-  { value: 'ylorrd', label: 'Sarı-Turuncu-Kırmızı' },
-  { value: 'ylgnbu', label: 'Sarı-Yeşil-Mavi' },
-  { value: 'ylgn', label: 'Sarı-Yeşil' },
-  { value: 'reds', label: 'Kırmızı Tonları' },
-  { value: 'rdpu', label: 'Kırmızı-Mor' },
-  { value: 'purples', label: 'Mor Tonları' },
-  { value: 'purd', label: 'Mor-Kırmızı' },
-  { value: 'pubugn', label: 'Mor-Mavi-Yeşil' },
-  { value: 'pubu', label: 'Mor-Mavi' },
-  { value: 'orrd', label: 'Turuncu-Kırmızı' },
-  { value: 'oranges', label: 'Turuncu Tonları' },
-  { value: 'greys', label: 'Gri Tonları' },
-  { value: 'greens', label: 'Yeşil Tonları' },
-  { value: 'gnbu', label: 'Yeşil-Mavi' },
-  { value: 'bupu', label: 'Mavi-Mor' },
-  { value: 'bugn', label: 'Mavi-Yeşil' },
-  { value: 'blues', label: 'Mavi Tonları' },
+  // Datawrapper Sequential
+  { value: 'greenBlue', label: 'Yeşil-Mavi' },
+  { value: 'sunset', label: 'Gün Batımı' },
+  { value: 'plasma', label: 'Plasma' },
+  { value: 'yellowGreen', label: 'Sarı-Yeşil' },
+  { value: 'pinkPurple', label: 'Pembe-Mor' },
+  { value: 'yellowBlue', label: 'Sarı-Mavi' },
+  { value: 'rosePurple', label: 'Gül-Mor' },
 
-  // Diverging
-  { value: 'spectral', label: 'Spektral' },
-  { value: 'rdylgn', label: 'Kırmızı-Sarı-Yeşil' },
-  { value: 'rdylbu', label: 'Kırmızı-Sarı-Mavi' },
-  { value: 'rdgy', label: 'Kırmızı-Gri' },
-  { value: 'rdbu', label: 'Kırmızı-Mavi' },
-  { value: 'puor', label: 'Mor-Turuncu' },
-  { value: 'prgn', label: 'Mor-Yeşil' },
-  { value: 'piyg', label: 'Pembe-Sarı-Yeşil' },
-  { value: 'brbg', label: 'Kahve-Mavi-Yeşil' },
+  // Datawrapper Diverging
+  { value: 'brownTeal', label: 'Kahve-Deniz' },
+  { value: 'pinkGreen', label: 'Pembe-Yeşil' },
+  { value: 'redBlue', label: 'Kırmızı-Mavi' },
+  { value: 'redTeal', label: 'Kırmızı-Deniz' },
 ]
 
 const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; description: string }[] = [

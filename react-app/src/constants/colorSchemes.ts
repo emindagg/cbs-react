@@ -21,364 +21,147 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#fde725',
   ],
 
-  // ColorBrewer Sequential - Yellow-Orange-Brown
-  ylorbr: [
-    '#ffffe5',
-    '#fff7bc',
-    '#fee391',
-    '#fec44f',
-    '#fe9929',
-    '#ec7014',
-    '#cc4c02',
-    '#993404',
-    '#662506',
+  // Datawrapper Sequential - Green-Blue
+  greenBlue: [
+    '#f0f9e8',
+    '#c5e9c6',
+    '#96d6c0',
+    '#6bc0c6',
+    '#4ba8c9',
+    '#3291c0',
+    '#1a7ab5',
+    '#1162a5',
+    '#254b8c',
   ],
 
-  // ColorBrewer Sequential - Yellow-Orange-Red
-  ylorrd: [
-    '#ffffcc',
-    '#ffeda0',
-    '#fed976',
-    '#feb24c',
-    '#fd8d3c',
-    '#fc4e2a',
-    '#e31a1c',
-    '#bd0026',
-    '#800026',
+  // Datawrapper Sequential - Sunset (Yellow-Purple)
+  sunset: [
+    '#fcfcbe',
+    '#fdd499',
+    '#fcaa7a',
+    '#f57f66',
+    '#e45563',
+    '#ba3c75',
+    '#8c297b',
+    '#5b1c74',
+    '#2c1160',
   ],
 
-  // ColorBrewer Sequential - Yellow-Green-Blue
-  ylgnbu: [
-    '#ffffd9',
-    '#edf8b1',
-    '#c7e9b4',
-    '#7fcdbb',
-    '#41b6c4',
-    '#1d91c0',
-    '#225ea8',
-    '#253494',
-    '#081d58',
+  // Datawrapper Sequential - Plasma
+  plasma: [
+    '#f0f723',
+    '#f8cd29',
+    '#f7a539',
+    '#ec7e50',
+    '#d8586a',
+    '#b73387',
+    '#8a159b',
+    '#51049e',
+    '#0d0787',
   ],
 
-  // ColorBrewer Sequential - Yellow-Green
-  ylgn: [
-    '#ffffe5',
-    '#f7fcb9',
-    '#d9f0a3',
-    '#addd8e',
-    '#78c679',
-    '#41ab5d',
-    '#238443',
-    '#006837',
-    '#004529',
+  // Datawrapper Sequential - Yellow-Green
+  yellowGreen: [
+    '#fefaca',
+    '#dfecaf',
+    '#bfde94',
+    '#9ecf79',
+    '#7cc15e',
+    '#5ab344',
+    '#39a52d',
+    '#1a981c',
+    '#008b15',
   ],
 
-  // ColorBrewer Sequential - Reds
-  reds: [
-    '#fff5f0',
-    '#fee0d2',
-    '#fcbba1',
-    '#fc9272',
-    '#fb6a4a',
-    '#ef3b2c',
-    '#cb181d',
-    '#a50f15',
-    '#67000d',
-  ],
-
-  // ColorBrewer Sequential - Red-Purple
-  rdpu: [
-    '#fff7f3',
-    '#fde0dd',
-    '#fcc5c0',
-    '#fa9fb5',
-    '#f768a1',
-    '#dd3497',
-    '#ae017e',
+  // Datawrapper Sequential - Pink-Purple
+  pinkPurple: [
+    '#feebe2',
+    '#fdd3cd',
+    '#fcbcbd',
+    '#faa4b6',
+    '#f984ab',
+    '#f15e9e',
+    '#d22e90',
+    '#a91183',
     '#7a0177',
-    '#49006a',
   ],
 
-  // ColorBrewer Sequential - Purples
-  purples: [
-    '#fcfbfd',
-    '#efedf5',
-    '#dadaeb',
-    '#bcbddc',
-    '#9e9ac8',
-    '#807dba',
-    '#6a51a3',
-    '#54278f',
-    '#3f007d',
+  // Datawrapper Sequential - Yellow-Blue
+  yellowBlue: [
+    '#ffffcc',
+    '#dcf1bd',
+    '#b5e2b6',
+    '#88d1ba',
+    '#60c2c0',
+    '#3eafc3',
+    '#318dbb',
+    '#2963ab',
+    '#253494',
   ],
 
-  // ColorBrewer Sequential - Purple-Red
-  purd: [
-    '#f7f4f9',
-    '#e7e1ef',
-    '#d4b9da',
-    '#c994c7',
-    '#df65b0',
-    '#e7298a',
-    '#ce1256',
-    '#980043',
-    '#67001f',
+  // Datawrapper Sequential - Rose-Purple
+  rosePurple: [
+    '#f9ddda',
+    '#f4c2ca',
+    '#eca8bf',
+    '#df8fb8',
+    '#ce78b3',
+    '#b565af',
+    '#9855a7',
+    '#78479a',
+    '#573b88',
   ],
 
-  // ColorBrewer Sequential - Purple-Blue-Green
-  pubugn: [
-    '#fff7fb',
-    '#ece2f0',
-    '#d0d1e6',
-    '#a6bddb',
-    '#67a9cf',
-    '#3690c0',
-    '#02818a',
-    '#016c59',
-    '#014636',
-  ],
-
-  // ColorBrewer Sequential - Purple-Blue
-  pubu: [
-    '#fff7fb',
-    '#ece7f2',
-    '#d0d1e6',
-    '#a6bddb',
-    '#74a9cf',
-    '#3690c0',
-    '#0570b0',
-    '#045a8d',
-    '#023858',
-  ],
-
-  // ColorBrewer Sequential - Orange-Red
-  orrd: [
-    '#fff7ec',
-    '#fee8c8',
-    '#fdd49e',
-    '#fdbb84',
-    '#fc8d59',
-    '#ef6548',
-    '#d7301f',
-    '#b30000',
-    '#7f0000',
-  ],
-
-  // ColorBrewer Sequential - Oranges
-  oranges: [
-    '#fff5eb',
-    '#fee6ce',
-    '#fdd0a2',
-    '#fdae6b',
-    '#fd8d3c',
-    '#f16913',
-    '#d94801',
-    '#a63603',
-    '#7f2704',
-  ],
-
-  // ColorBrewer Sequential - Greys
-  greys: [
-    '#ffffff',
-    '#f0f0f0',
-    '#d9d9d9',
-    '#bdbdbd',
-    '#969696',
-    '#737373',
-    '#525252',
-    '#252525',
-    '#000000',
-  ],
-
-  // ColorBrewer Sequential - Greens
-  greens: [
-    '#f7fcf5',
-    '#e5f5e0',
-    '#c7e9c0',
-    '#a1d99b',
-    '#74c476',
-    '#41ab5d',
-    '#238b45',
-    '#006d2c',
-    '#00441b',
-  ],
-
-  // ColorBrewer Sequential - Green-Blue
-  gnbu: [
-    '#f7fcf0',
-    '#e0f3db',
-    '#ccebc5',
-    '#a8ddb5',
-    '#7bccc4',
-    '#4eb3d3',
-    '#2b8cbe',
-    '#0868ac',
-    '#084081',
-  ],
-
-  // ColorBrewer Sequential - Blue-Purple
-  bupu: [
-    '#f7fcfd',
-    '#e0ecf4',
-    '#bfd3e6',
-    '#9ebcda',
-    '#8c96c6',
-    '#8c6bb1',
-    '#88419d',
-    '#810f7c',
-    '#4d004b',
-  ],
-
-  // ColorBrewer Sequential - Blue-Green
-  bugn: [
-    '#f7fcfd',
-    '#e5f5f9',
-    '#ccece6',
-    '#99d8c9',
-    '#66c2a4',
-    '#41ae76',
-    '#238b45',
-    '#006d2c',
-    '#00441b',
-  ],
-
-  // ColorBrewer Sequential - Blues
-  blues: [
-    '#f7fbff',
-    '#deebf7',
-    '#c6dbef',
-    '#9ecae1',
-    '#6baed6',
-    '#4292c6',
-    '#2171b5',
-    '#08519c',
-    '#08306b',
-  ],
-
-  // ColorBrewer Diverging - Spectral
-  spectral: [
-    '#9e0142',
-    '#d53e4f',
-    '#f46d43',
-    '#fdae61',
-    '#fee08b',
-    '#e6f598',
-    '#abdda4',
-    '#66c2a5',
-    '#3288bd',
-    '#5e4fa2',
-  ],
-
-  // ColorBrewer Diverging - Red-Yellow-Green
-  rdylgn: [
-    '#a50026',
-    '#d73027',
-    '#f46d43',
-    '#fdae61',
-    '#fee08b',
-    '#d9ef8b',
-    '#a6d96a',
-    '#66bd63',
-    '#1a9850',
-    '#006837',
-  ],
-
-  // ColorBrewer Diverging - Red-Yellow-Blue
-  rdylbu: [
-    '#a50026',
-    '#d73027',
-    '#f46d43',
-    '#fdae61',
-    '#fee090',
-    '#e0f3f8',
-    '#abd9e9',
-    '#74add1',
-    '#4575b4',
-    '#313695',
-  ],
-
-  // ColorBrewer Diverging - Red-Grey
-  rdgy: [
-    '#67001f',
-    '#b2182b',
-    '#d6604d',
-    '#f4a582',
-    '#fddbc7',
-    '#e0e0e0',
-    '#bababa',
-    '#878787',
-    '#4d4d4d',
-    '#1a1a1a',
-  ],
-
-  // ColorBrewer Diverging - Red-Blue
-  rdbu: [
-    '#67001f',
-    '#b2182b',
-    '#d6604d',
-    '#f4a582',
-    '#fddbc7',
-    '#d1e5f0',
-    '#92c5de',
-    '#4393c3',
-    '#2166ac',
-    '#053061',
-  ],
-
-  // ColorBrewer Diverging - Purple-Orange
-  puor: [
-    '#7f3b08',
-    '#b35806',
-    '#e08214',
-    '#fdb863',
-    '#fee0b6',
-    '#d8daeb',
-    '#b2abd2',
-    '#8073ac',
-    '#542788',
-    '#2d004b',
-  ],
-
-  // ColorBrewer Diverging - Purple-Green
-  prgn: [
-    '#40004b',
-    '#762a83',
-    '#9970ab',
-    '#c2a5cf',
-    '#e7d4e8',
-    '#d9f0d3',
-    '#a6dba0',
-    '#5aae61',
-    '#1b7837',
-    '#00441b',
-  ],
-
-  // ColorBrewer Diverging - Pink-Yellow-Green
-  piyg: [
-    '#8e0152',
-    '#c51b7d',
-    '#de77ae',
-    '#f1b6da',
-    '#fde0ef',
-    '#e6f5d0',
-    '#b8e186',
-    '#7fbc41',
-    '#4d9221',
-    '#276419',
-  ],
-
-  // ColorBrewer Diverging - Brown-Blue-Green
-  brbg: [
-    '#543005',
+  // Datawrapper Diverging - Brown-Teal
+  brownTeal: [
     '#8c510a',
-    '#bf812d',
-    '#dfc27d',
-    '#f6e8c3',
-    '#c7eae5',
-    '#80cdc1',
-    '#35978f',
+    '#c59b4e',
+    '#e7ce94',
+    '#f6eccd',
+    '#f5f7ea',
+    '#d3ede6',
+    '#91cfc9',
+    '#44a199',
     '#01665e',
-    '#003c30',
+  ],
+
+  // Datawrapper Diverging - Pink-Green
+  pinkGreen: [
+    '#c51b7d',
+    '#e081b6',
+    '#f3c2dc',
+    '#fce6ee',
+    '#faf6ea',
+    '#ebf5d7',
+    '#c4e69d',
+    '#8cc658',
+    '#4d9221',
+  ],
+
+  // Datawrapper Diverging - Red-Blue
+  redBlue: [
+    '#b2182b',
+    '#e06e54',
+    '#f6b395',
+    '#fce2d0',
+    '#f8f6e9',
+    '#dbe9ee',
+    '#9cc7e0',
+    '#5698c6',
+    '#2166ac',
+  ],
+
+  // Datawrapper Diverging - Red-Teal
+  redTeal: [
+    '#c13e2e',
+    '#de6050',
+    '#ef8675',
+    '#f2b19d',
+    '#e9e0c8',
+    '#b2cac4',
+    '#7ab2b9',
+    '#3e96a7',
+    '#00768d',
   ],
 }
 
@@ -386,39 +169,22 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
  * Color scheme metadata for UI display
  */
 export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'sequential' | 'diverging' }> = {
-  // Original
   viridis: { name: 'Viridis', type: 'sequential' },
 
-  // ColorBrewer Sequential
-  ylorbr: { name: 'Yellow-Orange-Brown', type: 'sequential' },
-  ylorrd: { name: 'Yellow-Orange-Red', type: 'sequential' },
-  ylgnbu: { name: 'Yellow-Green-Blue', type: 'sequential' },
-  ylgn: { name: 'Yellow-Green', type: 'sequential' },
-  reds: { name: 'Reds', type: 'sequential' },
-  rdpu: { name: 'Red-Purple', type: 'sequential' },
-  purples: { name: 'Purples', type: 'sequential' },
-  purd: { name: 'Purple-Red', type: 'sequential' },
-  pubugn: { name: 'Purple-Blue-Green', type: 'sequential' },
-  pubu: { name: 'Purple-Blue', type: 'sequential' },
-  orrd: { name: 'Orange-Red', type: 'sequential' },
-  oranges: { name: 'Oranges', type: 'sequential' },
-  greys: { name: 'Greys', type: 'sequential' },
-  greens: { name: 'Greens', type: 'sequential' },
-  gnbu: { name: 'Green-Blue', type: 'sequential' },
-  bupu: { name: 'Blue-Purple', type: 'sequential' },
-  bugn: { name: 'Blue-Green', type: 'sequential' },
-  blues: { name: 'Blues', type: 'sequential' },
+  // Datawrapper Sequential
+  greenBlue: { name: 'Yeşil-Mavi', type: 'sequential' },
+  sunset: { name: 'Gün Batımı', type: 'sequential' },
+  plasma: { name: 'Plasma', type: 'sequential' },
+  yellowGreen: { name: 'Sarı-Yeşil', type: 'sequential' },
+  pinkPurple: { name: 'Pembe-Mor', type: 'sequential' },
+  yellowBlue: { name: 'Sarı-Mavi', type: 'sequential' },
+  rosePurple: { name: 'Gül-Mor', type: 'sequential' },
 
-  // ColorBrewer Diverging
-  spectral: { name: 'Spectral', type: 'diverging' },
-  rdylgn: { name: 'Red-Yellow-Green', type: 'diverging' },
-  rdylbu: { name: 'Red-Yellow-Blue', type: 'diverging' },
-  rdgy: { name: 'Red-Grey', type: 'diverging' },
-  rdbu: { name: 'Red-Blue', type: 'diverging' },
-  puor: { name: 'Purple-Orange', type: 'diverging' },
-  prgn: { name: 'Purple-Green', type: 'diverging' },
-  piyg: { name: 'Pink-Yellow-Green', type: 'diverging' },
-  brbg: { name: 'Brown-Blue-Green', type: 'diverging' },
+  // Datawrapper Diverging
+  brownTeal: { name: 'Kahve-Deniz', type: 'diverging' },
+  pinkGreen: { name: 'Pembe-Yeşil', type: 'diverging' },
+  redBlue: { name: 'Kırmızı-Mavi', type: 'diverging' },
+  redTeal: { name: 'Kırmızı-Deniz', type: 'diverging' },
 }
 
 /**
@@ -427,11 +193,14 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
  */
 export function getColorPalette(colorScheme: ColorScheme, classCount: number): string[] {
   const fullPalette = COLOR_SCHEMES[colorScheme]
-  const step = Math.floor((fullPalette.length - 1) / (classCount - 1))
-  const palette: string[] = []
 
+  if (classCount <= 1) return [fullPalette[0]]
+  if (classCount >= fullPalette.length) return [...fullPalette]
+
+  // Evenly sample from full palette
+  const palette: string[] = []
   for (let i = 0; i < classCount; i++) {
-    const index = Math.min(i * step, fullPalette.length - 1)
+    const index = Math.round(i * (fullPalette.length - 1) / (classCount - 1))
     palette.push(fullPalette[index])
   }
 

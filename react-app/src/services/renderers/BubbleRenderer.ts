@@ -297,3 +297,100 @@ export class BubbleRenderer {
     }
   }
 }
+
+/**
+ * Color Interpolation Utilities
+ * Powered by chroma-js (same library used by Datawrapper)
+ * Supports multiple color spaces (RGB, HSL, LAB, HCL) and interpolation methods
+ */
+
+import chroma from 'chroma-js'
+
+export type ColorSpace = 'rgb' | 'hsl' | 'lab' | 'hcl'
+export type InterpolationMode = 'linear' | 'bezier' | 'basis'
+
+interface RGB {
+  r: number
+  g: number
+  b: number
+}
+
+/**
+ * Convert hex color to RGB (0-1 range)
+ */
+export function hexToRgb(hex: string): RGB {
+  const [r, g, b] = chroma(hex).gl()
+  return { r, g, b }
+}
+
+/**
+ * Convert RGB (0-1 range) to hex
+ */
+export function rgbToHex(rgb: RGB): string {
+  return chroma.gl(rgb.r, rgb.g, rgb.b).hex()
+}
+
+/**
+ * Interpolate between two hex colors in the specified color space
+ */
+export function interpolateColor(
+  hex1: string,
+  hex2: string,
+  t: number,
+  colorSpace: ColorSpace = 'lab',
+): string {
+  return chroma.mix(hex1, hex2, t, colorSpace).hex()
+}
+
+/**
+ * Generate a continuous color scale between multiple colors
+ */
+export function generateColorScale(
+  colors: string[],
+  steps: number,
+  colorSpace: ColorSpace = 'lab',
+): string[] {
+  if (colors.length === 0) return []
+  if (colors.length === 1) return Array(steps).fill(colors[0])
+
+  return chroma.scale(colors).mode(colorSpace).colors(steps)
+}
+
+/**
+ * Generate a diverging color scale with a neutral midpoint
+ */
+export function generateDivergingScale(
+  startColor: string,
+  midColor: string,
+  endColor: string,
+  steps: number,
+  colorSpace: ColorSpace = 'lab',
+): string[] {
+  return chroma.scale([startColor, midColor, endColor]).mode(colorSpace).colors(steps)
+}
+
+/**
+ * Bezier interpolation for smoother color transitions
+ * Uses chroma.bezier for perceptually smooth gradients
+ */
+export function bezierInterpolate(colors: string[], t: number, _colorSpace: ColorSpace = 'lab'): string {
+  if (colors.length === 2) {
+    return chroma.mix(colors[0], colors[1], t, 'lab').hex()
+  }
+  const bezScale = chroma.bezier(colors)
+  return bezScale(t).hex()
+}
+
+/**
+ * Generate a color scale using Bezier interpolation
+ */
+export function generateBezierColorScale(
+  colors: string[],
+  steps: number,
+  _colorSpace: ColorSpace = 'lab',
+): string[] {
+  if (colors.length < 2) return colors.length === 1 ? Array(steps).fill(colors[0]) : []
+
+  const bezScale = chroma.bezier(colors).scale()
+  return bezScale.colors(steps)
+}
