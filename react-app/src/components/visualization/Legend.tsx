@@ -61,9 +61,7 @@ export default function Legend({
     <div
       className={`
         fixed z-[1000]
-        bg-white/95 backdrop-blur-sm
-        rounded-lg shadow-lg
-        border border-zinc-200
+        rounded-lg
         p-3
         ${positionClasses[config.position] || positionClasses['above']}
       `}
@@ -73,7 +71,7 @@ export default function Legend({
       }}
     >
       {config.title?.show && config.title.text && (
-        <div className="legend-title text-xs font-semibold mb-2 text-zinc-700">
+        <div className="legend-title text-xs font-bold mb-2 text-zinc-900 drop-shadow-sm">
           {config.title.text}
         </div>
       )}
@@ -89,7 +87,7 @@ export default function Legend({
             />
             <div className="flex flex-row justify-between">
               {displayItems.map((item, index) => (
-                <span key={index} className="text-[10px] text-zinc-600 font-medium">
+                <span key={index} className="text-[10px] text-zinc-900 font-bold drop-shadow-sm">
                   {item.label}
                 </span>
               ))}
@@ -104,7 +102,7 @@ export default function Legend({
             />
             <div className="flex flex-col justify-between h-40">
               {[...displayItems].reverse().map((item, index) => (
-                <span key={index} className="text-[10px] text-zinc-600 font-medium">
+                <span key={index} className="text-[10px] text-zinc-900 font-bold drop-shadow-sm">
                   {item.label}
                 </span>
               ))}
@@ -138,7 +136,7 @@ export default function Legend({
               />
 
               {/* Label */}
-              <span className="legend-label text-[10px] text-zinc-600 whitespace-nowrap">
+              <span className="legend-label text-[10px] text-zinc-900 font-bold drop-shadow-sm whitespace-nowrap">
                 {item.label}
               </span>
             </div>
