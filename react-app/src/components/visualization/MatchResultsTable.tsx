@@ -1,16 +1,21 @@
 /**
  * Match Results Table
- * Displays detailed matching results in a table format
+ * Displays detailed matching results in a table format with inline editing
  */
+
+import { useState } from 'react'
 
 import type { MatchResults } from '../../types/visualization'
 
 interface MatchResultsTableProps {
   matchResults: MatchResults;
   dataColumn: string | null;
+  onEdit?: (rowIndex: number, newValue: string) => void;
 }
 
-export default function MatchResultsTable({ matchResults, dataColumn }: MatchResultsTableProps) {
+export default function MatchResultsTable({ matchResults, dataColumn, onEdit }: MatchResultsTableProps) {
+  const [editingRow, setEditingRow] = useState<number | null>(null)
+  const [editValue, setEditValue] = useState('')
   const allResults = [
     ...matchResults.successful.map((r) => ({ ...r, status: 'success' as const })),
     ...matchResults.ambiguous.map((r) => ({ ...r, status: 'ambiguous' as const })),
@@ -97,7 +102,59 @@ export default function MatchResultsTable({ matchResults, dataColumn }: MatchRes
                   </div>
                 </td>
                 <td className="px-3 py-2">
-                  <span className="font-medium">{result.location || '-'}</span>
+                  {result.status === 'failed' && editingRow === result.rowIndex ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            onEdit?.(result.rowIndex, editValue)
+                            setEditingRow(null)
+                          }
+                          if (e.key === 'Escape') {
+                            setEditingRow(null)
+                          }
+                        }}
+                        autoFocus
+                        className="flex-1 px-2 py-1 text-[11px] border border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                      <button
+                        onClick={() => {
+                          onEdit?.(result.rowIndex, editValue)
+                          setEditingRow(null)
+                        }}
+                        className="px-2 py-1 text-[10px] text-green-600 hover:bg-green-50 rounded"
+                        title="Kaydet"
+                      >
+                        <i className="fa-solid fa-check"></i>
+                      </button>
+                      <button
+                        onClick={() => setEditingRow(null)}
+                        className="px-2 py-1 text-[10px] text-red-600 hover:bg-red-50 rounded"
+                        title="İptal"
+                      >
+                        <i className="fa-solid fa-times"></i>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between group">
+                      <span className="font-medium">{result.location || '-'}</span>
+                      {result.status === 'failed' && onEdit && (
+                        <button
+                          onClick={() => {
+                            setEditingRow(result.rowIndex)
+                            setEditValue(result.location || '')
+                          }}
+                          className="opacity-0 group-hover:opacity-100 px-2 py-1 text-[10px] text-blue-600 hover:bg-blue-50 rounded transition-opacity"
+                          title="Düzenle"
+                        >
+                          <i className="fa-solid fa-pen text-[9px]"></i>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </td>
                 <td className="px-3 py-2">
                   {result.status === 'success' ? (

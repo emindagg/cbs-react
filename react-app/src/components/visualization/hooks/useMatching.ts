@@ -90,8 +90,10 @@ export function useMatching({
     return districtIndex
   }
 
-  const performMatching = async (): Promise<MatchResults | null> => {
-    if (!rawData || !map) {
+  const performMatching = async (dataOverride?: Record<string, unknown>[]): Promise<MatchResults | null> => {
+    const dataToUse = dataOverride || rawData
+
+    if (!dataToUse || !map) {
       return null
     }
 
@@ -119,8 +121,8 @@ export function useMatching({
 
       // Create ColumnMapper and perform matching
       const mapper = new ColumnMapper()
-      mapper.rawData = rawData
-      mapper.columns = Object.keys(rawData[0])
+      mapper.rawData = dataToUse
+      mapper.columns = Object.keys(dataToUse[0])
       mapper.setColumnMapping(columnMapping)
       mapper.setIndexes(
         localProvinceIndex as unknown as Record<string, LocationInfo> | null,

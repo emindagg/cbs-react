@@ -14,6 +14,13 @@ export function getFilteredResults(matchResults: MatchResults, activeTab: TabTyp
     ...matchResults.failed.map((r) => ({ ...r, status: 'failed' as const })),
   ]
 
+  // Sort alphabetically by location
+  allResults.sort((a, b) => {
+    const locationA = (a.location || '').toLowerCase()
+    const locationB = (b.location || '').toLowerCase()
+    return locationA.localeCompare(locationB, 'tr-TR')
+  })
+
   switch (activeTab) {
     case 'success':
       return allResults.filter((r) => r.status === 'success')

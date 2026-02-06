@@ -5,25 +5,55 @@
 
 export type VizType = 'choropleth' | 'bubble' | 'dot'
 
+export type SymbolShape = 'circle' | 'square' | 'triangle' | 'star' | 'diamond' | 'pin'
+export type SymbolScaling = 'linear' | 'sqrt' | 'log'
+
 export type LocationLevel = 'province' | 'district' | 'mixed'
 
 export type ClassificationMethod =
   | 'quantile'
   | 'equal'
   | 'jenks'
+  | 'kmeans'
   | 'rounded-sm'
   | 'logarithmic'
   | 'custom'
+  | 'continuous-linear'
+  | 'continuous-quantile'
+  | 'continuous-natural'
 
 export type ColorScheme =
+  // Original
   | 'viridis'
-  | 'topographic'
-  | 'diverging_orange_blue'
-  | 'greens'
+  // ColorBrewer Sequential
+  | 'ylorbr'
+  | 'ylorrd'
+  | 'ylgnbu'
+  | 'ylgn'
   | 'reds'
-  | 'blues'
-  | 'oranges'
+  | 'rdpu'
   | 'purples'
+  | 'purd'
+  | 'pubugn'
+  | 'pubu'
+  | 'orrd'
+  | 'oranges'
+  | 'greys'
+  | 'greens'
+  | 'gnbu'
+  | 'bupu'
+  | 'bugn'
+  | 'blues'
+  // ColorBrewer Diverging
+  | 'spectral'
+  | 'rdylgn'
+  | 'rdylbu'
+  | 'rdgy'
+  | 'rdbu'
+  | 'puor'
+  | 'prgn'
+  | 'piyg'
+  | 'brbg'
 
 export type LegendType =
   | 'discrete'
@@ -70,6 +100,14 @@ export interface VisualizationSettings {
   colorScheme: ColorScheme;
   legendType: LegendType;
   customBreaks?: number[];
+  // Symbol Map Settings
+  symbolShape?: SymbolShape;
+  symbolScaling?: SymbolScaling;
+  symbolMinSize?: number;
+  symbolMaxSize?: number;
+  symbolStrokeColor?: string;
+  symbolStrokeWidth?: number;
+  symbolOpacity?: number;
 }
 
 export interface CurrentVisualization {

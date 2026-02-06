@@ -42,6 +42,7 @@ export function matchData(
     }
 
     if (!locationValue || isNaN(dataValue)) {
+      result.location = String(locationValue || '')
       result.error = 'Konum veya veri değeri eksik'
       results.failed.push(result)
       return
@@ -82,6 +83,7 @@ function matchProvince(
   results: MatchResults,
 ): void {
   if (!indexes.provinceIndex) {
+    result.location = String(locationValue)
     result.error = 'İl indeksi yüklenmedi'
     results.failed.push(result)
     return
@@ -94,6 +96,7 @@ function matchProvince(
     result.location = provinceData.name
     results.successful.push(result)
   } else {
+    result.location = String(locationValue)
     result.error = `İl bulunamadı: ${String(locationValue)}`
     results.failed.push(result)
   }
@@ -110,6 +113,7 @@ function matchDistrict(
   results: MatchResults,
 ): void {
   if (!indexes.districtIndex) {
+    result.location = String(locationValue)
     result.error = 'İlçe indeksi yüklenmedi'
     results.failed.push(result)
     return
@@ -137,6 +141,7 @@ function matchDistrict(
       results.ambiguous.push(result)
     }
   } else {
+    result.location = String(locationValue)
     result.error = `İlçe bulunamadı: ${String(locationValue)}`
     results.failed.push(result)
   }
@@ -154,6 +159,7 @@ function matchMixed(
   results: MatchResults,
 ): void {
   if (!indexes.provinceIndex || !indexes.districtIndex) {
+    result.location = String(districtValue || (columnMapping.locationColumn ? row[columnMapping.locationColumn] : ''))
     result.error = 'İl/İlçe indeksleri yüklenmedi'
     results.failed.push(result)
     return
@@ -195,6 +201,7 @@ function matchMixed(
       results.ambiguous.push(result)
     }
   } else {
+    result.location = String(districtValue)
     result.error = `İlçe bulunamadı: ${String(districtValue)}`
     results.failed.push(result)
   }

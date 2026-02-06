@@ -54,6 +54,99 @@ function roundToNiceNumber(value: number): number {
 }
 
 /**
+ * K-means Clustering Algorithm
+ * Groups data points by minimizing distance to cluster centroids
+ */
+function calculateKmeansBreaks(sortedValues: number[], numClasses: number): number[] {
+  const n = sortedValues.length
+
+  // Boundary cases
+  if (n <= numClasses) {
+    return sortedValues
+  }
+
+  const uniqueValues = [...new Set(sortedValues)].sort((a, b) => a - b)
+  if (uniqueValues.length <= numClasses) {
+    console.warn(
+      `K-means: ${uniqueValues.length} unique values, ${numClasses} classes requested. Using quantile.`,
+    )
+    return calculateBreaks(sortedValues, 'quantile', numClasses)
+  }
+
+  // Initialize centroids with evenly spaced values
+  const min = sortedValues[0]
+  const max = sortedValues[n - 1]
+  const centroids: number[] = []
+  for (let i = 0; i < numClasses; i++) {
+    const percentile = (i + 0.5) / numClasses
+    centroids.push(min + percentile * (max - min))
+  }
+
+  const maxIterations = 100
+  let iterations = 0
+  let converged = false
+
+  // K-means iterations
+  while (!converged && iterations < maxIterations) {
+    // Assign each value to nearest centroid
+    const clusters: number[][] = Array.from({ length: numClasses }, () => [])
+
+    for (const value of sortedValues) {
+      let nearestCentroid = 0
+      let minDistance = Infinity
+
+      for (let i = 0; i < numClasses; i++) {
+        const distance = Math.abs(value - centroids[i])
+        if (distance < minDistance) {
+          minDistance = distance
+          nearestCentroid = i
+        }
+      }
+
+      clusters[nearestCentroid].push(value)
+    }
+
+    // Update centroids
+    const newCentroids: number[] = []
+    for (let i = 0; i < numClasses; i++) {
+      if (clusters[i].length > 0) {
+        const sum = clusters[i].reduce((acc, val) => acc + val, 0)
+        newCentroids.push(sum / clusters[i].length)
+      } else {
+        // Keep old centroid if cluster is empty
+        newCentroids.push(centroids[i])
+      }
+    }
+
+    // Check convergence
+    converged = true
+    for (let i = 0; i < numClasses; i++) {
+      if (Math.abs(newCentroids[i] - centroids[i]) > 0.0001) {
+        converged = false
+        break
+      }
+    }
+
+    centroids.splice(0, numClasses, ...newCentroids)
+    iterations++
+  }
+
+  // Create breaks from cluster boundaries
+  const breaks = [min]
+  const sortedCentroids = [...centroids].sort((a, b) => a - b)
+
+  for (let i = 0; i < numClasses - 1; i++) {
+    // Break point is midpoint between centroids
+    const breakPoint = (sortedCentroids[i] + sortedCentroids[i + 1]) / 2
+    breaks.push(breakPoint)
+  }
+
+  breaks.push(max)
+
+  return breaks
+}
+
+/**
  * Jenks Natural Breaks (Fisher-Jenks) Algorithm
  * Minimizes variance within classes and maximizes variance between classes
  */
@@ -165,6 +258,15 @@ export function calculateBreaks(
   const min = sorted[0]
   const max = sorted[sorted.length - 1]
 
+  // Map continuous methods to their stepped equivalents
+  if (method === 'continuous-linear') {
+    method = 'equal'
+  } else if (method === 'continuous-quantile') {
+    method = 'quantile'
+  } else if (method === 'continuous-natural') {
+    method = 'jenks'
+  }
+
   // Equal Interval
   if (method === 'equal') {
     const step = (max - min) / classCount
@@ -195,6 +297,11 @@ export function calculateBreaks(
   // Jenks Natural Breaks
   if (method === 'jenks') {
     return calculateJenksBreaks(sorted, classCount)
+  }
+
+  // K-means Clustering
+  if (method === 'kmeans') {
+    return calculateKmeansBreaks(sorted, classCount)
   }
 
   // Rounded Values

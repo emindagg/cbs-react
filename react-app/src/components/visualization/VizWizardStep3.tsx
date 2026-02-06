@@ -25,6 +25,7 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
     columnMapping,
     matchResults,
     setMatchResults,
+    setRawData,
     provincesGeoJSON,
     districtsGeoJSON,
     setProvincesGeoJSON,
@@ -74,6 +75,54 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
     onNext()
   }
 
+  const handleEdit = (rowIndex: number, columnName: string, newValue: string) => {
+    if (!rawData) return
+
+    // rowIndex is 1-based, convert to 0-based for array access
+    const arrayIndex = rowIndex - 1
+
+    // Update the raw data
+    const updatedData = [...rawData]
+    updatedData[arrayIndex] = {
+      ...updatedData[arrayIndex],
+      [columnName]: newValue,
+    }
+    setRawData(updatedData)
+
+    // If updating data column, just update the value in match results
+    if (columnName === columnMapping.dataColumn) {
+      const updatedResults = { ...matchResults }
+
+      // Find and update the result in all categories
+      const updateResult = (result: typeof matchResults.successful[0]) => {
+        if (result.rowIndex === rowIndex) {
+          return {
+            ...result,
+            value: parseFloat(newValue) || 0,
+            originalData: {
+              ...result.originalData,
+              [columnName]: newValue,
+            },
+          }
+        }
+        return result
+      }
+
+      updatedResults.successful = updatedResults.successful.map(updateResult)
+      updatedResults.ambiguous = updatedResults.ambiguous.map(updateResult)
+      updatedResults.failed = updatedResults.failed.map(updateResult)
+
+      setMatchResults(updatedResults)
+    } else {
+      // If updating location column, re-run matching
+      performMatching(updatedData).then(results => {
+        if (results) {
+          setMatchResults(results)
+        }
+      })
+    }
+  }
+
   return (
     <div className="space-y-3">
       {/* Map not ready warning */}
@@ -119,6 +168,8 @@ export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) 
         onClose={() => setShowModal(false)}
         matchResults={matchResults}
         dataColumn={columnMapping.dataColumn}
+        locationColumn={columnMapping.locationColumn}
+        onEdit={handleEdit}
       />
 
       {/* Warnings and info - compact */}

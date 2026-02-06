@@ -15,6 +15,8 @@ interface MatchResultsModalProps {
   onClose: () => void;
   matchResults: MatchResults;
   dataColumn: string | null;
+  locationColumn?: string | null;
+  onEdit?: (rowIndex: number, columnName: string, newValue: string) => void;
 }
 
 type TabType = 'all' | 'success' | 'ambiguous' | 'failed'
@@ -24,8 +26,12 @@ export default function MatchResultsModal({
   onClose,
   matchResults,
   dataColumn,
+  locationColumn,
+  onEdit,
 }: MatchResultsModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>('all')
+  const [editingCell, setEditingCell] = useState<{ rowIndex: number; column: 'location' | 'data' } | null>(null)
+  const [editValue, setEditValue] = useState('')
 
   if (!isOpen) return null
 
@@ -126,14 +132,124 @@ export default function MatchResultsModal({
                   >
                     <td className="px-2.5 py-2 text-zinc-500">{index + 1}</td>
                     <td className="px-2.5 py-2">{getStatusIcon(result.status)}</td>
-                    <td className="px-2.5 py-2 font-medium text-zinc-800">{result.location || '-'}</td>
+                    <td className="px-2.5 py-2 font-medium text-zinc-800">
+                      {editingCell?.rowIndex === result.rowIndex && editingCell?.column === 'location' ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && locationColumn) {
+                                onEdit?.(result.rowIndex, locationColumn, editValue)
+                                setEditingCell(null)
+                              }
+                              if (e.key === 'Escape') {
+                                setEditingCell(null)
+                              }
+                            }}
+                            autoFocus
+                            className="flex-1 px-2 py-1 text-[11px] border border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          />
+                          <button
+                            onClick={() => {
+                              if (locationColumn) {
+                                onEdit?.(result.rowIndex, locationColumn, editValue)
+                                setEditingCell(null)
+                              }
+                            }}
+                            className="px-2 py-1 text-[10px] text-green-600 hover:bg-green-50 rounded"
+                            title="Kaydet"
+                          >
+                            <i className="fa-solid fa-check"></i>
+                          </button>
+                          <button
+                            onClick={() => setEditingCell(null)}
+                            className="px-2 py-1 text-[10px] text-red-600 hover:bg-red-50 rounded"
+                            title="İptal"
+                          >
+                            <i className="fa-solid fa-times"></i>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between group">
+                          <span>{result.location || '-'}</span>
+                          {onEdit && (
+                            <button
+                              onClick={() => {
+                                setEditingCell({ rowIndex: result.rowIndex, column: 'location' })
+                                setEditValue(result.location || '')
+                              }}
+                              className="opacity-0 group-hover:opacity-100 px-2 py-1 text-[10px] text-blue-600 hover:bg-blue-50 rounded transition-opacity"
+                              title="Düzenle"
+                            >
+                              <i className="fa-solid fa-pen text-[9px]"></i>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-2.5 py-2 text-zinc-600">{result.province || '-'}</td>
                     <td className="px-2.5 py-2 text-zinc-600">{result.district || '-'}</td>
                     {dataColumn && (
                       <td className="px-2.5 py-2 text-right font-mono text-zinc-800">
-                        {result.originalData[dataColumn] !== undefined
-                          ? Number(result.originalData[dataColumn]).toLocaleString('tr-TR')
-                          : '-'}
+                        {editingCell?.rowIndex === result.rowIndex && editingCell?.column === 'data' ? (
+                          <div className="flex items-center gap-1 justify-end">
+                            <input
+                              type="text"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  onEdit?.(result.rowIndex, dataColumn, editValue)
+                                  setEditingCell(null)
+                                }
+                                if (e.key === 'Escape') {
+                                  setEditingCell(null)
+                                }
+                              }}
+                              autoFocus
+                              className="w-24 px-2 py-1 text-[11px] text-right border border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                            <button
+                              onClick={() => {
+                                onEdit?.(result.rowIndex, dataColumn, editValue)
+                                setEditingCell(null)
+                              }}
+                              className="px-2 py-1 text-[10px] text-green-600 hover:bg-green-50 rounded"
+                              title="Kaydet"
+                            >
+                              <i className="fa-solid fa-check"></i>
+                            </button>
+                            <button
+                              onClick={() => setEditingCell(null)}
+                              className="px-2 py-1 text-[10px] text-red-600 hover:bg-red-50 rounded"
+                              title="İptal"
+                            >
+                              <i className="fa-solid fa-times"></i>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-end group">
+                            <span>
+                              {result.originalData[dataColumn] !== undefined
+                                ? Number(result.originalData[dataColumn]).toLocaleString('tr-TR')
+                                : '-'}
+                            </span>
+                            {onEdit && result.originalData[dataColumn] !== undefined && (
+                              <button
+                                onClick={() => {
+                                  setEditingCell({ rowIndex: result.rowIndex, column: 'data' })
+                                  setEditValue(String(result.originalData[dataColumn]))
+                                }}
+                                className="opacity-0 group-hover:opacity-100 ml-2 px-2 py-1 text-[10px] text-blue-600 hover:bg-blue-50 rounded transition-opacity"
+                                title="Düzenle"
+                              >
+                                <i className="fa-solid fa-pen text-[9px]"></i>
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </td>
                     )}
                     <td className="px-2.5 py-2 text-[10px] text-zinc-500">

@@ -3,7 +3,11 @@
  * Configure visualization settings and render
  */
 
+import { useState } from 'react'
+
+import ColorScaleConfig from './ColorScaleConfig'
 import ColorSchemePreview from './ColorSchemePreview'
+import DataDistributionPreview from './DataDistributionPreview'
 import { useVizRender } from './hooks/useVizRender'
 import { useVizSuggestion } from './hooks/useVizSuggestion'
 import { useMapStore } from '../../stores/useMapStore'
@@ -21,39 +25,82 @@ const VIZ_TYPES: { value: VizType; label: string; description: string }[] = [
 ]
 
 const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
+  // Original
   { value: 'viridis', label: 'Viridis' },
-  { value: 'topographic', label: 'Topografik' },
-  { value: 'diverging_orange_blue', label: 'Turuncu-Mavi' },
-  { value: 'greens', label: 'Yeşil Tonları' },
+
+  // Sequential
+  { value: 'ylorbr', label: 'Sarı-Turuncu-Kahve' },
+  { value: 'ylorrd', label: 'Sarı-Turuncu-Kırmızı' },
+  { value: 'ylgnbu', label: 'Sarı-Yeşil-Mavi' },
+  { value: 'ylgn', label: 'Sarı-Yeşil' },
   { value: 'reds', label: 'Kırmızı Tonları' },
-  { value: 'blues', label: 'Mavi Tonları' },
-  { value: 'oranges', label: 'Turuncu Tonları' },
+  { value: 'rdpu', label: 'Kırmızı-Mor' },
   { value: 'purples', label: 'Mor Tonları' },
+  { value: 'purd', label: 'Mor-Kırmızı' },
+  { value: 'pubugn', label: 'Mor-Mavi-Yeşil' },
+  { value: 'pubu', label: 'Mor-Mavi' },
+  { value: 'orrd', label: 'Turuncu-Kırmızı' },
+  { value: 'oranges', label: 'Turuncu Tonları' },
+  { value: 'greys', label: 'Gri Tonları' },
+  { value: 'greens', label: 'Yeşil Tonları' },
+  { value: 'gnbu', label: 'Yeşil-Mavi' },
+  { value: 'bupu', label: 'Mavi-Mor' },
+  { value: 'bugn', label: 'Mavi-Yeşil' },
+  { value: 'blues', label: 'Mavi Tonları' },
+
+  // Diverging
+  { value: 'spectral', label: 'Spektral' },
+  { value: 'rdylgn', label: 'Kırmızı-Sarı-Yeşil' },
+  { value: 'rdylbu', label: 'Kırmızı-Sarı-Mavi' },
+  { value: 'rdgy', label: 'Kırmızı-Gri' },
+  { value: 'rdbu', label: 'Kırmızı-Mavi' },
+  { value: 'puor', label: 'Mor-Turuncu' },
+  { value: 'prgn', label: 'Mor-Yeşil' },
+  { value: 'piyg', label: 'Pembe-Sarı-Yeşil' },
+  { value: 'brbg', label: 'Kahve-Mavi-Yeşil' },
 ]
 
 const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; description: string }[] = [
+  { value: 'equal', label: 'Doğrusal (Eşit Aralık)', description: 'Eşit genişlikte aralıklar' },
   {
     value: 'quantile',
-    label: 'Yüzdelik (Quantile)',
+    label: 'Çeyrekler (Eşit Sayı)',
     description: 'Her sınıfta eşit sayıda öğe',
   },
-  { value: 'equal', label: 'Eşit Aralık (Equal)', description: 'Eşit genişlikte aralıklar' },
   {
     value: 'jenks',
-    label: 'Doğal Kırılma (Jenks)',
+    label: 'Doğal Kırılmalar (Jenks)',
     description: 'Verideki doğal grupları bulur',
   },
   {
+    value: 'kmeans',
+    label: 'K-Ortalamalar',
+    description: 'Benzer değerleri otomatik gruplar',
+  },
+  {
     value: 'rounded-sm',
-    label: 'Yuvarlanmış (Rounded)',
+    label: 'Yuvarlanmış Değerler',
     description: 'Güzel yuvarlak sayılar (10, 20, 50...)',
   },
-  { value: 'logarithmic', label: 'Logaritmik', description: 'Üstel dağılımlı veriler için' },
+  { value: 'custom', label: 'Özel Aralıklar', description: 'Özel aralıklar tanımla' },
 ]
 
 export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
   const { matchResults, columnMapping, vizSettings, setVizSettings } = useVisualizationStore()
   const { mapInstance: map } = useMapStore()
+
+  const [showDataPreview, setShowDataPreview] = useState(false)
+  const [scaleType, setScaleType] = useState<'steps' | 'continuous'>('steps')
+
+  // Determine if current method is continuous
+  const isContinuous = vizSettings.classificationMethod.startsWith('continuous-')
+
+  // Sync scale type with classification method
+  if (isContinuous && scaleType !== 'continuous') {
+    setScaleType('continuous')
+  } else if (!isContinuous && scaleType !== 'steps') {
+    setScaleType('steps')
+  }
 
   const {
     suggestion,
@@ -71,6 +118,11 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
     vizSettings,
     map,
   })
+
+  // Extract values from match results for data preview
+  const dataValues = matchResults.successful
+    .map((result) => result.value)
+    .filter((v): v is number => v !== undefined)
 
   const onApplySuggestion = () => {
     handleApplySuggestion((method) => {
@@ -102,6 +154,238 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
           {VIZ_TYPES.find(t => t.value === vizSettings.type)?.description}
         </p>
       </div>
+
+      {/* Datawrapper-style Color Scale Configuration */}
+      <ColorScaleConfig
+        colorScheme={vizSettings.colorScheme}
+        classCount={vizSettings.classCount}
+        scaleType={scaleType}
+        onScaleTypeChange={(type) => {
+          setScaleType(type)
+          // Update classification method based on scale type
+          if (type === 'continuous') {
+            setVizSettings({ classificationMethod: 'continuous-linear' })
+          } else {
+            setVizSettings({ classificationMethod: 'equal' })
+          }
+        }}
+        onInterpolationChange={(interpolation) => {
+          // Map interpolation to continuous classification method
+          const methodMap: Record<string, ClassificationMethod> = {
+            linear: 'continuous-linear',
+            quartiles: 'continuous-quantile',
+            quintiles: 'continuous-quantile',
+            deciles: 'continuous-quantile',
+            natural: 'continuous-natural',
+          }
+          setVizSettings({ classificationMethod: methodMap[interpolation] || 'continuous-linear' })
+        }}
+      />
+
+      {/* Color scheme */}
+      <div>
+        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Renk Paleti</label>
+        <select
+          value={vizSettings.colorScheme}
+          onChange={(e) =>
+            setVizSettings({ colorScheme: e.target.value as ColorScheme })
+          }
+          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+        >
+          {COLOR_SCHEMES.map((scheme) => (
+            <option key={scheme.value} value={scheme.value}>
+              {scheme.label}
+            </option>
+          ))}
+        </select>
+        <ColorSchemePreview colorScheme={vizSettings.colorScheme} />
+      </div>
+
+      {/* Symbol Map Settings - only for bubble visualization */}
+      {vizSettings.type === 'bubble' && (
+        <div className="bg-white border border-zinc-200 rounded-lg p-3 space-y-3">
+          <div className="text-[11px] font-semibold text-zinc-700 mb-2">
+            Sembol Ayarları
+          </div>
+
+          {/* Scaling method */}
+          <div>
+            <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+              Ölçekleme Yöntemi
+            </label>
+            <select
+              value={vizSettings.symbolScaling || 'sqrt'}
+              onChange={(e) =>
+                setVizSettings({ symbolScaling: e.target.value as 'linear' | 'sqrt' | 'log' })
+              }
+              className="w-full text-[10px] border border-zinc-200 rounded-md px-2 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+            >
+              <option value="linear">Doğrusal (Linear)</option>
+              <option value="sqrt">Karekök (Square Root) - Önerilen</option>
+              <option value="log">Logaritmik (Logarithmic)</option>
+            </select>
+            <p className="text-[9px] text-zinc-400 mt-0.5">
+              {vizSettings.symbolScaling === 'linear' && 'Değerle doğru orantılı boyut'}
+              {(vizSettings.symbolScaling === 'sqrt' || !vizSettings.symbolScaling) && 'Alan-tabanlı ölçekleme, görsel denge için en iyi'}
+              {vizSettings.symbolScaling === 'log' && 'Geniş veri aralıkları için ideal'}
+            </p>
+          </div>
+
+          {/* Size range */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+                Min Boyut
+              </label>
+              <input
+                type="number"
+                min="2"
+                max="20"
+                value={vizSettings.symbolMinSize || 5}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value)
+                  if (val >= 2 && val <= 20) {
+                    setVizSettings({ symbolMinSize: val })
+                  }
+                }}
+                className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+                Max Boyut
+              </label>
+              <input
+                type="number"
+                min="20"
+                max="80"
+                value={vizSettings.symbolMaxSize || 40}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value)
+                  if (val >= 20 && val <= 80) {
+                    setVizSettings({ symbolMaxSize: val })
+                  }
+                }}
+                className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Stroke and opacity */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+                Kenar Kalınlığı
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="5"
+                step="0.5"
+                value={vizSettings.symbolStrokeWidth !== undefined ? vizSettings.symbolStrokeWidth : 1.5}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value)
+                  if (val >= 0 && val <= 5) {
+                    setVizSettings({ symbolStrokeWidth: val })
+                  }
+                }}
+                className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+                Opaklık
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="1"
+                step="0.1"
+                value={vizSettings.symbolOpacity !== undefined ? vizSettings.symbolOpacity : 0.6}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value)
+                  if (val >= 0 && val <= 1) {
+                    setVizSettings({ symbolOpacity: val })
+                  }
+                }}
+                className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Stroke color */}
+          <div>
+            <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+              Kenar Rengi
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={vizSettings.symbolStrokeColor || '#ffffff'}
+                onChange={(e) => setVizSettings({ symbolStrokeColor: e.target.value })}
+                className="w-12 h-8 border border-zinc-200 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={vizSettings.symbolStrokeColor || '#ffffff'}
+                onChange={(e) => {
+                  if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+                    setVizSettings({ symbolStrokeColor: e.target.value })
+                  }
+                }}
+                placeholder="#ffffff"
+                className="flex-1 px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Steps section - only for stepped scales */}
+      {scaleType === 'steps' && (
+        <div className="bg-white border border-zinc-200 rounded-lg p-3 space-y-3">
+          {/* Steps count and classification method */}
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <label className="text-[11px] font-semibold text-zinc-700 min-w-[60px]">Basamak</label>
+              <input
+                type="number"
+                min="3"
+                max="9"
+                value={vizSettings.classCount}
+                onChange={(e) => {
+                  const count = parseInt(e.target.value)
+                  if (count >= 3 && count <= 9) {
+                    setVizSettings({ classCount: count })
+                  }
+                }}
+                className="w-16 px-2 py-1.5 text-[11px] text-center border border-zinc-200 rounded-md bg-white hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              />
+            </div>
+
+            {/* Classification method dropdown */}
+            <select
+              value={vizSettings.classificationMethod}
+              onChange={(e) =>
+                setVizSettings({
+                  classificationMethod: e.target.value as ClassificationMethod,
+                })
+              }
+              className="w-full px-3 py-2 text-[11px] border border-zinc-200 rounded-md bg-white hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            >
+              {CLASSIFICATION_METHODS.map((method) => (
+                <option key={method.value} value={method.value}>
+                  {method.label}
+                </option>
+              ))}
+            </select>
+
+            <p className="text-[9px] text-zinc-500 mt-1.5 leading-relaxed">
+              {CLASSIFICATION_METHODS.find((m) => m.value === vizSettings.classificationMethod)?.description}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Smart Suggestion Panel - Compact */}
       {suggestion && showSuggestion && (
@@ -138,73 +422,30 @@ export default function VizWizardStep4({ onBack }: VizWizardStep4Props) {
         </div>
       )}
 
-      {/* Class count selection */}
-      <div>
-        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Sınıf Sayısı</label>
-        <div className="flex gap-1.5">
-          {[3, 4, 5, 6, 7].map((count) => (
-            <button
-              key={count}
-              onClick={() => setVizSettings({ classCount: count })}
-              className={`
-                flex-1 px-2.5 py-1.5 rounded-md text-[11px] font-semibold transition-all
-                ${vizSettings.classCount === count
-                  ? 'bg-slate-700 text-white shadow-xs'
-                  : 'bg-white border border-zinc-200 text-zinc-600 hover:border-slate-300 hover:bg-zinc-50'
-                }
-              `}
-            >
-              {count}
-            </button>
-          ))}
+
+
+      {/* Data Distribution Preview Toggle */}
+      {dataValues.length > 0 && (
+        <div>
+          <button
+            onClick={() => setShowDataPreview(!showDataPreview)}
+            className="w-full px-2.5 py-1.5 text-[10px] font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors flex items-center justify-center gap-1"
+          >
+            <i className={'fa-solid fa-chart-bar text-[9px]'}></i>
+            {showDataPreview ? 'Veri Önizlemesini Gizle' : 'Veri Dağılımını Göster'}
+          </button>
         </div>
-        <p className="text-[9px] text-zinc-400 mt-1">Veriyi kaç renkli bölgeye ayırmak istersiniz?</p>
-      </div>
+      )}
 
-      {/* Classification method */}
-      <div>
-        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Sınıflandırma</label>
-        <select
-          value={vizSettings.classificationMethod}
-          onChange={(e) =>
-            setVizSettings({
-              classificationMethod: e.target.value as ClassificationMethod,
-            })
-          }
-          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-        >
-          {CLASSIFICATION_METHODS.map((method) => (
-            <option key={method.value} value={method.value}>
-              {method.label}
-            </option>
-          ))}
-        </select>
-        <p className="text-[9px] text-zinc-400 mt-1">
-          {
-            CLASSIFICATION_METHODS.find((m) => m.value === vizSettings.classificationMethod)
-              ?.description
-          }
-        </p>
-      </div>
-
-      {/* Color scheme */}
-      <div>
-        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Renk Paleti</label>
-        <select
-          value={vizSettings.colorScheme}
-          onChange={(e) =>
-            setVizSettings({ colorScheme: e.target.value as ColorScheme })
-          }
-          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-        >
-          {COLOR_SCHEMES.map((scheme) => (
-            <option key={scheme.value} value={scheme.value}>
-              {scheme.label}
-            </option>
-          ))}
-        </select>
-        <ColorSchemePreview colorScheme={vizSettings.colorScheme} />
-      </div>
+      {/* Data Distribution Preview */}
+      {showDataPreview && dataValues.length > 0 && (
+        <DataDistributionPreview
+          values={dataValues}
+          colorScheme={vizSettings.colorScheme}
+          classCount={vizSettings.classCount}
+          classificationMethod={vizSettings.classificationMethod}
+        />
+      )}
 
       {/* Action buttons */}
       <div className="space-y-1.5 pt-1">

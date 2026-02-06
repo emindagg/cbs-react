@@ -18,18 +18,18 @@ export function MatchResultsTabs({ activeTab, onTabChange, matchResults }: Match
       <button
         onClick={() => onTabChange('all')}
         className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-all ${activeTab === 'all'
-            ? 'bg-blue-600 text-white shadow-xs'
-            : 'bg-white text-zinc-600 hover:bg-zinc-100'
-          }`}
+          ? 'bg-blue-600 text-white shadow-xs'
+          : 'bg-white text-zinc-600 hover:bg-zinc-100'
+        }`}
       >
         Tümü ({matchResults.successful.length + matchResults.ambiguous.length + matchResults.failed.length})
       </button>
       <button
         onClick={() => onTabChange('success')}
         className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-all ${activeTab === 'success'
-            ? 'bg-emerald-600 text-white shadow-xs'
-            : 'bg-white text-zinc-600 hover:bg-zinc-100'
-          }`}
+          ? 'bg-emerald-600 text-white shadow-xs'
+          : 'bg-white text-zinc-600 hover:bg-zinc-100'
+        }`}
       >
         <i className="fa-solid fa-check mr-1 text-[9px]"></i>
         Başarılı ({matchResults.successful.length})
@@ -37,9 +37,9 @@ export function MatchResultsTabs({ activeTab, onTabChange, matchResults }: Match
       <button
         onClick={() => onTabChange('ambiguous')}
         className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-all ${activeTab === 'ambiguous'
-            ? 'bg-amber-600 text-white shadow-xs'
-            : 'bg-white text-zinc-600 hover:bg-zinc-100'
-          }`}
+          ? 'bg-amber-600 text-white shadow-xs'
+          : 'bg-white text-zinc-600 hover:bg-zinc-100'
+        }`}
       >
         <i className="fa-solid fa-triangle-exclamation mr-1 text-[9px]"></i>
         Belirsiz ({matchResults.ambiguous.length})
@@ -47,9 +47,9 @@ export function MatchResultsTabs({ activeTab, onTabChange, matchResults }: Match
       <button
         onClick={() => onTabChange('failed')}
         className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-all ${activeTab === 'failed'
-            ? 'bg-red-600 text-white shadow-xs'
-            : 'bg-white text-zinc-600 hover:bg-zinc-100'
-          }`}
+          ? 'bg-red-600 text-white shadow-xs'
+          : 'bg-white text-zinc-600 hover:bg-zinc-100'
+        }`}
       >
         <i className="fa-solid fa-circle-xmark mr-1 text-[9px]"></i>
         Hatalı ({matchResults.failed.length})

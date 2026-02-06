@@ -108,7 +108,8 @@ export class PointRenderer {
       const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
 
       // Calculate centroid
-      const centroid = calculateCentroid(feature.geometry)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const centroid = calculateCentroid(feature.geometry as any)
 
       // Create point feature
       const pointFeature = this.createPointFeature(feature, featureName, dataValue, breaks, colorPalette, centroid)
@@ -126,7 +127,7 @@ export class PointRenderer {
    * Create a point feature from a polygon feature
    */
   private createPointFeature(
-    originalFeature: GeoJSONFeature,
+    _originalFeature: GeoJSONFeature,
     featureName: string,
     dataValue: number | undefined,
     breaks: number[],

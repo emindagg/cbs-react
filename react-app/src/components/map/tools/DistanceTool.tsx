@@ -224,7 +224,7 @@ export default function DistanceTool() {
             className={`box-content rounded-full cursor-move ${idx === 0 && isDrawingDistance && distancePoints.length >= 3
               ? 'ring-2 ring-emerald-500 ring-offset-2'
               : ''
-              }`}
+            }`}
             style={{
               width: '10px',
               height: '10px',

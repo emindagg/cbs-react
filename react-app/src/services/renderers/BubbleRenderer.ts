@@ -10,6 +10,7 @@ import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojs
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBreaks } from '../../utils/classificationMethods'
 import { calculateCentroid } from '../../utils/geometryUtils'
+import { calculateSymbolSize } from '../../utils/symbolShapes'
 import { normalizeTurkishText } from '../../utils/turkishNormalizer'
 
 export class BubbleRenderer {
@@ -61,6 +62,7 @@ export class BubbleRenderer {
       minValue,
       maxValue,
       locationLevel,
+      settings,
     )
 
     console.debug(
@@ -68,7 +70,7 @@ export class BubbleRenderer {
     )
 
     // Render to map
-    this.renderToMap(bubblesGeoJSON)
+    this.renderToMap(bubblesGeoJSON, settings)
   }
 
   /**
@@ -112,6 +114,7 @@ export class BubbleRenderer {
     minValue: number,
     maxValue: number,
     locationLevel: 'province' | 'district',
+    settings: VisualizationSettings,
   ): GeoJSON.FeatureCollection {
     const bubbleFeatures: GeoJSON.Feature[] = []
 
@@ -123,7 +126,8 @@ export class BubbleRenderer {
       const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
 
       // Calculate centroid
-      const centroid = calculateCentroid(feature.geometry)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const centroid = calculateCentroid(feature.geometry as any)
 
       // Create bubble feature
       const bubbleFeature = this.createBubbleFeature(
@@ -135,6 +139,7 @@ export class BubbleRenderer {
         minValue,
         maxValue,
         centroid,
+        settings,
       )
 
       bubbleFeatures.push(bubbleFeature)
@@ -150,7 +155,7 @@ export class BubbleRenderer {
    * Create a bubble feature from a polygon feature
    */
   private createBubbleFeature(
-    originalFeature: GeoJSONFeature,
+    _originalFeature: GeoJSONFeature,
     featureName: string,
     dataValue: number | undefined,
     breaks: number[],
@@ -158,6 +163,7 @@ export class BubbleRenderer {
     minValue: number,
     maxValue: number,
     centroid: [number, number],
+    settings: VisualizationSettings,
   ): GeoJSON.Feature {
     let color: string
     let radius: number
@@ -165,11 +171,11 @@ export class BubbleRenderer {
 
     if (dataValue !== undefined && dataValue !== 0) {
       color = getColorForValue(dataValue, breaks, colorPalette)
-      radius = this.calculateRadius(dataValue, minValue, maxValue)
+      radius = this.calculateSymbolSizeValue(dataValue, minValue, maxValue, settings)
       hasData = true
     } else {
       color = '#dddddd'
-      radius = BubbleRenderer.MIN_RADIUS
+      radius = settings.symbolMinSize || BubbleRenderer.MIN_RADIUS
       hasData = false
     }
 
@@ -192,17 +198,19 @@ export class BubbleRenderer {
   }
 
   /**
-   * Calculate radius for a data value using square root scaling
+   * Calculate symbol size for a data value using configurable scaling
    */
-  private calculateRadius(value: number, minValue: number, maxValue: number): number {
-    if (maxValue === minValue) {
-      return (BubbleRenderer.MIN_RADIUS + BubbleRenderer.MAX_RADIUS) / 2
-    }
+  private calculateSymbolSizeValue(
+    value: number,
+    minValue: number,
+    maxValue: number,
+    settings: VisualizationSettings,
+  ): number {
+    const minSize = settings.symbolMinSize || BubbleRenderer.MIN_RADIUS
+    const maxSize = settings.symbolMaxSize || BubbleRenderer.MAX_RADIUS
+    const scaling = settings.symbolScaling || 'sqrt'
 
-    const normalized = (value - minValue) / (maxValue - minValue)
-    const radius = BubbleRenderer.MIN_RADIUS + Math.sqrt(normalized) * (BubbleRenderer.MAX_RADIUS - BubbleRenderer.MIN_RADIUS)
-
-    return Math.max(BubbleRenderer.MIN_RADIUS, Math.min(BubbleRenderer.MAX_RADIUS, radius))
+    return calculateSymbolSize(value, minValue, maxValue, minSize, maxSize, scaling)
   }
 
   /**
@@ -244,9 +252,14 @@ export class BubbleRenderer {
   /**
    * Render processed bubble GeoJSON to map
    */
-  private renderToMap(geojson: GeoJSON.FeatureCollection): void {
+  private renderToMap(geojson: GeoJSON.FeatureCollection, settings: VisualizationSettings): void {
     const sourceId = 'bubble-source'
     const layerId = 'bubble-circles'
+
+    // Get symbol styling settings with defaults
+    const opacity = settings.symbolOpacity !== undefined ? settings.symbolOpacity : 0.6
+    const strokeColor = settings.symbolStrokeColor || '#ffffff'
+    const strokeWidth = settings.symbolStrokeWidth !== undefined ? settings.symbolStrokeWidth : 1.5
 
     // Add or update source
     if (this.map.getSource(sourceId)) {
@@ -261,7 +274,7 @@ export class BubbleRenderer {
       })
     }
 
-    // Add circle layer with variable size
+    // Add circle layer with variable size and customizable styling
     if (!this.map.getLayer(layerId)) {
       this.map.addLayer({
         id: layerId,
@@ -270,17 +283,17 @@ export class BubbleRenderer {
         paint: {
           'circle-radius': ['get', 'radius'],
           'circle-color': ['get', 'color'],
-          'circle-opacity': 0.6,
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': 1.5,
+          'circle-opacity': opacity,
+          'circle-stroke-color': strokeColor,
+          'circle-stroke-width': strokeWidth,
         },
       })
     } else {
       this.map.setPaintProperty(layerId, 'circle-radius', ['get', 'radius'])
       this.map.setPaintProperty(layerId, 'circle-color', ['get', 'color'])
-      this.map.setPaintProperty(layerId, 'circle-opacity', 0.6)
-      this.map.setPaintProperty(layerId, 'circle-stroke-color', '#ffffff')
-      this.map.setPaintProperty(layerId, 'circle-stroke-width', 1.5)
+      this.map.setPaintProperty(layerId, 'circle-opacity', opacity)
+      this.map.setPaintProperty(layerId, 'circle-stroke-color', strokeColor)
+      this.map.setPaintProperty(layerId, 'circle-stroke-width', strokeWidth)
     }
   }
 }

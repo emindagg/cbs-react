@@ -22,6 +22,7 @@ interface VisualizationStore {
   rawData: Record<string, unknown>[] | null
   columns: string[]
   setFileData: (data: Record<string, unknown>[], columns: string[]) => void
+  setRawData: (data: Record<string, unknown>[]) => void
   clearFileData: () => void
 
   // Column mapping
@@ -97,6 +98,7 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
   rawData: null,
   columns: [],
   setFileData: (data, columns) => set({ rawData: data, columns }),
+  setRawData: (data) => set({ rawData: data }),
   clearFileData: () => set({ rawData: null, columns: [] }),
 
   // Column mapping

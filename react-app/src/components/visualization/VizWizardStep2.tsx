@@ -18,8 +18,11 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
   const [selectedProvince, setSelectedProvince] = useState(columnMapping.locationColumn || '')
   const [selectedDistrict, setSelectedDistrict] = useState(columnMapping.districtColumn || '')
   const [selectedData, setSelectedData] = useState(columnMapping.dataColumn || '')
-  const [locationLevel, setLocationLevel] = useState<'province' | 'mixed'>(
-    columnMapping.locationLevel === 'district' ? 'province' : columnMapping.locationLevel,
+  const [locationLevel, setLocationLevel] = useState<'province' | 'mixed' | null>(
+    (columnMapping.locationColumn || columnMapping.districtColumn) &&
+    (columnMapping.locationLevel === 'province' || columnMapping.locationLevel === 'mixed')
+      ? columnMapping.locationLevel
+      : null,
   )
 
   // Update store when selections change
@@ -28,7 +31,7 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
       locationColumn: selectedProvince || null,
       districtColumn: selectedDistrict || null,
       dataColumn: selectedData || null,
-      locationLevel,
+      locationLevel: locationLevel || 'province',
     })
   }, [selectedProvince, selectedDistrict, selectedData, locationLevel, setColumnMapping])
 
@@ -43,25 +46,24 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
     return numericCount / sample.length > 0.8
   })
 
+  // Check if all required fields are selected
+  const isFormValid = () => {
+    // Location level must be selected
+    if (!locationLevel) return false
+
+    if (!selectedData) return false
+
+    if (locationLevel === 'province' && !selectedProvince) return false
+
+    if (locationLevel === 'mixed' && (!selectedProvince || !selectedDistrict)) return false
+
+    return true
+  }
+
   const handleNext = () => {
-    if (!selectedData) {
-      // eslint-disable-next-line no-alert
-      alert('Lütfen veri sütunu seçin!')
+    if (!isFormValid()) {
       return
     }
-
-    if (locationLevel === 'province' && !selectedProvince) {
-      // eslint-disable-next-line no-alert
-      alert('Lütfen il sütunu seçin!')
-      return
-    }
-
-    if (locationLevel === 'mixed' && (!selectedProvince || !selectedDistrict)) {
-      // eslint-disable-next-line no-alert
-      alert('Lütfen il ve ilçe sütunlarını seçin!')
-      return
-    }
-
     onNext()
   }
 
@@ -84,7 +86,9 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
     <div className="space-y-3">
       {/* Location level selection */}
       <div>
-        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Konum Seviyesi</label>
+        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">
+          Konum Seviyesi <span className="text-red-500">*</span>
+        </label>
         <div className="inline-flex rounded-md border border-zinc-200 overflow-hidden w-full">
           {/* Province only option */}
           <label className={`
@@ -129,6 +133,9 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
             <span className="text-[10px] font-medium">İl + İlçe</span>
           </label>
         </div>
+        {!locationLevel && (
+          <p className="text-[9px] text-red-500 mt-1">Lütfen konum seviyesi seçin</p>
+        )}
       </div>
 
       {/* Province column (if needed) */}
@@ -208,7 +215,8 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
         </button>
         <button
           onClick={handleNext}
-          className="flex-1 px-3 py-1.5 text-[11px] font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors"
+          disabled={!isFormValid()}
+          className="flex-1 px-3 py-1.5 text-[11px] font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
         >
           İleri
           <i className="fa-solid fa-chevron-right ml-1 text-[9px]"></i>
