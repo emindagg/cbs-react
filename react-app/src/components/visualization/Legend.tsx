@@ -171,12 +171,12 @@ export default function Legend({
               onKeyDown={handleTitleKeyDown}
               onClick={(e) => e.stopPropagation()}
               placeholder="Lejant ismi giriniz"
-              className="text-xs font-bold text-zinc-900 bg-white/80 backdrop-blur-sm px-2 py-1 rounded border-2 border-blue-500 outline-none min-w-[150px] text-center"
+              className="text-base font-bold text-zinc-900 bg-white/80 backdrop-blur-sm px-2 py-1 rounded border-2 border-blue-500 outline-none min-w-[150px] text-center"
             />
           ) : (
             <div
               onClick={handleTitleClick}
-              className={`text-xs font-bold text-zinc-900 drop-shadow-sm ${onTitleChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}
+              className={`text-base font-bold text-zinc-900 drop-shadow-sm ${onTitleChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}
             >
               {config.title.text || 'Lejant ismi giriniz'}
             </div>
