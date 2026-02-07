@@ -12,7 +12,7 @@
   --tick-color: #999;
   --tick-width: 1px;
 
-  width: var(--legend-width);
+  /* Remove width constraint from container */
   user-select: none;
 
   /* Layout Change: Flex column for strict stacking */
@@ -30,10 +30,9 @@
   font-weight: 700;
   color: #333333;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   cursor: default;
   display: block;
+  /* Title takes its natural width, not constrained by legend width */
 }
 
 .dynamic-legend__title--editable {
@@ -54,13 +53,14 @@
   border: 2px solid #3b82f6;
   border-radius: 4px;
   outline: none;
-  width: 100%;
+  min-width: 200px; /* Minimum comfortable input width */
 }
 
 /* ---- Color Bar ---- */
 .legend-bar {
   display: flex;
   flex-wrap: nowrap;          /* NEVER wrap */
+  width: var(--legend-width); /* Bar constrained to slider width */
   height: var(--legend-bar-height);
   border-radius: 0;
   overflow: hidden;
@@ -81,6 +81,7 @@
 /* ---- Labels Container ---- */
 .legend-labels {
   position: relative;
+  width: var(--legend-width); /* Labels constrained to slider width */
   height: 20px;
   margin-top: 5px; /* Spacing: 5px separation from color bar */
 }
@@ -97,6 +98,7 @@
   flex-wrap: wrap;
   gap: 6px 10px;
   margin-top: 6px;
+  width: var(--legend-width); /* List constrained to slider width */
 }
 
 .legend-item {
