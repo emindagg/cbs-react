@@ -132,9 +132,10 @@ export default function Legend({
     'inside-right-bottom': 'bottom-3 right-3',
   }
 
-  // For continuous scale, create gradient string
-  const gradientString = colors.length > 0
-    ? `linear-gradient(${config.orientation === 'horizontal' ? 'to right' : 'to bottom'}, ${colors.join(', ')})`
+  // For continuous scale, create gradient string (reverse colors when reverseOrder)
+  const gradientColors = config.reverseOrder ? [...colors].reverse() : colors
+  const gradientString = gradientColors.length > 0
+    ? `linear-gradient(${config.orientation === 'horizontal' ? 'to right' : 'to bottom'}, ${gradientColors.join(', ')})`
     : 'transparent'
 
   const verticalBarHeight = `${config.size}px`
