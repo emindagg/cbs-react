@@ -1,12 +1,58 @@
 /**
  * Column Detector Module
- * Smart column detection with keyword matching
+ * Smart column detection with keyword matching + content-based detection
  */
 
+import { normalizeTurkishText } from '../turkishNormalizer'
 import type { ColumnDetectionResult, RawDataRow } from './types'
+
+// ── Well-known Turkish province names (normalized) for content detection ──
+const KNOWN_PROVINCES = new Set([
+  'adana', 'adiyaman', 'afyonkarahisar', 'agri', 'amasya', 'ankara', 'antalya',
+  'artvin', 'aydin', 'balikesir', 'bilecik', 'bingol', 'bitlis', 'bolu',
+  'burdur', 'bursa', 'canakkale', 'cankiri', 'corum', 'denizli', 'diyarbakir',
+  'edirne', 'elazig', 'erzincan', 'erzurum', 'eskisehir', 'gaziantep',
+  'giresun', 'gumushane', 'hakkari', 'hatay', 'isparta', 'mersin', 'istanbul',
+  'izmir', 'kars', 'kastamonu', 'kayseri', 'kirklareli', 'kirsehir', 'kocaeli',
+  'konya', 'kutahya', 'malatya', 'manisa', 'kahramanmaras', 'mardin', 'mugla',
+  'mus', 'nevsehir', 'nigde', 'ordu', 'rize', 'sakarya', 'samsun', 'siirt',
+  'sinop', 'sivas', 'tekirdag', 'tokat', 'trabzon', 'tunceli', 'sanliurfa',
+  'usak', 'van', 'yozgat', 'zonguldak', 'aksaray', 'bayburt', 'karaman',
+  'kirikkale', 'batman', 'sirnak', 'bartin', 'ardahan', 'igdir', 'yalova',
+  'karabuk', 'kilis', 'osmaniye', 'duzce',
+])
+
+// ── Province column keywords ─────────────────────────────────────
+const PROVINCE_EXACT_KEYWORDS = [
+  'il', 'İl', 'IL', 'Il',
+  'şehir', 'Şehir', 'Sehir', 'sehir', 'SEHIR',
+  'province', 'Province', 'PROVINCE',
+  'city', 'City', 'CITY',
+  'kent', 'Kent', 'KENT',
+  'vilayet', 'Vilayet', 'VILAYET',
+]
+
+const PROVINCE_PARTIAL_KEYWORDS = [
+  'il_adi', 'iladi', 'il adi', 'il_ad',
+  'sehir', 'şehir', 'kent',
+  'province', 'city', 'vilayet',
+  'iller',
+]
+
+// ── District column keywords ─────────────────────────────────────
+const DISTRICT_EXACT_KEYWORDS = [
+  'ilçe', 'İlçe', 'Ilce', 'ilce', 'ILCE', 'İLÇE',
+  'district', 'District', 'DISTRICT',
+]
+
+const DISTRICT_PARTIAL_KEYWORDS = [
+  'ilçe', 'ilce', 'ilce_adi', 'ilceadi', 'ilce_ad',
+  'district',
+]
 
 /**
  * Smart column detection - automatic suggestions
+ * Uses keyword matching + content-based detection
  */
 export function detectColumns(
   rawData: RawDataRow[] | null,
@@ -23,60 +69,40 @@ export function detectColumns(
     locationLevel: 'auto',
   }
 
-  const provinceKeywords = [
-    { exact: ['il', 'İl', 'IL'], contains: [] },
-    { exact: ['şehir', 'Şehir', 'Sehir', 'sehir'], contains: [] },
-    { exact: ['province', 'Province', 'PROVINCE'], contains: [] },
-    { exact: ['city', 'City', 'CITY'], contains: [] },
-  ]
+  // ── PHASE 1: Exact keyword match ──────────────────────────────
 
-  const districtKeywords = [
-    { exact: ['ilçe', 'İlçe', 'Ilce', 'ilce', 'ILCE'], contains: [] },
-    { exact: ['district', 'District', 'DISTRICT'], contains: [] },
-  ]
-
-  // FIRST: Find exact match district column
+  // Find district column
   for (const col of columns) {
     const trimmed = col.trim()
-    const normalized = trimmed.toLowerCase()
-
-    const isDistrictExact = districtKeywords.some((group) =>
-      group.exact.some((kw) => trimmed === kw || normalized === kw.toLowerCase()),
+    const isDistrictExact = DISTRICT_EXACT_KEYWORDS.some(
+      (kw) => trimmed === kw || trimmed.toLowerCase() === kw.toLowerCase(),
     )
-
     if (isDistrictExact) {
       suggestions.districtColumn = col
       break
     }
   }
 
-  // SECOND: Find province column
+  // Find province column
   for (const col of columns) {
     const trimmed = col.trim()
-    const normalized = trimmed.toLowerCase()
-
-    // Skip if already marked as district
     if (col === suggestions.districtColumn) continue
 
-    const isProvinceExact = provinceKeywords.some((group) =>
-      group.exact.some((kw) => trimmed === kw || normalized === kw.toLowerCase()),
+    const isProvinceExact = PROVINCE_EXACT_KEYWORDS.some(
+      (kw) => trimmed === kw || trimmed.toLowerCase() === kw.toLowerCase(),
     )
-
-    if (isProvinceExact && !suggestions.locationColumn) {
+    if (isProvinceExact) {
       suggestions.locationColumn = col
+      break
     }
   }
 
-  // THIRD: Partial matching (if exact not found)
+  // ── PHASE 2: Partial keyword match ────────────────────────────
+
   if (!suggestions.districtColumn) {
     for (const col of columns) {
       const normalized = col.toLowerCase().trim()
-
-      if (
-        normalized.includes('ilçe') ||
-                normalized.includes('ilce') ||
-                normalized.includes('district')
-      ) {
+      if (DISTRICT_PARTIAL_KEYWORDS.some((kw) => normalized.includes(kw))) {
         suggestions.districtColumn = col
         break
       }
@@ -86,40 +112,48 @@ export function detectColumns(
   if (!suggestions.locationColumn) {
     for (const col of columns) {
       const normalized = col.toLowerCase().trim()
-
-      // Skip if already marked as district
       if (col === suggestions.districtColumn) continue
 
-      if (
-        (normalized.includes('il') ||
-                    normalized.includes('şehir') ||
-                    normalized.includes('sehir') ||
-                    normalized.includes('province') ||
-                    normalized.includes('city')) &&
-                !normalized.includes('ilçe') &&
-                !normalized.includes('ilce') &&
-                !normalized.includes('district')
-      ) {
+      const matchesProvince = PROVINCE_PARTIAL_KEYWORDS.some((kw) => normalized.includes(kw))
+      // Exclude if it matches district keywords
+      const matchesDistrict = DISTRICT_PARTIAL_KEYWORDS.some((kw) => normalized.includes(kw))
+
+      if (matchesProvince && !matchesDistrict) {
         suggestions.locationColumn = col
         break
       }
     }
   }
 
-  // Data column detection (numeric columns)
-  const numericColumns = detectNumericColumns(rawData, columns)
-  if (numericColumns.length > 0) {
-    suggestions.dataColumn = numericColumns[0]
+  // ── PHASE 3: Content-based detection ──────────────────────────
+  // If keywords didn't find a location column, check column VALUES
+  // against known province names
+  if (!suggestions.locationColumn) {
+    const contentResult = detectLocationColumnByContent(rawData, columns, suggestions.districtColumn)
+    if (contentResult) {
+      suggestions.locationColumn = contentResult
+    }
   }
 
-  // Location level detection
+  // ── PHASE 4: Data column detection ────────────────────────────
+  const numericColumns = detectNumericColumns(rawData, columns)
+  // Pick the first numeric column that isn't already used as location/district
+  for (const numCol of numericColumns) {
+    if (numCol !== suggestions.locationColumn && numCol !== suggestions.districtColumn) {
+      suggestions.dataColumn = numCol
+      break
+    }
+  }
+
+  // ── PHASE 5: Location level detection ─────────────────────────
   if (suggestions.locationColumn && suggestions.districtColumn) {
     suggestions.locationLevel = 'mixed'
   } else if (suggestions.locationColumn) {
     suggestions.locationLevel = 'province'
   } else {
-    // Default to first column as location
-    suggestions.locationColumn = columns[0]
+    // Last resort: use first non-numeric column
+    const nonNumeric = columns.find((c) => !numericColumns.includes(c))
+    suggestions.locationColumn = nonNumeric || columns[0]
     suggestions.locationLevel = 'auto'
   }
 
@@ -133,7 +167,56 @@ export function detectColumns(
 }
 
 /**
+ * Detect location column by checking if column values are known province names.
+ * Samples first 10 rows and checks if >50% match known provinces.
+ */
+function detectLocationColumnByContent(
+  rawData: RawDataRow[],
+  columns: string[],
+  skipColumn: string | null,
+): string | null {
+  const sampleSize = Math.min(10, rawData.length)
+  const MATCH_THRESHOLD = 0.5
+
+  let bestColumn: string | null = null
+  let bestScore = 0
+
+  for (const col of columns) {
+    if (col === skipColumn) continue
+
+    let matchCount = 0
+    let totalCount = 0
+
+    for (let i = 0; i < sampleSize; i++) {
+      const value = rawData[i][col]
+      if (value === null || value === undefined || value === '') continue
+
+      const strValue = String(value)
+      // Skip if it looks numeric
+      if (!isNaN(Number(strValue))) continue
+
+      totalCount++
+      const normalized = normalizeTurkishText(strValue)
+      if (KNOWN_PROVINCES.has(normalized)) {
+        matchCount++
+      }
+    }
+
+    if (totalCount > 0) {
+      const score = matchCount / totalCount
+      if (score > bestScore && score >= MATCH_THRESHOLD) {
+        bestScore = score
+        bestColumn = col
+      }
+    }
+  }
+
+  return bestColumn
+}
+
+/**
  * Detect numeric columns
+ * Enhanced: handles %, ₺, TL, spaces in numbers
  */
 function detectNumericColumns(rawData: RawDataRow[], columns: string[]): string[] {
   if (!rawData || rawData.length === 0) {
@@ -151,17 +234,59 @@ function detectNumericColumns(rawData: RawDataRow[], columns: string[]): string[
       const value = row[col]
       if (value !== null && value !== undefined && value !== '') {
         totalCount++
-        if (typeof value === 'number' || !isNaN(Number(value))) {
+        if (typeof value === 'number') {
           numericCount++
+        } else {
+          const cleaned = cleanNumericString(String(value))
+          if (cleaned !== null) {
+            numericCount++
+          }
         }
       }
     }
 
-    // If >80% of values are numeric, consider it numeric column
     if (totalCount > 0 && numericCount / totalCount > NUMERIC_THRESHOLD) {
       numericColumns.push(col)
     }
   }
 
   return numericColumns
+}
+
+/**
+ * Clean a string value to check if it's numeric.
+ * Handles: %, ₺, TL, spaces, Turkish decimal/thousand separators
+ * Returns cleaned number or null if not numeric.
+ */
+function cleanNumericString(value: string): number | null {
+  let cleaned = value.trim()
+
+  // Remove currency symbols and text
+  cleaned = cleaned.replace(/[₺$€]/g, '').replace(/\bTL\b/gi, '').trim()
+
+  // Handle percentage
+  const isPercent = cleaned.includes('%')
+  cleaned = cleaned.replace(/%/g, '').trim()
+
+  // Remove spaces (thousand separator: "1 234 567")
+  cleaned = cleaned.replace(/\s/g, '')
+
+  // Handle parentheses for negatives: "(1234)" → "-1234"
+  if (cleaned.startsWith('(') && cleaned.endsWith(')')) {
+    cleaned = '-' + cleaned.slice(1, -1)
+  }
+
+  // Turkish format: "1.234,56" → "1234.56"
+  // If has both . and , → dots are thousand sep, comma is decimal
+  if (cleaned.includes('.') && cleaned.includes(',')) {
+    cleaned = cleaned.replace(/\./g, '').replace(',', '.')
+  } else if (cleaned.includes(',')) {
+    // Only comma → could be decimal separator
+    cleaned = cleaned.replace(',', '.')
+  }
+
+  const num = Number(cleaned)
+  if (isNaN(num)) return null
+
+  return isPercent ? num / 100 : num
 }
