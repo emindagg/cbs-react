@@ -1,6 +1,6 @@
 /**
  * Legend Container
- * Connects Legend component to visualization store and renders on map
+ * Connects DynamicLegend component to visualization store and renders on map
  */
 
 import { useMemo } from 'react'
@@ -8,7 +8,7 @@ import { useMemo } from 'react'
 import { getInterpolatedColorPalette } from '../../constants/colorSchemes'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
 import { calculateBreaks } from '../../utils/classificationMethods'
-import Legend from './Legend'
+import { DynamicLegend } from '../Legend'
 
 export default function LegendContainer() {
   const { colorConfig, vizSettings, matchResults, currentVisualization, setLegendConfig } = useVisualizationStore()
@@ -67,7 +67,7 @@ export default function LegendContainer() {
   }
 
   return (
-    <Legend
+    <DynamicLegend
       config={colorConfig.legend}
       breaks={breaks}
       colors={colors}
