@@ -8,6 +8,7 @@ import { useMemo } from 'react'
 import { getInterpolatedColorPalette } from '../../constants/colorSchemes'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
 import { calculateBreaks } from '../../utils/classificationMethods'
+import Legend from './Legend'
 import { DynamicLegend } from '../Legend'
 
 export default function LegendContainer() {
@@ -64,6 +65,25 @@ export default function LegendContainer() {
 
   if (dataValues.length === 0) {
     return null
+  }
+
+  if (colorConfig.legend.orientation === 'vertical') {
+    return (
+      <Legend
+        config={colorConfig.legend}
+        breaks={breaks}
+        colors={colors}
+        scaleType={colorConfig.scaleType}
+        onTitleChange={(title) => {
+          setLegendConfig({
+            title: {
+              show: colorConfig.legend.title?.show ?? true,
+              text: title,
+            },
+          })
+        }}
+      />
+    )
   }
 
   return (

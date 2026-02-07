@@ -113,6 +113,9 @@ export default function DynamicLegend({
     }
   }, [isDragging, dragOffset])
 
+  const showRangeList =
+    scaleType === 'steps' && (config.labels.type === 'ranges' || config.labels.type === 'custom')
+
   // ── Render ──────────────────────────────────────────────────
   return (
     <div
@@ -158,13 +161,15 @@ export default function DynamicLegend({
         </div>
       )}
 
-      {/* ── Color bar — always horizontal ──────────────────── */}
-      <LegendBar
-        mode={scaleType}
-        colors={colors}
-        breaks={breaks}
-        width={width}
-      />
+      {/* ── Color bar — ruler mode only for steps ───────────── */}
+      {!showRangeList && (
+        <LegendBar
+          mode={scaleType}
+          colors={colors}
+          breaks={breaks}
+          width={width}
+        />
+      )}
 
       {/* ── Boundary-aligned labels ────────────────────────── */}
       <LegendLabels

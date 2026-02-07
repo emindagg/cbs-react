@@ -94,22 +94,32 @@
 }
 
 /* Segment labels (ranges / custom mode) */
-.legend-labels--segments {
-  position: relative;
+/* Datawrapper-style swatch list (ranges/custom) */
+.legend-items {
   display: flex;
-  flex-wrap: nowrap;
-  height: auto;
-  margin-top: 5px;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 6px;
 }
 
-.legend-labels__segment {
-  font-size: 10px;
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-item__swatch {
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  flex: none;
+}
+
+.legend-item__label {
+  font-size: var(--label-font-size);
   color: #000000;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 400;
   white-space: nowrap;
-  line-height: 1.3;
 }
 
 /* Small tick marks at boundary positions (inline mode only) */

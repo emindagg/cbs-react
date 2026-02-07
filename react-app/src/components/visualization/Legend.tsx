@@ -137,14 +137,14 @@ export default function Legend({
     ? `linear-gradient(${config.orientation === 'horizontal' ? 'to right' : 'to bottom'}, ${colors.join(', ')})`
     : 'transparent'
 
+  const verticalBarHeight = `${config.size}px`
+
   return (
     <div
       ref={legendRef}
       onMouseDown={handleMouseDown}
       className={`
         fixed z-[1000]
-        rounded-lg
-        p-3
         ${position ? '' : (positionClasses[config.position] || positionClasses['above'])}
         ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}
         select-none
@@ -152,6 +152,10 @@ export default function Legend({
       style={{
         width: config.orientation === 'horizontal' ? `${config.size}px` : 'auto',
         maxWidth: config.orientation === 'vertical' ? '200px' : undefined,
+        fontFamily: 'Roboto, sans-serif',
+        padding: '12px',
+        borderRadius: '8px',
+        backgroundColor: 'transparent',
         ...(position ? {
           left: `${position.x}px`,
           top: `${position.y}px`,
@@ -171,12 +175,12 @@ export default function Legend({
               onKeyDown={handleTitleKeyDown}
               onClick={(e) => e.stopPropagation()}
               placeholder="Lejant ismi giriniz"
-              className="text-base font-bold text-zinc-900 bg-white/80 backdrop-blur-sm px-2 py-1 rounded border-2 border-blue-500 outline-none min-w-[150px] text-center"
+              className="text-[15px] font-bold text-[rgb(24,24,24)] bg-white px-2 py-1 rounded border-2 border-blue-500 outline-none min-w-[150px] text-center"
             />
           ) : (
             <div
               onClick={handleTitleClick}
-              className={`text-base font-bold text-zinc-900 drop-shadow-sm ${onTitleChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}
+              className={`text-[15px] font-bold text-[rgb(24,24,24)] ${onTitleChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}
             >
               {config.title.text || 'Lejant ismi giriniz'}
             </div>
@@ -190,12 +194,19 @@ export default function Legend({
           // Horizontal layout: gradient on top, labels below
           <div className="space-y-2">
             <div
-              className="h-4 w-full rounded border border-zinc-300"
-              style={{ background: gradientString }}
+              className="h-[14px] w-full rounded-none"
+              style={{
+                background: gradientString,
+                boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.08)',
+              }}
             />
             <div className="flex flex-row justify-between">
               {displayItems.map((item, index) => (
-                <span key={index} className="text-[10px] text-zinc-900 font-bold drop-shadow-sm">
+                <span
+                  key={index}
+                  className="text-[12px] text-black font-normal"
+                  style={{ fontFamily: 'Roboto, sans-serif' }}
+                >
                   {item.label}
                 </span>
               ))}
@@ -205,12 +216,20 @@ export default function Legend({
           // Vertical layout: gradient on left, labels on right
           <div className="flex flex-row items-center gap-2">
             <div
-              className="w-5 h-40 rounded border border-zinc-300"
-              style={{ background: gradientString }}
+              className="w-[14px] rounded-none"
+              style={{
+                background: gradientString,
+                height: verticalBarHeight,
+                boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.08)',
+              }}
             />
-            <div className="flex flex-col justify-between h-40">
-              {[...displayItems].reverse().map((item, index) => (
-                <span key={index} className="text-[10px] text-zinc-900 font-bold drop-shadow-sm">
+            <div className="flex flex-col justify-between" style={{ height: verticalBarHeight }}>
+              {displayItems.map((item, index) => (
+                <span
+                  key={index}
+                  className="text-[12px] text-black font-normal"
+                  style={{ fontFamily: 'Roboto, sans-serif' }}
+                >
                   {item.label}
                 </span>
               ))}
@@ -239,12 +258,18 @@ export default function Legend({
             >
               {/* Color swatch */}
               <div
-                className="legend-color w-4 h-4 rounded-sm border border-zinc-300 flex-shrink-0"
-                style={{ backgroundColor: item.color }}
+                className="legend-color w-[12px] h-[12px] rounded-none flex-shrink-0"
+                style={{
+                  backgroundColor: item.color,
+                  border: '1px solid rgba(0, 0, 0, 0.2)',
+                }}
               />
 
               {/* Label */}
-              <span className="legend-label text-[10px] text-zinc-900 font-bold drop-shadow-sm whitespace-nowrap">
+              <span
+                className="legend-label text-[12px] text-black font-normal whitespace-nowrap"
+                style={{ fontFamily: 'Roboto, sans-serif' }}
+              >
                 {item.label}
               </span>
             </div>

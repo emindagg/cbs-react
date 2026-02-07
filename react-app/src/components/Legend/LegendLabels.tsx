@@ -73,35 +73,29 @@ export default function LegendLabels({
     )
   }
 
-  // ── Ranges / Custom mode: one label per color segment ───────
-  const stepWidth = width / colors.length
-
-  const segmentLabels = colors.map((_, i) => {
+  // ── Ranges / Custom mode: Datawrapper-style swatch list ─────
+  const segmentItems = colors.map((color, i) => {
     if (labelType === 'custom' && customLabels?.[i]) {
-      return customLabels[i]
+      return { color, text: customLabels[i] }
     }
     // ranges: "lower – upper"
     const lower = breaks[i]
     const upper = breaks[i + 1]
     if (lower !== undefined && upper !== undefined) {
-      return `${formatLabel(lower)} – ${formatLabel(upper)}`
+      return { color, text: `${formatLabel(lower)} – ${formatLabel(upper)}` }
     }
-    return ''
+    return { color, text: '' }
   })
 
-  const ordered = reverseOrder ? [...segmentLabels].reverse() : segmentLabels
+  const ordered = reverseOrder ? [...segmentItems].reverse() : segmentItems
 
   return (
-    <div className="legend-labels legend-labels--segments" style={{ width: `${width}px` }}>
-      {ordered.map((text, i) => (
-        <span
-          key={i}
-          className="legend-labels__segment"
-          style={{ width: `${stepWidth}px` }}
-          title={text}
-        >
-          {text}
-        </span>
+    <div className="legend-items legend-items--ranges" style={{ width: `${width}px` }}>
+      {ordered.map((item, i) => (
+        <div key={i} className="legend-item" title={item.text}>
+          <span className="legend-item__swatch" style={{ backgroundColor: item.color }} />
+          <span className="legend-item__label">{item.text}</span>
+        </div>
       ))}
     </div>
   )
