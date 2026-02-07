@@ -152,7 +152,6 @@ export default function Legend({
       style={{
         width: config.orientation === 'horizontal' ? `${config.size}px` : 'auto',
         maxWidth: config.orientation === 'vertical' ? '200px' : undefined,
-        fontFamily: 'Roboto, sans-serif',
         padding: '12px',
         borderRadius: '8px',
         backgroundColor: 'transparent',
@@ -175,12 +174,12 @@ export default function Legend({
               onKeyDown={handleTitleKeyDown}
               onClick={(e) => e.stopPropagation()}
               placeholder="Lejant ismi giriniz"
-              className="text-[15px] font-bold text-[rgb(24,24,24)] bg-white px-2 py-1 rounded border-2 border-blue-500 outline-none min-w-[150px] text-center"
+              className="text-[16px] font-bold text-[#333333] bg-white px-2 py-1 rounded border-2 border-blue-500 outline-none min-w-[150px] text-center"
             />
           ) : (
             <div
               onClick={handleTitleClick}
-              className={`text-[15px] font-bold text-[rgb(24,24,24)] ${onTitleChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}
+              className={`text-[16px] font-bold text-[#333333] ${onTitleChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}
             >
               {config.title.text || 'Lejant ismi giriniz'}
             </div>
@@ -202,11 +201,7 @@ export default function Legend({
             />
             <div className="flex flex-row justify-between">
               {displayItems.map((item, index) => (
-                <span
-                  key={index}
-                  className="text-[12px] text-black font-normal"
-                  style={{ fontFamily: 'Roboto, sans-serif' }}
-                >
+                <span key={index} className="text-[12px] text-[#333333] font-normal">
                   {item.label}
                 </span>
               ))}
@@ -225,11 +220,7 @@ export default function Legend({
             />
             <div className="flex flex-col justify-between" style={{ height: verticalBarHeight }}>
               {displayItems.map((item, index) => (
-                <span
-                  key={index}
-                  className="text-[12px] text-black font-normal"
-                  style={{ fontFamily: 'Roboto, sans-serif' }}
-                >
+                <span key={index} className="text-[12px] text-[#333333] font-normal">
                   {item.label}
                 </span>
               ))}
@@ -266,10 +257,7 @@ export default function Legend({
               />
 
               {/* Label */}
-              <span
-                className="legend-label text-[12px] text-black font-normal whitespace-nowrap"
-                style={{ fontFamily: 'Roboto, sans-serif' }}
-              >
+              <span className="legend-label text-[12px] text-[#333333] font-normal whitespace-nowrap">
                 {item.label}
               </span>
             </div>

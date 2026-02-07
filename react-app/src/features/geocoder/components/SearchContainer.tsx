@@ -139,7 +139,6 @@ export function SearchContainer({ leftPosition }: SearchContainerProps) {
         className="absolute top-0 h-9 bg-[#1c1c1e] rounded-[18px] shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-[11px] font-medium hover:bg-black/90 active:scale-95 transition-all cursor-pointer px-3.5 whitespace-nowrap"
         style={{
           left: isOpen ? '447px' : '138px',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
           letterSpacing: '-0.3px',
         }}
         title="Hikaye Haritası"

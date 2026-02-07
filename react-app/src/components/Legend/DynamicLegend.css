@@ -13,7 +13,6 @@
   --tick-width: 1px;
 
   width: var(--legend-width);
-  font-family: 'Roboto', sans-serif;
   user-select: none;
 
   /* Layout Change: Flex column for strict stacking */
@@ -27,10 +26,9 @@
 }
 
 .dynamic-legend__title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: rgb(24, 24, 24);
-  font-family: 'Roboto', sans-serif;
+  color: #333333;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -48,10 +46,9 @@
 }
 
 .dynamic-legend__title-input {
-  font-family: 'Roboto', sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: rgb(24, 24, 24);
+  color: #333333;
   background: white;
   padding: 2px 6px;
   border: 2px solid #3b82f6;
@@ -117,7 +114,7 @@
 
 .legend-item__label {
   font-size: var(--label-font-size);
-  color: #000000;
+  color: #333333;
   font-weight: 400;
   white-space: nowrap;
 }
@@ -141,7 +138,7 @@
   font-size: var(--label-font-size);
   line-height: 1;
   white-space: nowrap;
-  color: #000000;
+  color: #333333;
   font-weight: 400;
 }
 
