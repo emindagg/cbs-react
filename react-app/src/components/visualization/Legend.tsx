@@ -229,16 +229,22 @@ export default function Legend({
       ) : (
         // Stepped legend - discrete color boxes
         config.orientation === 'vertical' ? (
-          // Datawrapper thermometer style: color column + boundary labels on the right
+          // Datawrapper thermometer style: color column + labels on the right
           (() => {
-            // Use actual colors array (N colors), not displayItems (may have N+1 for ruler)
-            const verticalColors = config.reverseOrder ? [...colors].reverse() : colors
+            const isRuler = config.labels.type === 'ruler'
+            // For ruler: N colors from palette, N+1 boundary labels
+            // For ranges/custom: use displayItems (1 color + 1 label per item)
+            const verticalColors = isRuler
+              ? (config.reverseOrder ? [...colors].reverse() : colors)
+              : displayItems.map((item) => item.color)
             const stepHeight = Math.max(16, Math.floor(config.size / verticalColors.length))
             const totalHeight = stepHeight * verticalColors.length
 
-            // Boundary labels from breaks (N+1 values)
-            const boundaryLabels = (config.reverseOrder ? [...breaks].reverse() : breaks)
-              .map((b) => formatNumber(b, config.format as NumberFormat))
+            // Ruler: boundary labels (N+1), Ranges/Custom: item labels (N)
+            const rulerLabels = isRuler
+              ? (config.reverseOrder ? [...breaks].reverse() : breaks)
+                  .map((b) => formatNumber(b, config.format as NumberFormat))
+              : []
 
             return (
               <div className="flex flex-row" style={{ position: 'relative' }}>
@@ -268,7 +274,7 @@ export default function Legend({
                   ))}
                 </div>
 
-                {/* Boundary labels — N+1 labels positioned at block edges */}
+                {/* Labels */}
                 <div
                   style={{
                     position: 'relative',
@@ -276,19 +282,37 @@ export default function Legend({
                     marginLeft: '6px',
                   }}
                 >
-                  {boundaryLabels.map((label, index) => (
-                    <span
-                      key={index}
-                      className="text-[12px] text-[#333333] font-[450] whitespace-nowrap leading-none"
-                      style={{
-                        position: 'absolute',
-                        top: `${index * stepHeight}px`,
-                        transform: 'translateY(-50%)',
-                      }}
-                    >
-                      {label}
-                    </span>
-                  ))}
+                  {isRuler ? (
+                    // Ruler: N+1 boundary labels at block edges
+                    rulerLabels.map((label, index) => (
+                      <span
+                        key={index}
+                        className="text-[12px] text-[#333333] font-[450] whitespace-nowrap leading-none"
+                        style={{
+                          position: 'absolute',
+                          top: `${index * stepHeight}px`,
+                          transform: 'translateY(-50%)',
+                        }}
+                      >
+                        {label}
+                      </span>
+                    ))
+                  ) : (
+                    // Ranges/Custom: N labels centered on each block
+                    displayItems.map((item, index) => (
+                      <span
+                        key={index}
+                        className="text-[12px] text-[#333333] font-[450] whitespace-nowrap leading-none"
+                        style={{
+                          position: 'absolute',
+                          top: `${index * stepHeight + stepHeight / 2}px`,
+                          transform: 'translateY(-50%)',
+                        }}
+                      >
+                        {item.label}
+                      </span>
+                    ))
+                  )}
                 </div>
               </div>
             )

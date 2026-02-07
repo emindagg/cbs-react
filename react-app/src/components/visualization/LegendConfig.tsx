@@ -3,24 +3,13 @@
  * Datawrapper-style legend settings interface
  */
 
-import type { LegendConfiguration, LegendPosition } from '../../types/visualization'
+import type { LegendConfiguration } from '../../types/visualization'
 import { FORMAT_OPTIONS } from '../../utils/numberFormatter'
 
 interface LegendConfigProps {
   config: LegendConfiguration;
   onChange: (config: Partial<LegendConfiguration>) => void;
 }
-
-const POSITION_OPTIONS: Array<{ value: LegendPosition; label: string }> = [
-  { value: 'above', label: 'Üstte' },
-  { value: 'below', label: 'Altta' },
-  { value: 'inside-left-top', label: 'İçeride Sol Üst' },
-  { value: 'inside-center-top', label: 'İçeride Orta Üst' },
-  { value: 'inside-right-top', label: 'İçeride Sağ Üst' },
-  { value: 'inside-left-bottom', label: 'İçeride Sol Alt' },
-  { value: 'inside-center-bottom', label: 'İçeride Orta Alt' },
-  { value: 'inside-right-bottom', label: 'İçeride Sağ Alt' },
-]
 
 export default function LegendConfig({ config, onChange }: LegendConfigProps) {
   return (
@@ -46,24 +35,6 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
 
       {config.visible && (
         <>
-          {/* Position */}
-          <div>
-            <label className="text-[11px] font-medium text-zinc-600 mb-1.5 block">
-              Pozisyon
-            </label>
-            <select
-              value={config.position}
-              onChange={(e) => onChange({ position: e.target.value as LegendPosition })}
-              className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded bg-white hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {POSITION_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Size */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
