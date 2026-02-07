@@ -245,13 +245,13 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
               <>
                 <input
                   type="text"
-                  value={config.title.text || ''}
+                  value={config.title?.text || ''}
                   onChange={(e) =>
                     onChange({
                       title: {
                         show: true,
                         text: e.target.value,
-                        fontSize: config.title.fontSize || 16,
+                        fontSize: config.title?.fontSize || 16,
                       },
                     })}
                   placeholder="Lejant başlığı..."
@@ -262,7 +262,7 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[10px] font-medium text-zinc-500">Yazı Boyutu</label>
-                    <span className="text-[10px] text-zinc-400">{config.title.fontSize || 16}px</span>
+                    <span className="text-[10px] text-zinc-400">{config.title?.fontSize || 16}px</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <input
@@ -270,12 +270,12 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                       min={5}
                       max={55}
                       step={1}
-                      value={config.title.fontSize || 16}
+                      value={config.title?.fontSize || 16}
                       onChange={(e) =>
                         onChange({
                           title: {
                             show: true,
-                            text: config.title.text || '',
+                            text: config.title?.text || '',
                             fontSize: Number.parseInt(e.target.value),
                           },
                         })}
@@ -285,12 +285,12 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                       type="number"
                       min={5}
                       max={55}
-                      value={config.title.fontSize || 16}
+                      value={config.title?.fontSize || 16}
                       onChange={(e) =>
                         onChange({
                           title: {
                             show: true,
-                            text: config.title.text || '',
+                            text: config.title?.text || '',
                             fontSize: Number.parseInt(e.target.value),
                           },
                         })}

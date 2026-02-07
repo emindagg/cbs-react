@@ -3,7 +3,7 @@
  * Configure visualization settings and render
  */
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 
 import ColorScaleConfig from './ColorScaleConfig'
 import ColorSchemePreview from './ColorSchemePreview'
