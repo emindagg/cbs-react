@@ -114,6 +114,7 @@ const defaultLegendConfig: LegendConfiguration = {
   title: {
     show: true,
     text: 'Lejant',
+    fontSize: 16,
   },
   highlightOnHover: false,
   reverseOrder: false,
@@ -140,6 +141,7 @@ const defaultMapTitle: MapTitleConfiguration = {
   title: 'Harita Başlığı',
   subtitle: '',
   position: 'top-center',
+  fontSize: 24,
 }
 
 export const useVisualizationStore = create<VisualizationStore>((set) => ({

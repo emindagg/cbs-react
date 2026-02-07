@@ -279,12 +279,13 @@ export default function Legend({
         })
       }
     } else if (config.labels.type === 'ruler') {
-      // Ruler mode - show break values (one per color)
-      for (let i = 0; i < colors.length; i++) {
+      // Ruler mode - show ALL break values (boundaries)
+      // For N colors, we have N+1 boundaries
+      for (let i = 0; i < breaks.length; i++) {
         const breakValue = breaks[i]
         if (breakValue !== undefined) {
           items.push({
-            color: colors[i],
+            color: colors[Math.min(i, colors.length - 1)], // Use last color for final break
             label: formatNumber(breakValue, config.format as NumberFormat),
           })
         }

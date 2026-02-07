@@ -8,6 +8,7 @@
   --legend-width: 300px;
   --legend-bar-height: 14px;
   --label-font-size: 12px;
+  --title-font-size: 16px;
   --stagger-offset: 16px;
   --tick-color: #999;
   --tick-width: 1px;
@@ -26,7 +27,7 @@
 }
 
 .dynamic-legend__title {
-  font-size: 16px;
+  font-size: var(--title-font-size);
   font-weight: 700;
   color: #333333;
   white-space: nowrap;
@@ -45,7 +46,7 @@
 }
 
 .dynamic-legend__title-input {
-  font-size: 16px;
+  font-size: var(--title-font-size);
   font-weight: 700;
   color: #333333;
   background: white;

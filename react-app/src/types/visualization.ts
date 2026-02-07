@@ -173,6 +173,7 @@ export interface LegendConfiguration {
   title?: {
     show: boolean;
     text: string;
+    fontSize?: number; // pixels
   };
   highlightOnHover: boolean;
   reverseOrder: boolean;
@@ -186,6 +187,7 @@ export interface MapTitleConfiguration {
   title: string;
   subtitle?: string;
   position: 'top-left' | 'top-center' | 'top-right';
+  fontSize?: number; // pixels
 }
 
 /**

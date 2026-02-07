@@ -43,11 +43,18 @@ export default function LegendLabels({
   const isMinMax = mode === 'continuous' && breaks.length === 2
 
   if (labelType === 'ruler' || mode === 'continuous') {
-    const effectiveLabels = isMinMax
+    let effectiveLabels = isMinMax
       ? boundaryLabels.filter((_, i) => i === 0 || i === boundaryLabels.length - 1)
-      : reverseOrder
-        ? [...boundaryLabels].reverse()
-        : boundaryLabels
+      : boundaryLabels
+
+    // If reverseOrder, keep positions but reverse the text values
+    if (reverseOrder) {
+      const texts = effectiveLabels.map(l => l.text).reverse()
+      effectiveLabels = effectiveLabels.map((label, i) => ({
+        ...label,
+        text: texts[i]
+      }))
+    }
 
     const isVertical = layoutMode === 'vertical' || layoutMode === 'thinned'
 

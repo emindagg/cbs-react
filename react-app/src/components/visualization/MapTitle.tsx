@@ -10,6 +10,7 @@ interface MapTitleProps {
   subtitle?: string;
   visible: boolean;
   position: 'top-left' | 'top-center' | 'top-right';
+  fontSize?: number;
   onTitleChange: (title: string) => void;
   onSubtitleChange?: (subtitle: string) => void;
 }
@@ -19,6 +20,7 @@ export default function MapTitle({
   subtitle,
   visible,
   position,
+  fontSize = 24,
   onTitleChange,
 }: MapTitleProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false)
@@ -90,7 +92,7 @@ export default function MapTitle({
   // NOW we can do conditional returns after all hooks are called
   if (!visible) return null
 
-  const handleTitleClick = () => {
+  const handleTitleDoubleClick = () => {
     setIsEditingTitle(true)
   }
 
@@ -133,12 +135,14 @@ export default function MapTitle({
             onBlur={handleTitleBlur}
             onKeyDown={handleTitleKeyDown}
             placeholder="Harita başlığını giriniz"
-            className="text-2xl font-bold text-zinc-900 bg-white/80 backdrop-blur-sm px-3 py-1 rounded border-2 border-blue-500 outline-none min-w-[300px] text-center"
+            style={{ fontSize: `${fontSize}px` }}
+            className="font-bold text-zinc-900 bg-white/80 backdrop-blur-sm px-3 py-1 rounded border-2 border-blue-500 outline-none min-w-[300px] text-center"
           />
         ) : (
           <h1
-            onClick={handleTitleClick}
-            className="text-2xl font-bold text-zinc-900 drop-shadow-md hover:text-blue-600 transition-colors cursor-text px-3 py-1"
+            onDoubleClick={handleTitleDoubleClick}
+            style={{ fontSize: `${fontSize}px` }}
+            className="font-bold text-zinc-900 drop-shadow-md hover:text-blue-600 transition-colors cursor-text px-3 py-1"
           >
             {title || 'Harita başlığını giriniz'}
           </h1>

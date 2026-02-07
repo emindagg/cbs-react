@@ -38,6 +38,12 @@ export default function DynamicLegend({
   const breaks = useMemo(() => [...rawBreaks].sort((a, b) => a - b), [rawBreaks])
   const width = config.size // The "size" slider already controls legend width
 
+  // Reverse colors if reverseOrder is enabled
+  const displayColors = useMemo(
+    () => (config.reverseOrder ? [...colors].reverse() : colors),
+    [colors, config.reverseOrder],
+  )
+
   // Label formatter using the config's number format
   const fmt = useCallback(
     (v: number) => formatNumber(v, config.format as NumberFormat),
@@ -61,7 +67,7 @@ export default function DynamicLegend({
   }
 
   // ── Title editing ───────────────────────────────────────────
-  const handleTitleClick = (e: React.MouseEvent) => {
+  const handleTitleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (onTitleChange) setIsEditingTitle(true)
   }
@@ -130,6 +136,7 @@ export default function DynamicLegend({
       `}
       style={{
         '--legend-width': `${width}px`,
+        '--title-font-size': `${config.title?.fontSize || 16}px`,
         ...(position
           ? { left: `${position.x}px`, top: `${position.y}px`, transform: 'none' }
           : {}),
@@ -152,7 +159,7 @@ export default function DynamicLegend({
             />
           ) : (
             <div
-              onClick={handleTitleClick}
+              onDoubleClick={handleTitleDoubleClick}
               className={`dynamic-legend__title ${onTitleChange ? 'dynamic-legend__title--editable' : ''}`}
             >
               {config.title.text || 'Lejant ismi giriniz'}
@@ -165,7 +172,7 @@ export default function DynamicLegend({
       {!showRangeList && (
         <LegendBar
           mode={scaleType}
-          colors={colors}
+          colors={displayColors}
           breaks={breaks}
           width={width}
         />
@@ -174,7 +181,7 @@ export default function DynamicLegend({
       {/* ── Boundary-aligned labels ────────────────────────── */}
       <LegendLabels
         breaks={breaks}
-        colors={colors}
+        colors={displayColors}
         width={width}
         formatLabel={fmt}
         mode={scaleType}

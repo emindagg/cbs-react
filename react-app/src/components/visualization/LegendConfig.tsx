@@ -235,25 +235,70 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                     title: {
                       show: e.target.checked,
                       text: config.title?.text || '',
+                      fontSize: config.title?.fontSize || 16,
                     },
                   })}
                 className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500"
               />
             </div>
             {config.title?.show && (
-              <input
-                type="text"
-                value={config.title.text || ''}
-                onChange={(e) =>
-                  onChange({
-                    title: {
-                      show: true,
-                      text: e.target.value,
-                    },
-                  })}
-                placeholder="Lejant başlığı..."
-                className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+              <>
+                <input
+                  type="text"
+                  value={config.title.text || ''}
+                  onChange={(e) =>
+                    onChange({
+                      title: {
+                        show: true,
+                        text: e.target.value,
+                        fontSize: config.title.fontSize || 16,
+                      },
+                    })}
+                  placeholder="Lejant başlığı..."
+                  className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                />
+                
+                {/* Font Size Slider */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] font-medium text-zinc-500">Yazı Boyutu</label>
+                    <span className="text-[10px] text-zinc-400">{config.title.fontSize || 16}px</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min={5}
+                      max={55}
+                      step={1}
+                      value={config.title.fontSize || 16}
+                      onChange={(e) =>
+                        onChange({
+                          title: {
+                            show: true,
+                            text: config.title.text || '',
+                            fontSize: Number.parseInt(e.target.value),
+                          },
+                        })}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min={5}
+                      max={55}
+                      value={config.title.fontSize || 16}
+                      onChange={(e) =>
+                        onChange({
+                          title: {
+                            show: true,
+                            text: config.title.text || '',
+                            fontSize: Number.parseInt(e.target.value),
+                          },
+                        })}
+                      className="w-14 px-2 py-1 text-[10px] border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </>
             )}
           </div>
 

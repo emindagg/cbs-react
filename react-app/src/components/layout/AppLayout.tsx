@@ -100,6 +100,7 @@ export default function AppLayout() {
         subtitle={mapTitle.subtitle}
         visible={mapTitle.visible}
         position={mapTitle.position}
+        fontSize={mapTitle.fontSize}
         onTitleChange={(title) => setMapTitle({ title })}
         onSubtitleChange={(subtitle) => setMapTitle({ subtitle })}
       />
