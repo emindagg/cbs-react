@@ -201,7 +201,7 @@ export default function Legend({
             />
             <div className="flex flex-row justify-between">
               {displayItems.map((item, index) => (
-                <span key={index} className="text-[12px] text-[#333333] font-normal">
+                <span key={index} className="text-[12px] text-[#333333] font-[450]">
                   {item.label}
                 </span>
               ))}
@@ -220,7 +220,7 @@ export default function Legend({
             />
             <div className="flex flex-col justify-between" style={{ height: verticalBarHeight }}>
               {displayItems.map((item, index) => (
-                <span key={index} className="text-[12px] text-[#333333] font-normal">
+                <span key={index} className="text-[12px] text-[#333333] font-[450]">
                   {item.label}
                 </span>
               ))}
@@ -257,7 +257,7 @@ export default function Legend({
               />
 
               {/* Label */}
-              <span className="legend-label text-[12px] text-[#333333] font-normal whitespace-nowrap">
+              <span className="legend-label text-[12px] text-[#333333] font-[450] whitespace-nowrap">
                 {item.label}
               </span>
             </div>

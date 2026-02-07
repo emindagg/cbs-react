@@ -115,7 +115,7 @@
 .legend-item__label {
   font-size: var(--label-font-size);
   color: #333333;
-  font-weight: 400;
+  font-weight: 450;
   white-space: nowrap;
 }
 
@@ -139,7 +139,7 @@
   line-height: 1;
   white-space: nowrap;
   color: #333333;
-  font-weight: 400;
+  font-weight: 450;
 }
 
 /* ---- Vertical / Rotated labels ---- */
