@@ -151,7 +151,6 @@ export default function Legend({
       `}
       style={{
         width: config.orientation === 'horizontal' ? `${config.size}px` : 'auto',
-        maxWidth: config.orientation === 'vertical' ? '200px' : undefined,
         padding: '12px',
         borderRadius: '8px',
         backgroundColor: 'transparent',
@@ -233,8 +232,14 @@ export default function Legend({
           className={`legend-items ${
             config.orientation === 'horizontal'
               ? 'flex flex-row gap-1 flex-wrap'
-              : 'flex flex-col space-y-1'
+              : 'flex flex-col gap-px'
           }`}
+          style={{
+            ...(config.orientation === 'vertical' ? {
+              maxHeight: `${config.size}px`,
+              overflowY: 'auto',
+            } : {}),
+          }}
         >
           {displayItems.map((item, index) => (
             <div
