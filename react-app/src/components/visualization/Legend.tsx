@@ -228,46 +228,102 @@ export default function Legend({
         )
       ) : (
         // Stepped legend - discrete color boxes
-        <div
-          className={`legend-items ${
-            config.orientation === 'horizontal'
-              ? 'flex flex-row gap-1 flex-wrap'
-              : 'flex flex-col gap-px'
-          }`}
-          style={{
-            ...(config.orientation === 'vertical' ? {
-              maxHeight: `${config.size}px`,
-              overflowY: 'auto',
-            } : {}),
-          }}
-        >
-          {displayItems.map((item, index) => (
-            <div
-              key={index}
-              className={`
-                legend-item flex items-center gap-2 transition-all
-                ${hoveredIndex === index ? 'opacity-100 scale-105' : 'opacity-90'}
-                ${config.highlightOnHover ? 'cursor-pointer hover:bg-zinc-50 rounded px-1 -mx-1' : ''}
-              `}
-              onMouseEnter={() => handleItemHover(index)}
-              onMouseLeave={() => handleItemHover(null)}
-            >
-              {/* Color swatch */}
-              <div
-                className="legend-color w-[12px] h-[12px] rounded-none flex-shrink-0"
-                style={{
-                  backgroundColor: item.color,
-                  border: '1px solid rgba(0, 0, 0, 0.2)',
-                }}
-              />
+        config.orientation === 'vertical' ? (
+          // Datawrapper thermometer style: color column + boundary labels on the right
+          (() => {
+            // Use actual colors array (N colors), not displayItems (may have N+1 for ruler)
+            const verticalColors = config.reverseOrder ? [...colors].reverse() : colors
+            const stepHeight = Math.max(16, Math.floor(config.size / verticalColors.length))
+            const totalHeight = stepHeight * verticalColors.length
 
-              {/* Label */}
-              <span className="legend-label text-[12px] text-[#333333] font-[450] whitespace-nowrap">
-                {item.label}
-              </span>
-            </div>
-          ))}
-        </div>
+            // Boundary labels from breaks (N+1 values)
+            const boundaryLabels = (config.reverseOrder ? [...breaks].reverse() : breaks)
+              .map((b) => formatNumber(b, config.format as NumberFormat))
+
+            return (
+              <div className="flex flex-row" style={{ position: 'relative' }}>
+                {/* Solid color column — zero gap */}
+                <div
+                  className="flex flex-col"
+                  style={{ width: '18px', flexShrink: 0 }}
+                >
+                  {verticalColors.map((color, index) => (
+                    <div
+                      key={index}
+                      className={config.highlightOnHover ? 'cursor-pointer' : ''}
+                      style={{
+                        backgroundColor: color,
+                        height: `${stepHeight}px`,
+                        width: '100%',
+                        margin: 0,
+                        padding: 0,
+                        lineHeight: 0,
+                        boxShadow: index < verticalColors.length - 1
+                          ? 'inset 0 -1px 0 rgba(0,0,0,0.08)'
+                          : 'none',
+                      }}
+                      onMouseEnter={() => handleItemHover(index)}
+                      onMouseLeave={() => handleItemHover(null)}
+                    />
+                  ))}
+                </div>
+
+                {/* Boundary labels — N+1 labels positioned at block edges */}
+                <div
+                  style={{
+                    position: 'relative',
+                    height: `${totalHeight}px`,
+                    marginLeft: '6px',
+                  }}
+                >
+                  {boundaryLabels.map((label, index) => (
+                    <span
+                      key={index}
+                      className="text-[12px] text-[#333333] font-[450] whitespace-nowrap leading-none"
+                      style={{
+                        position: 'absolute',
+                        top: `${index * stepHeight}px`,
+                        transform: 'translateY(-50%)',
+                      }}
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          })()
+        ) : (
+          // Horizontal layout
+          <div className="legend-items flex flex-row gap-1 flex-wrap">
+            {displayItems.map((item, index) => (
+              <div
+                key={index}
+                className={`
+                  legend-item flex items-center gap-2 transition-all
+                  ${hoveredIndex === index ? 'opacity-100 scale-105' : 'opacity-90'}
+                  ${config.highlightOnHover ? 'cursor-pointer hover:bg-zinc-50 rounded px-1 -mx-1' : ''}
+                `}
+                onMouseEnter={() => handleItemHover(index)}
+                onMouseLeave={() => handleItemHover(null)}
+              >
+                {/* Color swatch */}
+                <div
+                  className="legend-color w-[12px] h-[12px] rounded-none flex-shrink-0"
+                  style={{
+                    backgroundColor: item.color,
+                    border: '1px solid rgba(0, 0, 0, 0.2)',
+                  }}
+                />
+
+                {/* Label */}
+                <span className="legend-label text-[12px] text-[#333333] font-[450] whitespace-nowrap">
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        )
       )}
     </div>
   )

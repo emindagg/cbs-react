@@ -145,16 +145,17 @@
   font-weight: 450;
 }
 
-/* ---- Vertical / Rotated labels ---- */
+/* ---- Vertical / Rotated labels (bottom-to-top like Datawrapper) ---- */
 .smart-label--vertical {
-  top: 0;
-  writing-mode: vertical-rl;
-  /* Removed rotate(180deg) to fix overlap; vertical-rl flows downwards naturally. */
-  transform: translateX(-50%); 
-  transform-origin: center top; 
-  
+  top: 2px;
+  transform: translateX(-50%);
+  transform-origin: center top;
   white-space: nowrap;
-  
-  /* Reset previous transforms */
   display: block;
+}
+
+.smart-label__inner {
+  writing-mode: vertical-rl;
+  display: inline-block;
+  transform: rotate(180deg);
 }

@@ -16,14 +16,14 @@ export default function SmartLabel({ label, layoutMode }: SmartLabelProps) {
   const isVertical = layoutMode === 'vertical' || layoutMode === 'thinned'
 
   if (isVertical) {
-    // Vertical mode: User requested specific writing-mode and rotation
+    // Vertical mode: outer span positions, inner span rotates for bottom-to-top reading
     return (
       <span
         className="smart-label smart-label--vertical"
         style={{ left: `${label.x}px` }}
         title={label.text}
       >
-        {label.text}
+        <span className="smart-label__inner">{label.text}</span>
       </span>
     )
   }

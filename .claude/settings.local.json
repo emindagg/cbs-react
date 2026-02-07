@@ -26,7 +26,10 @@
       "Bash(npm run:*)",
       "Bash(npx tsc:*)",
       "WebFetch(domain:www.datawrapper.de)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(ren:*)",
+      "Bash(cmd /c \"ren \"\"C:\\\\Users\\\\MED\\\\Documents\\\\cbsv5.1\"\" \"\"cbs-react\"\"\")",
+      "Bash(cmd /c \"dir C:\\\\Users\\\\MED\\\\Documents\\\\cbs-react\\\\.git /b\")"
     ],
     "deny": [],
     "ask": []
