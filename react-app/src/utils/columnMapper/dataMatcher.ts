@@ -78,6 +78,17 @@ export function matchData(
 }
 
 /**
+ * Extract plate code from province properties
+ */
+function extractPlateCode(properties: Record<string, unknown>): string | undefined {
+  const il = properties.IL
+  if (il !== undefined && il !== null) {
+    return String(il).padStart(2, '0')
+  }
+  return undefined
+}
+
+/**
  * Match province level data — exact first, then fuzzy fallback
  */
 function matchProvince(
@@ -101,6 +112,7 @@ function matchProvince(
     result.matched = true
     result.province = provinceData.name
     result.location = provinceData.name
+    result.plateCode = extractPlateCode(provinceData.properties as Record<string, unknown>)
     results.successful.push(result)
     return
   }
@@ -113,6 +125,7 @@ function matchProvince(
       result.matched = true
       result.province = fuzzyData.name
       result.location = fuzzyData.name
+      result.plateCode = extractPlateCode(fuzzyData.properties as Record<string, unknown>)
       results.successful.push(result)
       return
     }
@@ -155,6 +168,7 @@ function matchDistrict(
       result.province = districtMatches[0].province
       result.district = districtMatches[0].name
       result.location = districtMatches[0].name
+      result.plateCode = extractPlateCode(districtMatches[0].properties as Record<string, unknown>)
       results.successful.push(result)
     } else {
       result.ambiguous = true
@@ -180,6 +194,7 @@ function matchDistrict(
         result.province = fuzzyMatches[0].province
         result.district = fuzzyMatches[0].name
         result.location = fuzzyMatches[0].name
+        result.plateCode = extractPlateCode(fuzzyMatches[0].properties as Record<string, unknown>)
         results.successful.push(result)
       } else {
         result.ambiguous = true
@@ -264,6 +279,7 @@ function matchMixed(
       result.province = exactMatch.province
       result.district = exactMatch.name
       result.location = exactMatch.name
+      result.plateCode = extractPlateCode(exactMatch.properties as Record<string, unknown>)
       result.originalData._province = exactMatch.province
       results.successful.push(result)
     } else {

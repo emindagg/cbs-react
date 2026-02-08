@@ -72,6 +72,9 @@ export default function MatchResultsTable({ matchResults, dataColumn, onEdit }: 
             <th className="px-3 py-2 text-left font-medium text-zinc-700 border-b border-zinc-200">
               Konum
             </th>
+            <th className="px-3 py-2 text-center font-medium text-zinc-700 border-b border-zinc-200">
+              Plaka
+            </th>
             <th className="px-3 py-2 text-left font-medium text-zinc-700 border-b border-zinc-200">
               Eşleşen
             </th>
@@ -85,7 +88,7 @@ export default function MatchResultsTable({ matchResults, dataColumn, onEdit }: 
         <tbody>
           {allResults.length === 0 ? (
             <tr>
-              <td colSpan={dataColumn ? 4 : 3} className="px-3 py-4 text-center text-zinc-500">
+              <td colSpan={dataColumn ? 5 : 4} className="px-3 py-4 text-center text-zinc-500">
                 Eşleştirme sonucu yok
               </td>
             </tr>
@@ -154,6 +157,15 @@ export default function MatchResultsTable({ matchResults, dataColumn, onEdit }: 
                         </button>
                       )}
                     </div>
+                  )}
+                </td>
+                <td className="px-3 py-2 text-center">
+                  {result.plateCode ? (
+                    <span className="inline-flex items-center justify-center min-w-[28px] px-1.5 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded">
+                      {result.plateCode}
+                    </span>
+                  ) : (
+                    <span className="text-zinc-400">-</span>
                   )}
                 </td>
                 <td className="px-3 py-2">

@@ -41,7 +41,7 @@ export function exportToCSV(matchResults: MatchResults, dataColumn: string | nul
   ]
 
   // CSV Headers
-  const headers = ['Sıra', 'Durum', 'Konum', 'İl', 'İlçe', dataColumn || 'Veri', 'Mesaj']
+  const headers = ['Sıra', 'Durum', 'Konum', 'Plaka', 'İl', 'İlçe', dataColumn || 'Veri', 'Mesaj']
   const csvContent = [
     headers.join(','),
     ...allResults.map((r, index) => {
@@ -49,6 +49,7 @@ export function exportToCSV(matchResults: MatchResults, dataColumn: string | nul
         index + 1,
         r.status,
         r.location || '',
+        r.plateCode || '',
         r.province || '',
         r.district || '',
         dataColumn ? r.originalData[dataColumn] || '' : '',

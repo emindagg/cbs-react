@@ -59,6 +59,7 @@ export interface MatchResult {
   location?: string;
   province?: string;
   district?: string;
+  plateCode?: string;
   value?: number;
   error?: string;
   ambiguousOptions?: Array<{

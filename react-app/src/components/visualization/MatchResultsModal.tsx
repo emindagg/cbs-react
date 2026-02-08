@@ -9,6 +9,7 @@ import { createPortal } from 'react-dom'
 import { MatchResultsTabs } from './MatchResultsModal.tabs'
 import { exportToCSV, getFilteredResults } from './MatchResultsModal.utils'
 import type { MatchResults } from '../../types/visualization'
+import { getProvinceByPlateCode } from '../../utils/turkishNormalizer'
 
 interface MatchResultsModalProps {
   isOpen: boolean;
@@ -32,6 +33,18 @@ export default function MatchResultsModal({
   const [activeTab, setActiveTab] = useState<TabType>('all')
   const [editingCell, setEditingCell] = useState<{ rowIndex: number; column: 'location' | 'data' } | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [plateEditingRow, setPlateEditingRow] = useState<number | null>(null)
+  const [plateValue, setPlateValue] = useState('')
+
+  const platePreview = plateValue ? getProvinceByPlateCode(plateValue) : null
+
+  const handlePlateSubmit = (rowIndex: number) => {
+    if (!platePreview || !locationColumn) return
+    // Plaka kodunu konum sütununa yaz → re-match tetiklenecek
+    onEdit?.(rowIndex, locationColumn, plateValue.padStart(2, '0'))
+    setPlateEditingRow(null)
+    setPlateValue('')
+  }
 
   if (!isOpen) return null
 
@@ -100,6 +113,9 @@ export default function MatchResultsModal({
                 <th className="px-2.5 py-2 text-left text-[10px] font-semibold text-zinc-600 border-b-2 border-zinc-200">
                   Konum
                 </th>
+                <th className="px-2.5 py-2 text-center text-[10px] font-semibold text-zinc-600 border-b-2 border-zinc-200">
+                  Plaka
+                </th>
                 <th className="px-2.5 py-2 text-left text-[10px] font-semibold text-zinc-600 border-b-2 border-zinc-200">
                   İl
                 </th>
@@ -119,7 +135,7 @@ export default function MatchResultsModal({
             <tbody>
               {filteredResults.length === 0 ? (
                 <tr>
-                  <td colSpan={dataColumn ? 7 : 6} className="px-2.5 py-8 text-center text-zinc-400 text-xs">
+                  <td colSpan={dataColumn ? 8 : 7} className="px-2.5 py-8 text-center text-zinc-400 text-xs">
                     <i className="fa-solid fa-inbox text-2xl mb-2 block text-zinc-300"></i>
                     Bu kategoride sonuç yok
                   </td>
@@ -187,6 +203,72 @@ export default function MatchResultsModal({
                             </button>
                           )}
                         </div>
+                      )}
+                    </td>
+                    <td className="px-2.5 py-2 text-center">
+                      {plateEditingRow === result.rowIndex ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min={1}
+                              max={81}
+                              value={plateValue}
+                              onChange={(e) => setPlateValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handlePlateSubmit(result.rowIndex)
+                                if (e.key === 'Escape') { setPlateEditingRow(null); setPlateValue('') }
+                              }}
+                              autoFocus
+                              placeholder="01-81"
+                              className="w-14 px-1.5 py-1 text-[11px] text-center border border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                            <button
+                              onClick={() => handlePlateSubmit(result.rowIndex)}
+                              disabled={!platePreview}
+                              className="px-1.5 py-1 text-[10px] text-green-600 hover:bg-green-50 rounded disabled:opacity-30"
+                              title="Eşleştir"
+                            >
+                              <i className="fa-solid fa-check"></i>
+                            </button>
+                            <button
+                              onClick={() => { setPlateEditingRow(null); setPlateValue('') }}
+                              className="px-1.5 py-1 text-[10px] text-red-600 hover:bg-red-50 rounded"
+                              title="İptal"
+                            >
+                              <i className="fa-solid fa-times"></i>
+                            </button>
+                          </div>
+                          {platePreview && (
+                            <span className="text-[9px] text-emerald-600 font-medium">{platePreview}</span>
+                          )}
+                        </div>
+                      ) : onEdit ? (
+                        <button
+                          onClick={() => { setPlateEditingRow(result.rowIndex); setPlateValue(result.plateCode || '') }}
+                          className={`inline-flex items-center justify-center min-w-[28px] px-1.5 py-0.5 text-[10px] font-bold rounded cursor-pointer transition-colors group ${
+                            result.plateCode
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:border-blue-400'
+                              : 'text-blue-600 hover:bg-blue-50 border border-dashed border-blue-300'
+                          }`}
+                          title="Plaka kodunu düzenle"
+                        >
+                          {result.plateCode || (
+                            <>
+                              <i className="fa-solid fa-hashtag text-[8px] mr-0.5"></i>
+                              Plaka
+                            </>
+                          )}
+                          {result.plateCode && (
+                            <i className="fa-solid fa-pen text-[7px] ml-1 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                          )}
+                        </button>
+                      ) : result.plateCode ? (
+                        <span className="inline-flex items-center justify-center min-w-[28px] px-1.5 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded">
+                          {result.plateCode}
+                        </span>
+                      ) : (
+                        <span className="text-zinc-400">-</span>
                       )}
                     </td>
                     <td className="px-2.5 py-2 text-zinc-600">{result.province || '-'}</td>
