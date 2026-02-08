@@ -4,7 +4,13 @@
  */
 
 export interface GeoJSONProperties {
-  // Province properties
+  // Province properties (TÜİK standart)
+  ADI?: string
+  BOLGE_ADI?: string
+  NUTS1?: string
+  NUTS2?: string
+  NUTS3?: string
+  YERLESIMKO?: number
   ILAD?: string
   IL_ADI?: string
   il_adi?: string

@@ -30,6 +30,7 @@ const PROVINCE_EXACT_KEYWORDS = [
   'city', 'City', 'CITY',
   'kent', 'Kent', 'KENT',
   'vilayet', 'Vilayet', 'VILAYET',
+  'plaka', 'Plaka', 'PLAKA',
 ]
 
 const PROVINCE_PARTIAL_KEYWORDS = [
@@ -37,6 +38,7 @@ const PROVINCE_PARTIAL_KEYWORDS = [
   'sehir', 'şehir', 'kent',
   'province', 'city', 'vilayet',
   'iller',
+  'plaka', 'plaka_kodu', 'plakakodu', 'il_kodu', 'ilkodu', 'il_kod',
 ]
 
 // ── District column keywords ─────────────────────────────────────
@@ -127,11 +129,20 @@ export function detectColumns(
 
   // ── PHASE 3: Content-based detection ──────────────────────────
   // If keywords didn't find a location column, check column VALUES
-  // against known province names
+  // against known province names or plate codes (1-81)
   if (!suggestions.locationColumn) {
     const contentResult = detectLocationColumnByContent(rawData, columns, suggestions.districtColumn)
     if (contentResult) {
       suggestions.locationColumn = contentResult
+    }
+  }
+
+  // ── PHASE 3b: Plate code content detection ──────────────────
+  // If still no location column, check for plate codes (1-81)
+  if (!suggestions.locationColumn) {
+    const plateResult = detectPlateCodeColumn(rawData, columns, suggestions.districtColumn)
+    if (plateResult) {
+      suggestions.locationColumn = plateResult
     }
   }
 
@@ -164,6 +175,50 @@ export function detectColumns(
   console.debug('  - Location level:', suggestions.locationLevel)
 
   return suggestions
+}
+
+/**
+ * Detect plate code column by checking if column values are numbers 1-81.
+ * Samples first 10 rows and checks if >50% match valid plate codes.
+ */
+function detectPlateCodeColumn(
+  rawData: RawDataRow[],
+  columns: string[],
+  skipColumn: string | null,
+): string | null {
+  const sampleSize = Math.min(10, rawData.length)
+  const MATCH_THRESHOLD = 0.5
+
+  let bestColumn: string | null = null
+  let bestScore = 0
+
+  for (const col of columns) {
+    if (col === skipColumn) continue
+
+    let matchCount = 0
+    let totalCount = 0
+
+    for (let i = 0; i < sampleSize; i++) {
+      const value = rawData[i][col]
+      if (value === null || value === undefined || value === '') continue
+
+      totalCount++
+      const num = typeof value === 'number' ? value : parseInt(String(value), 10)
+      if (!isNaN(num) && num >= 1 && num <= 81) {
+        matchCount++
+      }
+    }
+
+    if (totalCount > 0) {
+      const score = matchCount / totalCount
+      if (score > bestScore && score >= MATCH_THRESHOLD) {
+        bestScore = score
+        bestColumn = col
+      }
+    }
+  }
+
+  return bestColumn
 }
 
 /**

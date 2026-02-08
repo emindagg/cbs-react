@@ -162,7 +162,7 @@ export class ChoroplethRenderer {
     const props = feature.properties
 
     if (locationLevel === 'province') {
-      return props.ILAD || props.name || props.NAME || props.IL_ADI || 'Bilinmiyor'
+      return String(props.ADI || props.ILAD || props.name || props.NAME || props.IL_ADI || 'Bilinmiyor')
     } else {
       return props.ILCEAD || props.ILCE_ADI || props.name || props.NAME || 'Bilinmiyor'
     }
@@ -179,7 +179,7 @@ export class ChoroplethRenderer {
   ): number | undefined {
     if (locationLevel === 'district') {
       const props = feature.properties
-      const featureProvinceName = props.ILAD || props.IL_ADI || props.il_adi || props.province
+      const featureProvinceName = props.ADI || props.ILAD || props.IL_ADI || props.il_adi || props.province
 
       if (featureProvinceName) {
         const provinceNormalized = normalizeTurkishText(String(featureProvinceName))
@@ -188,7 +188,22 @@ export class ChoroplethRenderer {
       }
     }
 
-    return dataMap[normalizedFeatureName]
+    // Önce normalize edilmiş isimle dene
+    if (dataMap[normalizedFeatureName] !== undefined) {
+      return dataMap[normalizedFeatureName]
+    }
+
+    // Plaka koduyla da dene
+    const props = feature.properties
+    const plateCode = props.IL
+    if (plateCode) {
+      const code = String(plateCode).trim()
+      if (dataMap[code] !== undefined) return dataMap[code]
+      const numericCode = String(parseInt(code, 10))
+      if (dataMap[numericCode] !== undefined) return dataMap[numericCode]
+    }
+
+    return undefined
   }
 
   /**

@@ -46,7 +46,7 @@ export class VisualizationManager {
 
     try {
       const response = await fetch(
-        'https://raw.githubusercontent.com/emindagg/turkiye_json/main/turkiye.geojson',
+        'https://raw.githubusercontent.com/emindagg/turkiye_json/main/iller_tuik_standart.geojson',
       )
       this.provincesGeoJSON = await response.json()
       console.debug('✅ Province GeoJSON loaded:', this.provincesGeoJSON?.features?.length ?? 0, 'provinces')
@@ -96,8 +96,9 @@ export class VisualizationManager {
     this.provincesGeoJSON.features.forEach((feature) => {
       const props = feature.properties
 
-      // HGK format prioritizes ILAD property
+      // TÜİK standart format: ADI = il adı, IL = plaka kodu
       const provinceName =
+        props.ADI ||
         props.ILAD ||
         props.name ||
         props.NAME ||
@@ -108,18 +109,33 @@ export class VisualizationManager {
         props.province ||
         props.PROVINCE
 
-      if (provinceName) {
-        const normalized = normalizeTurkishText(String(provinceName))
+      const plateCode = props.IL // Plaka kodu (ör: "39")
 
-        index[normalized] = {
+      if (provinceName) {
+        const locationInfo: LocationInfo = {
           name: String(provinceName),
           properties: props,
           geometry: feature.geometry,
         }
+
+        // İl adıyla indexle (ör: "kirklareli")
+        const normalized = normalizeTurkishText(String(provinceName))
+        index[normalized] = locationInfo
+
+        // Plaka koduyla da indexle (ör: "39")
+        if (plateCode) {
+          const code = String(plateCode).trim()
+          index[code] = locationInfo
+          // Başında sıfır olmadan da ekle (ör: "01" → "1")
+          const numericCode = String(parseInt(code, 10))
+          if (numericCode !== code) {
+            index[numericCode] = locationInfo
+          }
+        }
       }
     })
 
-    console.debug('✅ Province index built:', Object.keys(index).length, 'provinces')
+    console.debug('✅ Province index built:', Object.keys(index).length, 'entries (il adı + plaka kodu)')
 
     if (Object.keys(index).length === 0) {
       console.error('❌ Province index is empty! Check GeoJSON property names.')

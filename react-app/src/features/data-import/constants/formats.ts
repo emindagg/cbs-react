@@ -20,7 +20,7 @@ export const FILE_ACCEPT_PATTERN = '.geojson,.json,.kml,.zip,.xlsx,.xls,.csv'
 export const COLUMN_PATTERNS = {
   lat: ['lat', 'enlem', 'latitude', 'nlem'],
   lon: ['lon', 'lng', 'boylam', 'longitude', 'oylam'],
-  name: ['name', 'ad', 'isim', 'sim', 'il', 'sehir', 'şehir'],
+  name: ['name', 'ad', 'isim', 'sim', 'il', 'sehir', 'şehir', 'plaka'],
   type: ['type', 'tur', 'tür', 'tip'],
   geometry: ['geometry', 'geometri'],
 } as const
