@@ -27,6 +27,8 @@ export interface GeoJSONProperties {
   ilce?: string
   ILCE?: string
   district?: string
+  key?: string
+  plaka?: string | number
 
   // Display properties
   name?: string

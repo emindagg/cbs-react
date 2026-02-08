@@ -78,12 +78,13 @@ export function matchData(
 }
 
 /**
- * Extract plate code from province properties
+ * Extract plate code from province/district properties
  */
 function extractPlateCode(properties: Record<string, unknown>): string | undefined {
-  const il = properties.IL
-  if (il !== undefined && il !== null) {
-    return String(il).padStart(2, '0')
+  // İl GeoJSON'da IL, ilçe GeoJSON'da plaka alanı kullanılır
+  const code = properties.IL ?? properties.plaka
+  if (code !== undefined && code !== null) {
+    return String(code).padStart(2, '0')
   }
   return undefined
 }

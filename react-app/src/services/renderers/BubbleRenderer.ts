@@ -257,12 +257,25 @@ export class BubbleRenderer {
   ): number | undefined {
     if (locationLevel === 'district') {
       const props = feature.properties
+
+      // Önce GeoJSON key ile dene (benzersiz anahtar)
+      if (props.key) {
+        const normalizedKey = normalizeTurkishText(String(props.key))
+        if (dataMap[normalizedKey] !== undefined) return dataMap[normalizedKey]
+      }
+
       const featureProvinceName = props.ADI || props.ILAD || props.IL_ADI || props.il_adi || props.province
 
       if (featureProvinceName) {
         const provinceNormalized = normalizeTurkishText(String(featureProvinceName))
         const compositeKey = `${provinceNormalized}_${normalizedFeatureName}`
-        return dataMap[compositeKey]
+        if (dataMap[compositeKey] !== undefined) return dataMap[compositeKey]
+      }
+
+      // Plaka + ilçe ile dene
+      if (props.plaka !== undefined && props.plaka !== null) {
+        const plakaKey = `${String(props.plaka).trim()}_${normalizedFeatureName}`
+        if (dataMap[plakaKey] !== undefined) return dataMap[plakaKey]
       }
     }
 
@@ -271,10 +284,10 @@ export class BubbleRenderer {
       return dataMap[normalizedFeatureName]
     }
 
-    // Plaka koduyla da dene
+    // Plaka koduyla da dene (il seviyesi: IL, ilçe seviyesi: plaka)
     const props = feature.properties
-    const plateCode = props.IL
-    if (plateCode) {
+    const plateCode = props.IL ?? props.plaka
+    if (plateCode !== undefined && plateCode !== null) {
       const code = String(plateCode).trim()
       if (dataMap[code] !== undefined) return dataMap[code]
       const numericCode = String(parseInt(code, 10))

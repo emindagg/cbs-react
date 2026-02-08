@@ -69,7 +69,7 @@ export class VisualizationManager {
 
     try {
       const response = await fetch(
-        'https://raw.githubusercontent.com/emindagg/turkiye_json/main/Hgk_ilce_FeaturesToJSON.geojson',
+        'https://raw.githubusercontent.com/emindagg/turkiye_json/main/ilceler_key_react.geojson',
       )
       this.districtsGeoJSON = await response.json()
       console.debug('✅ District GeoJSON loaded:', this.districtsGeoJSON?.features?.length ?? 0, 'districts')
@@ -154,7 +154,6 @@ export class VisualizationManager {
     this.districtsGeoJSON.features.forEach((feature) => {
       const props = feature.properties
 
-      // HGK format prioritizes ILCEAD and ILAD properties
       const districtName =
         props.ILCEAD ||
         props.ILCE_ADI ||
@@ -166,6 +165,8 @@ export class VisualizationManager {
         props.district
       const provinceName =
         props.ILAD || props.IL_ADI || props.il_adi || props.il || props.province || props.PROVINCE || props.IL
+      const geoKey = props.key // Benzersiz key (ör: "istanbul_kadikoy")
+      const plaka = props.plaka // Plaka kodu (ör: 34)
 
       if (districtName) {
         const normalized = normalizeTurkishText(String(districtName))
@@ -178,17 +179,38 @@ export class VisualizationManager {
         const provinceNormalized = provinceName ? normalizeTurkishText(String(provinceName)) : ''
         const compositeKey = provinceNormalized ? `${provinceNormalized}_${normalized}` : normalized
 
-        index[normalized].push({
+        const districtInfo: DistrictInfo = {
           name: String(districtName),
           province: provinceName ? String(provinceName) : 'Bilinmiyor',
           compositeKey: compositeKey,
           properties: props,
           geometry: feature.geometry,
-        })
+        }
+
+        index[normalized].push(districtInfo)
+
+        // GeoJSON key ile de indexle (benzersiz anahtar)
+        if (geoKey) {
+          const normalizedKey = normalizeTurkishText(String(geoKey))
+          if (!index[normalizedKey]) {
+            index[normalizedKey] = []
+          }
+          index[normalizedKey].push(districtInfo)
+        }
+
+        // Plaka kodu ile de indexle
+        if (plaka !== undefined && plaka !== null) {
+          const plakaStr = String(plaka).trim()
+          const plakaDistrictKey = `${plakaStr}_${normalized}`
+          if (!index[plakaDistrictKey]) {
+            index[plakaDistrictKey] = []
+          }
+          index[plakaDistrictKey].push(districtInfo)
+        }
       }
     })
 
-    console.debug('✅ District index built:', Object.keys(index).length, 'unique district names')
+    console.debug('✅ District index built:', Object.keys(index).length, 'entries (ilçe adı + key + plaka)')
 
     if (Object.keys(index).length === 0) {
       console.error('❌ District index is empty! Check GeoJSON property names.')
