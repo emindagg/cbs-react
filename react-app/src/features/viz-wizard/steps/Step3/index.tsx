@@ -264,6 +264,8 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
           colorScheme={vizSettings.colorScheme}
           classCount={vizSettings.classCount}
           classificationMethod={vizSettings.classificationMethod}
+          interpolation={vizSettings.interpolation ?? colorConfig.interpolation}
+          scaleType={colorConfig.scaleType}
         />
       )}
 

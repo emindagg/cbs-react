@@ -7,14 +7,24 @@
 import { useMemo } from 'react'
 
 import { getColorPalette } from '@/constants/colorSchemes'
-import type { ColorScheme, ClassificationMethod } from '@/types/visualization'
-import { calculateBreaks, calculateDataStats } from '@/utils/classificationMethods'
+import type { ColorScheme, ClassificationMethod, InterpolationMethod } from '@/types/visualization'
+import {
+  calculateBreaks,
+  calculateBreaksFromInterpolation,
+  calculateDataStats,
+  getClassCountFromInterpolation,
+  INTERPOLATION_INFO,
+} from '@/utils/classificationMethods'
 
 interface DistributionPreviewProps {
   values: number[];
   colorScheme: ColorScheme;
   classCount: number;
   classificationMethod: ClassificationMethod;
+  /** Continuous modda seçilen interpolasyon (beşlik/onluk vb.); ön izleme buna göre güncellenir */
+  interpolation?: InterpolationMethod;
+  /** Ölçek türü: continuous ise interpolation kullanılır */
+  scaleType?: 'steps' | 'continuous';
 }
 
 export default function DistributionPreview({
@@ -22,13 +32,24 @@ export default function DistributionPreview({
   colorScheme,
   classCount,
   classificationMethod,
+  interpolation = 'equidistant',
+  scaleType = 'steps',
 }: DistributionPreviewProps) {
   const stats = useMemo(() => calculateDataStats(values), [values])
+
+  const isContinuous = scaleType === 'continuous'
+  const effectiveClassCount = isContinuous ? getClassCountFromInterpolation(interpolation) : classCount
   const breaks = useMemo(
-    () => calculateBreaks(values, classificationMethod, classCount),
-    [values, classificationMethod, classCount],
+    () =>
+      isContinuous
+        ? calculateBreaksFromInterpolation(values, interpolation)
+        : calculateBreaks(values, classificationMethod, classCount),
+    [values, classificationMethod, classCount, isContinuous, interpolation],
   )
-  const colors = useMemo(() => getColorPalette(colorScheme, classCount), [colorScheme, classCount])
+  const colors = useMemo(
+    () => getColorPalette(colorScheme, effectiveClassCount),
+    [colorScheme, effectiveClassCount],
+  )
 
   const histogram = useMemo(() => {
     if (breaks.length < 2) return []
@@ -133,15 +154,16 @@ export default function DistributionPreview({
           <i className="fa-solid fa-lightbulb text-blue-600 text-[9px] mt-0.5"></i>
           <div className="flex-1">
             <p className="text-[8px] text-blue-700 leading-relaxed">
-              {classificationMethod === 'quantile' &&
+              {isContinuous && INTERPOLATION_INFO[interpolation]?.description}
+              {!isContinuous && classificationMethod === 'quantile' &&
                 'Quantile: Her renk sınıfında yaklaşık eşit sayıda veri noktası vardır.'}
-              {classificationMethod === 'equal' &&
+              {!isContinuous && classificationMethod === 'equal' &&
                 'Eşit Aralık: Değer aralığı eşit genişlikte sınıflara bölünür.'}
-              {classificationMethod === 'jenks' &&
+              {!isContinuous && classificationMethod === 'jenks' &&
                 'Jenks: Verideki doğal grupları ve kırılma noktalarını bulur.'}
-              {classificationMethod === 'rounded-sm' &&
+              {!isContinuous && classificationMethod === 'rounded-sm' &&
                 'Yuvarlanmış: Okunması kolay yuvarlak sayılar kullanır.'}
-              {classificationMethod === 'logarithmic' &&
+              {!isContinuous && classificationMethod === 'logarithmic' &&
                 'Logaritmik: Üstel dağılımlı verilerde küçük değerleri daha iyi gösterir.'}
             </p>
           </div>
