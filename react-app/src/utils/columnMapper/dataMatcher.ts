@@ -280,7 +280,7 @@ function matchMixed(
     // Find exact match with province (try name-based key first, then plate-based key)
     const exactMatch = districtMatches.find((d) =>
       d.compositeKey === compositeKey
-      || (plateCompositeKey && d.compositeKey === plateCompositeKey)
+      || (plateCompositeKey && d.compositeKey === plateCompositeKey),
     )
     if (exactMatch) {
       result.matched = true

@@ -4,8 +4,6 @@
  * Combines column mapping + AG Grid spreadsheet + real-time validation
  */
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { AgGridReact } from 'ag-grid-react'
 import {
   ModuleRegistry,
   ClientSideRowModelModule,
@@ -16,7 +14,9 @@ import {
   ValidationModule,
 } from 'ag-grid-community'
 import type { ColDef, CellValueChangedEvent, ICellRendererParams } from 'ag-grid-community'
+import { AgGridReact } from 'ag-grid-react'
 import { CheckCircle, AlertCircle } from 'lucide-react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
 import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
@@ -234,7 +234,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
             <div className="inline-flex rounded-lg border border-zinc-300 overflow-hidden shadow-sm">
               <label
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 cursor-pointer text-[11px] font-semibold transition-all ${locationLevel === 'province' ? 'bg-slate-700 text-white shadow-inner' : 'bg-white text-zinc-600 hover:bg-zinc-100'
-                  }`}
+                }`}
               >
                 <input type="radio" name="dm-level-m" value="province" checked={locationLevel === 'province'} onChange={() => setLocationLevel('province')} className="sr-only" />
                 <i className={`fa-solid fa-map-location-dot text-[9px] ${locationLevel === 'province' ? 'text-white' : 'text-zinc-400'}`} />
@@ -243,7 +243,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
               <div className="w-px bg-zinc-300" />
               <label
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 cursor-pointer text-[11px] font-semibold transition-all ${locationLevel === 'mixed' ? 'bg-slate-700 text-white shadow-inner' : 'bg-white text-zinc-600 hover:bg-zinc-100'
-                  }`}
+                }`}
               >
                 <input type="radio" name="dm-level-m" value="mixed" checked={locationLevel === 'mixed'} onChange={() => setLocationLevel('mixed')} className="sr-only" />
                 <i className={`fa-solid fa-layer-group text-[9px] ${locationLevel === 'mixed' ? 'text-white' : 'text-zinc-400'}`} />
@@ -355,8 +355,8 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
             className={`
               flex-1 flex items-center justify-center gap-1.5 px-3 py-2 cursor-pointer transition-colors
               ${locationLevel === 'province'
-                ? 'bg-slate-700 text-white'
-                : 'bg-white text-zinc-700 hover:bg-zinc-50'}
+      ? 'bg-slate-700 text-white'
+      : 'bg-white text-zinc-700 hover:bg-zinc-50'}
             `}
           >
             <input
@@ -375,8 +375,8 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
             className={`
               flex-1 flex items-center justify-center gap-1.5 px-3 py-2 cursor-pointer transition-colors
               ${locationLevel === 'mixed'
-                ? 'bg-slate-700 text-white'
-                : 'bg-white text-zinc-700 hover:bg-zinc-50'}
+      ? 'bg-slate-700 text-white'
+      : 'bg-white text-zinc-700 hover:bg-zinc-50'}
             `}
           >
             <input

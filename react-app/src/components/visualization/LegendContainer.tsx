@@ -5,10 +5,10 @@
 
 import { useMemo } from 'react'
 
+import Legend from './Legend'
 import { getInterpolatedColorPalette } from '../../constants/colorSchemes'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
 import { calculateBreaks } from '../../utils/classificationMethods'
-import Legend from './Legend'
 import { DynamicLegend } from '../Legend'
 
 export default function LegendContainer() {

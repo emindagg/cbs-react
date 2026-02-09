@@ -3,7 +3,7 @@
  * Allows manual setting of min, center, and max values for color scale
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 import type { CustomRange } from '../../types/visualization'
 
@@ -29,12 +29,26 @@ export default function CustomRangeConfig({
     max?: string;
   }>({})
 
-  // Update local state when customRange changes externally
-  useEffect(() => {
+  // Sync local state when customRange changes from parent (getDerivedStateFromProps-style, no ref/effect)
+  const [prevRange, setPrevRange] = useState({
+    min: customRange.min,
+    center: customRange.center,
+    max: customRange.max,
+  })
+  if (
+    customRange.min !== prevRange.min ||
+    customRange.center !== prevRange.center ||
+    customRange.max !== prevRange.max
+  ) {
+    setPrevRange({
+      min: customRange.min,
+      center: customRange.center,
+      max: customRange.max,
+    })
     setLocalMin(customRange.min?.toString() || '')
     setLocalCenter(customRange.center?.toString() || '')
     setLocalMax(customRange.max?.toString() || '')
-  }, [customRange])
+  }
 
   const validateAndUpdate = (field: 'min' | 'center' | 'max', value: string) => {
     const numValue = value === '' ? null : Number.parseFloat(value)
@@ -166,10 +180,10 @@ export default function CustomRangeConfig({
               className={`
                 w-full px-2.5 py-1.5 text-[11px] border rounded
                 ${
-                  errors.min
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-zinc-200 focus:ring-blue-500'
-                }
+        errors.min
+          ? 'border-red-500 focus:ring-red-500'
+          : 'border-zinc-200 focus:ring-blue-500'
+        }
                 focus:outline-none focus:ring-1
               `}
             />
@@ -196,10 +210,10 @@ export default function CustomRangeConfig({
               className={`
                 w-full px-2.5 py-1.5 text-[11px] border rounded
                 ${
-                  errors.center
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-zinc-200 focus:ring-blue-500'
-                }
+        errors.center
+          ? 'border-red-500 focus:ring-red-500'
+          : 'border-zinc-200 focus:ring-blue-500'
+        }
                 focus:outline-none focus:ring-1
               `}
             />
@@ -226,10 +240,10 @@ export default function CustomRangeConfig({
               className={`
                 w-full px-2.5 py-1.5 text-[11px] border rounded
                 ${
-                  errors.max
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-zinc-200 focus:ring-blue-500'
-                }
+        errors.max
+          ? 'border-red-500 focus:ring-red-500'
+          : 'border-zinc-200 focus:ring-blue-500'
+        }
                 focus:outline-none focus:ring-1
               `}
             />

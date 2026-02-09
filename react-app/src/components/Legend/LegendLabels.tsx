@@ -52,7 +52,7 @@ export default function LegendLabels({
       const texts = effectiveLabels.map(l => l.text).reverse()
       effectiveLabels = effectiveLabels.map((label, i) => ({
         ...label,
-        text: texts[i]
+        text: texts[i],
       }))
     }
 

@@ -3,10 +3,10 @@
  * Complete panel integrating color scale, interpolation, custom range, and legend
  */
 
-import { useVisualizationStore } from '../../stores/useVisualizationStore'
 import ColorScaleConfig from './ColorScaleConfig'
 import CustomRangeConfig from './CustomRangeConfig'
 import LegendConfig from './LegendConfig'
+import { useVisualizationStore } from '../../stores/useVisualizationStore'
 
 interface DatawrapperStyleConfigProps {
   dataValues?: number[]; // For auto min/max calculation

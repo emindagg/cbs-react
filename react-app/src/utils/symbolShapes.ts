@@ -141,13 +141,14 @@ export function calculateSymbolSize(
       normalizedValue = Math.sqrt((value - minValue) / (maxValue - minValue))
       break
 
-    case 'log':
+    case 'log': {
       // Logarithmic scaling (for wide ranges)
       const logMin = Math.log(minValue + 1)
       const logMax = Math.log(maxValue + 1)
       const logValue = Math.log(value + 1)
       normalizedValue = (logValue - logMin) / (logMax - logMin)
       break
+    }
 
     default:
       normalizedValue = Math.sqrt((value - minValue) / (maxValue - minValue))

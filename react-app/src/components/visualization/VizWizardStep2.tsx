@@ -4,14 +4,14 @@
  * Opens DataMapper in a centered modal for better horizontal space
  */
 
+import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { useMatching } from './hooks/useMatching'
-import DataMapperModal from '../modals/DataMapperModal'
 import { useMapStore } from '../../stores/useMapStore'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
 import { normalizeTurkishText } from '../../utils/turkishNormalizer'
-import { CheckCircle, AlertCircle } from 'lucide-react'
+import DataMapperModal from '../modals/DataMapperModal'
 
 interface VizWizardStep2Props {
   onBack: () => void

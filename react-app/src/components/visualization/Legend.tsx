@@ -33,6 +33,44 @@ export default function Legend({
   const legendRef = useRef<HTMLDivElement>(null)
   const titleInputRef = useRef<HTMLInputElement>(null)
 
+  // Title editing focus (hooks must be before any return)
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus()
+      titleInputRef.current.select()
+    }
+  }, [isEditingTitle])
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return
+
+    const x = e.clientX - dragOffset.x
+    const y = e.clientY - dragOffset.y
+
+    const maxX = window.innerWidth - (legendRef.current?.offsetWidth || 0)
+    const maxY = window.innerHeight - (legendRef.current?.offsetHeight || 0)
+
+    setPosition({
+      x: Math.max(0, Math.min(x, maxX)),
+      y: Math.max(0, Math.min(y, maxY)),
+    })
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove)
+        window.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging, dragOffset])
+
   if (!config.visible) return null
 
   const handleItemHover = (index: number | null) => {
@@ -41,14 +79,6 @@ export default function Legend({
       onHover?.(index)
     }
   }
-
-  // Title editing handlers
-  useEffect(() => {
-    if (isEditingTitle && titleInputRef.current) {
-      titleInputRef.current.focus()
-      titleInputRef.current.select()
-    }
-  }, [isEditingTitle])
 
   const handleTitleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -69,7 +99,6 @@ export default function Legend({
     }
   }
 
-  // Drag handlers
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isEditingTitle) return
     if (!legendRef.current) return
@@ -81,38 +110,6 @@ export default function Legend({
     })
     setIsDragging(true)
   }
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return
-
-    const x = e.clientX - dragOffset.x
-    const y = e.clientY - dragOffset.y
-
-    // Keep within viewport bounds
-    const maxX = window.innerWidth - (legendRef.current?.offsetWidth || 0)
-    const maxY = window.innerHeight - (legendRef.current?.offsetHeight || 0)
-
-    setPosition({
-      x: Math.max(0, Math.min(x, maxX)),
-      y: Math.max(0, Math.min(y, maxY)),
-    })
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
-  }
-
-  // Add/remove mouse event listeners
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove)
-      window.addEventListener('mouseup', handleMouseUp)
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove)
-        window.removeEventListener('mouseup', handleMouseUp)
-      }
-    }
-  }, [isDragging, dragOffset])
 
   // Generate legend items
   const items = scaleType === 'steps' ? generateSteppedItems() : generateContinuousItems()
@@ -244,7 +241,7 @@ export default function Legend({
             // Ruler: boundary labels (N+1), Ranges/Custom: item labels (N)
             const rulerLabels = isRuler
               ? (config.reverseOrder ? [...breaks].reverse() : breaks)
-                  .map((b) => formatNumber(b, config.format as NumberFormat))
+                .map((b) => formatNumber(b, config.format as NumberFormat))
               : []
 
             return (

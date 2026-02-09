@@ -12,11 +12,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { formatNumber, type NumberFormat } from '../../utils/numberFormatter'
 import './DynamicLegend.css'
+import type { DynamicLegendProps } from './legend.types'
 import LegendBar from './LegendBar'
 import LegendLabels from './LegendLabels'
-import type { DynamicLegendProps } from './legend.types'
+import { formatNumber, type NumberFormat } from '../../utils/numberFormatter'
 
 export default function DynamicLegend({
   config,
@@ -50,6 +50,38 @@ export default function DynamicLegend({
     [config.format],
   )
 
+  // Focus title input when entering edit mode (hooks must be before any return)
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus()
+      titleInputRef.current.select()
+    }
+  }, [isEditingTitle])
+
+  useEffect(() => {
+    if (!isDragging) return
+
+    const handleMove = (e: MouseEvent) => {
+      const x = e.clientX - dragOffset.x
+      const y = e.clientY - dragOffset.y
+      const maxX = window.innerWidth - (legendRef.current?.offsetWidth || 0)
+      const maxY = window.innerHeight - (legendRef.current?.offsetHeight || 0)
+      setPosition({
+        x: Math.max(0, Math.min(x, maxX)),
+        y: Math.max(0, Math.min(y, maxY)),
+      })
+    }
+
+    const handleUp = () => setIsDragging(false)
+
+    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('mouseup', handleUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('mouseup', handleUp)
+    }
+  }, [isDragging, dragOffset])
+
   // ── Visibility guard ────────────────────────────────────────
   if (!config.visible) return null
   if (colors.length === 0 || breaks.length === 0) return null
@@ -78,14 +110,6 @@ export default function DynamicLegend({
     if (e.key === 'Enter' || e.key === 'Escape') finishTitleEdit()
   }
 
-  // Focus title input when entering edit mode
-  useEffect(() => {
-    if (isEditingTitle && titleInputRef.current) {
-      titleInputRef.current.focus()
-      titleInputRef.current.select()
-    }
-  }, [isEditingTitle])
-
   // ── Drag handlers ───────────────────────────────────────────
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isEditingTitle) return
@@ -94,30 +118,6 @@ export default function DynamicLegend({
     setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top })
     setIsDragging(true)
   }
-
-  useEffect(() => {
-    if (!isDragging) return
-
-    const handleMove = (e: MouseEvent) => {
-      const x = e.clientX - dragOffset.x
-      const y = e.clientY - dragOffset.y
-      const maxX = window.innerWidth - (legendRef.current?.offsetWidth || 0)
-      const maxY = window.innerHeight - (legendRef.current?.offsetHeight || 0)
-      setPosition({
-        x: Math.max(0, Math.min(x, maxX)),
-        y: Math.max(0, Math.min(y, maxY)),
-      })
-    }
-
-    const handleUp = () => setIsDragging(false)
-
-    window.addEventListener('mousemove', handleMove)
-    window.addEventListener('mouseup', handleUp)
-    return () => {
-      window.removeEventListener('mousemove', handleMove)
-      window.removeEventListener('mouseup', handleUp)
-    }
-  }, [isDragging, dragOffset])
 
   const showRangeList =
     scaleType === 'steps' && (config.labels.type === 'ranges' || config.labels.type === 'custom')

@@ -73,10 +73,10 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                 className={`
                   flex-1 px-3 py-2 text-[11px] rounded border transition-all
                   ${
-                    config.orientation === 'horizontal'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
-                  }
+        config.orientation === 'horizontal'
+          ? 'border-blue-500 bg-blue-50 text-blue-700'
+          : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
+        }
                 `}
               >
                 Yatay
@@ -86,10 +86,10 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                 className={`
                   flex-1 px-3 py-2 text-[11px] rounded border transition-all
                   ${
-                    config.orientation === 'vertical'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
-                  }
+        config.orientation === 'vertical'
+          ? 'border-blue-500 bg-blue-50 text-blue-700'
+          : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
+        }
                 `}
               >
                 Dikey
@@ -108,10 +108,10 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                 className={`
                   flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] rounded border cursor-pointer transition-all
                   ${
-                    config.labels.type === 'ruler'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
-                  }
+        config.labels.type === 'ruler'
+          ? 'border-blue-500 bg-blue-50 text-blue-700'
+          : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
+        }
                 `}
               >
                 <input
@@ -130,10 +130,10 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                 className={`
                   flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] rounded border cursor-pointer transition-all
                   ${
-                    config.labels.type === 'ranges'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
-                  }
+        config.labels.type === 'ranges'
+          ? 'border-blue-500 bg-blue-50 text-blue-700'
+          : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
+        }
                 `}
               >
                 <input
@@ -152,10 +152,10 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                 className={`
                   flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] rounded border cursor-pointer transition-all
                   ${
-                    config.labels.type === 'custom'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
-                  }
+        config.labels.type === 'custom'
+          ? 'border-blue-500 bg-blue-50 text-blue-700'
+          : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
+        }
                 `}
               >
                 <input
