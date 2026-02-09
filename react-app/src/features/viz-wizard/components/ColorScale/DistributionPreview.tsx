@@ -6,23 +6,23 @@
 
 import { useMemo } from 'react'
 
-import { getColorPalette } from '../../constants/colorSchemes'
-import type { ColorScheme, ClassificationMethod } from '../../types/visualization'
-import { calculateBreaks, calculateDataStats } from '../../utils/classificationMethods'
+import { getColorPalette } from '@/constants/colorSchemes'
+import type { ColorScheme, ClassificationMethod } from '@/types/visualization'
+import { calculateBreaks, calculateDataStats } from '@/utils/classificationMethods'
 
-interface DataDistributionPreviewProps {
+interface DistributionPreviewProps {
   values: number[];
   colorScheme: ColorScheme;
   classCount: number;
   classificationMethod: ClassificationMethod;
 }
 
-export default function DataDistributionPreview({
+export default function DistributionPreview({
   values,
   colorScheme,
   classCount,
   classificationMethod,
-}: DataDistributionPreviewProps) {
+}: DistributionPreviewProps) {
   const stats = useMemo(() => calculateDataStats(values), [values])
   const breaks = useMemo(
     () => calculateBreaks(values, classificationMethod, classCount),
@@ -30,7 +30,6 @@ export default function DataDistributionPreview({
   )
   const colors = useMemo(() => getColorPalette(colorScheme, classCount), [colorScheme, classCount])
 
-  // Calculate histogram bins
   const histogram = useMemo(() => {
     if (breaks.length < 2) return []
 
@@ -53,7 +52,6 @@ export default function DataDistributionPreview({
 
   return (
     <div className="space-y-2">
-      {/* Statistics Overview */}
       <div className="bg-zinc-50 border border-zinc-200 rounded-md p-2">
         <div className="text-[10px] font-medium text-zinc-600 mb-1.5">Veri İstatistikleri</div>
         <div className="grid grid-cols-2 gap-2 text-[9px]">
@@ -75,7 +73,6 @@ export default function DataDistributionPreview({
           </div>
         </div>
 
-        {/* CV and Skewness Warning */}
         {(stats.cv > 50 || Math.abs(stats.skewness) > 0.3) && (
           <div className="mt-2 pt-2 border-t border-zinc-200">
             <div className="flex items-start gap-1">
@@ -92,24 +89,17 @@ export default function DataDistributionPreview({
         )}
       </div>
 
-      {/* Histogram with Colors */}
       <div className="bg-white border border-zinc-200 rounded-md p-2">
         <div className="text-[10px] font-medium text-zinc-600 mb-2">Veri Dağılımı</div>
-
-        {/* Histogram bars */}
         <div className="space-y-1">
           {histogram.map((bin, index) => {
             const heightPercent = (bin.count / maxCount) * 100
-
             return (
               <div key={index} className="flex items-center gap-1.5">
-                {/* Color indicator */}
                 <div
                   className="w-3 h-3 rounded-sm flex-shrink-0"
                   style={{ backgroundColor: bin.color }}
                 />
-
-                {/* Bar */}
                 <div className="flex-1 relative h-5 bg-zinc-100 rounded-sm overflow-hidden">
                   <div
                     className="h-full rounded-sm transition-all duration-300"
@@ -130,8 +120,6 @@ export default function DataDistributionPreview({
             )
           })}
         </div>
-
-        {/* Legend */}
         <div className="mt-2 pt-2 border-t border-zinc-200">
           <div className="text-[8px] text-zinc-500 leading-relaxed">
             Her çubuk bir renk sınıfını temsil eder. Çubuk uzunluğu o aralıktaki veri sayısını
@@ -140,7 +128,6 @@ export default function DataDistributionPreview({
         </div>
       </div>
 
-      {/* Method Explanation */}
       <div className="bg-blue-50/50 border border-blue-200 rounded-md p-2">
         <div className="flex gap-1.5">
           <i className="fa-solid fa-lightbulb text-blue-600 text-[9px] mt-0.5"></i>

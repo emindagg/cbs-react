@@ -5,14 +5,13 @@
 
 import { useMemo } from 'react'
 
+import { DynamicLegend } from '@/components/Legend'
+import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
 import { Legend } from '@/features/legend-dw'
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
+import { calculateBreaks } from '@/utils/classificationMethods'
 
-import { getInterpolatedColorPalette } from '../../constants/colorSchemes'
-import { useVisualizationStore } from '../../stores/useVisualizationStore'
-import { calculateBreaks } from '../../utils/classificationMethods'
-import { DynamicLegend } from '../Legend'
-
-export default function LegendContainer() {
+export default function Container() {
   const { colorConfig, vizSettings, matchResults, currentVisualization, setLegendConfig } = useVisualizationStore()
 
   // Extract data values - ALWAYS call hooks before any conditional returns

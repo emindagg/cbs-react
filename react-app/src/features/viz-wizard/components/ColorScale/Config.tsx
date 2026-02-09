@@ -5,12 +5,12 @@
 
 import { useState } from 'react'
 
-import { COLOR_SCHEMES } from '../../constants/colorSchemes'
-import type { ColorScheme, InterpolationMethod, ColorScaleType } from '../../types/visualization'
-import { INTERPOLATION_INFO } from '../../utils/classificationMethods'
-import { generateColorScale } from '../../utils/colorInterpolation'
+import { COLOR_SCHEMES } from '@/constants/colorSchemes'
+import type { ColorScheme, InterpolationMethod, ColorScaleType } from '@/types/visualization'
+import { INTERPOLATION_INFO } from '@/utils/classificationMethods'
+import { generateColorScale } from '@/utils/colorInterpolation'
 
-interface ColorScaleConfigProps {
+interface ConfigProps {
   colorScheme: ColorScheme;
   classCount: number;
   scaleType: ColorScaleType;
@@ -51,14 +51,14 @@ const INTERPOLATION_OPTIONS: Array<{
   },
 ]
 
-export default function ColorScaleConfig({
+export default function Config({
   colorScheme,
   classCount,
   scaleType,
   interpolation = 'equidistant',
   onScaleTypeChange,
   onInterpolationChange,
-}: ColorScaleConfigProps) {
+}: ConfigProps) {
   const [localInterpolation, setLocalInterpolation] = useState<InterpolationMethod>(interpolation)
 
   // Generate preview colors
@@ -97,7 +97,6 @@ export default function ColorScaleConfig({
     }
             `}
           >
-            {/* Radio button */}
             <div
               className={`
                 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
@@ -108,8 +107,6 @@ export default function ColorScaleConfig({
                 <div className="w-2 h-2 rounded-full bg-blue-500"></div>
               )}
             </div>
-
-            {/* Color preview - compact */}
             <div className="flex-1 flex gap-px h-4 rounded-sm overflow-hidden">
               {steppedColors.map((color, index) => (
                 <div
@@ -119,8 +116,6 @@ export default function ColorScaleConfig({
                 />
               ))}
             </div>
-
-            {/* Label */}
             <span className="text-[10px] font-medium text-zinc-700">Basamaklı</span>
           </button>
 
@@ -136,7 +131,6 @@ export default function ColorScaleConfig({
     }
             `}
           >
-            {/* Radio button */}
             <div
               className={`
                 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
@@ -147,8 +141,6 @@ export default function ColorScaleConfig({
                 <div className="w-2 h-2 rounded-full bg-blue-500"></div>
               )}
             </div>
-
-            {/* Color preview - compact */}
             <div className="flex-1 flex h-4 rounded-sm overflow-hidden">
               {continuousColors.map((color, index) => (
                 <div
@@ -158,14 +150,11 @@ export default function ColorScaleConfig({
                 />
               ))}
             </div>
-
-            {/* Label */}
             <span className="text-[10px] font-medium text-zinc-700">Sürekli</span>
           </button>
         </div>
       </div>
 
-      {/* Interpolation Dropdown - only for continuous */}
       {scaleType === 'continuous' && (
         <div>
           <div className="flex items-center justify-between mb-1.5">
@@ -177,7 +166,6 @@ export default function ColorScaleConfig({
               ?
             </button>
           </div>
-
           <select
             value={localInterpolation}
             onChange={(e) => handleInterpolationChange(e.target.value as InterpolationMethod)}
@@ -189,8 +177,6 @@ export default function ColorScaleConfig({
               </option>
             ))}
           </select>
-
-          {/* Description */}
           <p className="text-[9px] text-zinc-400 mt-1 leading-relaxed">
             {INTERPOLATION_OPTIONS.find((o) => o.value === localInterpolation)?.description}
           </p>

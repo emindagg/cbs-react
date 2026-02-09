@@ -3,10 +3,12 @@
  * Configure visualization settings and render (moved from old Step 4)
  */
 
-import ColorScaleConfig from '@/components/visualization/ColorScaleConfig'
-import ColorSchemePreview from '@/components/visualization/ColorSchemePreview'
+import {
+  ColorScaleConfig,
+  ColorSchemePreview,
+  DataDistributionPreview,
+} from '@/features/viz-wizard/components/ColorScale'
 import { CustomRangeConfig } from '@/features/viz-wizard/components/CustomRange'
-import DataDistributionPreview from '@/components/visualization/DataDistributionPreview'
 import { LegendConfig } from '@/features/legend-dw'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
 

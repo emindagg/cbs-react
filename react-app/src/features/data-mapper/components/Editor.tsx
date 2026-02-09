@@ -5,14 +5,14 @@
 
 import { useState } from 'react'
 
-interface DataEditorProps {
+interface EditorProps {
   data: Record<string, unknown>[];
   columns: string[];
   onSave: (updatedData: Record<string, unknown>[]) => void;
   onClose: () => void;
 }
 
-export default function DataEditor({ data, columns, onSave, onClose }: DataEditorProps) {
+export default function Editor({ data, columns, onSave, onClose }: EditorProps) {
   const [editedData, setEditedData] = useState<Record<string, unknown>[]>(
     JSON.parse(JSON.stringify(data)),
   )

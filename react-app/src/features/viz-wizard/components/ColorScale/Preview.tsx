@@ -3,15 +3,14 @@
  * Shows a preview of the selected color scheme
  */
 
-import { COLOR_SCHEMES } from '../../constants/colorSchemes'
-import type { ColorScheme } from '../../types/visualization'
+import { COLOR_SCHEMES } from '@/constants/colorSchemes'
+import type { ColorScheme } from '@/types/visualization'
 
-
-interface ColorSchemePreviewProps {
+interface PreviewProps {
   colorScheme: ColorScheme;
 }
 
-export default function ColorSchemePreview({ colorScheme }: ColorSchemePreviewProps) {
+export default function Preview({ colorScheme }: PreviewProps) {
   const colors = COLOR_SCHEMES[colorScheme]
 
   return (

@@ -38,18 +38,6 @@ export default function MapTitle({
   }
 
   // Drag handlers
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isEditingTitle) return
-    if (!titleRef.current) return
-
-    const rect = titleRef.current.getBoundingClientRect()
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    })
-    setIsDragging(true)
-  }
-
   const handleMouseMove = useCallback((e: MouseEvent) => {
     const x = e.clientX - dragOffset.x
     const y = e.clientY - dragOffset.y
@@ -85,6 +73,18 @@ export default function MapTitle({
 
   // NOW we can do conditional returns after all hooks are called
   if (!visible) return null
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isEditingTitle) return
+    if (!titleRef.current) return
+
+    const rect = titleRef.current.getBoundingClientRect()
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+    setIsDragging(true)
+  }
 
   const handleTitleDoubleClick = () => {
     setIsEditingTitle(true)
