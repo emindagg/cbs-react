@@ -203,7 +203,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
           if (col === selectedProvince) bgColor = COL_COLORS.location
           else if (col === selectedDistrict && locationLevel === 'mixed') bgColor = COL_COLORS.district
           else if (col === selectedData) bgColor = COL_COLORS.data
-          return bgColor ? { backgroundColor: bgColor } : { backgroundColor: undefined }
+          return bgColor ? { backgroundColor: bgColor } : undefined
         },
       }
     })

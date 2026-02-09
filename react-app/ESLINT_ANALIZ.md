@@ -73,6 +73,48 @@
 
 ---
 
+## Kritik warning'ler ve iyileştirme durumu
+
+### 1. Legend / MapTitle / SearchContainer – exhaustive-deps (handleMouseMove / handleSearchSubmit)
+
+| Durum | Açıklama |
+|-------|----------|
+| **Yapılmadı** | `Legend.tsx:72` → `useEffect` dependency array'de `handleMouseMove` eksik. |
+| **Yapılmadı** | `MapTitle.tsx:90` → `useEffect` dependency array'de `handleMouseMove` eksik. |
+| **Yapılmadı** | `SearchContainer.tsx:108` → `useEffect` dependency array'de `handleSearchSubmit` eksik. |
+
+**Nasıl düzeltilir:** Handler'ı `useCallback` ile sarıp dependency listesine eklemek veya (stabil referans istiyorsanız) `useRef` ile tutup effect içinde ref üzerinden çağırmak. Gereksiz re-subscribe’ları önlemek için dependency’yi bilinçli bırakıp satır üstü `// eslint-disable-next-line react-hooks/exhaustive-deps` da kullanılabilir.
+
+---
+
+### 2. alert → toast / snackbar
+
+| Durum | Açıklama |
+|-------|----------|
+| **Yapılmadı** | Projede **toast/snackbar/notification** altyapısı yok (paket veya ortak bileşen yok). |
+| **Yapılmadı** | **alert** kullanılan yerler: `useDataExport.ts` (4), `useFileImport.ts` (3), `useUrlImport.ts` (2), `useMatching.ts` (1), `useVizRender.ts` (2), `SidebarDataCreation.tsx` (4), `VizWizardStep1.tsx` (1). Toplam ~17 kullanım. |
+
+**Nasıl ilerlenir:** Önce `react-hot-toast`, `sonner` veya `notistack` gibi bir kütüphane ekleyip uygulama kökünde Provider kurun; sonra bu dosyalardaki `alert(...)` çağrılarını `toast.success()` / `toast.error()` (veya seçtiğiniz API) ile değiştirin.
+
+---
+
+### 3. max-lines / max-lines-per-function – uzun dosya ve fonksiyonlar
+
+| Durum | Dosya / bileşen | Limit | Mevcut |
+|-------|-----------------|-------|--------|
+| **Yapılmadı** | `CustomRangeConfig.tsx` (fonksiyon) | 200 | 226 |
+| **Yapılmadı** | `DataMapper.tsx` (fonksiyon) | 200 | 387 |
+| **Yapılmadı** | `DataMapper.tsx` (dosya) | 400 | 432 |
+| **Yapılmadı** | `Legend.tsx` (fonksiyon) | 200 | 346 |
+| **Yapılmadı** | `LegendConfig.tsx` (fonksiyon) | 200 | 283 |
+| **Yapılmadı** | `VizWizardStep3.tsx` (fonksiyon) | 200 | 487 |
+| **Yapılmadı** | `VizWizardStep3.tsx` (dosya) | 400 | 549 |
+| **Yapılmadı** | `classificationMethods.ts` (dosya) | 400 | 440 |
+
+**Nasıl ilerlenir:** Bileşenleri alt bileşenlere böl (örn. DataMapper → toolbar, grid, modal ayrı dosyalar); uzun fonksiyonları hook veya yardımcı fonksiyonlara taşı; `classificationMethods` gibi util dosyalarını mantıksal modüllere böl.
+
+---
+
 ## Sonuç
 
 - Feature-based kurallar **tanımlı ve aktif**.
