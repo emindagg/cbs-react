@@ -7,9 +7,9 @@ import type maplibregl from 'maplibre-gl'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { VisualizationManager } from '../../../services/VisualizationManager'
-import { useVisualizationStore } from '../../../stores/useVisualizationStore'
-import type { MatchResults, VisualizationSettings } from '../../../types/visualization'
+import { VisualizationManager } from '@/services/VisualizationManager'
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
+import type { MatchResults, VisualizationSettings } from '@/types/visualization'
 
 interface UseVizRenderProps {
   matchResults: MatchResults

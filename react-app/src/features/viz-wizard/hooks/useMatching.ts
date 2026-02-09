@@ -1,16 +1,16 @@
 /**
  * Matching Hook
- * Handles data matching logic for VizWizardStep3
+ * Handles data matching logic for VizWizardStep2
  */
 
 import type maplibregl from 'maplibre-gl'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { VisualizationManager } from '../../../services/VisualizationManager'
-import type { DistrictInfo, LocationInfo } from '../../../types/geojson'
-import type { MatchResults } from '../../../types/visualization'
-import { ColumnMapper } from '../../../utils/columnMapper'
+import { VisualizationManager } from '@/services/VisualizationManager'
+import type { DistrictInfo, LocationInfo } from '@/types/geojson'
+import type { MatchResults } from '@/types/visualization'
+import { ColumnMapper } from '@/utils/columnMapper'
 
 interface UseMatchingProps {
   rawData: Record<string, unknown>[] | null

@@ -8,7 +8,7 @@ import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import DataMapperModal from '@/components/modals/DataMapperModal'
-import { useMatching } from '@/components/visualization/hooks/useMatching'
+import { useMatching } from '@/features/viz-wizard/hooks/useMatching'
 import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { normalizeTurkishText } from '@/utils/turkishNormalizer'
