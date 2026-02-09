@@ -3,7 +3,7 @@
  * Editable title that appears on the map
  */
 
-import { useState, useRef, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface MapTitleProps {
   title: string;
@@ -50,26 +50,21 @@ export default function MapTitle({
     setIsDragging(true)
   }
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return
-
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     const x = e.clientX - dragOffset.x
     const y = e.clientY - dragOffset.y
-
     const maxX = window.innerWidth - (titleRef.current?.offsetWidth || 0)
     const maxY = window.innerHeight - (titleRef.current?.offsetHeight || 0)
-
     setCustomPosition({
       x: Math.max(0, Math.min(x, maxX)),
       y: Math.max(0, Math.min(y, maxY)),
     })
-  }
+  }, [dragOffset])
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false)
-  }
+  }, [])
 
-  // Focus input when editing starts
   useEffect(() => {
     if (isEditingTitle && inputRef.current) {
       inputRef.current.focus()
@@ -77,7 +72,6 @@ export default function MapTitle({
     }
   }, [isEditingTitle])
 
-  // Add/remove drag event listeners
   useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove)
@@ -87,7 +81,7 @@ export default function MapTitle({
         window.removeEventListener('mouseup', handleMouseUp)
       }
     }
-  }, [isDragging, dragOffset])
+  }, [isDragging, handleMouseMove, handleMouseUp])
 
   // NOW we can do conditional returns after all hooks are called
   if (!visible) return null

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { GlobeToggleButton } from '@/features/globe-view'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -38,23 +38,19 @@ export function SearchContainer({ leftPosition, isSidebarOpen = false }: SearchC
     }
   }, [mapInstance])
 
-  const handleSearchSubmit = async () => {
+  const handleSearchSubmit = useCallback(async () => {
     const trimmedQuery = query.trim()
-
     if (trimmedQuery.length < MIN_QUERY_LENGTH) {
       setError(`En az ${MIN_QUERY_LENGTH} harf girmelisiniz`)
       return
     }
-
     if (!geocoderManagerRef.current) {
       setError('Harita henüz hazır değil')
       return
     }
-
     setIsSearching(true)
     setError(null)
     setResults(null)
-
     try {
       const searchResults = await geocoderManagerRef.current.search(query)
       setResults(searchResults)
@@ -65,7 +61,7 @@ export function SearchContainer({ leftPosition, isSidebarOpen = false }: SearchC
     } finally {
       setIsSearching(false)
     }
-  }
+  }, [query])
 
   const handleResultClick = (feature: GeocoderResult) => {
     if (!geocoderManagerRef.current) return
@@ -88,24 +84,21 @@ export function SearchContainer({ leftPosition, isSidebarOpen = false }: SearchC
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
     }
-
     if (query.trim().length < MIN_QUERY_LENGTH) {
       setResults(null)
       setError(null)
       setIsSearching(false)
       return
     }
-
     debounceTimerRef.current = setTimeout(() => {
       handleSearchSubmit()
     }, DEBOUNCE_DELAY)
-
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current)
       }
     }
-  }, [query])
+  }, [query, handleSearchSubmit])
 
   if (hideControls) return null
 

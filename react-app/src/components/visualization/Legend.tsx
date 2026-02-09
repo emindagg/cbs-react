@@ -3,7 +3,7 @@
  * Flexible legend with position, orientation, and format options
  */
 
-import { useState, useRef, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { LegendBarContent } from './LegendBarContent'
 import type { LegendConfiguration, ColorScaleType } from '../../types/visualization'
@@ -41,24 +41,20 @@ export default function Legend({
     }
   }, [isEditingTitle])
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return
-
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     const x = e.clientX - dragOffset.x
     const y = e.clientY - dragOffset.y
-
     const maxX = window.innerWidth - (legendRef.current?.offsetWidth || 0)
     const maxY = window.innerHeight - (legendRef.current?.offsetHeight || 0)
-
     setPosition({
       x: Math.max(0, Math.min(x, maxX)),
       y: Math.max(0, Math.min(y, maxY)),
     })
-  }
+  }, [dragOffset])
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false)
-  }
+  }, [])
 
   useEffect(() => {
     if (isDragging) {
@@ -69,7 +65,7 @@ export default function Legend({
         window.removeEventListener('mouseup', handleMouseUp)
       }
     }
-  }, [isDragging, dragOffset])
+  }, [isDragging, handleMouseMove, handleMouseUp])
 
   if (!config.visible) return null
 
