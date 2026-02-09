@@ -2,9 +2,9 @@
  * Min / Center / Max input fields for CustomRangeConfig
  */
 
-import type { CustomRangeErrors } from './hooks/useCustomRange'
+import type { CustomRangeErrors } from './useCustomRange'
 
-interface CustomRangeConfigFieldsProps {
+interface ConfigFieldsProps {
   localMin: string
   localCenter: string
   localMax: string
@@ -59,7 +59,7 @@ export function CustomRangeConfigFields({
   autoMin,
   autoCenter,
   autoMax,
-}: CustomRangeConfigFieldsProps) {
+}: ConfigFieldsProps) {
   return (
     <div className="space-y-2.5">
       <FieldInput

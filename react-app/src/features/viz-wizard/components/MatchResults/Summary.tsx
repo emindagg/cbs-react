@@ -3,13 +3,13 @@
  * Displays match statistics and action buttons
  */
 
-import type { MatchResults } from '../../../types/visualization'
+import type { MatchResults } from '@/types/visualization'
 
-interface MatchResultsSummaryProps {
+interface SummaryProps {
   matchResults: MatchResults
 }
 
-export function MatchResultsSummary({ matchResults }: MatchResultsSummaryProps) {
+export function Summary({ matchResults }: SummaryProps) {
   return (
     <div className="bg-white border border-zinc-100 rounded-md p-2.5 shadow-xs">
       {/* Stats grid */}

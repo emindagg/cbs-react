@@ -4,7 +4,7 @@
 
 import { useState } from 'react'
 
-import type { CustomRange } from '../../../types/visualization'
+import type { CustomRange } from '@/types/visualization'
 
 export type CustomRangeErrors = { min?: string; center?: string; max?: string }
 

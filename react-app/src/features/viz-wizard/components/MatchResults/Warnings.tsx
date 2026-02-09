@@ -3,13 +3,13 @@
  * Displays warnings and info messages
  */
 
-import type { MatchResults } from '../../../types/visualization'
+import type { MatchResults } from '@/types/visualization'
 
-interface MatchResultsWarningsProps {
+interface WarningsProps {
   matchResults: MatchResults
 }
 
-export function MatchResultsWarnings({ matchResults }: MatchResultsWarningsProps) {
+export function Warnings({ matchResults }: WarningsProps) {
   return (
     <div className="space-y-1.5">
       {matchResults.ambiguous.length > 0 && (

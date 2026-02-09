@@ -6,7 +6,7 @@
 import { LegendConfig } from '@/features/legend-dw'
 
 import ColorScaleConfig from './ColorScaleConfig'
-import CustomRangeConfig from './CustomRangeConfig'
+import { CustomRangeConfig } from '@/features/viz-wizard/components/CustomRange'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
 
 interface DatawrapperStyleConfigProps {

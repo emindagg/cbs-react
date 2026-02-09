@@ -4,7 +4,6 @@
  */
 
 export { default as ColorScaleConfig } from './ColorScaleConfig'
-export { default as CustomRangeConfig } from './CustomRangeConfig'
 export { default as LegendContainer } from './LegendContainer'
 export { default as MapTitle } from './MapTitle'
 export { default as DatawrapperStyleConfig } from './DatawrapperStyleConfig'

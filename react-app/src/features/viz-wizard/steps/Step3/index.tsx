@@ -5,7 +5,7 @@
 
 import ColorScaleConfig from '@/components/visualization/ColorScaleConfig'
 import ColorSchemePreview from '@/components/visualization/ColorSchemePreview'
-import CustomRangeConfig from '@/components/visualization/CustomRangeConfig'
+import { CustomRangeConfig } from '@/features/viz-wizard/components/CustomRange'
 import DataDistributionPreview from '@/components/visualization/DataDistributionPreview'
 import { LegendConfig } from '@/features/legend-dw'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'

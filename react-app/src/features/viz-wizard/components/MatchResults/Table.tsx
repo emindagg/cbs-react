@@ -5,15 +5,15 @@
 
 import { useState } from 'react'
 
-import type { MatchResults } from '../../types/visualization'
+import type { MatchResults } from '@/types/visualization'
 
-interface MatchResultsTableProps {
+interface TableProps {
   matchResults: MatchResults;
   dataColumn: string | null;
   onEdit?: (rowIndex: number, newValue: string) => void;
 }
 
-export default function MatchResultsTable({ matchResults, dataColumn, onEdit }: MatchResultsTableProps) {
+export default function Table({ matchResults, dataColumn, onEdit }: TableProps) {
   const [editingRow, setEditingRow] = useState<number | null>(null)
   const [editValue, setEditValue] = useState('')
   const allResults = [

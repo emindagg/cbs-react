@@ -3,9 +3,9 @@
  * Allows manual setting of min, center, and max values for color scale
  */
 
-import { CustomRangeConfigFields } from './CustomRangeConfigFields'
-import { useCustomRange } from './hooks/useCustomRange'
-import type { CustomRange } from '../../types/visualization'
+import type { CustomRange } from '@/types/visualization'
+import { CustomRangeConfigFields } from './ConfigFields'
+import { useCustomRange } from './useCustomRange'
 
 interface CustomRangeConfigProps {
   customRange: CustomRange
