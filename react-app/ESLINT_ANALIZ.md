@@ -107,9 +107,8 @@
 | Durum | Dosya / bileşen | Limit | Mevcut |
 |-------|-----------------|-------|--------|
 | **Yapıldı** | VizWizardStep3 (refactor) | 300/600 | ~333 satır |
-| **Kalan** | `DataMapper.tsx` (fonksiyon) | 300 | ~387 |
-| **Kalan** | `DataMapper.tsx` (dosya) | 600 | ~432 |
-| **Kalan** | `Legend.tsx` (fonksiyon) | 300 | ~346 |
+| **Yapıldı** | DataMapper (refactor) | 300/600 | ~254 satır (toolbar, sidebar form, grid, hook ayrıldı) |
+| **Yapıldı** | Legend (refactor) | 300/600 | ~182 satır (LegendBarContent, legendItemGenerators ayrıldı) |
 | **Kalan** | `LegendConfig.tsx` (fonksiyon) | 300 | 283 |
 | **Kalan** | `CustomRangeConfig.tsx` (fonksiyon) | 300 | 226 |
 | **Kalan** | `classificationMethods.ts` (dosya) | 600 | 440 |
