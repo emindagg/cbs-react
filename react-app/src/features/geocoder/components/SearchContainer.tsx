@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 import { GlobeToggleButton } from '@/features/globe-view'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMapStore } from '@/stores/useMapStore'
 
 import { SearchResults } from './SearchResults'
@@ -9,6 +10,7 @@ import { GeocoderManager, type GeocoderResponse, type GeocoderResult } from '../
 
 interface SearchContainerProps {
   leftPosition: string;
+  isSidebarOpen?: boolean;
 }
 
 const MIN_QUERY_LENGTH = 3
@@ -18,9 +20,11 @@ const DEBOUNCE_DELAY = 500 // ms
  * SearchContainer Component
  * Horizontal search bar with geocoder, layers, globe, storymap buttons
  */
-export function SearchContainer({ leftPosition }: SearchContainerProps) {
+export function SearchContainer({ leftPosition, isSidebarOpen = false }: SearchContainerProps) {
   const { isOpen, query, setQuery, open, close, inputRef } = useGeocoder()
   const { mapInstance } = useMapStore()
+  const isMobile = !useMediaQuery('(min-width: 768px)')
+  const hideControls = isMobile && isSidebarOpen
   const [results, setResults] = useState<GeocoderResponse | null>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -102,6 +106,8 @@ export function SearchContainer({ leftPosition }: SearchContainerProps) {
       }
     }
   }, [query])
+
+  if (hideControls) return null
 
   return (
     <div

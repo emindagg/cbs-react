@@ -89,7 +89,7 @@ export default function AppLayout() {
       </div>
 
       {/* Search Container (Horizontal) */}
-      <SearchContainer leftPosition={searchLeft} />
+      <SearchContainer leftPosition={searchLeft} isSidebarOpen={isSidebarOpen} />
 
       {/* Astronomy Feature */}
       <AstroPanel />

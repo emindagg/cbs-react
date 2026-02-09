@@ -4,10 +4,9 @@ export default function SidebarFooter() {
       <div className="flex items-center justify-between text-[10px] text-zinc-600 mb-2">
         <div className="flex items-center">
           <i className="fa-solid fa-globe text-emerald-600 mr-1"></i>
-          <span>CBS Platform v3.5.0</span>
+          <span>CBS Platform v0.1 Beta</span>
         </div>
         <div className="flex items-center space-x-3">
-          <span className="flex items-center"><i className="fa-solid fa-map-pin text-emerald-600 mr-1"></i>GIS</span>
           <span className="flex items-center"><i className="fa-solid fa-chart-area text-emerald-600 mr-1"></i>Analiz</span>
           <span className="flex items-center"><i className="fa-solid fa-layer-group text-emerald-600 mr-1"></i>Katman</span>
         </div>
