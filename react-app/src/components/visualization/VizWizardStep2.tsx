@@ -215,7 +215,7 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
             </>
           ) : (
             <>
-              Ileri
+              İleri
               <i className="fa-solid fa-chevron-right ml-1 text-[9px]"></i>
             </>
           )}

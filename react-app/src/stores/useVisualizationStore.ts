@@ -85,7 +85,7 @@ const defaultColumnMapping: ColumnMapping = {
 const defaultVizSettings: VisualizationSettings = {
   type: 'choropleth',
   classCount: 5,
-  classificationMethod: 'quantile',
+  classificationMethod: 'jenks',
   colorScheme: 'greenBlue',
   legendType: 'discrete',
 }

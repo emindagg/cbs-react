@@ -47,16 +47,16 @@ const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
 ]
 
 const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; description: string }[] = [
+  {
+    value: 'jenks',
+    label: 'Doğal Kırılmalar (Jenks)',
+    description: 'Verideki doğal grupları bulur',
+  },
   { value: 'equal', label: 'Doğrusal (Eşit Aralık)', description: 'Eşit genişlikte aralıklar' },
   {
     value: 'quantile',
     label: 'Çeyrekler (Eşit Sayı)',
     description: 'Her sınıfta eşit sayıda öğe',
-  },
-  {
-    value: 'jenks',
-    label: 'Doğal Kırılmalar (Jenks)',
-    description: 'Verideki doğal grupları bulur',
   },
   {
     value: 'kmeans',

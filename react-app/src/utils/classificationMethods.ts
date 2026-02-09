@@ -230,12 +230,20 @@ function calculateJenksBreaks(sortedValues: number[], numClasses: number): numbe
   // Remove any duplicates and ensure sorted
   let uniqueBreaks = [...new Set(breaks)].sort((a, b) => a - b)
 
-  // Ensure we have exactly numClasses + 1 breaks
-  if (uniqueBreaks.length < numClasses + 1) {
-    console.warn(
-      `Jenks: ${uniqueBreaks.length} breaks found, ${numClasses + 1} needed. Using quantile.`,
-    )
-    return calculateBreaks(sortedValues, 'quantile', numClasses)
+  // If we have fewer breaks than needed, interpolate within widest gaps
+  while (uniqueBreaks.length < numClasses + 1) {
+    let widestIdx = 0
+    let widestGap = 0
+    for (let i = 0; i < uniqueBreaks.length - 1; i++) {
+      const gap = uniqueBreaks[i + 1] - uniqueBreaks[i]
+      if (gap > widestGap) {
+        widestGap = gap
+        widestIdx = i
+      }
+    }
+    if (widestGap === 0) break
+    const mid = (uniqueBreaks[widestIdx] + uniqueBreaks[widestIdx + 1]) / 2
+    uniqueBreaks.splice(widestIdx + 1, 0, mid)
   }
 
   // If we have more than needed, trim to exact count

@@ -12,6 +12,7 @@ import {
   TextEditorModule,
   NumberEditorModule,
   CellStyleModule,
+  RenderApiModule,
   ValidationModule,
 } from 'ag-grid-community'
 import type { ColDef, CellValueChangedEvent, ICellRendererParams } from 'ag-grid-community'
@@ -25,6 +26,7 @@ ModuleRegistry.registerModules([
   TextEditorModule,
   NumberEditorModule,
   CellStyleModule,
+  RenderApiModule,
   ...(process.env.NODE_ENV !== 'production' ? [ValidationModule] : []),
 ])
 
