@@ -72,14 +72,14 @@ export default function AppLayout() {
       </aside>
 
       {/* Map */}
-      <main id="map-main" className="h-full w-full relative z-map">
+      <main id="map-main" className="h-full w-full relative z-map isolate">
         <MapContainer />
       </main>
 
       {/* Map Control Stack (Vertical) */}
       <div
         id="map-control-container"
-        className="fixed top-3 z-10001 transition-all duration-300 ease-in-out"
+        className="fixed top-3 z-1500 transition-all duration-300 ease-in-out"
         style={{ left: controlsLeft }}
       >
         <MapControlStack

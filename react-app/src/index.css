@@ -378,6 +378,7 @@ body {
 /* Z-Index Management */
 .z-map {
     z-index: 1;
+    isolation: isolate; /* MapLibre kontrollerini kendi stacking context'inde tut */
 }
 
 .z-controls {
@@ -398,6 +399,12 @@ body {
 
 .z-toast {
     z-index: 3000;
+}
+
+/* Modal açıkken MapLibre kontrollerinin modal altında kalmasını garanti et */
+.maplibregl-ctrl-group,
+.maplibregl-ctrl {
+    z-index: auto !important;
 }
 
 
