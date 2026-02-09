@@ -5,10 +5,11 @@
 
 import { useState } from 'react'
 
-import { useVizRender } from '@/features/viz-wizard/hooks/useVizRender'
-import { useVizSuggestion } from '@/features/viz-wizard/hooks/useVizSuggestion'
 import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
+
+import { useVizRender } from '../../hooks/useVizRender'
+import { useVizSuggestion } from '../../hooks/useVizSuggestion'
 
 export function useVizWizardStep3() {
   const {

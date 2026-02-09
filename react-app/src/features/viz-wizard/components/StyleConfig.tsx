@@ -5,6 +5,7 @@
 
 import { LegendConfig } from '@/features/legend-dw'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
+
 import { ColorScaleConfig } from './ColorScale'
 import { CustomRangeConfig } from './CustomRange'
 

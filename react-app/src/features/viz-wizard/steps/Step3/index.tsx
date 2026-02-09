@@ -3,12 +3,6 @@
  * Configure visualization settings and render (moved from old Step 4)
  */
 
-import {
-  ColorScaleConfig,
-  ColorSchemePreview,
-  DataDistributionPreview,
-} from '@/features/viz-wizard/components/ColorScale'
-import { CustomRangeConfig } from '@/features/viz-wizard/components/CustomRange'
 import { LegendConfig } from '@/features/legend-dw'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
 
@@ -16,6 +10,12 @@ import { MapTitleSection } from './components/MapTitleSection'
 import { StepsSection } from './components/StepsSection'
 import { SymbolSettings } from './components/SymbolSettings'
 import { useVizWizardStep3 } from './useVizWizardStep3'
+import {
+  ColorScaleConfig,
+  ColorSchemePreview,
+  DataDistributionPreview,
+} from '../../components/ColorScale'
+import { CustomRangeConfig } from '../../components/CustomRange'
 
 interface VizWizardStep3Props {
   onBack: () => void;

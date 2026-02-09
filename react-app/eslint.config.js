@@ -35,17 +35,17 @@ export default [
     },
     rules: {
       // ========================================
-      // FEATURE-BASED ARCHITECTURE RULES
+      // FEATURE-FIRST / PRAGMATIK LİMİTLER (KURAL 3)
       // ========================================
 
-      // Dosya boyutu limitleri (modern React / pragmatik standartlar)
+      // Dosya: 600 satır (Rule dosyası ile uyumlu)
       'max-lines': ['warn', {
         max: 600,
         skipBlankLines: true,
         skipComments: true,
       }],
 
-      // Fonksiyon boyutu limiti (wizard/modallar için esnek)
+      // Fonksiyon: 300 satır (wizard/modallar için pragmatik)
       'max-lines-per-function': ['warn', {
         max: 300,
         skipBlankLines: true,
@@ -80,6 +80,25 @@ export default [
 
       // Named export var mı kontrol et
       'import/named': 'error',
+
+      // Feature-First: domain kodu src/features altında; components/visualization yasak
+      // KURAL 2: Derin feature import yasak — sadece barrel (index) kullan: @/features/name
+      'no-restricted-imports': ['error', {
+        paths: [{
+          name: '@/components/visualization',
+          message: 'Feature-First: domain kodu src/features altındadır. @/features/viz-wizard, @/features/legend-dw veya @/features/data-mapper kullanın.',
+        }],
+        patterns: [
+          {
+            group: ['**/components/visualization', '**/components/visualization/*'],
+            message: 'Feature-First: domain kodu src/features altındadır. @/features/viz-wizard, @/features/legend-dw veya @/features/data-mapper kullanın.',
+          },
+          {
+            group: ['@/features/*/*', '@/features/*/*/*'],
+            message: "Cross-feature imports must use the public barrel (e.g. '@/features/auth'). Do not import deep internal files. Use relative paths inside the same feature.",
+          },
+        ],
+      }],
 
       // ========================================
       // TYPESCRIPT STRICT RULES
@@ -186,6 +205,29 @@ export default [
       // Indent 2 spaces
       '@stylistic/indent': ['error', 2, {
         SwitchCase: 1,
+      }],
+    },
+  },
+
+  // Feature-First KURAL 1: src/components (global) feature'lardan import edemez (warn = hedef mimari, mevcut kod geçiş sonrası error yapılabilir)
+  {
+    files: ['src/components/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['warn', {
+        paths: [{
+          name: '@/components/visualization',
+          message: 'Feature-First: domain kodu src/features altındadır.',
+        }],
+        patterns: [
+          {
+            group: ['**/components/visualization', '**/components/visualization/*'],
+            message: 'Feature-First: domain kodu src/features altındadır.',
+          },
+          {
+            group: ['@/features/*', '@/features/*/*', '../features/*', '../features/*/*'],
+            message: "Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic.",
+          },
+        ],
       }],
     },
   },

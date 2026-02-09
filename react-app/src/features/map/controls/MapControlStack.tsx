@@ -1,5 +1,5 @@
 import { useAstroStore } from '@/features/astronomy'
-import BasemapSwitcher from '@/features/basemap/components/BasemapSwitcher'
+import { BasemapSwitcher } from '@/features/basemap'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 import { ZoomControls } from './ZoomControls'

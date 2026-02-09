@@ -4,6 +4,7 @@
  */
 
 import type { CustomRange } from '@/types/visualization'
+
 import { CustomRangeConfigFields } from './ConfigFields'
 import { useCustomRange } from './useCustomRange'
 
