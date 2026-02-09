@@ -12,7 +12,7 @@ import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { normalizeTurkishText } from '@/utils/turkishNormalizer'
 
-import { useMatching } from '../../hooks/useMatching'
+import { useMatching } from '../hooks/useMatching'
 
 interface VizWizardStep2Props {
   onBack: () => void
