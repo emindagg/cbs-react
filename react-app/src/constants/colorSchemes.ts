@@ -1,12 +1,14 @@
 /**
  * Color Schemes for Choropleth Maps
  * Pre-defined color palettes for data visualization
- * Enhanced with Datawrapper-style interpolation support
+ * Chroma.js-based color interpolation
  */
+
+import chroma from 'chroma-js'
 
 import type { ColorScheme, InterpolationMethod } from '../types/visualization'
 import { normalizeValue } from '../utils/classificationMethods'
-import { generateColorScale, interpolateColor, type ColorSpace } from '../utils/colorInterpolation'
+import { type ColorSpace, generateColorScale } from '../utils/colorInterpolation'
 
 export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
   // Original Viridis
@@ -190,7 +192,7 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
 
 /**
  * Get color palette for a given class count
- * Uses simple sampling from the base palette
+ * Uses Chroma.js for intelligent color sampling
  */
 export function getColorPalette(colorScheme: ColorScheme, classCount: number): string[] {
   const fullPalette = COLOR_SCHEMES[colorScheme]
@@ -198,14 +200,8 @@ export function getColorPalette(colorScheme: ColorScheme, classCount: number): s
   if (classCount <= 1) return [fullPalette[0]]
   if (classCount >= fullPalette.length) return [...fullPalette]
 
-  // Evenly sample from full palette
-  const palette: string[] = []
-  for (let i = 0; i < classCount; i++) {
-    const index = Math.round(i * (fullPalette.length - 1) / (classCount - 1))
-    palette.push(fullPalette[index])
-  }
-
-  return palette
+  // Use Chroma.js for smooth color sampling
+  return chroma.scale(fullPalette).mode('lab').colors(classCount)
 }
 
 /**
@@ -229,29 +225,38 @@ export function getInterpolatedColorPalette(
 }
 
 /**
+ * Scale cache to avoid recreating scales on every call
+ */
+const scaleCache = new Map<string, chroma.Scale>()
+
+/**
+ * Get or create a cached Chroma.js scale
+ */
+function getColorScale(colorScheme: ColorScheme, colorSpace: ColorSpace = 'lab'): chroma.Scale {
+  const mode = colorSpace === 'hcl' ? 'lch' : colorSpace
+  const cacheKey = `${colorScheme}-${mode}`
+
+  if (!scaleCache.has(cacheKey)) {
+    const colors = COLOR_SCHEMES[colorScheme]
+    const scale = chroma.scale(colors).mode(mode as chroma.InterpolationMode).domain([0, 1])
+    scaleCache.set(cacheKey, scale)
+  }
+
+  return scaleCache.get(cacheKey)!
+}
+
+/**
  * Get continuous color for a normalized value (0-1)
- * Uses smooth interpolation in specified color space
+ * Uses cached Chroma.js scale for smooth interpolation
  */
 export function getContinuousColor(
   value: number,
   colorScheme: ColorScheme,
   colorSpace: ColorSpace = 'lab',
 ): string {
-  const colors = COLOR_SCHEMES[colorScheme]
   const normalizedValue = Math.max(0, Math.min(1, value))
-
-  // Calculate position in color array
-  const position = normalizedValue * (colors.length - 1)
-  const lowerIndex = Math.floor(position)
-  const upperIndex = Math.ceil(position)
-
-  if (lowerIndex === upperIndex) {
-    return colors[lowerIndex]
-  }
-
-  // Interpolate between adjacent colors
-  const t = position - lowerIndex
-  return interpolateColor(colors[lowerIndex], colors[upperIndex], t, colorSpace)
+  const scale = getColorScale(colorScheme, colorSpace)
+  return scale(normalizedValue).hex()
 }
 
 /**

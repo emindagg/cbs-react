@@ -28,11 +28,9 @@ const VIZ_TYPES: { value: VizType; label: string; description: string }[] = [
 ]
 
 const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
-  // Original
-  { value: 'viridis', label: 'Viridis' },
-
   // Datawrapper Sequential
   { value: 'greenBlue', label: 'Yeşil-Mavi' },
+  { value: 'viridis', label: 'Viridis' },
   { value: 'sunset', label: 'Gün Batımı' },
   { value: 'plasma', label: 'Plasma' },
   { value: 'yellowGreen', label: 'Sarı-Yeşil' },
@@ -110,19 +108,23 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
           if (type === 'continuous') {
             setVizSettings({
               classificationMethod: 'continuous-linear',
+              legendType: 'continuous',
               interpolation: colorConfig.interpolation ?? 'equidistant',
             })
           } else {
-            setVizSettings({ classificationMethod: 'equal' })
+            setVizSettings({
+              classificationMethod: 'equal',
+              legendType: 'discrete',
+            })
           }
         }}
         onInterpolationChange={(interpolation) => {
           setColorConfig({ interpolation })
           const methodMap: Record<string, ClassificationMethod> = {
             equidistant: 'continuous-linear',
+            'quantiles-4': 'continuous-quantile',
             'quantiles-5': 'continuous-quantile',
-            'quantiles-6': 'continuous-quantile',
-            'quantiles-11': 'continuous-quantile',
+            'quantiles-10': 'continuous-quantile',
             'natural-9': 'continuous-natural',
           }
           setVizSettings({

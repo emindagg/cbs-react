@@ -4,7 +4,7 @@
  */
 
 import type maplibregl from 'maplibre-gl'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
 import { VisualizationManager } from '@/services/VisualizationManager'
@@ -30,6 +30,24 @@ export function useVizRender({
   const [isRendering, setIsRendering] = useState(false)
   const [hasRendered, setHasRendered] = useState(false)
   const { setCurrentVisualization } = useVisualizationStore()
+
+  // Görselleştirmeyi etkileyen ayarlar değişince (çeyrek, jenks, sınıf sayısı vb.) haritayı otomatik güncelle
+  const vizKey = `${vizSettings.classificationMethod}-${vizSettings.classCount}-${vizSettings.colorScheme}-${vizSettings.type}-${vizSettings.legendType || 'steps'}-${vizSettings.interpolation || 'equidistant'}`
+  const prevVizKeyRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!hasRendered || !map) return
+    if (prevVizKeyRef.current === null) {
+      prevVizKeyRef.current = vizKey
+      return
+    }
+    if (prevVizKeyRef.current !== vizKey) {
+      prevVizKeyRef.current = vizKey
+      void handleRender()
+    }
+    // Sadece vizKey/hasRendered/map değişince tetikle; handleRender her render'da yeniden oluştuğu için deps'e eklenmez
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vizKey, hasRendered, map])
 
   const handleRender = async () => {
     if (!map) {

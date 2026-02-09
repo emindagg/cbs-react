@@ -133,9 +133,9 @@ export interface MatchSummary {
  */
 export type InterpolationMethod =
   | 'equidistant'      // Linear/Equal intervals
-  | 'quantiles-5'      // Quartiles (4 classes)
-  | 'quantiles-6'      // Quintiles (5 classes)
-  | 'quantiles-11'     // Deciles (10 classes)
+  | 'quantiles-4'      // Quartiles (4 classes)
+  | 'quantiles-5'      // Quintiles (5 classes)
+  | 'quantiles-10'     // Deciles (10 classes)
   | 'natural-9'        // Natural breaks (Jenks)
 
 export type ColorScaleType = 'steps' | 'continuous'

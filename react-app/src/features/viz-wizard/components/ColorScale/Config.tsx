@@ -30,19 +30,19 @@ const INTERPOLATION_OPTIONS: Array<{
     description: INTERPOLATION_INFO['equidistant'].description,
   },
   {
+    value: 'quantiles-4',
+    label: INTERPOLATION_INFO['quantiles-4'].name,
+    description: INTERPOLATION_INFO['quantiles-4'].description,
+  },
+  {
     value: 'quantiles-5',
     label: INTERPOLATION_INFO['quantiles-5'].name,
     description: INTERPOLATION_INFO['quantiles-5'].description,
   },
   {
-    value: 'quantiles-6',
-    label: INTERPOLATION_INFO['quantiles-6'].name,
-    description: INTERPOLATION_INFO['quantiles-6'].description,
-  },
-  {
-    value: 'quantiles-11',
-    label: INTERPOLATION_INFO['quantiles-11'].name,
-    description: INTERPOLATION_INFO['quantiles-11'].description,
+    value: 'quantiles-10',
+    label: INTERPOLATION_INFO['quantiles-10'].name,
+    description: INTERPOLATION_INFO['quantiles-10'].description,
   },
   {
     value: 'natural-9',

@@ -536,15 +536,15 @@ export function calculateBreaksFromInterpolation(
       // Linear - equal intervals
       return calculateBreaks(sorted, 'equal', 5)
 
-    case 'quantiles-5':
+    case 'quantiles-4':
       // Quartiles - 4 classes
       return calculateBreaks(sorted, 'quantile', 4)
 
-    case 'quantiles-6':
+    case 'quantiles-5':
       // Quintiles - 5 classes
       return calculateBreaks(sorted, 'quantile', 5)
 
-    case 'quantiles-11':
+    case 'quantiles-10':
       // Deciles - 10 classes
       return calculateBreaks(sorted, 'quantile', 10)
 
@@ -562,11 +562,11 @@ export function calculateBreaksFromInterpolation(
  */
 export function getClassCountFromInterpolation(interpolation: InterpolationMethod): number {
   switch (interpolation) {
-    case 'quantiles-5':
+    case 'quantiles-4':
       return 4
-    case 'quantiles-6':
+    case 'quantiles-5':
       return 5
-    case 'quantiles-11':
+    case 'quantiles-10':
       return 10
     case 'natural-9':
       return 9
@@ -587,17 +587,17 @@ export const INTERPOLATION_INFO: Record<
     description: 'Eşit aralıklarla değer dağılımı',
     classes: 5,
   },
-  'quantiles-5': {
-    name: 'Çeyrekler',
+  'quantiles-4': {
+    name: 'Dörtlükler',
     description: 'Her sınıfta eşit sayıda gözlem (4 grup)',
     classes: 4,
   },
-  'quantiles-6': {
+  'quantiles-5': {
     name: 'Beşlikler',
     description: 'Her sınıfta eşit sayıda gözlem (5 grup)',
     classes: 5,
   },
-  'quantiles-11': {
+  'quantiles-10': {
     name: 'Onluklar',
     description: 'Her sınıfta eşit sayıda gözlem (10 grup)',
     classes: 10,
