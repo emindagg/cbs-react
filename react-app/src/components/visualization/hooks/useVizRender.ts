@@ -5,6 +5,7 @@
 
 import type maplibregl from 'maplibre-gl'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 import { VisualizationManager } from '../../../services/VisualizationManager'
 import { useVisualizationStore } from '../../../stores/useVisualizationStore'
@@ -32,8 +33,7 @@ export function useVizRender({
 
   const handleRender = async () => {
     if (!map) {
-      // eslint-disable-next-line no-alert
-      alert('Harita bulunamadı!')
+      toast.error('Harita bulunamadı!')
       return
     }
 
@@ -51,8 +51,7 @@ export function useVizRender({
       }))
 
       if (successfulData.length === 0) {
-        // eslint-disable-next-line no-alert
-        alert('Görselleştirilecek veri yok!')
+        toast.error('Görselleştirilecek veri yok!')
         return
       }
 
@@ -88,8 +87,7 @@ export function useVizRender({
       setHasRendered(true)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
-      // eslint-disable-next-line no-alert
-      alert('Görselleştirme hatası: ' + message)
+      toast.error('Görselleştirme hatası: ' + message)
     } finally {
       setIsRendering(false)
     }

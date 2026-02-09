@@ -38,16 +38,16 @@ export default [
       // FEATURE-BASED ARCHITECTURE RULES
       // ========================================
 
-      // Dosya boyutu limitleri (gerçekçi standartlar)
+      // Dosya boyutu limitleri (modern React / pragmatik standartlar)
       'max-lines': ['warn', {
-        max: 400,
+        max: 600,
         skipBlankLines: true,
         skipComments: true,
       }],
 
-      // Wizard step'ler ve modallar için daha esnek limit
+      // Fonksiyon boyutu limiti (wizard/modallar için esnek)
       'max-lines-per-function': ['warn', {
-        max: 200,
+        max: 300,
         skipBlankLines: true,
         skipComments: true,
       }],

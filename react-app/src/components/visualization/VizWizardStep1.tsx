@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
 import { ColumnMapper } from '../../utils/columnMapper'
@@ -52,8 +53,7 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
       }, 500)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
-      // eslint-disable-next-line no-alert
-      alert('Dosya yüklenemedi: ' + message)
+      toast.error('Dosya yüklenemedi: ' + message)
     } finally {
       setIsLoading(false)
     }

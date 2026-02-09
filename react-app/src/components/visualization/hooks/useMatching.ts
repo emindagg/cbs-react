@@ -5,6 +5,7 @@
 
 import type maplibregl from 'maplibre-gl'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 import { VisualizationManager } from '../../../services/VisualizationManager'
 import type { DistrictInfo, LocationInfo } from '../../../types/geojson'
@@ -134,8 +135,7 @@ export function useMatching({
       return results
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
-      // eslint-disable-next-line no-alert
-      alert('Eşleştirme hatası: ' + message)
+      toast.error('Eşleştirme hatası: ' + message)
       return null
     } finally {
       setIsMatching(false)

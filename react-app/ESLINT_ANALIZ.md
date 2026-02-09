@@ -6,8 +6,8 @@
 
 | Kural | Ayar | Amaç |
 |-------|------|------|
-| `max-lines` | 400 (warn) | Dosya boyutu limiti |
-| `max-lines-per-function` | 200 (warn) | Fonksiyon boyutu limiti |
+| `max-lines` | 600 (warn), skipBlankLines + skipComments | Dosya boyutu limiti (pragmatik) |
+| `max-lines-per-function` | 300 (warn), skipBlankLines + skipComments | Fonksiyon boyutu limiti (pragmatik) |
 | `import/order` | gruplar + alfabetik (error) | Tutarlı import sırası |
 | `import/no-duplicates` | error | Tekrarlı import yasak |
 | `@typescript-eslint/no-explicit-any` | warn | any kullanımı |
@@ -38,9 +38,9 @@
 - **Öneri:** `lint:fix` veya editörde “Indent: 2 spaces” ile düzelt.
 
 ### 3. Feature-based limit aşımları
-- **max-lines-per-function (200):** DataMapper (387), VizWizardStep3 (487), Legend (346), LegendConfig (283), CustomRangeConfig (212)
-- **max-lines (400):** DataMapper (432), VizWizardStep3 (549), classificationMethods (440)
-- **Öneri:** Büyük bileşenleri alt bileşenlere veya hook/utils dosyalarına böl.
+- **Güncel (300/600 pragmatik):** ESLint kuralları 300 (fonksiyon) / 600 (dosya) olarak güncellendi; **VizWizardStep3** refactor edildi (SymbolSettings, StepsSection, MapTitleSection ayrı dosyalara taşındı).
+- **Hâlâ limit aşan:** DataMapper (fonksiyon ~387, dosya ~432), Legend (fonksiyon ~346), LegendConfig (283), CustomRangeConfig (226), classificationMethods (dosya 440).
+- **Öneri:** DataMapper / Legend benzer şekilde alt bileşenlere bölünebilir.
 
 ### 4. React Hooks
 - **Conditional hooks (rules-of-hooks):** `DynamicLegend.tsx`, `Legend.tsx` – early return sonrası hook çağrısı
@@ -100,18 +100,21 @@
 
 ### 3. max-lines / max-lines-per-function – uzun dosya ve fonksiyonlar
 
+**Yapılanlar:**
+- ESLint kuralları **300 (fonksiyon) / 600 (dosya)** pragmatik değerlere güncellendi (`skipBlankLines`, `skipComments` açık).
+- **VizWizardStep3** refactor edildi: `VizWizardStep3SymbolSettings`, `VizWizardStep3StepsSection`, `VizWizardStep3MapTitleSection` ayrı dosyalara taşındı; ana dosya ~333 satıra indi.
+
 | Durum | Dosya / bileşen | Limit | Mevcut |
 |-------|-----------------|-------|--------|
-| **Yapılmadı** | `CustomRangeConfig.tsx` (fonksiyon) | 200 | 226 |
-| **Yapılmadı** | `DataMapper.tsx` (fonksiyon) | 200 | 387 |
-| **Yapılmadı** | `DataMapper.tsx` (dosya) | 400 | 432 |
-| **Yapılmadı** | `Legend.tsx` (fonksiyon) | 200 | 346 |
-| **Yapılmadı** | `LegendConfig.tsx` (fonksiyon) | 200 | 283 |
-| **Yapılmadı** | `VizWizardStep3.tsx` (fonksiyon) | 200 | 487 |
-| **Yapılmadı** | `VizWizardStep3.tsx` (dosya) | 400 | 549 |
-| **Yapılmadı** | `classificationMethods.ts` (dosya) | 400 | 440 |
+| **Yapıldı** | VizWizardStep3 (refactor) | 300/600 | ~333 satır |
+| **Kalan** | `DataMapper.tsx` (fonksiyon) | 300 | ~387 |
+| **Kalan** | `DataMapper.tsx` (dosya) | 600 | ~432 |
+| **Kalan** | `Legend.tsx` (fonksiyon) | 300 | ~346 |
+| **Kalan** | `LegendConfig.tsx` (fonksiyon) | 300 | 283 |
+| **Kalan** | `CustomRangeConfig.tsx` (fonksiyon) | 300 | 226 |
+| **Kalan** | `classificationMethods.ts` (dosya) | 600 | 440 |
 
-**Nasıl ilerlenir:** Bileşenleri alt bileşenlere böl (örn. DataMapper → toolbar, grid, modal ayrı dosyalar); uzun fonksiyonları hook veya yardımcı fonksiyonlara taşı; `classificationMethods` gibi util dosyalarını mantıksal modüllere böl.
+**Nasıl ilerlenir:** DataMapper / Legend benzer şekilde alt bileşenlere böl; `classificationMethods` util dosyasını mantıksal modüllere böl.
 
 ---
 

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 import { useDataStore } from '@/stores/useDataStore'
 
@@ -13,7 +14,7 @@ export function useDataExport() {
 
   const handleExport = () => {
     if (items.length === 0) {
-      alert('Dışa aktarılacak veri bulunamadı.')
+      toast.error('Dışa aktarılacak veri bulunamadı.')
       return
     }
 
@@ -40,13 +41,13 @@ export function useDataExport() {
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
 
-        alert('Proje GeoJSON olarak indirildi.')
+        toast.success('Proje GeoJSON olarak indirildi.')
       } else {
-        alert(`${exportFormat.toUpperCase()} formatı henüz tam desteklenmemektedir (Sadece GeoJSON export aktiftir).`)
+        toast.error(`${exportFormat.toUpperCase()} formatı henüz tam desteklenmemektedir (Sadece GeoJSON export aktiftir).`)
       }
     } catch (error) {
       console.error('Export error:', error)
-      alert('Dışa aktarma sırasında hata oluştu.')
+      toast.error('Dışa aktarma sırasında hata oluştu.')
     }
   }
 

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import toast from 'react-hot-toast'
 
 import { useDataStore } from '@/stores/useDataStore'
 
@@ -37,12 +38,12 @@ export function useFileImport() {
         setShowMapper(true)
       } else if (result.items && result.items.length > 0) {
         addItems(result.items)
-        alert(`${result.items.length} adet veri başarıyla yüklendi.`)
+        toast.success(`${result.items.length} adet veri başarıyla yüklendi.`)
         if (fileInputRef.current) fileInputRef.current.value = ''
       }
     } catch (error) {
       console.error('Import Error:', error)
-      alert('Dosya yüklenirken hata oluştu: ' + (error instanceof Error ? error.message : String(error)))
+      toast.error('Dosya yüklenirken hata oluştu: ' + (error instanceof Error ? error.message : String(error)))
     } finally {
       setIsLoading(false)
       // Keep file input if mapper is shown
@@ -59,7 +60,7 @@ export function useFileImport() {
 
     if (items.length > 0) {
       addItems(items)
-      alert(`${items.length} adet veri başarıyla yüklendi.`)
+      toast.success(`${items.length} adet veri başarıyla yüklendi.`)
     }
 
     setShowMapper(false)

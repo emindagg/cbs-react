@@ -1,5 +1,6 @@
 import * as turf from '@turf/turf'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 import { useDataStore } from '@/stores/useDataStore'
 import { useToolStore } from '@/stores/useToolStore'
@@ -25,8 +26,7 @@ export default function SidebarDataCreation() {
 
   const handleAddData = () => {
     if (!name) {
-      // eslint-disable-next-line no-alert
-      alert('Lütfen bir isim giriniz.')
+      toast.error('Lütfen bir isim giriniz.')
       return
     }
 
@@ -61,16 +61,13 @@ export default function SidebarDataCreation() {
         resetDraw()
         setName('')
         setDate('')
-        // eslint-disable-next-line no-alert
-        alert('Veri başarıyla eklendi!')
+        toast.success('Veri başarıyla eklendi!')
       } else {
-        // eslint-disable-next-line no-alert
-        alert('Lütfen harita üzerinde çizim yapınız.')
+        toast.error('Lütfen harita üzerinde çizim yapınız.')
       }
 
     } catch (_error) {
-      // eslint-disable-next-line no-alert
-      alert('Geometri oluşturulurken hata oluştu.')
+      toast.error('Geometri oluşturulurken hata oluştu.')
     }
   }
 

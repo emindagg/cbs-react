@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 import { useDataStore } from '@/stores/useDataStore'
 
@@ -39,12 +40,12 @@ export function useUrlImport() {
 
       if (items.length > 0) {
         addItems(items)
-        alert(`${items.length} adet veri URL'den yüklendi.`)
+        toast.success(`${items.length} adet veri URL'den yüklendi.`)
       }
       onSuccess()
     } catch (error) {
       console.error('URL Import Error:', error)
-      alert('URL yüklenirken hata oluştu. CORS kısıtlamaları veya geçersiz URL olabilir.')
+      toast.error('URL yüklenirken hata oluştu. CORS kısıtlamaları veya geçersiz URL olabilir.')
     } finally {
       setIsLoading(false)
     }
