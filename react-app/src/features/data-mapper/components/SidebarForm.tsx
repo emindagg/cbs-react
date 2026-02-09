@@ -2,9 +2,9 @@
  * Vertical sidebar form for DataMapper default variant (column selects)
  */
 
-import { COL_COLORS } from './DataMapperConstants'
+import { COL_COLORS } from '../types'
 
-interface DataMapperSidebarFormProps {
+interface SidebarFormProps {
   locationLevel: 'province' | 'mixed'
   setLocationLevel: (v: 'province' | 'mixed') => void
   selectedProvince: string
@@ -17,7 +17,7 @@ interface DataMapperSidebarFormProps {
   numericColumns: string[]
 }
 
-export function DataMapperSidebarForm({
+export function SidebarForm({
   locationLevel,
   setLocationLevel,
   selectedProvince,
@@ -28,7 +28,7 @@ export function DataMapperSidebarForm({
   setSelectedData,
   columns,
   numericColumns,
-}: DataMapperSidebarFormProps) {
+}: SidebarFormProps) {
   return (
     <div className="space-y-3">
       <div>

@@ -2,21 +2,21 @@
  * Harita başlığı ayarları paneli (VizWizardStep3 içinde kullanılır)
  */
 
-import type { MapTitleConfiguration } from '../../types/visualization'
+import type { MapTitleConfiguration } from '@/types/visualization'
 
-interface VizWizardStep3MapTitleSectionProps {
+interface MapTitleSectionProps {
   mapTitle: MapTitleConfiguration
   setMapTitle: (config: Partial<MapTitleConfiguration>) => void
   expanded: boolean
   onToggle: () => void
 }
 
-export function VizWizardStep3MapTitleSection({
+export function MapTitleSection({
   mapTitle,
   setMapTitle,
   expanded,
   onToggle,
-}: VizWizardStep3MapTitleSectionProps) {
+}: MapTitleSectionProps) {
   return (
     <div className="bg-white border border-zinc-200 rounded-lg">
       <button

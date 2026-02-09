@@ -12,7 +12,7 @@ interface RowWithStatus {
   [key: string]: unknown
 }
 
-interface DataMapperGridProps {
+interface GridProps {
   gridRef: RefObject<AgGridReact | null>
   rowData: RowWithStatus[]
   columnDefs: ColDef[]
@@ -22,7 +22,7 @@ interface DataMapperGridProps {
   variant: 'default' | 'modal'
 }
 
-export function DataMapperGrid({
+export function Grid({
   gridRef,
   rowData,
   columnDefs,
@@ -30,7 +30,7 @@ export function DataMapperGrid({
   onCellValueChanged,
   isLoading,
   variant,
-}: DataMapperGridProps) {
+}: GridProps) {
   const isModal = variant === 'modal'
   const containerClass = isModal ? 'flex-1 min-h-0' : ''
   const containerStyle = isModal ? { fontSize: '11px' } : { height: 320, width: '100%', fontSize: '11px' }

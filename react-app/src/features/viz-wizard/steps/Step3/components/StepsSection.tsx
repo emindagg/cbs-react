@@ -2,9 +2,9 @@
  * Basamak (steps) ölçek ayarları: sınıf sayısı + sınıflandırma yöntemi (VizWizardStep3 içinde kullanılır)
  */
 
-import type { ClassificationMethod } from '../../types/visualization'
+import type { ClassificationMethod } from '@/types/visualization'
 
-interface VizWizardStep3StepsSectionProps {
+interface StepsSectionProps {
   classCount: number
   classificationMethod: ClassificationMethod
   setClassCount: (n: number) => void
@@ -21,12 +21,12 @@ const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; desc
   { value: 'custom', label: 'Özel Aralıklar', description: 'Özel aralıklar tanımla' },
 ]
 
-export function VizWizardStep3StepsSection({
+export function StepsSection({
   classCount,
   classificationMethod,
   setClassCount,
   setClassificationMethod,
-}: VizWizardStep3StepsSectionProps) {
+}: StepsSectionProps) {
   return (
     <div className="bg-white border border-zinc-200 rounded-lg p-3 space-y-3">
       <div>

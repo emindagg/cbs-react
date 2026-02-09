@@ -7,11 +7,11 @@
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
-import { useMatching } from './hooks/useMatching'
-import { useMapStore } from '../../stores/useMapStore'
-import { useVisualizationStore } from '../../stores/useVisualizationStore'
-import { normalizeTurkishText } from '../../utils/turkishNormalizer'
-import DataMapperModal from '../modals/DataMapperModal'
+import DataMapperModal from '@/components/modals/DataMapperModal'
+import { useMatching } from '@/components/visualization/hooks/useMatching'
+import { useMapStore } from '@/stores/useMapStore'
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
+import { normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 interface VizWizardStep2Props {
   onBack: () => void

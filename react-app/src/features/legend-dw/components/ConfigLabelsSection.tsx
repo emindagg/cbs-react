@@ -2,9 +2,9 @@
  * Legend label type section: ruler / ranges / custom (LegendConfig içinde kullanılır)
  */
 
-import type { LegendConfiguration } from '../../types/visualization'
+import type { LegendConfiguration } from '@/types/visualization'
 
-interface LegendConfigLabelsSectionProps {
+interface ConfigLabelsSectionProps {
   config: LegendConfiguration
   onChange: (config: Partial<LegendConfiguration>) => void
 }
@@ -21,7 +21,7 @@ const LABEL_DESCRIPTIONS: Record<string, string> = {
   custom: 'Özel etiketler kullanır',
 }
 
-export function LegendConfigLabelsSection({ config, onChange }: LegendConfigLabelsSectionProps) {
+export function ConfigLabelsSection({ config, onChange }: ConfigLabelsSectionProps) {
   const type = config.labels.type
   return (
     <div>

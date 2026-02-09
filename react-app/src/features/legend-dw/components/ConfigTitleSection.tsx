@@ -2,18 +2,18 @@
  * Legend title section: show checkbox, text input, fontSize (LegendConfig içinde kullanılır)
  */
 
-import type { LegendConfiguration } from '../../types/visualization'
+import type { LegendConfiguration } from '@/types/visualization'
 
 const TITLE_FONT_SIZE_DEFAULT = 16
 const TITLE_FONT_SIZE_MIN = 5
 const TITLE_FONT_SIZE_MAX = 55
 
-interface LegendConfigTitleSectionProps {
+interface ConfigTitleSectionProps {
   config: LegendConfiguration
   onChange: (config: Partial<LegendConfiguration>) => void
 }
 
-export function LegendConfigTitleSection({ config, onChange }: LegendConfigTitleSectionProps) {
+export function ConfigTitleSection({ config, onChange }: ConfigTitleSectionProps) {
   const show = config.title?.show || false
   const text = config.title?.text || ''
   const fontSize = config.title?.fontSize ?? TITLE_FONT_SIZE_DEFAULT

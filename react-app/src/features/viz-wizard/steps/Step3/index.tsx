@@ -3,21 +3,17 @@
  * Configure visualization settings and render (moved from old Step 4)
  */
 
-import { useState } from 'react'
+import ColorScaleConfig from '@/components/visualization/ColorScaleConfig'
+import ColorSchemePreview from '@/components/visualization/ColorSchemePreview'
+import CustomRangeConfig from '@/components/visualization/CustomRangeConfig'
+import DataDistributionPreview from '@/components/visualization/DataDistributionPreview'
+import { LegendConfig } from '@/features/legend-dw'
+import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
 
-import ColorScaleConfig from './ColorScaleConfig'
-import ColorSchemePreview from './ColorSchemePreview'
-import CustomRangeConfig from './CustomRangeConfig'
-import DataDistributionPreview from './DataDistributionPreview'
-import { useVizRender } from './hooks/useVizRender'
-import { useVizSuggestion } from './hooks/useVizSuggestion'
-import LegendConfig from './LegendConfig'
-import { VizWizardStep3MapTitleSection } from './VizWizardStep3MapTitleSection'
-import { VizWizardStep3StepsSection } from './VizWizardStep3StepsSection'
-import { VizWizardStep3SymbolSettings } from './VizWizardStep3SymbolSettings'
-import { useMapStore } from '../../stores/useMapStore'
-import { useVisualizationStore } from '../../stores/useVisualizationStore'
-import type { ColorScheme, ClassificationMethod, VizType } from '../../types/visualization'
+import { MapTitleSection } from './components/MapTitleSection'
+import { StepsSection } from './components/StepsSection'
+import { SymbolSettings } from './components/SymbolSettings'
+import { useVizWizardStep3 } from './useVizWizardStep3'
 
 interface VizWizardStep3Props {
   onBack: () => void;
@@ -50,9 +46,8 @@ const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
 ]
 
 export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
+  const step = useVizWizardStep3()
   const {
-    matchResults,
-    columnMapping,
     vizSettings,
     setVizSettings,
     colorConfig,
@@ -61,40 +56,21 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
     setLegendConfig,
     mapTitle,
     setMapTitle,
-  } = useVisualizationStore()
-  const { mapInstance: map } = useMapStore()
-
-  const [showDataPreview, setShowDataPreview] = useState(false)
-  const [showLegendConfig, setShowLegendConfig] = useState(false)
-  const [showMapTitleConfig, setShowMapTitleConfig] = useState(false)
-
-  const {
+    showDataPreview,
+    setShowDataPreview,
+    showLegendConfig,
+    setShowLegendConfig,
+    showMapTitleConfig,
+    setShowMapTitleConfig,
     suggestion,
     showSuggestion,
     setShowSuggestion,
-    handleApplySuggestion,
-  } = useVizSuggestion({
-    matchResults,
-    dataColumn: columnMapping.dataColumn,
-  })
-
-  const { isRendering, hasRendered, handleRender } = useVizRender({
-    matchResults,
-    columnMapping,
-    vizSettings,
-    map,
-  })
-
-  // Extract values from match results for data preview
-  const dataValues = matchResults.successful
-    .map((result) => result.value)
-    .filter((v): v is number => v !== undefined)
-
-  const onApplySuggestion = () => {
-    handleApplySuggestion((method) => {
-      setVizSettings({ classificationMethod: method })
-    })
-  }
+    onApplySuggestion,
+    isRendering,
+    hasRendered,
+    handleRender,
+    dataValues,
+  } = step
 
   return (
     <div className="space-y-3">
@@ -169,12 +145,12 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
 
       {/* Symbol Map Settings - only for bubble visualization */}
       {vizSettings.type === 'bubble' && (
-        <VizWizardStep3SymbolSettings vizSettings={vizSettings} setVizSettings={setVizSettings} />
+        <SymbolSettings vizSettings={vizSettings} setVizSettings={setVizSettings} />
       )}
 
       {/* Steps section - only for stepped scales */}
       {colorConfig.scaleType === 'steps' && (
-        <VizWizardStep3StepsSection
+        <StepsSection
           classCount={vizSettings.classCount}
           classificationMethod={vizSettings.classificationMethod}
           setClassCount={(n) => setVizSettings({ classCount: n })}
@@ -253,7 +229,7 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
       </div>
 
       {/* Map Title Configuration Panel */}
-      <VizWizardStep3MapTitleSection
+      <MapTitleSection
         mapTitle={mapTitle}
         setMapTitle={setMapTitle}
         expanded={showMapTitleConfig}

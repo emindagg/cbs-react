@@ -5,7 +5,8 @@
 
 import { useMemo } from 'react'
 
-import Legend from './Legend'
+import { Legend } from '@/features/legend-dw'
+
 import { getInterpolatedColorPalette } from '../../constants/colorSchemes'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
 import { calculateBreaks } from '../../utils/classificationMethods'

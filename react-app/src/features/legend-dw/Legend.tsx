@@ -5,8 +5,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { LegendBarContent } from './LegendBarContent'
-import type { LegendConfiguration, ColorScaleType } from '../../types/visualization'
+import type { LegendConfiguration, ColorScaleType } from '@/types/visualization'
+
+import { BarContent } from './components/BarContent'
 
 interface LegendProps {
   config: LegendConfiguration;
@@ -165,7 +166,7 @@ export default function Legend({
         </div>
       )}
 
-      <LegendBarContent
+      <BarContent
         config={config}
         breaks={breaks}
         colors={colors}

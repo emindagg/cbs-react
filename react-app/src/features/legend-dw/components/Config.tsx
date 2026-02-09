@@ -3,11 +3,12 @@
  * Datawrapper-style legend settings interface
  */
 
-import { LegendConfigLabelsSection } from './LegendConfigLabelsSection'
-import { LegendConfigSizeSection } from './LegendConfigSizeSection'
-import { LegendConfigTitleSection } from './LegendConfigTitleSection'
-import type { LegendConfiguration } from '../../types/visualization'
-import { FORMAT_OPTIONS } from '../../utils/numberFormatter'
+import type { LegendConfiguration } from '@/types/visualization'
+import { FORMAT_OPTIONS } from '@/utils/numberFormatter'
+
+import { ConfigLabelsSection } from './ConfigLabelsSection'
+import { ConfigSizeSection } from './ConfigSizeSection'
+import { ConfigTitleSection } from './ConfigTitleSection'
 
 interface LegendConfigProps {
   config: LegendConfiguration;
@@ -32,7 +33,7 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
 
       {config.visible && (
         <>
-          <LegendConfigSizeSection config={config} onChange={onChange} />
+          <ConfigSizeSection config={config} onChange={onChange} />
 
           {/* Orientation */}
           <div>
@@ -69,7 +70,7 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
             </div>
           </div>
 
-          <LegendConfigLabelsSection config={config} onChange={onChange} />
+          <ConfigLabelsSection config={config} onChange={onChange} />
 
           {/* Format */}
           <div>
@@ -89,7 +90,7 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
             </select>
           </div>
 
-          <LegendConfigTitleSection config={config} onChange={onChange} />
+          <ConfigTitleSection config={config} onChange={onChange} />
 
           {/* Advanced Options */}
           <div className="space-y-2 pt-2 border-t border-zinc-200">

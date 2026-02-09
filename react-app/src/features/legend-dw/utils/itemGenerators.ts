@@ -2,8 +2,8 @@
  * Legend item generators for stepped and continuous scales
  */
 
-import type { LegendConfiguration } from '../../types/visualization'
-import type { NumberFormat } from '../../utils/numberFormatter'
+import type { LegendConfiguration } from '@/types/visualization'
+import type { NumberFormat } from '@/utils/numberFormatter'
 
 export interface LegendItem {
   color: string

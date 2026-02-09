@@ -18,12 +18,13 @@ import type { AgGridReact } from 'ag-grid-react'
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 
-import { DataMapperGrid } from './DataMapperGrid'
-import { DataMapperModalToolbar } from './DataMapperModalToolbar'
-import { DataMapperSidebarForm } from './DataMapperSidebarForm'
-import { useDataMapperColumns } from './hooks/useDataMapperColumns'
-import { useVisualizationStore } from '../../stores/useVisualizationStore'
-import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
+import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
+
+import { Grid } from './components/Grid'
+import { ModalToolbar } from './components/ModalToolbar'
+import { SidebarForm } from './components/SidebarForm'
+import { useColumns } from './hooks/useColumns'
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -162,7 +163,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
     [rawData, setRawData, validateRow],
   )
 
-  const { columnDefs, defaultColDef } = useDataMapperColumns(
+  const { columnDefs, defaultColDef } = useColumns(
     columns,
     selectedProvince,
     selectedDistrict,
@@ -179,7 +180,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
   if (isModal) {
     return (
       <div className="flex flex-col h-full">
-        <DataMapperModalToolbar
+        <ModalToolbar
           locationLevel={locationLevel}
           setLocationLevel={setLocationLevel}
           selectedProvince={selectedProvince}
@@ -193,7 +194,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
           matchCount={matchCount}
           totalCount={totalCount}
         />
-        <DataMapperGrid
+        <Grid
           gridRef={gridRef}
           rowData={rowData}
           columnDefs={columnDefs}
@@ -208,7 +209,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
 
   return (
     <div className="space-y-3">
-      <DataMapperSidebarForm
+      <SidebarForm
         locationLevel={locationLevel}
         setLocationLevel={setLocationLevel}
         selectedProvince={selectedProvince}
@@ -220,7 +221,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
         columns={columns}
         numericColumns={numericColumns}
       />
-      <DataMapperGrid
+      <Grid
         gridRef={gridRef}
         rowData={rowData}
         columnDefs={columnDefs}

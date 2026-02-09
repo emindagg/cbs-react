@@ -2,17 +2,17 @@
  * Bubble / symbol map ayarları (VizWizardStep3 içinde kullanılır)
  */
 
-import type { VisualizationSettings } from '../../types/visualization'
+import type { VisualizationSettings } from '@/types/visualization'
 
-interface VizWizardStep3SymbolSettingsProps {
+interface SymbolSettingsProps {
   vizSettings: VisualizationSettings
   setVizSettings: (s: Partial<VisualizationSettings>) => void
 }
 
-export function VizWizardStep3SymbolSettings({
+export function SymbolSettings({
   vizSettings,
   setVizSettings,
-}: VizWizardStep3SymbolSettingsProps) {
+}: SymbolSettingsProps) {
   return (
     <div className="bg-white border border-zinc-200 rounded-lg p-3 space-y-3">
       <div className="text-[11px] font-semibold text-zinc-700 mb-2">

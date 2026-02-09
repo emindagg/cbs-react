@@ -4,9 +4,9 @@
 
 import { CheckCircle, AlertCircle } from 'lucide-react'
 
-import { COL_COLORS } from './DataMapperConstants'
+import { COL_COLORS } from '../types'
 
-interface DataMapperModalToolbarProps {
+interface ModalToolbarProps {
   locationLevel: 'province' | 'mixed'
   setLocationLevel: (v: 'province' | 'mixed') => void
   selectedProvince: string
@@ -21,7 +21,7 @@ interface DataMapperModalToolbarProps {
   totalCount: number
 }
 
-export function DataMapperModalToolbar({
+export function ModalToolbar({
   locationLevel,
   setLocationLevel,
   selectedProvince,
@@ -34,7 +34,7 @@ export function DataMapperModalToolbar({
   numericColumns,
   matchCount,
   totalCount,
-}: DataMapperModalToolbarProps) {
+}: ModalToolbarProps) {
   return (
     <div className="shrink-0 bg-zinc-50 border-b border-zinc-200 px-4 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-2">
       <div className="flex items-center gap-2.5">

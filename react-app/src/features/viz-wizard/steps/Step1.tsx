@@ -6,8 +6,8 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { useVisualizationStore } from '../../stores/useVisualizationStore'
-import { ColumnMapper } from '../../utils/columnMapper'
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
+import { ColumnMapper } from '@/utils/columnMapper'
 
 interface VizWizardStep1Props {
   onNext: () => void;

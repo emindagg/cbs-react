@@ -2,11 +2,12 @@
  * Legend bar content: continuous/stepped, horizontal/vertical (Datawrapper-style)
  */
 
-import { generateContinuousItems, generateSteppedItems, type LegendItem } from './legendItemGenerators'
-import type { ColorScaleType, LegendConfiguration } from '../../types/visualization'
-import { formatNumber, type NumberFormat } from '../../utils/numberFormatter'
+import type { ColorScaleType, LegendConfiguration } from '@/types/visualization'
+import { formatNumber, type NumberFormat } from '@/utils/numberFormatter'
 
-interface LegendBarContentProps {
+import { generateContinuousItems, generateSteppedItems, type LegendItem } from '../utils/itemGenerators'
+
+interface BarContentProps {
   config: LegendConfiguration
   breaks: number[]
   colors: string[]
@@ -15,14 +16,14 @@ interface LegendBarContentProps {
   hoveredIndex: number | null
 }
 
-export function LegendBarContent({
+export function BarContent({
   config,
   breaks,
   colors,
   scaleType,
   onItemHover,
   hoveredIndex,
-}: LegendBarContentProps) {
+}: BarContentProps) {
   const formatNumberFn = (value: number, format?: NumberFormat) =>
     formatNumber(value, format ?? ('auto' as NumberFormat))
 

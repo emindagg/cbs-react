@@ -3,11 +3,13 @@
  * Multi-step wizard for data visualization
  */
 
-import { useVisualizationStore } from '../../../stores/useVisualizationStore'
-import VizWizardStep1 from '../../visualization/VizWizardStep1'
-import VizWizardStep2 from '../../visualization/VizWizardStep2'
-import VizWizardStep3 from '../../visualization/VizWizardStep3'
-import WizardProgress from '../../visualization/WizardProgress'
+import {
+  VizWizardStep1,
+  VizWizardStep2,
+  VizWizardStep3,
+  WizardProgress,
+} from '@/features/viz-wizard'
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
 export default function SidebarVizWizard() {
   const { currentStep, setCurrentStep } = useVisualizationStore()

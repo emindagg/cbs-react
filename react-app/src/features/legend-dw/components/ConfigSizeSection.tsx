@@ -2,18 +2,18 @@
  * Legend size slider section (LegendConfig içinde kullanılır)
  */
 
-import type { LegendConfiguration } from '../../types/visualization'
+import type { LegendConfiguration } from '@/types/visualization'
 
 const SIZE_MIN = 50
 const SIZE_MAX = 300
 const SIZE_STEP = 10
 
-interface LegendConfigSizeSectionProps {
+interface ConfigSizeSectionProps {
   config: LegendConfiguration
   onChange: (config: Partial<LegendConfiguration>) => void
 }
 
-export function LegendConfigSizeSection({ config, onChange }: LegendConfigSizeSectionProps) {
+export function ConfigSizeSection({ config, onChange }: ConfigSizeSectionProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">

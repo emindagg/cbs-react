@@ -6,7 +6,7 @@
 
 import { createPortal } from 'react-dom'
 
-import DataMapper from '../visualization/DataMapper'
+import { DataMapper } from '@/features/data-mapper'
 
 interface DataMapperModalProps {
   isOpen: boolean

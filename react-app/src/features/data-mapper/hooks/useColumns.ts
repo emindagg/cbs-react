@@ -5,10 +5,10 @@
 import type { ColDef } from 'ag-grid-community'
 import { useMemo } from 'react'
 
-import { COL_COLORS } from '../DataMapperConstants'
-import { StatusCellRenderer } from '../DataMapperStatusCell'
+import { StatusCellRenderer } from '../components/StatusCell'
+import { COL_COLORS } from '../types'
 
-export function useDataMapperColumns(
+export function useColumns(
   columns: string[],
   selectedProvince: string,
   selectedDistrict: string,
