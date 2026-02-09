@@ -9,9 +9,8 @@ interface WizardProgressProps {
 
 const STEPS = [
   { num: 1, label: 'Dosya', icon: 'fa-file-arrow-up' },
-  { num: 2, label: 'Eşleştir', icon: 'fa-table-columns' },
-  { num: 3, label: 'Sonuçlar', icon: 'fa-check-double' },
-  { num: 4, label: 'Görselleştir', icon: 'fa-map' },
+  { num: 2, label: 'Eşleşme', icon: 'fa-table-columns' },
+  { num: 3, label: 'Görselleştir', icon: 'fa-map' },
 ]
 
 export default function WizardProgress({ currentStep }: WizardProgressProps) {
@@ -23,7 +22,7 @@ export default function WizardProgress({ currentStep }: WizardProgressProps) {
       {/* Active progress bar */}
       <div
         className="absolute top-2.5 left-0 h-0.5 bg-linear-to-r from-emerald-500 to-emerald-600 transition-all duration-300"
-        style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
+        style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
       />
 
       {/* Steps */}

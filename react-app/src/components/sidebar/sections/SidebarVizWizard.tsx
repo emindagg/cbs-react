@@ -7,7 +7,6 @@ import { useVisualizationStore } from '../../../stores/useVisualizationStore'
 import VizWizardStep1 from '../../visualization/VizWizardStep1'
 import VizWizardStep2 from '../../visualization/VizWizardStep2'
 import VizWizardStep3 from '../../visualization/VizWizardStep3'
-import VizWizardStep4 from '../../visualization/VizWizardStep4'
 import WizardProgress from '../../visualization/WizardProgress'
 
 export default function SidebarVizWizard() {
@@ -35,10 +34,7 @@ export default function SidebarVizWizard() {
         {currentStep === 2 && (
           <VizWizardStep2 onBack={() => goToStep(1)} onNext={() => goToStep(3)} />
         )}
-        {currentStep === 3 && (
-          <VizWizardStep3 onBack={() => goToStep(2)} onNext={() => goToStep(4)} />
-        )}
-        {currentStep === 4 && <VizWizardStep4 onBack={() => goToStep(3)} />}
+        {currentStep === 3 && <VizWizardStep3 onBack={() => goToStep(2)} />}
       </div>
     </section>
   )

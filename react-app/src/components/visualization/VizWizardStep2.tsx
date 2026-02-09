@@ -1,208 +1,198 @@
 /**
- * Wizard Step 2: Column Mapping
- * Map columns to province, district, and data
+ * Wizard Step 2: DataMapper
+ * Column mapping + AG Grid spreadsheet + real-time validation
+ * Opens DataMapper in a centered modal for better horizontal space
  */
 
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { useMatching } from './hooks/useMatching'
+import DataMapperModal from '../modals/DataMapperModal'
+import { useMapStore } from '../../stores/useMapStore'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
+import { normalizeTurkishText } from '../../utils/turkishNormalizer'
+import { CheckCircle, AlertCircle } from 'lucide-react'
 
 interface VizWizardStep2Props {
-  onBack: () => void;
-  onNext: () => void;
+  onBack: () => void
+  onNext: () => void
 }
 
 export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) {
-  const { rawData, columns, columnMapping, setColumnMapping } = useVisualizationStore()
+  const {
+    rawData,
+    columnMapping,
+    matchResults,
+    setMatchResults,
+    provincesGeoJSON,
+    districtsGeoJSON,
+    setProvincesGeoJSON,
+    setDistrictsGeoJSON,
+    provinceIndex,
+    districtIndex,
+    setProvinceIndex,
+    setDistrictIndex,
+  } = useVisualizationStore()
 
-  const [selectedProvince, setSelectedProvince] = useState(columnMapping.locationColumn || '')
-  const [selectedDistrict, setSelectedDistrict] = useState(columnMapping.districtColumn || '')
-  const [selectedData, setSelectedData] = useState(columnMapping.dataColumn || '')
-  const [locationLevel, setLocationLevel] = useState<'province' | 'mixed' | null>(
-    (columnMapping.locationColumn || columnMapping.districtColumn) &&
-    (columnMapping.locationLevel === 'province' || columnMapping.locationLevel === 'mixed')
-      ? columnMapping.locationLevel
-      : null,
-  )
+  const { mapInstance: map } = useMapStore()
 
-  // Update store when selections change
-  useEffect(() => {
-    setColumnMapping({
-      locationColumn: selectedProvince || null,
-      districtColumn: selectedDistrict || null,
-      dataColumn: selectedData || null,
-      locationLevel: locationLevel || 'province',
-    })
-  }, [selectedProvince, selectedDistrict, selectedData, locationLevel, setColumnMapping])
+  const [isModalOpen, setIsModalOpen] = useState(true)
 
-  // Get numeric columns
-  const numericColumns = columns.filter((col) => {
-    if (!rawData || rawData.length === 0) return false
-    const sample = rawData.slice(0, Math.min(10, rawData.length))
-    const numericCount = sample.filter((row) => {
-      const value = row[col]
-      return typeof value === 'number' || !isNaN(Number(value))
-    }).length
-    return numericCount / sample.length > 0.8
+  const { isMatching, performMatching } = useMatching({
+    rawData,
+    columnMapping,
+    map,
+    provincesGeoJSON,
+    districtsGeoJSON,
+    provinceIndex,
+    districtIndex,
+    setProvincesGeoJSON,
+    setDistrictsGeoJSON,
+    setProvinceIndex,
+    setDistrictIndex,
   })
 
-  // Check if all required fields are selected
-  const isFormValid = () => {
-    // Location level must be selected
-    if (!locationLevel) return false
-
-    if (!selectedData) return false
-
-    if (locationLevel === 'province' && !selectedProvince) return false
-
-    if (locationLevel === 'mixed' && (!selectedProvince || !selectedDistrict)) return false
-
-    return true
-  }
-
-  const handleNext = () => {
-    if (!isFormValid()) {
-      return
+  // Trigger GeoJSON loading when map/columns/level change
+  useEffect(() => {
+    if (map && rawData && columnMapping.locationColumn) {
+      performMatching().then((results) => {
+        if (results) {
+          setMatchResults(results)
+        }
+      })
     }
-    onNext()
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, columnMapping.locationLevel, columnMapping.locationColumn])
 
-  const showPreview = () => {
-    if (!rawData || rawData.length === 0) return null
+  // Extract geoJsonKeys from loaded indexes
+  const geoJsonKeys = useMemo((): string[] => {
+    if (columnMapping.locationLevel === 'mixed') {
+      if (!districtIndex) return []
+      const keys = Object.keys(districtIndex as Record<string, unknown[]>)
+      const compositeKeys = keys.filter((key) => key.includes('_'))
 
-    const preview = rawData.slice(0, 3)
-    return preview.map((row, i) => {
-      const cols = Object.entries(row).slice(0, 3)
-      return (
-        <div key={i} className="text-[10px] text-zinc-600">
-          <span className="font-medium text-zinc-700">#{i + 1}</span>{' '}
-          {cols.map(([k, v]) => `${k}: ${v}`).join(', ')}...
-        </div>
-      )
+      // District index stores plate-code-based keys (e.g. "34_kadikoy").
+      // DataMapper validation builds province-name-based keys (e.g. "istanbul_kadikoy").
+      // Expand the set to include both formats.
+      const allKeys = new Set(compositeKeys)
+      for (const key of compositeKeys) {
+        const idx = key.indexOf('_')
+        const prefix = key.substring(0, idx)
+        const suffix = key.substring(idx + 1)
+        if (/^\d+$/.test(prefix)) {
+          // Convert plate code to province name: "34" → "istanbul"
+          const provinceName = normalizeTurkishText(prefix)
+          allKeys.add(`${provinceName}_${suffix}`)
+        }
+      }
+      return Array.from(allKeys)
+    }
+
+    // Province mode: province index keys, filter to alpha-only (exclude numeric plate codes)
+    if (!provinceIndex) return []
+    return Object.keys(provinceIndex as Record<string, unknown>).filter(
+      (key) => /^[a-z]+$/.test(key),
+    )
+  }, [columnMapping.locationLevel, provinceIndex, districtIndex])
+
+  // Match summary counts
+  const successCount = matchResults.successful.length
+  const failedCount = matchResults.failed.length
+  const ambiguousCount = matchResults.ambiguous.length
+  const totalCount = successCount + failedCount + ambiguousCount
+
+  // Validate before proceeding
+  const handleNext = () => {
+    // Re-run matching with current data before advancing
+    performMatching().then((results) => {
+      if (results) {
+        setMatchResults(results)
+        if (results.successful.length === 0) {
+          return // Don't proceed with zero matches
+        }
+        onNext()
+      }
     })
   }
 
   return (
     <div className="space-y-3">
-      {/* Location level selection */}
-      <div>
-        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">
-          Konum Seviyesi <span className="text-red-500">*</span>
-        </label>
-        <div className="inline-flex rounded-md border border-zinc-200 overflow-hidden w-full">
-          {/* Province only option */}
-          <label className={`
-            flex-1 flex items-center justify-center gap-1.5 px-3 py-2 cursor-pointer transition-colors
-            ${locationLevel === 'province'
-      ? 'bg-slate-700 text-white'
-      : 'bg-white text-zinc-700 hover:bg-zinc-50'
-    }
-          `}>
-            <input
-              type="radio"
-              name="location-level"
-              value="province"
-              checked={locationLevel === 'province'}
-              onChange={(e) => setLocationLevel(e.target.value as 'province')}
-              className="sr-only"
-            />
-            <i className={`fa-solid fa-map-location-dot text-[9px] ${locationLevel === 'province' ? 'text-white' : 'text-zinc-400'}`}></i>
-            <span className="text-[10px] font-medium">Sadece İl</span>
-          </label>
-
-          {/* Divider */}
-          <div className="w-px bg-zinc-200"></div>
-
-          {/* Mixed option */}
-          <label className={`
-            flex-1 flex items-center justify-center gap-1.5 px-3 py-2 cursor-pointer transition-colors
-            ${locationLevel === 'mixed'
-      ? 'bg-slate-700 text-white'
-      : 'bg-white text-zinc-700 hover:bg-zinc-50'
-    }
-          `}>
-            <input
-              type="radio"
-              name="location-level"
-              value="mixed"
-              checked={locationLevel === 'mixed'}
-              onChange={(e) => setLocationLevel(e.target.value as 'mixed')}
-              className="sr-only"
-            />
-            <i className={`fa-solid fa-layer-group text-[9px] ${locationLevel === 'mixed' ? 'text-white' : 'text-zinc-400'}`}></i>
-            <span className="text-[10px] font-medium">İl + İlçe</span>
-          </label>
+      {/* Summary Card */}
+      <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3 space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-[11px] font-semibold text-zinc-700 flex items-center gap-1.5">
+            <i className="fa-solid fa-table-columns text-blue-500 text-xs"></i>
+            Veri Eşleştirme
+          </h4>
+          {totalCount > 0 && (
+            <span className="text-[10px] text-zinc-500">{totalCount} kayıt</span>
+          )}
         </div>
-        {!locationLevel && (
-          <p className="text-[9px] text-red-500 mt-1">Lütfen konum seviyesi seçin</p>
-        )}
-      </div>
 
-      {/* Province column (if needed) */}
-      {(locationLevel === 'province' || locationLevel === 'mixed') && (
-        <div>
-          <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">İl Sütunu</label>
-          <select
-            value={selectedProvince}
-            onChange={(e) => setSelectedProvince(e.target.value)}
-            className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-          >
-            <option value="">Seçin...</option>
-            {columns.map((col) => (
-              <option key={col} value={col}>
-                {col}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* District column (only for mixed mode) */}
-      {locationLevel === 'mixed' && (
-        <div>
-          <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">İlçe Sütunu</label>
-          <select
-            value={selectedDistrict}
-            onChange={(e) => setSelectedDistrict(e.target.value)}
-            className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-          >
-            <option value="">Seçin...</option>
-            {columns.map((col) => (
-              <option key={col} value={col}>
-                {col}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Data column */}
-      <div>
-        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Veri Sütunu</label>
-        <select
-          value={selectedData}
-          onChange={(e) => setSelectedData(e.target.value)}
-          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-        >
-          <option value="">Seçin...</option>
-          {numericColumns.map((col) => (
-            <option key={col} value={col}>
-              {col}
-            </option>
-          ))}
-        </select>
-        <p className="text-[10px] text-zinc-400 mt-1">Sadece sayısal sütunlar</p>
-      </div>
-
-      {/* Preview */}
-      {rawData && rawData.length > 0 && (
-        <div className="bg-zinc-50/50 rounded-md p-2">
-          <p className="text-[10px] font-semibold text-zinc-600 mb-1.5">Veri Önizlemesi</p>
-          <div className="space-y-0.5">
-            {showPreview()}
+        {/* Column mapping summary */}
+        {columnMapping.locationColumn && (
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-[10px]">
+              <span className="inline-block w-2 h-2 rounded-sm bg-blue-200" />
+              <span className="text-zinc-500">İl:</span>
+              <span className="font-medium text-zinc-700">{columnMapping.locationColumn}</span>
+            </div>
+            {columnMapping.locationLevel === 'mixed' && columnMapping.districtColumn && (
+              <div className="flex items-center gap-1.5 text-[10px]">
+                <span className="inline-block w-2 h-2 rounded-sm bg-emerald-200" />
+                <span className="text-zinc-500">İlçe:</span>
+                <span className="font-medium text-zinc-700">{columnMapping.districtColumn}</span>
+              </div>
+            )}
+            {columnMapping.dataColumn && (
+              <div className="flex items-center gap-1.5 text-[10px]">
+                <span className="inline-block w-2 h-2 rounded-sm bg-orange-200" />
+                <span className="text-zinc-500">Veri:</span>
+                <span className="font-medium text-zinc-700">{columnMapping.dataColumn}</span>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Match results stats */}
+        {totalCount > 0 && (
+          <div className="flex items-center gap-3 text-[10px] pt-1 border-t border-zinc-200">
+            <span className="flex items-center gap-1">
+              <CheckCircle size={12} className="text-emerald-500" />
+              <span className="text-emerald-700 font-medium">{successCount} başarılı</span>
+            </span>
+            {ambiguousCount > 0 && (
+              <span className="flex items-center gap-1">
+                <i className="fa-solid fa-exclamation-triangle text-amber-500 text-[10px]"></i>
+                <span className="text-amber-700 font-medium">{ambiguousCount} belirsiz</span>
+              </span>
+            )}
+            {failedCount > 0 && (
+              <span className="flex items-center gap-1">
+                <AlertCircle size={12} className="text-red-400" />
+                <span className="text-red-600 font-medium">{failedCount} hatalı</span>
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Open modal button */}
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="w-full px-3 py-2 text-[11px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors flex items-center justify-center gap-1.5"
+        >
+          <i className="fa-solid fa-up-right-from-square text-[9px]"></i>
+          {totalCount > 0 ? 'Tabloyu Düzenle' : 'Eşleştirme Tablosunu Aç'}
+        </button>
+      </div>
+
+      {/* DataMapper Modal */}
+      <DataMapperModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        geoJsonKeys={geoJsonKeys}
+        isLoading={isMatching}
+      />
 
       {/* Navigation buttons */}
       <div className="flex gap-1.5 pt-1">
@@ -215,11 +205,20 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
         </button>
         <button
           onClick={handleNext}
-          disabled={!isFormValid()}
+          disabled={isMatching}
           className="flex-1 px-3 py-1.5 text-[11px] font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
         >
-          İleri
-          <i className="fa-solid fa-chevron-right ml-1 text-[9px]"></i>
+          {isMatching ? (
+            <>
+              <div className="inline-block animate-spin rounded-full h-2.5 w-2.5 border-2 border-white border-t-transparent mr-1" />
+              Yukleniyor...
+            </>
+          ) : (
+            <>
+              Ileri
+              <i className="fa-solid fa-chevron-right ml-1 text-[9px]"></i>
+            </>
+          )}
         </button>
       </div>
     </div>

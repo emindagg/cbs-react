@@ -1,200 +1,594 @@
 /**
- * Wizard Step 3: Match Results
- * Show matching results and resolve ambiguities
+ * Wizard Step 3: Visualization Settings
+ * Configure visualization settings and render (moved from old Step 4)
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
-import { MatchResultsSummary } from './components/MatchResultsSummary'
-import { MatchResultsWarnings } from './components/MatchResultsWarnings'
-import { useMatching } from './hooks/useMatching'
-import MatchResultsModal from './MatchResultsModal'
+import ColorScaleConfig from './ColorScaleConfig'
+import ColorSchemePreview from './ColorSchemePreview'
+import CustomRangeConfig from './CustomRangeConfig'
+import DataDistributionPreview from './DataDistributionPreview'
+import LegendConfig from './LegendConfig'
+import { useVizRender } from './hooks/useVizRender'
+import { useVizSuggestion } from './hooks/useVizSuggestion'
 import { useMapStore } from '../../stores/useMapStore'
 import { useVisualizationStore } from '../../stores/useVisualizationStore'
+import type { ColorScheme, ClassificationMethod, VizType } from '../../types/visualization'
 
 interface VizWizardStep3Props {
   onBack: () => void;
-  onNext: () => void;
 }
 
-export default function VizWizardStep3({ onBack, onNext }: VizWizardStep3Props) {
-  const [showModal, setShowModal] = useState(false)
+const VIZ_TYPES: { value: VizType; label: string; description: string }[] = [
+  { value: 'choropleth', label: 'Koroplet Harita', description: 'Bölgeleri renklendirerek veriyi göster' },
+  { value: 'bubble', label: 'Kabarcık Harita', description: 'Değeri daire boyutuyla göster' },
+  { value: 'dot', label: 'Nokta Yoğunluk', description: 'Sabit boyutlu noktalarla göster' },
+]
 
+const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
+  // Original
+  { value: 'viridis', label: 'Viridis' },
+
+  // Datawrapper Sequential
+  { value: 'greenBlue', label: 'Yeşil-Mavi' },
+  { value: 'sunset', label: 'Gün Batımı' },
+  { value: 'plasma', label: 'Plasma' },
+  { value: 'yellowGreen', label: 'Sarı-Yeşil' },
+  { value: 'pinkPurple', label: 'Pembe-Mor' },
+  { value: 'yellowBlue', label: 'Sarı-Mavi' },
+  { value: 'rosePurple', label: 'Gül-Mor' },
+
+  // Datawrapper Diverging
+  { value: 'brownTeal', label: 'Kahve-Deniz' },
+  { value: 'pinkGreen', label: 'Pembe-Yeşil' },
+  { value: 'redBlue', label: 'Kırmızı-Mavi' },
+  { value: 'redTeal', label: 'Kırmızı-Deniz' },
+]
+
+const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; description: string }[] = [
+  { value: 'equal', label: 'Doğrusal (Eşit Aralık)', description: 'Eşit genişlikte aralıklar' },
+  {
+    value: 'quantile',
+    label: 'Çeyrekler (Eşit Sayı)',
+    description: 'Her sınıfta eşit sayıda öğe',
+  },
+  {
+    value: 'jenks',
+    label: 'Doğal Kırılmalar (Jenks)',
+    description: 'Verideki doğal grupları bulur',
+  },
+  {
+    value: 'kmeans',
+    label: 'K-Ortalamalar',
+    description: 'Benzer değerleri otomatik gruplar',
+  },
+  {
+    value: 'logarithmic',
+    label: 'Logaritmik',
+    description: 'Çok geniş değer aralıkları için logaritmik ölçekleme',
+  },
+  {
+    value: 'rounded-sm',
+    label: 'Yuvarlanmış Değerler',
+    description: 'Güzel yuvarlak sayılar (10, 20, 50...)',
+  },
+  { value: 'custom', label: 'Özel Aralıklar', description: 'Özel aralıklar tanımla' },
+]
+
+export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
   const {
-    rawData,
-    columnMapping,
     matchResults,
-    setMatchResults,
-    setRawData,
-    provincesGeoJSON,
-    districtsGeoJSON,
-    setProvincesGeoJSON,
-    setDistrictsGeoJSON,
-    provinceIndex,
-    districtIndex,
-    setProvinceIndex,
-    setDistrictIndex,
+    columnMapping,
+    vizSettings,
+    setVizSettings,
+    colorConfig,
+    setColorConfig,
+    setCustomRange,
+    setLegendConfig,
+    mapTitle,
+    setMapTitle,
   } = useVisualizationStore()
-
   const { mapInstance: map } = useMapStore()
 
-  const { isMatching, hasMatched, performMatching } = useMatching({
-    rawData,
-    columnMapping,
-    map,
-    provincesGeoJSON,
-    districtsGeoJSON,
-    provinceIndex,
-    districtIndex,
-    setProvincesGeoJSON,
-    setDistrictsGeoJSON,
-    setProvinceIndex,
-    setDistrictIndex,
+  const [showDataPreview, setShowDataPreview] = useState(false)
+  const [showLegendConfig, setShowLegendConfig] = useState(false)
+  const [showMapTitleConfig, setShowMapTitleConfig] = useState(false)
+
+  const {
+    suggestion,
+    showSuggestion,
+    setShowSuggestion,
+    handleApplySuggestion,
+  } = useVizSuggestion({
+    matchResults,
+    dataColumn: columnMapping.dataColumn,
   })
 
-  useEffect(() => {
-    if (!hasMatched) {
-      performMatching().then(results => {
-        if (results) {
-          setMatchResults(results)
-        }
-      })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const { isRendering, hasRendered, handleRender } = useVizRender({
+    matchResults,
+    columnMapping,
+    vizSettings,
+    map,
+  })
 
-  const handleNext = () => {
-    if (matchResults.ambiguous.length > 0) {
-      // eslint-disable-next-line no-alert
-      const proceed = confirm(
-        `${matchResults.ambiguous.length} belirsiz eşleşme var. Bunlar görselleştirmede göz ardı edilecek. Devam edilsin mi?`,
-      )
-      if (!proceed) return
-    }
+  // Extract values from match results for data preview
+  const dataValues = matchResults.successful
+    .map((result) => result.value)
+    .filter((v): v is number => v !== undefined)
 
-    onNext()
-  }
-
-  const handleEdit = (rowIndex: number, columnName: string, newValue: string) => {
-    if (!rawData) return
-
-    // rowIndex is 1-based, convert to 0-based for array access
-    const arrayIndex = rowIndex - 1
-
-    // Update the raw data
-    const updatedData = [...rawData]
-    updatedData[arrayIndex] = {
-      ...updatedData[arrayIndex],
-      [columnName]: newValue,
-    }
-    setRawData(updatedData)
-
-    // If updating data column, just update the value in match results
-    if (columnName === columnMapping.dataColumn) {
-      const updatedResults = { ...matchResults }
-
-      // Find and update the result in all categories
-      const updateResult = (result: typeof matchResults.successful[0]) => {
-        if (result.rowIndex === rowIndex) {
-          return {
-            ...result,
-            value: parseFloat(newValue) || 0,
-            originalData: {
-              ...result.originalData,
-              [columnName]: newValue,
-            },
-          }
-        }
-        return result
-      }
-
-      updatedResults.successful = updatedResults.successful.map(updateResult)
-      updatedResults.ambiguous = updatedResults.ambiguous.map(updateResult)
-      updatedResults.failed = updatedResults.failed.map(updateResult)
-
-      setMatchResults(updatedResults)
-    } else {
-      // If updating location column, re-run matching
-      performMatching(updatedData).then(results => {
-        if (results) {
-          setMatchResults(results)
-        }
-      })
-    }
+  const onApplySuggestion = () => {
+    handleApplySuggestion((method) => {
+      setVizSettings({ classificationMethod: method })
+    })
   }
 
   return (
     <div className="space-y-3">
-      {/* Map not ready warning */}
-      {!map && !isMatching && !hasMatched && (
-        <div className="bg-amber-50/50 rounded-md p-2 flex items-center gap-2">
-          <i className="fa-solid fa-clock text-amber-600 text-xs"></i>
-          <p className="text-[11px] text-amber-700">Harita hazırlanıyor...</p>
+      {/* Visualization type selector */}
+      <div>
+        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">
+          Görselleştirme Türü
+        </label>
+        <select
+          value={vizSettings.type}
+          onChange={(e) =>
+            setVizSettings({ type: e.target.value as VizType })
+          }
+          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+        >
+          {VIZ_TYPES.map((type) => (
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
+          ))}
+        </select>
+        <p className="text-[9px] text-zinc-400 mt-1">
+          {VIZ_TYPES.find(t => t.value === vizSettings.type)?.description}
+        </p>
+      </div>
+
+      {/* Datawrapper-style Color Scale Configuration */}
+      <ColorScaleConfig
+        colorScheme={vizSettings.colorScheme}
+        classCount={vizSettings.classCount}
+        scaleType={colorConfig.scaleType}
+        interpolation={colorConfig.interpolation}
+        onScaleTypeChange={(type) => {
+          setColorConfig({ scaleType: type })
+          if (type === 'continuous') {
+            setVizSettings({ classificationMethod: 'continuous-linear' })
+          } else {
+            setVizSettings({ classificationMethod: 'equal' })
+          }
+        }}
+        onInterpolationChange={(interpolation) => {
+          setColorConfig({ interpolation })
+          const methodMap: Record<string, ClassificationMethod> = {
+            equidistant: 'continuous-linear',
+            'quantiles-5': 'continuous-quantile',
+            'quantiles-6': 'continuous-quantile',
+            'quantiles-11': 'continuous-quantile',
+            'natural-9': 'continuous-natural',
+          }
+          setVizSettings({ classificationMethod: methodMap[interpolation] || 'continuous-linear' })
+        }}
+      />
+
+      {/* Color scheme */}
+      <div>
+        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Renk Paleti</label>
+        <select
+          value={vizSettings.colorScheme}
+          onChange={(e) =>
+            setVizSettings({ colorScheme: e.target.value as ColorScheme })
+          }
+          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+        >
+          {COLOR_SCHEMES.map((scheme) => (
+            <option key={scheme.value} value={scheme.value}>
+              {scheme.label}
+            </option>
+          ))}
+        </select>
+        <ColorSchemePreview colorScheme={vizSettings.colorScheme} />
+      </div>
+
+      {/* Symbol Map Settings - only for bubble visualization */}
+      {vizSettings.type === 'bubble' && (
+        <div className="bg-white border border-zinc-200 rounded-lg p-3 space-y-3">
+          <div className="text-[11px] font-semibold text-zinc-700 mb-2">
+            Sembol Ayarları
+          </div>
+
+          {/* Size range */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+                Min Boyut
+              </label>
+              <input
+                type="number"
+                min="2"
+                max="20"
+                defaultValue={vizSettings.symbolMinSize ?? 5}
+                onBlur={(e) => {
+                  const val = parseInt(e.target.value)
+                  const clamped = isNaN(val) ? 5 : Math.max(2, Math.min(20, val))
+                  e.target.value = String(clamped)
+                  setVizSettings({ symbolMinSize: clamped })
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                }}
+                className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+                Max Boyut
+              </label>
+              <input
+                type="number"
+                min="20"
+                max="80"
+                defaultValue={vizSettings.symbolMaxSize ?? 40}
+                onBlur={(e) => {
+                  const val = parseInt(e.target.value)
+                  const clamped = isNaN(val) ? 40 : Math.max(20, Math.min(80, val))
+                  e.target.value = String(clamped)
+                  setVizSettings({ symbolMaxSize: clamped })
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                }}
+                className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Stroke and opacity */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+                Kenar Kalınlığı
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="5"
+                step="0.5"
+                value={vizSettings.symbolStrokeWidth !== undefined ? vizSettings.symbolStrokeWidth : 1.5}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value)
+                  if (val >= 0 && val <= 5) {
+                    setVizSettings({ symbolStrokeWidth: val })
+                  }
+                }}
+                className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+                Opaklık
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="1"
+                step="0.1"
+                value={vizSettings.symbolOpacity !== undefined ? vizSettings.symbolOpacity : 0.6}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value)
+                  if (val >= 0 && val <= 1) {
+                    setVizSettings({ symbolOpacity: val })
+                  }
+                }}
+                className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Stroke color */}
+          <div>
+            <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+              Kenar Rengi
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={vizSettings.symbolStrokeColor || '#ffffff'}
+                onChange={(e) => setVizSettings({ symbolStrokeColor: e.target.value })}
+                className="w-12 h-8 border border-zinc-200 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={vizSettings.symbolStrokeColor || '#ffffff'}
+                onChange={(e) => {
+                  if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+                    setVizSettings({ symbolStrokeColor: e.target.value })
+                  }
+                }}
+                placeholder="#ffffff"
+                className="flex-1 px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+              />
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Manual trigger button if matching didn't start */}
-      {!isMatching && !hasMatched && map && (
+      {/* Steps section - only for stepped scales */}
+      {colorConfig.scaleType === 'steps' && (
+        <div className="bg-white border border-zinc-200 rounded-lg p-3 space-y-3">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <label className="text-[11px] font-semibold text-zinc-700 min-w-[60px]">Basamak</label>
+              <input
+                type="number"
+                min="3"
+                max="9"
+                value={vizSettings.classCount}
+                onChange={(e) => {
+                  const count = parseInt(e.target.value)
+                  if (count >= 3 && count <= 9) {
+                    setVizSettings({ classCount: count })
+                  }
+                }}
+                className="w-16 px-2 py-1.5 text-[11px] text-center border border-zinc-200 rounded-md bg-white hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              />
+            </div>
+
+            <select
+              value={vizSettings.classificationMethod}
+              onChange={(e) =>
+                setVizSettings({
+                  classificationMethod: e.target.value as ClassificationMethod,
+                })
+              }
+              className="w-full px-3 py-2 text-[11px] border border-zinc-200 rounded-md bg-white hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            >
+              {CLASSIFICATION_METHODS.map((method) => (
+                <option key={method.value} value={method.value}>
+                  {method.label}
+                </option>
+              ))}
+            </select>
+
+            <p className="text-[9px] text-zinc-500 mt-1.5 leading-relaxed">
+              {CLASSIFICATION_METHODS.find((m) => m.value === vizSettings.classificationMethod)?.description}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Smart Suggestion Panel - Compact */}
+      {suggestion && showSuggestion && (
+        <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-md p-2">
+          <div className="flex items-start gap-2">
+            <div className="text-lg">{suggestion.emoji}</div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-semibold text-blue-900 mb-1">
+                {suggestion.reason}
+              </p>
+              {suggestion.warning && (
+                <p className="text-[9px] text-blue-700 mb-1.5">
+                  ⚠️ {suggestion.warning}
+                </p>
+              )}
+              <div className="flex gap-1">
+                <button
+                  onClick={onApplySuggestion}
+                  className="px-2 py-0.5 text-[10px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-sm transition-colors"
+                >
+                  <i className="fa-solid fa-check mr-1 text-[8px]"></i>
+                  Uygula
+                </button>
+                <button
+                  onClick={() => setShowSuggestion(false)}
+                  className="px-2 py-0.5 text-[10px] font-medium text-blue-600 hover:bg-blue-100 rounded-sm transition-colors"
+                >
+                  <i className="fa-solid fa-xmark mr-1 text-[8px]"></i>
+                  Kapat
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Range Configuration - Only for continuous scales */}
+      {colorConfig.scaleType === 'continuous' && (
+        <div className="bg-white border border-zinc-200 rounded-lg p-3">
+          <h4 className="text-[11px] font-semibold text-zinc-700 mb-2">Değer Aralığı</h4>
+          <CustomRangeConfig
+            customRange={colorConfig.customRange!}
+            autoMin={dataValues.length > 0 ? Math.min(...dataValues) : 0}
+            autoMax={dataValues.length > 0 ? Math.max(...dataValues) : 100}
+            onChange={(range) => setCustomRange(range)}
+          />
+        </div>
+      )}
+
+      {/* Legend Configuration Panel */}
+      <div className="bg-white border border-zinc-200 rounded-lg">
+        <button
+          onClick={() => setShowLegendConfig(!showLegendConfig)}
+          className="w-full px-3 py-2 flex items-center justify-between hover:bg-zinc-50 transition-colors rounded-t-lg"
+        >
+          <div className="flex items-center gap-2">
+            <i className="fa-solid fa-list text-[10px] text-zinc-500"></i>
+            <span className="text-[11px] font-semibold text-zinc-700">Lejant Ayarları</span>
+          </div>
+          <i className={`fa-solid fa-chevron-${showLegendConfig ? 'up' : 'down'} text-[9px] text-zinc-400`}></i>
+        </button>
+
+        {showLegendConfig && (
+          <div className="px-3 pb-3 pt-2 border-t border-zinc-100">
+            <LegendConfig
+              config={colorConfig.legend}
+              onChange={(config) => setLegendConfig(config)}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Map Title Configuration Panel */}
+      <div className="bg-white border border-zinc-200 rounded-lg">
+        <button
+          onClick={() => setShowMapTitleConfig(!showMapTitleConfig)}
+          className="w-full px-3 py-2 flex items-center justify-between hover:bg-zinc-50 transition-colors rounded-t-lg"
+        >
+          <div className="flex items-center gap-2">
+            <i className="fa-solid fa-heading text-[10px] text-zinc-500"></i>
+            <span className="text-[11px] font-semibold text-zinc-700">Harita Başlığı</span>
+          </div>
+          <i className={`fa-solid fa-chevron-${showMapTitleConfig ? 'up' : 'down'} text-[9px] text-zinc-400`}></i>
+        </button>
+
+        {showMapTitleConfig && (
+          <div className="px-3 pb-3 pt-2 border-t border-zinc-100 space-y-3">
+            {/* Show/Hide Toggle */}
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-medium text-zinc-600">Başlığı Göster</label>
+              <button
+                onClick={() => setMapTitle({ visible: !mapTitle.visible })}
+                className={`
+                  w-12 h-6 rounded-full transition-all relative
+                  ${mapTitle.visible ? 'bg-blue-500' : 'bg-zinc-300'}
+                `}
+              >
+                <div
+                  className={`
+                    w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all
+                    ${mapTitle.visible ? 'left-6' : 'left-0.5'}
+                  `}
+                />
+              </button>
+            </div>
+
+            {mapTitle.visible && (
+              <>
+                {/* Position */}
+                <div>
+                  <label className="text-[11px] font-medium text-zinc-600 mb-1.5 block">
+                    Pozisyon
+                  </label>
+                  <select
+                    value={mapTitle.position}
+                    onChange={(e) => setMapTitle({ position: e.target.value as 'top-left' | 'top-center' | 'top-right' })}
+                    className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded bg-white hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="top-left">Sol Üst</option>
+                    <option value="top-center">Orta Üst</option>
+                    <option value="top-right">Sağ Üst</option>
+                  </select>
+                </div>
+
+                {/* Font Size Slider */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-medium text-zinc-600">Yazı Boyutu</label>
+                    <span className="text-[10px] text-zinc-400">{mapTitle.fontSize || 24}px</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min={5}
+                      max={55}
+                      step={1}
+                      value={mapTitle.fontSize || 24}
+                      onChange={(e) => setMapTitle({ fontSize: Number.parseInt(e.target.value) })}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min={5}
+                      max={55}
+                      value={mapTitle.fontSize || 24}
+                      onChange={(e) => setMapTitle({ fontSize: Number.parseInt(e.target.value) })}
+                      className="w-14 px-2 py-1 text-[10px] border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+                  <p className="text-[10px] text-blue-700">
+                    💡 Başlığı düzenlemek için harita üzerinde tıklayın
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Data Distribution Preview Toggle */}
+      {dataValues.length > 0 && (
         <div>
           <button
-            onClick={() => performMatching()}
-            className="w-full px-3 py-2 text-[11px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+            onClick={() => setShowDataPreview(!showDataPreview)}
+            className="w-full px-2.5 py-1.5 text-[10px] font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors flex items-center justify-center gap-1"
           >
-            <i className="fa-solid fa-play mr-1.5 text-[10px]"></i>
-            Eşleştirmeyi Başlat
+            <i className={'fa-solid fa-chart-bar text-[9px]'}></i>
+            {showDataPreview ? 'Veri Önizlemesini Gizle' : 'Veri Dağılımını Göster'}
           </button>
         </div>
       )}
 
-      {/* Loading indicator */}
-      {isMatching && (
-        <div className="bg-blue-50/50 rounded-md p-2.5 flex items-center gap-2">
-          <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-500 border-t-transparent"></div>
-          <p className="text-[11px] text-blue-700">Eşleştiriliyor...</p>
-        </div>
-      )}
-
-      {/* Match results summary */}
-      {!isMatching && hasMatched && (
-        <MatchResultsSummary
-          matchResults={matchResults}
-          onShowDetails={() => setShowModal(true)}
+      {/* Data Distribution Preview */}
+      {showDataPreview && dataValues.length > 0 && (
+        <DataDistributionPreview
+          values={dataValues}
+          colorScheme={vizSettings.colorScheme}
+          classCount={vizSettings.classCount}
+          classificationMethod={vizSettings.classificationMethod}
         />
       )}
 
-      {/* Match Results Modal */}
-      <MatchResultsModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        matchResults={matchResults}
-        dataColumn={columnMapping.dataColumn}
-        locationColumn={columnMapping.locationColumn}
-        onEdit={handleEdit}
-      />
+      {/* Action buttons */}
+      <div className="space-y-1.5 pt-1">
+        {/* Render button */}
+        <button
+          onClick={() => handleRender()}
+          disabled={isRendering}
+          className="w-full px-3 py-2 text-[11px] font-semibold text-white bg-linear-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+        >
+          {isRendering ? (
+            <>
+              <div className="inline-block animate-spin rounded-full h-2.5 w-2.5 border-2 border-white border-t-transparent mr-1.5"></div>
+              Görselleştiriliyor...
+            </>
+          ) : hasRendered ? (
+            <>
+              <i className="fa-solid fa-arrows-rotate mr-1.5 text-[10px]"></i>
+              Yeniden Görselleştir
+            </>
+          ) : (
+            <>
+              <i className="fa-solid fa-wand-magic-sparkles mr-1.5 text-[10px]"></i>
+              Görselleştir
+            </>
+          )}
+        </button>
 
-      {/* Warnings and info - compact */}
-      {!isMatching && hasMatched && (
-        <MatchResultsWarnings matchResults={matchResults} />
-      )}
+        {/* Back button */}
+        <button
+          onClick={onBack}
+          className="w-full px-3 py-1.5 text-[11px] font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors"
+        >
+          <i className="fa-solid fa-chevron-left mr-1 text-[9px]"></i>
+          Geri
+        </button>
+      </div>
 
-      {/* Navigation buttons */}
-      {!isMatching && hasMatched && (
-        <div className="flex gap-1.5 pt-1">
-          <button
-            onClick={onBack}
-            className="flex-1 px-3 py-1.5 text-[11px] font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-md transition-colors"
-          >
-            <i className="fa-solid fa-chevron-left mr-1 text-[9px]"></i>
-            Geri
-          </button>
-          <button
-            onClick={handleNext}
-            disabled={matchResults.successful.length === 0}
-            className="flex-1 px-3 py-1.5 text-[11px] font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            İleri
-            <i className="fa-solid fa-chevron-right ml-1 text-[9px]"></i>
-          </button>
+      {/* Success message - Compact */}
+      {hasRendered && (
+        <div className="bg-emerald-50/50 rounded-md p-2 flex items-center gap-2">
+          <i className="fa-solid fa-circle-check text-emerald-600 text-xs"></i>
+          <p className="text-[10px] text-emerald-700">
+            Tamamlandı! Ayarları değiştirip tekrar deneyebilirsiniz.
+          </p>
         </div>
       )}
     </div>

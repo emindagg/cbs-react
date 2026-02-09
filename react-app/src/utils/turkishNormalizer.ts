@@ -84,9 +84,28 @@ const PLATE_CODE_MAP = new Map<string, string>([
   ['81', 'duzce'],
 ])
 
+// ── Province Name → Plate Code (reverse lookup) ───────────────
+const NAME_TO_PLATE = new Map<string, string>()
+for (const [code, name] of PLATE_CODE_MAP) {
+  NAME_TO_PLATE.set(name, code)
+}
+// Extra aliases → plate code
+NAME_TO_PLATE.set('afyon', '03')
+NAME_TO_PLATE.set('antep', '27')
+NAME_TO_PLATE.set('gantep', '27')
+NAME_TO_PLATE.set('maras', '46')
+NAME_TO_PLATE.set('kmaras', '46')
+NAME_TO_PLATE.set('urfa', '63')
+NAME_TO_PLATE.set('surfa', '63')
+NAME_TO_PLATE.set('icel', '33')
+NAME_TO_PLATE.set('antakya', '31')
+
 // ── Suffix patterns to strip from location names ───────────────
+// NOTE: Do NOT add bare 'il' or 'sehir' — they corrupt real names
+// like Bismil→bism, Ataşehir→ata, Yenişehir→yeni, Kırşehir→kir, Akşehir→ak
+// 'ili' and 'sehri' (possessive forms) are sufficient for user inputs like "Ankara İli" / "Ankara Şehri"
 const LOCATION_SUFFIXES = [
-  'ili', 'il', 'ilcesi', 'ilce', 'sehri', 'sehir',
+  'ili', 'ilcesi', 'ilce', 'sehri',
   'province', 'city', 'district',
 ]
 
@@ -178,6 +197,29 @@ export function normalizeTurkishText(
  */
 export function getProvinceAliases(): Map<string, string> {
   return new Map(PROVINCE_ALIASES)
+}
+
+/**
+ * Convert a normalized province name to its plate code.
+ * Accepts both raw Turkish text ("Gaziantep") and already-normalized text ("gaziantep").
+ * Returns the zero-padded plate code string (e.g. "27") or null if not found.
+ *
+ * Also handles the case where the input is already a plate code ("27" → "27").
+ */
+export function getPlateCodeByName(input: string): string | null {
+  if (!input) return null
+
+  const normalized = normalizeTurkishText(input, true) // skip alias to avoid plate→name→plate loop
+
+  // Already a plate code?
+  if (/^\d{1,2}$/.test(normalized)) {
+    return normalized.padStart(2, '0')
+  }
+
+  // Resolve aliases first (e.g. "antep" → "gaziantep")
+  const resolved = PROVINCE_ALIASES.get(normalized) ?? normalized
+
+  return NAME_TO_PLATE.get(resolved) ?? null
 }
 
 // ── Plate Code → Display Name (Turkish) ─────────────────────────

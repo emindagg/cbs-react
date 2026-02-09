@@ -12,7 +12,7 @@ import type {
 } from '../types/geojson'
 import type { ClassificationMethod, VisualizationSettings } from '../types/visualization'
 import { suggestClassificationMethod } from '../utils/classificationMethods'
-import { normalizeTurkishText } from '../utils/turkishNormalizer'
+import { getPlateCodeByName, normalizeTurkishText } from '../utils/turkishNormalizer'
 import { BubbleRenderer } from './renderers/BubbleRenderer'
 import { ChoroplethRenderer } from './renderers/ChoroplethRenderer'
 import { PointRenderer } from './renderers/PointRenderer'
@@ -165,8 +165,8 @@ export class VisualizationManager {
         props.district
       const provinceName =
         props.ILAD || props.IL_ADI || props.il_adi || props.il || props.province || props.PROVINCE || props.IL
-      const geoKey = props.key // Benzersiz key (ör: "istanbul_kadikoy")
-      const plaka = props.plaka // Plaka kodu (ör: 34)
+      const geoKey = props.key || props.KEY // Benzersiz key (ör: "istanbul_kadikoy" veya "27_sehitkamil")
+      const plaka = props.plaka ?? props.IL // Plaka kodu (ör: 34 veya "27")
 
       if (districtName) {
         const normalized = normalizeTurkishText(String(districtName))
@@ -189,6 +189,14 @@ export class VisualizationManager {
 
         index[normalized].push(districtInfo)
 
+        // Composite key ile de indexle (province_district format: "istanbul_kadikoy")
+        if (compositeKey && compositeKey.includes('_') && compositeKey !== normalized) {
+          if (!index[compositeKey]) {
+            index[compositeKey] = []
+          }
+          index[compositeKey].push(districtInfo)
+        }
+
         // GeoJSON key ile de indexle (benzersiz anahtar)
         if (geoKey) {
           const normalizedKey = normalizeTurkishText(String(geoKey))
@@ -198,14 +206,44 @@ export class VisualizationManager {
           index[normalizedKey].push(districtInfo)
         }
 
-        // Plaka kodu ile de indexle
+        // Plaka kodu ile de indexle (örn: "27_sehitkamil")
         if (plaka !== undefined && plaka !== null) {
-          const plakaStr = String(plaka).trim()
+          const plakaStr = String(plaka).trim().padStart(2, '0')
           const plakaDistrictKey = `${plakaStr}_${normalized}`
           if (!index[plakaDistrictKey]) {
             index[plakaDistrictKey] = []
           }
           index[plakaDistrictKey].push(districtInfo)
+
+          // Sıfırsız versiyon da ekle ("7" → "7_merkez" gibi)
+          const unpadded = String(parseInt(plakaStr, 10))
+          if (unpadded !== plakaStr) {
+            const unpaddedKey = `${unpadded}_${normalized}`
+            if (!index[unpaddedKey]) {
+              index[unpaddedKey] = []
+            }
+            index[unpaddedKey].push(districtInfo)
+          }
+        }
+
+        // İl adı bazlı compositeKey varsa, plaka bazlı versiyonunu da ekle
+        // "gaziantep_sehitkamil" → "27_sehitkamil" ve tersi
+        if (compositeKey && compositeKey.includes('_')) {
+          const underscoreIdx = compositeKey.indexOf('_')
+          const prefix = compositeKey.substring(0, underscoreIdx)
+          const suffix = compositeKey.substring(underscoreIdx + 1)
+
+          if (/^[a-z]+$/.test(prefix)) {
+            // Province name → plate code version
+            const plateCode = getPlateCodeByName(prefix)
+            if (plateCode) {
+              const plateKey = `${plateCode}_${suffix}`
+              if (!index[plateKey]) index[plateKey] = []
+              index[plateKey].push(districtInfo)
+            }
+          } else if (/^\d+$/.test(prefix)) {
+            // Plate code → province name version (already done via normalizeTurkishText in compositeKey)
+          }
         }
       }
     })

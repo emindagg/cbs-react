@@ -10,7 +10,7 @@ import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojs
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBreaks } from '../../utils/classificationMethods'
 import { calculateCentroid } from '../../utils/geometryUtils'
-import { normalizeTurkishText } from '../../utils/turkishNormalizer'
+import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
 
 export class PointRenderer {
   private map: Map
@@ -78,7 +78,14 @@ export class PointRenderer {
           const provinceName = String(d._province)
           const provinceNormalized = normalizeTurkishText(provinceName)
           const compositeKey = `${provinceNormalized}_${normalizedKey}`
-          dataMap[compositeKey] = parseFloat(String(d[dataColumn]))
+          const value = parseFloat(String(d[dataColumn]))
+          dataMap[compositeKey] = value
+
+          // Also store plate-code-based key (e.g. "27_sehitkamil")
+          const plateCode = getPlateCodeByName(provinceName)
+          if (plateCode) {
+            dataMap[`${plateCode}_${normalizedKey}`] = value
+          }
         } else {
           dataMap[normalizedKey] = parseFloat(String(d[dataColumn]))
         }

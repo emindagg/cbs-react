@@ -5,7 +5,7 @@
  */
 
 import type { ColumnMapping, MatchResult, MatchResults } from '../../types/visualization'
-import { findClosestMatch, normalizeTurkishText } from '../turkishNormalizer'
+import { findClosestMatch, getPlateCodeByName, normalizeTurkishText } from '../turkishNormalizer'
 import type { ColumnMapperIndexes, RawDataRow } from './types'
 
 /**
@@ -267,14 +267,21 @@ function matchMixed(
     }
   }
 
-  // Create composite key
+  // Create composite key (province name based)
   const compositeKey = `${normalizedProvince}_${normalizedDistrict}`
+
+  // Also create plate-code-based composite key (e.g. "27_sehitkamil")
+  const plateCode = getPlateCodeByName(normalizedProvince)
+  const plateCompositeKey = plateCode ? `${plateCode}_${normalizedDistrict}` : null
 
   // Try to find in district index
   const districtMatches = indexes.districtIndex[normalizedDistrict]
   if (districtMatches && districtMatches.length > 0) {
-    // Find exact match with province
-    const exactMatch = districtMatches.find((d) => d.compositeKey === compositeKey)
+    // Find exact match with province (try name-based key first, then plate-based key)
+    const exactMatch = districtMatches.find((d) =>
+      d.compositeKey === compositeKey
+      || (plateCompositeKey && d.compositeKey === plateCompositeKey)
+    )
     if (exactMatch) {
       result.matched = true
       result.province = exactMatch.province

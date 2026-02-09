@@ -16,6 +16,8 @@
     "@turf/turf": "^7.3.3",
     "@types/shpjs": "^3.4.7",
     "@types/uuid": "^10.0.0",
+    "ag-grid-community": "^35.0.1",
+    "ag-grid-react": "^35.0.1",
     "astronomy-engine": "^2.1.19",
     "chroma-js": "^3.2.0",
     "clsx": "^2.1.1",
