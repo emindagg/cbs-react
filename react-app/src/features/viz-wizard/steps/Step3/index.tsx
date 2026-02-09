@@ -108,7 +108,10 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         onScaleTypeChange={(type) => {
           setColorConfig({ scaleType: type })
           if (type === 'continuous') {
-            setVizSettings({ classificationMethod: 'continuous-linear' })
+            setVizSettings({
+              classificationMethod: 'continuous-linear',
+              interpolation: colorConfig.interpolation ?? 'equidistant',
+            })
           } else {
             setVizSettings({ classificationMethod: 'equal' })
           }
@@ -122,7 +125,10 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
             'quantiles-11': 'continuous-quantile',
             'natural-9': 'continuous-natural',
           }
-          setVizSettings({ classificationMethod: methodMap[interpolation] || 'continuous-linear' })
+          setVizSettings({
+            classificationMethod: methodMap[interpolation] || 'continuous-linear',
+            interpolation,
+          })
         }}
       />
 

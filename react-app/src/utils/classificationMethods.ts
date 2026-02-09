@@ -610,7 +610,9 @@ export const INTERPOLATION_INFO: Record<
 }
 
 /**
- * Normalize value to 0-1 range for continuous interpolation
+ * Normalize value to 0-1 range for continuous interpolation.
+ * Equidistant: linear (value-min)/(max-min).
+ * Quantile/Natural: break tabanlı; her kırılım aralığında doğrusal interpolasyon.
  */
 export function normalizeValue(
   value: number,
@@ -621,22 +623,30 @@ export function normalizeValue(
 ): number {
   if (max === min) return 0.5
 
-  // For equidistant (linear), simple normalization
+  // Doğrusal (eşit aralık): basit normalizasyon
   if (interpolation === 'equidistant') {
     return (value - min) / (max - min)
   }
 
-  // For quantile-based methods, find position in sorted values
-  if (values && (interpolation.startsWith('quantiles') || interpolation === 'natural-9')) {
-    const sorted = [...values].sort((a, b) => a - b)
-    const index = sorted.findIndex((v) => v >= value)
+  // Quantile / doğal kırılım: kırılım değerlerine göre segment içinde doğrusal
+  if (values && values.length > 0 && (interpolation.startsWith('quantiles') || interpolation === 'natural-9')) {
+    const breaks = calculateBreaksFromInterpolation(values, interpolation)
+    if (breaks.length < 2) return (value - min) / (max - min)
 
-    if (index === -1) return 1 // Value is greater than max
-    if (index === 0) return 0 // Value is less than min
+    if (value <= breaks[0]) return 0
+    if (value >= breaks[breaks.length - 1]) return 1
 
-    return index / (sorted.length - 1)
+    let i = 0
+    while (i < breaks.length - 1 && value >= breaks[i + 1]) i++
+    if (i >= breaks.length - 1) return 1
+
+    const segMin = breaks[i]
+    const segMax = breaks[i + 1]
+    const segSpan = segMax - segMin
+    const tLocal = segSpan > 0 ? (value - segMin) / segSpan : 0
+    const numSegments = breaks.length - 1
+    return (i + tLocal) / numSegments
   }
 
-  // Fallback to linear
   return (value - min) / (max - min)
 }

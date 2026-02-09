@@ -88,6 +88,7 @@ const defaultVizSettings: VisualizationSettings = {
   classificationMethod: 'jenks',
   colorScheme: 'greenBlue',
   legendType: 'discrete',
+  interpolation: 'equidistant',
 }
 
 const defaultMatchResults: MatchResults = {

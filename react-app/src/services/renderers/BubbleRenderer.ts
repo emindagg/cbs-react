@@ -191,7 +191,13 @@ export class BubbleRenderer {
     if (dataValue !== undefined && dataValue !== 0) {
       // Choose color based on mode: continuous or steps
       if (isContinuous) {
-        color = getContinuousColorForValue(dataValue, allValues, settings.colorScheme)
+        color = getContinuousColorForValue(
+          dataValue,
+          allValues,
+          settings.colorScheme,
+          'lab',
+          settings.interpolation ?? 'equidistant',
+        )
       } else {
         color = getColorForValue(dataValue, breaks, colorPalette)
       }

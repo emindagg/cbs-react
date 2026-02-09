@@ -84,6 +84,8 @@ export interface VisualizationSettings {
   colorScheme: ColorScheme;
   legendType: LegendType;
   customBreaks?: number[];
+  /** Continuous modda renk ölçeği: equidistant, quantiles-*, natural-9 */
+  interpolation?: InterpolationMethod;
   // Symbol Map Settings
   symbolShape?: SymbolShape;
   symbolScaling?: SymbolScaling;

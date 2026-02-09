@@ -143,7 +143,13 @@ export class ChoroplethRenderer {
         feature.properties.dataValue = dataValue
         // Choose color based on mode: continuous or steps
         if (isContinuous) {
-          feature.properties.color = getContinuousColorForValue(dataValue, allValues, settings.colorScheme)
+          feature.properties.color = getContinuousColorForValue(
+            dataValue,
+            allValues,
+            settings.colorScheme,
+            'lab',
+            settings.interpolation ?? 'equidistant',
+          )
         } else {
           feature.properties.color = getColorForValue(dataValue, breaks, colorPalette)
         }

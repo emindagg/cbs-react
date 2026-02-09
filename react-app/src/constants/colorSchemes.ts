@@ -4,7 +4,8 @@
  * Enhanced with Datawrapper-style interpolation support
  */
 
-import type { ColorScheme } from '../types/visualization'
+import type { ColorScheme, InterpolationMethod } from '../types/visualization'
+import { normalizeValue } from '../utils/classificationMethods'
 import { generateColorScale, interpolateColor, type ColorSpace } from '../utils/colorInterpolation'
 
 export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
@@ -266,14 +267,15 @@ export function getColorForValue(value: number, breaks: number[], colorPalette: 
 }
 
 /**
- * Get color for a value with continuous interpolation
- * Maps value to color using smooth transitions
+ * Get color for a value with continuous interpolation.
+ * Seçilen interpolasyon yöntemine göre (equidistant, quantiles-*, natural-9) 0-1 normalizasyonu yapar.
  */
 export function getContinuousColorForValue(
   value: number,
   values: number[],
   colorScheme: ColorScheme,
   colorSpace: ColorSpace = 'lab',
+  interpolation: InterpolationMethod = 'equidistant',
 ): string {
   const sorted = [...values].sort((a, b) => a - b)
   const min = sorted[0]
@@ -283,6 +285,6 @@ export function getContinuousColorForValue(
     return COLOR_SCHEMES[colorScheme][0]
   }
 
-  const normalized = (value - min) / (max - min)
+  const normalized = normalizeValue(value, min, max, interpolation, values)
   return getContinuousColor(normalized, colorScheme, colorSpace)
 }
