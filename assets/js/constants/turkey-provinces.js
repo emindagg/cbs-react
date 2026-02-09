@@ -139,6 +139,7 @@ function normalizeName(raw) {
   }
   
   // Eski API ile uyumlu
+  // eslint-disable-next-line no-unused-vars
   function findProvinceCoordinates(name) {
     const res = getProvince(name);
     return res ? { lat: res.lat, lon: res.lon } : null;
@@ -151,10 +152,10 @@ function normalizeName(raw) {
   
   /**
    * GeoJSON'dan ilçe indeksini oluştur
-   * Her ilçe ismini normalize ederek indeksle
    * @param {Object} geojson - İl ve ilçe içeren GeoJSON (birleşik format)
    * @returns {Object} - normalize_isim -> [{name, province, lat, lon}]
    */
+  // eslint-disable-next-line no-unused-vars
   function buildDistrictIndex(geojson) {
     const index = {};
     
@@ -245,10 +246,10 @@ function normalizeName(raw) {
     Logger.log(`  - İşlenen: ${processedCount}, Atlanan: ${skippedCount}`);
     
     // Aynı isimli ilçeler varsa uyar
-    const duplicates = Object.entries(index).filter(([name, list]) => list.length > 1);
+    const duplicates = Object.entries(index).filter(([_name, list]) => list.length > 1);
     if (duplicates.length > 0) {
       Logger.log(`⚠️ ${duplicates.length} ilçe ismi birden fazla ilde bulunuyor (beklenen durum):`);
-      duplicates.slice(0, 5).forEach(([name, list]) => {
+      duplicates.slice(0, 5).forEach(([_name, list]) => {
         Logger.log(`  - "${list[0].name}": ${list.map(d => d.province).join(', ')}`);
       });
     }

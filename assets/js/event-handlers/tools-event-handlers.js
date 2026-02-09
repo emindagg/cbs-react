@@ -71,7 +71,7 @@ class ToolsEventHandlers {
                     'build-voronoi', 'nearest-facility', 'toggle-heatmap'
                 ];
                 const reportBtn = document.getElementById('generate-report');
-                const heatControls = document.getElementById('heat-controls');
+                void document.getElementById('heat-controls'); // heat-controls sadece toggle-heatmap'te kullanılır
 
                 buttons.forEach(id => {
                     const btn = document.getElementById(id);

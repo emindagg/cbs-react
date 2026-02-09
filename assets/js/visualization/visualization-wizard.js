@@ -61,7 +61,6 @@ class VisualizationWizard {
         const vizClassificationSelect = document.getElementById('viz-classification-select');
         const vizColorSchemeSelect = document.getElementById('viz-color-scheme-select');
         const vizLegendTypeSelect = document.getElementById('viz-legend-type-select');
-        const vizCustomBreaks = document.getElementById('viz-custom-breaks');
         const vizApplySuggestion = document.getElementById('viz-apply-suggestion');
         
         // Renk paletleri
@@ -85,7 +84,7 @@ class VisualizationWizard {
         
         // Sınıf sayısı değiştiğinde
         if (vizClassCountSelect) {
-            vizClassCountSelect.addEventListener('change', (e) => {
+            vizClassCountSelect.addEventListener('change', (_e) => {
             });
         }
         
@@ -147,8 +146,8 @@ class VisualizationWizard {
         // Bubble method değişikliği
         const bubbleMethodSelect = document.getElementById('viz-bubble-method');
         if (bubbleMethodSelect) {
-            bubbleMethodSelect.addEventListener('change', (e) => {
-                const method = e.target.value;
+            bubbleMethodSelect.addEventListener('change', (ev) => {
+                const method = ev.target.value;
                 const classCountContainer = document.getElementById('viz-bubble-class-count-container');
                 const classificationContainer = document.getElementById('viz-bubble-classification-container');
                 const methodInfo = document.getElementById('viz-bubble-method-info');
@@ -184,7 +183,7 @@ class VisualizationWizard {
         // Bubble color picker anlık değişim
         const bubbleColorInput = document.getElementById('viz-bubble-color');
         if (bubbleColorInput) {
-            bubbleColorInput.addEventListener('input', (e) => {
+            bubbleColorInput.addEventListener('input', (_e) => {
                 // Eğer harita zaten varsa anlık güncelle
                 if (window.visualizationManager?.currentVisualization?.type === 'bubble') {
                     const wizard = window.visualizationWizard;

@@ -1478,10 +1478,9 @@ class VisualizationManager {
             // Proportional: Çeyrekler (her zaman label context)
             const sortedSizes = [...sizeValues].filter(v => v > 0).sort((a, b) => a - b);
             const minSize = sortedSizes[0];
-            const q1 = sortedSizes[Math.floor(sortedSizes.length * 0.25)];
             const median = sortedSizes[Math.floor(sortedSizes.length * 0.5)];
             const q3 = sortedSizes[Math.floor(sortedSizes.length * 0.75)];
-            
+
             legendSizes = [
                 { value: maxSize, label: this.formatLegendValue(maxSize, false), isRange: false },
                 { value: q3, label: this.formatLegendValue(q3, false), isRange: false },
@@ -3032,10 +3031,7 @@ class VisualizationManager {
         }
         
         const sorted = [...values].sort((a, b) => a - b);
-        const min = sorted[0];
-        const max = sorted[sorted.length - 1];
-        const range = max - min;
-        
+
         // Calculate standard deviation
         const mean = sorted.reduce((sum, v) => sum + v, 0) / sorted.length;
         const variance = sorted.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / sorted.length;

@@ -5,7 +5,9 @@
  */
 
 // G�venli Logger helper'lar�
+// eslint-disable-next-line no-unused-vars
 const safeLogCat = (...args) => window.Logger?.log ? window.Logger.log(...args) : console.log(...args);
+// eslint-disable-next-line no-unused-vars
 const safeWarnCat = (...args) => window.Logger?.warn ? window.Logger.warn(...args) : console.warn(...args);
 const safeErrorCat = (...args) => window.Logger?.error ? window.Logger.error(...args) : console.error(...args);
 

@@ -4,6 +4,7 @@
  */
 
 // Güvenli Logger helper'ları
+// eslint-disable-next-line no-unused-vars
 const safeLogInt = (...args) => window.Logger?.log ? window.Logger.log(...args) : console.log(...args);
 const safeWarnInt = (...args) => window.Logger?.warn ? window.Logger.warn(...args) : console.warn(...args);
 const safeErrorInt = (...args) => window.Logger?.error ? window.Logger.error(...args) : console.error(...args);
@@ -262,6 +263,7 @@ function initializeBasemapSelector() {
     }
     
     // Helper function to get the ID of the first data visualization layer
+    // eslint-disable-next-line no-unused-vars
     function getFirstDataLayerId(map) {
         const layers = map.getStyle().layers;
         const dataLayerIds = [

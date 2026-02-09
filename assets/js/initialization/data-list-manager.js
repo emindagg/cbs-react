@@ -101,7 +101,7 @@ function updateDataList() {
         });
 
         // Handle single-click to show on map
-        clickableArea.addEventListener('click', (e) => {
+        clickableArea.addEventListener('click', (_e) => {
             if (isDoubleClick) return;
 
             if (clickTimer) {

@@ -524,7 +524,7 @@ class CoordinateMapper {
         return html;
     }
 
-    attachEventListeners(autoDetected) {
+    attachEventListeners(_autoDetected) {
         // Close button
         document.getElementById('coord-mapper-close')?.addEventListener('click', () => this.cancel());
 

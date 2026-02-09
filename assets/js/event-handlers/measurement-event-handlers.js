@@ -6,6 +6,7 @@
 
 // Güvenli Logger helper'ları
 const safeLogMeasure = (...args) => window.Logger?.log ? window.Logger.log(...args) : console.log(...args);
+// eslint-disable-next-line no-unused-vars
 const safeWarnMeasure = (...args) => window.Logger?.warn ? window.Logger.warn(...args) : console.warn(...args);
 const safeErrorMeasure = (...args) => window.Logger?.error ? window.Logger.error(...args) : console.error(...args);
 

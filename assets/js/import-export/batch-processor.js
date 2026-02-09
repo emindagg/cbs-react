@@ -206,7 +206,6 @@ class BatchProcessor {
         
         // Completion
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        const rate = Math.round(totalMarkers / (parseFloat(elapsed) || 1));
         this.log(`✅ Batch import tamamlandı: ${processed} veri, ${elapsed} saniye`);
         
         if (progressModal) {

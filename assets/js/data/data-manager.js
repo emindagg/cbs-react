@@ -1430,26 +1430,6 @@ ${coords}
     }
 
     /**
-     * Process MultiPolygon geometry
-     * @private
-     */
-    _processMultiPolygonGeometry(marker, geom) {
-        const coords = geom.coordinates[0][0];
-        if (coords && coords.length > 0) {
-            marker.geometry = coords.slice(0, -1).map(coord => ({
-                lat: coord[1],
-                lon: coord[0]
-            }));
-
-            if (marker.geometry.length > 0) {
-                marker.lat = marker.geometry[0].lat;
-                marker.lon = marker.geometry[0].lon;
-                marker.type = 'area';
-            }
-        }
-    }
-
-    /**
      * Process MultiPoint geometry - Her point için ayrı marker oluşturulmalı
      * Bu fonksiyon sadece ilk point'i işler, diğerleri için importFromGeoJSONObject içinde ayrı feature'lar oluşturulmalı
      * @private

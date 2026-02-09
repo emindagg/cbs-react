@@ -517,9 +517,7 @@ const AstroGlobe = {
         
         // Sub-solar point'in hangi yarımkürede olduğuna göre gece tarafını belirle
         // Terminator çizgisini kuzey/güney kutuplarıyla birleştir
-        const lastLat = coordinates[coordinates.length - 1][1];
-        const firstLat = coordinates[0][1];
-        
+
         // Gece tarafını tamamla: Terminator + kutup noktaları
         if (subSolarLat >= 0) {
             // Güneş kuzey yarımkürede → Güney kutbu karart
@@ -1591,7 +1589,7 @@ const AstroGlobe = {
     /**
      * Tarihe göre mevsimi belirle (orta kuşak için)
      */
-    getSeason(declination) {
+    getSeason(_declination) {
         // Yılın gününü hesapla (mevsim belirleme için tarihe bakmak gerekir)
         const dayOfYear = this.getDayOfYear(this.currentDate);
         
@@ -1621,7 +1619,7 @@ const AstroGlobe = {
      * Gün dönümü veya ekinoks bilgisini al
      */
     getSolsticeEquinoxInfo(date) {
-        const year = date.getFullYear();
+        void date.getFullYear();
         const month = date.getMonth() + 1; // 1-12
         const day = date.getDate();
         

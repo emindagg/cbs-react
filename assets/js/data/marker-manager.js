@@ -868,7 +868,7 @@ if (typeof window !== 'undefined') {
                     window.mapClickOrchestrator.registerLayerHandler('catalog-polygons', {
                         name: 'polygon-popup',
                         priority: 10, // Lower than data-drawing (50) to allow data collection to take precedence
-                        canHandle: (e) => {
+                        canHandle: (_e) => {
                             // Don't show popup if data collection is active
                             const dataTypeSelect = document.getElementById('data-type');
                             const currentMode = dataTypeSelect ? dataTypeSelect.value : 'none';
@@ -919,7 +919,7 @@ if (typeof window !== 'undefined') {
                     window.mapClickOrchestrator.registerLayerHandler('catalog-lines', {
                         name: 'line-popup',
                         priority: 10, // Lower than data-drawing (50) to allow data collection to take precedence
-                        canHandle: (e) => {
+                        canHandle: (_e) => {
                             // Don't show popup if data collection is active
                             const dataTypeSelect = document.getElementById('data-type');
                             const currentMode = dataTypeSelect ? dataTypeSelect.value : 'none';

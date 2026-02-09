@@ -10,8 +10,6 @@
  */
 function initializeUIPanels() {
     // Note: We query elements dynamically when needed (in functions) instead of caching them here
-    // This is more reliable for dynamically rendered content (e.g., sidebar from templates.js)
-    const mapMain = document.getElementById('map-main');
     const mapControls = document.getElementById('map-control-container');
 
     const toggleBasemapBtn = document.getElementById('toggle-basemap-button');
@@ -30,7 +28,6 @@ function initializeUIPanels() {
         const isMdUp = window.matchMedia('(min-width: 768px)').matches;
 
         const coordinateDisplay = document.getElementById('coordinate-display');
-        const scaleLineContainer = document.getElementById('scale-line-container');
         const labelFab = document.getElementById('label-fab');
         const searchContainer = document.getElementById('search-container');
 

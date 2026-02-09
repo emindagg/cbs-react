@@ -54,7 +54,7 @@ function markersToExcelData(markers) {
  * @param {string} fileName - File name (without extension)
  * @returns {Object|null} - Workbook object or null if XLSX not available
  */
-function createExcelWorkbook(markers, fileName = 'cbs-data') {
+function createExcelWorkbook(markers, _fileName = 'cbs-data') {
     // Check if XLSX is available
     if (typeof XLSX === 'undefined') {
         if (window.Logger && typeof window.Logger.error === 'function') { window.Logger.error('XLSX.js library not loaded'); } else { console.error('XLSX.js library not loaded'); }

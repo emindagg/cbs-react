@@ -183,7 +183,7 @@ class LayerManager {
     async loadGeoJSON(filePath) {
         return new Promise((resolve, reject) => {
             // Tam URL oluştur
-            const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
+            const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
             const fullUrl = new URL(filePath, baseUrl).href;
 
             fetch(fullUrl)
@@ -215,7 +215,7 @@ class LayerManager {
     async loadZipShapefile(filePath) {
         return new Promise((resolve, reject) => {
             // Tam URL oluştur
-            const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
+            const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
             const fullUrl = new URL(filePath, baseUrl).href;
 
             // shp.js zip dosyalarını destekler
@@ -240,7 +240,7 @@ class LayerManager {
     async loadShapefile(filePath) {
         return new Promise((resolve, reject) => {
             // Tam URL oluştur
-            const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
+            const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
             const fullUrl = new URL(filePath, baseUrl).href;
 
             // shp.js kullanarak shapefile'ı yükle

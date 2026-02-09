@@ -84,7 +84,7 @@ class LayerStylePanel {
         this.fab = document.getElementById('layer-style-fab');
 
         // Add click handler
-        this.fab.addEventListener('click', (e) => {
+        this.fab.addEventListener('click', (_e) => {
             // Only trigger panel if not dragging
             if (!this.isDragging) {
                 this.togglePanel();
@@ -109,14 +109,9 @@ class LayerStylePanel {
     addDragHandlers() {
         if (!this.fab) return;
 
-        let clickStartTime = 0;
-        let clickStartPos = { x: 0, y: 0 };
-
         // Mouse events
         this.fab.addEventListener('mousedown', (e) => {
             e.preventDefault();
-            clickStartTime = Date.now();
-            clickStartPos = { x: e.clientX, y: e.clientY };
 
             this.isDragging = false; // Will become true if mouse moves
             const rect = this.fab.getBoundingClientRect();
@@ -129,9 +124,7 @@ class LayerStylePanel {
 
         // Touch events
         this.fab.addEventListener('touchstart', (e) => {
-            clickStartTime = Date.now();
             const touch = e.touches[0];
-            clickStartPos = { x: touch.clientX, y: touch.clientY };
 
             this.isDragging = false;
             const rect = this.fab.getBoundingClientRect();
@@ -172,7 +165,7 @@ class LayerStylePanel {
         }
     }
 
-    onMouseUp = (e) => {
+    onMouseUp = (_e) => {
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('mouseup', this.onMouseUp);
 
@@ -214,7 +207,7 @@ class LayerStylePanel {
         }
     }
 
-    onTouchEnd = (e) => {
+    onTouchEnd = (_e) => {
         document.removeEventListener('touchmove', this.onTouchMove);
         document.removeEventListener('touchend', this.onTouchEnd);
 

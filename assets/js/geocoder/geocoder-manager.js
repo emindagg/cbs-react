@@ -93,7 +93,7 @@ class GeocoderManager {
      * @param {Function} onResultClick - Sonuca tıklandığında çağrılacak fonksiyon
      * @returns {string} HTML string
      */
-    renderResultsDropdown(results, onResultClick) {
+    renderResultsDropdown(results, _onResultClick) {
         if (!results || !results.features || results.features.length === 0) {
             return '<div class="geocoder-no-results">Sonuç bulunamadı</div>';
         }

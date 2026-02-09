@@ -13,7 +13,7 @@
     const safeErrorSA = (...args) => (window.Logger && typeof window.Logger.error === 'function') ? window.Logger.error(...args) : console.error(...args);
 
     // Reference utility functions
-    const { formatNumber, formatArea, showEducationalFeedback } = window;
+    const { formatArea, showEducationalFeedback } = window;
     
     /**
      * Helper: Haritada görünür olan veriyi al
@@ -501,6 +501,7 @@ safeLogSA(`⚡ Clustering aktif ediliyor: ${features.length} nokta`);
         }
     }
     
+    // eslint-disable-next-line no-unused-vars -- reserved for future use
     function disableClustering() {
         // Remove cluster layers
         if (window.map.getLayer('clusters')) {
@@ -518,7 +519,7 @@ safeLogSA(`⚡ Clustering aktif ediliyor: ${features.length} nokta`);
 
         // Show individual markers again (only those that were on map before clustering)
         if (window.markerManager && window.markerManager.markers) {
-            window.markerManager.markers.forEach((marker, id) => {
+            window.markerManager.markers.forEach((marker, _id) => {
                 const el = marker.getElement();
                 if (el) {
                     el.style.display = ''; // Restore display
@@ -562,7 +563,7 @@ safeLogSA(`⚡ Clustering aktif ediliyor: ${features.length} nokta`);
             let hiddenCount = 0;
             let alreadyRemovedCount = 0;
 
-            window.markerManager.markers.forEach((marker, id) => {
+            window.markerManager.markers.forEach((marker, _id) => {
                 const el = marker.getElement();
 
                 // Check if marker is in DOM (has _map property)
@@ -614,7 +615,7 @@ safeLogSA(`⚡ Clustering aktif ediliyor: ${features.length} nokta`);
 
             // Show HTML markers
             let shownCount = 0;
-            window.markerManager.markers.forEach((marker, id) => {
+            window.markerManager.markers.forEach((marker, _id) => {
                 try {
                     marker.addTo(window.map);
                     const el = marker.getElement();
@@ -688,7 +689,7 @@ safeLogSA(`⚡ Clustering aktif ediliyor: ${features.length} nokta`);
                     data: geojson,
                     cluster: false  // ← NO CLUSTERING!
                 });
-                safeLogSA(`✅ NON-cluster source oluşturuldu (${features.length} nokta, zoom out\'ta da kaybolmaz)`);
+                safeLogSA(`✅ NON-cluster source oluşturuldu (${features.length} nokta, zoom out'ta da kaybolmaz)`);
 
                 // 3. Add simple circle layer (no filter needed, no clustering)
                 window.map.addLayer({
@@ -986,27 +987,27 @@ safeErrorSA('❌ Error adding heatmap-point layer:', err);
         if (!window.markerManager || !window.markerManager.markers) return;
         
         // Hide all maplibregl.Marker instances from MarkerManager
-        window.markerManager.markers.forEach((marker, id) => {
+        window.markerManager.markers.forEach((marker, _id) => {
             const el = marker.getElement();
             if (el) {
                 el.style.display = 'none';
             }
         });
     }
-    
+
     // Helper function to show original markers
     function showOriginalMarkers() {
         if (!window.markerManager || !window.markerManager.markers) return;
         
         // Show all maplibregl.Marker instances from MarkerManager
-        window.markerManager.markers.forEach((marker, id) => {
+        window.markerManager.markers.forEach((marker, _id) => {
             const el = marker.getElement();
             if (el) {
                 el.style.display = '';
             }
         });
     }
-    
+
     function initializeHeatmapSliders() {
         const radiusSlider = document.getElementById('heat-radius');
         const blurSlider = document.getElementById('heat-blur');

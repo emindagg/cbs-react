@@ -823,10 +823,7 @@ class LabelManager {
             const viz = window.visualizationManager.currentVisualization;
             
             if (viz.type === 'choropleth') {
-                const fillLayer = this.map.getLayer('choropleth-fill');
                 const outlineLayer = this.map.getLayer('choropleth-outline');
-                
-                
                 if (outlineLayer) {
                     this.map.setPaintProperty('choropleth-outline', 'line-opacity', 1);
                 }

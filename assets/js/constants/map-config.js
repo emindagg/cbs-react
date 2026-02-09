@@ -265,7 +265,9 @@ function getExistingDataLayers(map) {
 
 /**
  * Veri katmanlarını basemap'in üstüne taşı
+ * @internal reserved / map-interactions'ta yerel kopya kullanılıyor
  */
+// eslint-disable-next-line no-unused-vars
 function moveDataLayersAboveBasemap(map) {
     const staticDataLayerIds = [
         // LayerManager katmanları (Akarsular, Sular, Ulaşım vb.)
@@ -319,8 +321,9 @@ function moveDataLayersAboveBasemap(map) {
 
 /**
  * Get the ID of the first data visualization layer to insert basemap layers below
- * This ensures basemaps are always below data visualizations
+ * @internal reserved
  */
+// eslint-disable-next-line no-unused-vars
 function getFirstDataLayerId(map) {
     const layers = map.getStyle().layers;
     const dataLayerIds = [

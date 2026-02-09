@@ -176,7 +176,7 @@ class ImportUtils {
         return props.name || props.Name || props.NAME || props.il || props.IL || 'İsimsiz';
     }
 
-    calculateMetrics(feature) {
+    calculateMetrics(_feature) {
         // Simple metrics calculation
         return {};
     }

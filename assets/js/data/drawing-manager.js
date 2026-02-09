@@ -14,7 +14,9 @@
 
 // Safe Logger helpers
 const safeLogDrawing = (...args) => window.Logger?.log ? window.Logger.log(...args) : console.log(...args);
+// eslint-disable-next-line no-unused-vars -- reserved for future use
 const safeWarnDrawing = (...args) => window.Logger?.warn ? window.Logger.warn(...args) : console.warn(...args);
+// eslint-disable-next-line no-unused-vars -- reserved for future use
 const safeErrorDrawing = (...args) => window.Logger?.error ? window.Logger.error(...args) : console.error(...args);
 
 class DataDrawing {
@@ -294,13 +296,13 @@ class DataDrawing {
         }
         
         // Format perimeter
-        const perimeterText = perimeter < 1000 
+        const perimeterText = perimeter < 1000
             ? `${Math.round(perimeter)} m`
             : `${(perimeter / 1000).toFixed(2)} km`;
-        
         const tooltipHTML = `
             <div style="font-size: 11px; line-height: 1.4;">
                 <strong>Yarıçap:</strong> ${radius < 1000 ? radiusM + ' m' : radiusKm + ' km'}<br>
+                <strong>Çevre:</strong> ${perimeterText}<br>
                 <strong>Alan:</strong> ${areaText}
             </div>
         `;

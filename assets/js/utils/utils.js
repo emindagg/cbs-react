@@ -322,7 +322,7 @@
             document.removeEventListener('mouseup', mouseUpHandler);
         };
 
-        element.addEventListener('mousedown', function(e) {
+        element.addEventListener('mousedown', function(_e) {
             document.addEventListener('mousemove', mouseMoveHandler);
             document.addEventListener('mouseup', mouseUpHandler);
         });

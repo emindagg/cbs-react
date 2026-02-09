@@ -126,7 +126,7 @@ class UIComponents {
             .draggable({
                 inertia: false,
                 listeners: {
-                    start(event) {
+                    start(_event) {
                         window.fabWasDragged = false;
                     },
                     move(event) {
@@ -139,11 +139,11 @@ class UIComponents {
                         target.setAttribute('data-x', x);
                         target.setAttribute('data-y', y);
                     },
-                    end(event) {
+                    end(_event) {
                         // Save position to localStorage
                         try {
-                            const x = parseFloat(event.target.getAttribute('data-x')) || 0;
-                            const y = parseFloat(event.target.getAttribute('data-y')) || 0;
+                            const x = parseFloat(_event.target.getAttribute('data-x')) || 0;
+                            const y = parseFloat(_event.target.getAttribute('data-y')) || 0;
                             localStorage.setItem('fabPosition', JSON.stringify({ x, y }));
                         } catch (error) {
                             if (window.Logger && typeof window.Logger.warn === 'function') {
@@ -532,7 +532,7 @@ class UIComponents {
             .draggable({
                 inertia: false,
                 listeners: {
-                    start(event) {
+                    start(_event) {
                         wasDragged = false;
                     },
                     move(event) {
@@ -545,11 +545,11 @@ class UIComponents {
                         target.setAttribute('data-x', x);
                         target.setAttribute('data-y', y);
                     },
-                    end(event) {
+                    end(_event) {
                         // Save position to localStorage
                         try {
-                            const x = parseFloat(event.target.getAttribute('data-x')) || 0;
-                            const y = parseFloat(event.target.getAttribute('data-y')) || 0;
+                            const x = parseFloat(_event.target.getAttribute('data-x')) || 0;
+                            const y = parseFloat(_event.target.getAttribute('data-y')) || 0;
                             localStorage.setItem(storageKey, JSON.stringify({ x, y }));
                         } catch (error) {
                             if (window.Logger && typeof window.Logger.warn === 'function') {

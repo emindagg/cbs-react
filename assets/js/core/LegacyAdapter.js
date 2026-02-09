@@ -159,7 +159,7 @@ class LegacyAdapter {
         };
 
         // Create proxy with a dummy array as target
-        const proxy = new Proxy([], proxyHandler);
+        void new Proxy([], proxyHandler);
 
         // Define property on window
         Object.defineProperty(window, windowProperty, {
@@ -247,7 +247,7 @@ class LegacyAdapter {
         };
 
         // Create proxy with a dummy object as target
-        const proxy = new Proxy({}, proxyHandler);
+        void new Proxy({}, proxyHandler);
 
         // Define property on window
         Object.defineProperty(window, windowProperty, {
