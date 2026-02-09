@@ -361,36 +361,35 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         </div>
       )}
 
-      {/* Smart Suggestion Panel - Compact */}
+      {/* Smart Suggestion Panel */}
       {suggestion && showSuggestion && (
-        <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-md p-2">
-          <div className="flex items-start gap-2">
-            <div className="text-lg">{suggestion.emoji}</div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-semibold text-blue-900 mb-1">
-                {suggestion.reason}
+        <div className="suggestion-card">
+          <div className="suggestion-card-inner">
+            <span className="text-[8px] font-semibold text-indigo-500 uppercase tracking-wider">Akıllı Öneri</span>
+            <p className="text-[11px] font-bold text-slate-900 tracking-tight leading-snug mt-0.5">
+              {suggestion.reason}
+            </p>
+            {suggestion.warning && (
+              <p className="text-[9px] text-slate-500 leading-relaxed mt-1">
+                {suggestion.warning}
               </p>
-              {suggestion.warning && (
-                <p className="text-[9px] text-blue-700 mb-1.5">
-                  ⚠️ {suggestion.warning}
-                </p>
-              )}
-              <div className="flex gap-1">
-                <button
-                  onClick={onApplySuggestion}
-                  className="px-2 py-0.5 text-[10px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-sm transition-colors"
-                >
-                  <i className="fa-solid fa-check mr-1 text-[8px]"></i>
-                  Uygula
-                </button>
-                <button
-                  onClick={() => setShowSuggestion(false)}
-                  className="px-2 py-0.5 text-[10px] font-medium text-blue-600 hover:bg-blue-100 rounded-sm transition-colors"
-                >
-                  <i className="fa-solid fa-xmark mr-1 text-[8px]"></i>
-                  Kapat
-                </button>
-              </div>
+            )}
+            <p className="text-[9px] text-indigo-600 mt-1">
+              {suggestion.reason} uygulamanız önerilir.
+            </p>
+            <div className="flex gap-1.5 mt-2">
+              <button
+                onClick={onApplySuggestion}
+                className="suggestion-btn-apply px-2.5 py-0.5 text-[10px] font-semibold text-white bg-slate-900 rounded cursor-pointer"
+              >
+                Uygula
+              </button>
+              <button
+                onClick={() => setShowSuggestion(false)}
+                className="suggestion-btn-close px-2.5 py-0.5 text-[10px] font-medium text-red-400 bg-red-50 border border-red-200/60 rounded cursor-pointer"
+              >
+                Kapat
+              </button>
             </div>
           </div>
         </div>
