@@ -1,27 +1,28 @@
 /**
  * Column definitions for DataMapper grid
+ *
+ * cellStyle reads from AG Grid `context` (not closures) so that
+ * refreshCells() always picks up the latest column selection.
  */
 
-import type { ColDef } from 'ag-grid-community'
+import type { ColDef, CellClassParams } from 'ag-grid-community'
 import { useMemo } from 'react'
 
 import { StatusCellRenderer } from '../components/StatusCell'
 import { COL_COLORS } from '../types'
 
+const ERROR_BG = '#fee2e2' // red-100
+
 export function useColumns(
   columns: string[],
-  selectedProvince: string,
-  selectedDistrict: string,
-  selectedData: string,
-  locationLevel: 'province' | 'mixed',
 ): { columnDefs: ColDef[]; defaultColDef: ColDef } {
   const columnDefs = useMemo((): ColDef[] => {
     const statusCol: ColDef = {
       headerName: '',
       field: '__status',
-      width: 45,
-      minWidth: 45,
-      maxWidth: 45,
+      width: 40,
+      minWidth: 40,
+      maxWidth: 40,
       pinned: 'left',
       editable: false,
       sortable: false,
@@ -35,17 +36,23 @@ export function useColumns(
       editable: true,
       minWidth: 90,
       flex: 1,
-      cellStyle: () => {
-        let bgColor: string | undefined
-        if (col === selectedProvince) bgColor = COL_COLORS.location
-        else if (col === selectedDistrict && locationLevel === 'mixed') bgColor = COL_COLORS.district
-        else if (col === selectedData) bgColor = COL_COLORS.data
-        return bgColor ? { backgroundColor: bgColor } : undefined
+      cellStyle: (params: CellClassParams) => {
+        const ctx = params.context
+        if (!ctx) return undefined
+        const { selectedProvince, selectedDistrict, selectedData, locationLevel } = ctx
+        const isUnmatched = params.data?.__status === 'unmatched'
+        const isLocationCol = col === selectedProvince
+        const isDistrictCol = col === selectedDistrict && locationLevel === 'mixed'
+
+        if (isLocationCol) return { backgroundColor: isUnmatched ? ERROR_BG : COL_COLORS.location }
+        if (isDistrictCol) return { backgroundColor: isUnmatched ? ERROR_BG : COL_COLORS.district }
+        if (col === selectedData) return { backgroundColor: COL_COLORS.data }
+        return undefined
       },
     }))
 
     return [statusCol, ...dataCols]
-  }, [columns, selectedProvince, selectedDistrict, selectedData, locationLevel])
+  }, [columns])
 
   const defaultColDef = useMemo((): ColDef => ({
     resizable: true,

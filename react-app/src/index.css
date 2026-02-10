@@ -731,3 +731,102 @@ body {
     background: #fee2e2;
     color: #dc2626;
 }
+
+/* ==========================================
+   AG GRID — DataMapper Theme Overrides
+   ========================================== */
+
+.ag-theme-alpine,
+.ag-root-wrapper {
+    --ag-border-color: #d4d8dd;
+    --ag-header-foreground-color: #374151;
+    --ag-header-background-color: #f4f5f7;
+    --ag-row-hover-color: #f0f4ff;
+    --ag-selected-row-background-color: #edf2f7;
+    --ag-font-size: 11px;
+    --ag-font-family: inherit;
+    --ag-cell-horizontal-padding: 12px;
+    font-family: inherit !important;
+}
+
+/* Header */
+.ag-header {
+    border-bottom: 1px solid #c9ced5 !important;
+    background: #f4f5f7 !important;
+}
+
+.ag-header-cell {
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    color: #374151 !important;
+    border-right: 1px solid #d4d8dd !important;
+}
+
+.ag-header-cell:last-child {
+    border-right: none !important;
+}
+
+/* Rows — visible horizontal borders */
+.ag-row {
+    border-bottom: 1px solid #c9ced5 !important;
+}
+
+.ag-row:hover {
+    background-color: #f0f4ff !important;
+}
+
+.ag-row-even {
+    background-color: #ffffff;
+}
+
+.ag-row-odd {
+    background-color: #fafbfc;
+}
+
+/* Cells — visible vertical borders */
+.ag-cell {
+    font-size: 11px !important;
+    color: #1f2937 !important;
+    border-right: 1px solid #c9ced5 !important;
+}
+
+.ag-cell:last-child {
+    border-right: none !important;
+}
+
+.ag-cell-focus {
+    border: 2px solid #3b82f6 !important;
+    outline: none !important;
+}
+
+/* Pinned status column */
+.ag-pinned-left-header,
+.ag-pinned-left-cols-container {
+    border-right: 1px solid #d4d8dd !important;
+}
+
+/* Scrollbar */
+.ag-body-viewport::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.ag-body-viewport::-webkit-scrollbar-track {
+    background: #f4f5f7;
+}
+
+.ag-body-viewport::-webkit-scrollbar-thumb {
+    background: #c1c7cf;
+    border-radius: 3px;
+}
+
+.ag-body-viewport::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Mapped column header */
+.dm-mapped-header {
+    background: #ebeef2 !important;
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+}

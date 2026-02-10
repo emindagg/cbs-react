@@ -2,7 +2,7 @@
  * Vertical sidebar form for DataMapper default variant (column selects)
  */
 
-import { COL_COLORS } from '../types'
+import { COL_ACCENTS } from '../types'
 
 interface SidebarFormProps {
   locationLevel: 'province' | 'mixed'
@@ -57,7 +57,7 @@ export function SidebarForm({
       <div className="space-y-2">
         <div>
           <label className="block text-[11px] font-medium text-zinc-600 mb-1">
-            <span className="inline-block w-2 h-2 rounded-sm mr-1" style={{ backgroundColor: COL_COLORS.location }} />
+            <span className="inline-block w-2 h-2 rounded-sm mr-1" style={{ backgroundColor: COL_ACCENTS.location }} />
             Il Sutunu
           </label>
           <select
@@ -73,7 +73,7 @@ export function SidebarForm({
         {locationLevel === 'mixed' && (
           <div>
             <label className="block text-[11px] font-medium text-zinc-600 mb-1">
-              <span className="inline-block w-2 h-2 rounded-sm mr-1" style={{ backgroundColor: COL_COLORS.district }} />
+              <span className="inline-block w-2 h-2 rounded-sm mr-1" style={{ backgroundColor: COL_ACCENTS.district }} />
               Ilce Sutunu
             </label>
             <select
@@ -89,7 +89,7 @@ export function SidebarForm({
 
         <div>
           <label className="block text-[11px] font-medium text-zinc-600 mb-1">
-            <span className="inline-block w-2 h-2 rounded-sm mr-1" style={{ backgroundColor: COL_COLORS.data }} />
+            <span className="inline-block w-2 h-2 rounded-sm mr-1" style={{ backgroundColor: COL_ACCENTS.data }} />
             Veri Sutunu
           </label>
           <select

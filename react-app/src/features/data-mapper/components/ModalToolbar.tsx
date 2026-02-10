@@ -4,7 +4,7 @@
 
 import { CheckCircle, AlertCircle } from 'lucide-react'
 
-import { COL_COLORS } from '../types'
+import { COL_ACCENTS } from '../types'
 
 interface ModalToolbarProps {
   locationLevel: 'province' | 'mixed'
@@ -35,86 +35,112 @@ export function ModalToolbar({
   matchCount,
   totalCount,
 }: ModalToolbarProps) {
+  const failCount = totalCount - matchCount
+  const matchPct = totalCount > 0 ? Math.round((matchCount / totalCount) * 100) : 0
+
   return (
-    <div className="shrink-0 bg-zinc-50 border-b border-zinc-200 px-4 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-2">
-      <div className="flex items-center gap-2.5">
-        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Seviye</span>
-        <div className="inline-flex rounded-lg border border-zinc-300 overflow-hidden shadow-sm">
+    <div className="shrink-0 bg-[#fafbfc] border-b border-zinc-200/80 px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+      {/* Level toggle */}
+      <div className="flex items-center gap-2">
+        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Seviye</span>
+        <div className="inline-flex rounded-md border border-zinc-200 overflow-hidden">
           <label
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 cursor-pointer text-[11px] font-semibold transition-all ${locationLevel === 'province' ? 'bg-slate-700 text-white shadow-inner' : 'bg-white text-zinc-600 hover:bg-zinc-100'}`}
+            className={`flex items-center gap-1.5 px-3 py-1 cursor-pointer text-[10px] font-semibold transition-all ${
+              locationLevel === 'province'
+                ? 'bg-[#1e2330] text-white'
+                : 'bg-white text-zinc-500 hover:bg-zinc-50'
+            }`}
           >
             <input type="radio" name="dm-level-m" value="province" checked={locationLevel === 'province'} onChange={() => setLocationLevel('province')} className="sr-only" />
-            <i className={`fa-solid fa-map-location-dot text-[9px] ${locationLevel === 'province' ? 'text-white' : 'text-zinc-400'}`} />
-            İl
+            <i className={`fa-solid fa-map-location-dot text-[8px] ${locationLevel === 'province' ? 'text-emerald-400' : 'text-zinc-400'}`} />
+            Il
           </label>
-          <div className="w-px bg-zinc-300" />
           <label
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 cursor-pointer text-[11px] font-semibold transition-all ${locationLevel === 'mixed' ? 'bg-slate-700 text-white shadow-inner' : 'bg-white text-zinc-600 hover:bg-zinc-100'}`}
+            className={`flex items-center gap-1.5 px-3 py-1 cursor-pointer text-[10px] font-semibold transition-all border-l border-zinc-200 ${
+              locationLevel === 'mixed'
+                ? 'bg-[#1e2330] text-white'
+                : 'bg-white text-zinc-500 hover:bg-zinc-50'
+            }`}
           >
             <input type="radio" name="dm-level-m" value="mixed" checked={locationLevel === 'mixed'} onChange={() => setLocationLevel('mixed')} className="sr-only" />
-            <i className={`fa-solid fa-layer-group text-[9px] ${locationLevel === 'mixed' ? 'text-white' : 'text-zinc-400'}`} />
-            İl + İlçe
+            <i className={`fa-solid fa-layer-group text-[8px] ${locationLevel === 'mixed' ? 'text-emerald-400' : 'text-zinc-400'}`} />
+            Il + Ilce
           </label>
         </div>
       </div>
 
-      <div className="w-px h-5 bg-zinc-200" />
+      <div className="w-px h-4 bg-zinc-200" />
 
-      <div className="flex items-center gap-3 flex-wrap">
+      {/* Column selectors */}
+      <div className="flex items-center gap-2.5 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className="inline-block w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: COL_COLORS.location }} />
-          <span className="text-[10px] text-zinc-500 font-medium whitespace-nowrap">İl:</span>
+          <div className="w-1 h-3.5 rounded-full" style={{ backgroundColor: COL_ACCENTS.location }} />
+          <span className="text-[9px] text-zinc-400 font-semibold uppercase tracking-wider">Il</span>
           <select
             value={selectedProvince}
             onChange={(e) => setSelectedProvince(e.target.value)}
-            className="text-[11px] border border-zinc-200 rounded px-2 py-1 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 bg-white min-w-[100px]"
+            className="text-[11px] border border-zinc-200 rounded-md px-2 py-0.5 focus:outline-hidden focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-700 font-medium min-w-[90px]"
           >
-            <option value="">Seçin...</option>
+            <option value="">Secin...</option>
             {columns.map((col) => <option key={col} value={col}>{col}</option>)}
           </select>
         </div>
 
         {locationLevel === 'mixed' && (
           <div className="flex items-center gap-1.5">
-            <span className="inline-block w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: COL_COLORS.district }} />
-            <span className="text-[10px] text-zinc-500 font-medium whitespace-nowrap">İlçe:</span>
+            <div className="w-1 h-3.5 rounded-full" style={{ backgroundColor: COL_ACCENTS.district }} />
+            <span className="text-[9px] text-zinc-400 font-semibold uppercase tracking-wider">Ilce</span>
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="text-[11px] border border-zinc-200 rounded px-2 py-1 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 bg-white min-w-[100px]"
+              className="text-[11px] border border-zinc-200 rounded-md px-2 py-0.5 focus:outline-hidden focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-700 font-medium min-w-[90px]"
             >
-              <option value="">Seçin...</option>
+              <option value="">Secin...</option>
               {columns.map((col) => <option key={col} value={col}>{col}</option>)}
             </select>
           </div>
         )}
 
         <div className="flex items-center gap-1.5">
-          <span className="inline-block w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: COL_COLORS.data }} />
-          <span className="text-[10px] text-zinc-500 font-medium whitespace-nowrap">Veri:</span>
+          <div className="w-1 h-3.5 rounded-full" style={{ backgroundColor: COL_ACCENTS.data }} />
+          <span className="text-[9px] text-zinc-400 font-semibold uppercase tracking-wider">Veri</span>
           <select
             value={selectedData}
             onChange={(e) => setSelectedData(e.target.value)}
-            className="text-[11px] border border-zinc-200 rounded px-2 py-1 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 bg-white min-w-[100px]"
+            className="text-[11px] border border-zinc-200 rounded-md px-2 py-0.5 focus:outline-hidden focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-700 font-medium min-w-[90px]"
           >
-            <option value="">Seçin...</option>
+            <option value="">Secin...</option>
             {numericColumns.map((col) => <option key={col} value={col}>{col}</option>)}
           </select>
         </div>
       </div>
 
-      <div className="w-px h-5 bg-zinc-200" />
+      <div className="w-px h-4 bg-zinc-200" />
 
-      <div className="flex items-center gap-2.5 ml-auto">
+      {/* Match stats — compact pill */}
+      <div className="flex items-center gap-2 ml-auto">
         <div className="flex items-center gap-1">
-          <CheckCircle size={13} className="text-emerald-500" />
-          <span className="text-[11px] font-semibold text-emerald-700">{matchCount}</span>
+          <CheckCircle size={12} className="text-emerald-500" />
+          <span className="text-[11px] font-bold text-emerald-700 tabular-nums">{matchCount}</span>
         </div>
-        <div className="flex items-center gap-1">
-          <AlertCircle size={13} className="text-red-400" />
-          <span className="text-[11px] font-semibold text-red-600">{totalCount - matchCount}</span>
-        </div>
-        <span className="text-[10px] text-zinc-400">/ {totalCount}</span>
+        {failCount > 0 && (
+          <div className="flex items-center gap-1">
+            <AlertCircle size={12} className="text-red-400" />
+            <span className="text-[11px] font-bold text-red-500 tabular-nums">{failCount}</span>
+          </div>
+        )}
+        <span className="text-[9px] text-zinc-400 font-medium tabular-nums">/ {totalCount}</span>
+        {totalCount > 0 && (
+          <div className="w-12 h-1 bg-zinc-200 rounded-full overflow-hidden ml-1">
+            <div
+              className="h-full rounded-full transition-all duration-500 ease-out"
+              style={{
+                width: `${matchPct}%`,
+                backgroundColor: matchPct === 100 ? '#10b981' : matchPct > 50 ? '#64748b' : '#ef4444',
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

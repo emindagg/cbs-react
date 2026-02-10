@@ -140,8 +140,13 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
   }, [selectedProvince, selectedDistrict, selectedData, locationLevel, setColumnMapping])
 
   // Force refresh cell styles when column selection changes
+  // Must explicitly update AG Grid's internal context via API (React prop doesn't reactively sync in v35)
   useEffect(() => {
-    gridRef.current?.api?.refreshCells({ force: true })
+    const api = gridRef.current?.api
+    if (!api) return
+    api.setGridOption('context', { selectedProvince, selectedDistrict, selectedData, locationLevel })
+    api.refreshCells({ force: true })
+    api.refreshHeader()
   }, [selectedProvince, selectedDistrict, selectedData, locationLevel])
 
   // Handle cell edit
@@ -158,18 +163,20 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
 
       const newStatus = validateRow({ ...event.data, [field]: event.newValue })
       event.data.__status = newStatus
-      event.api.refreshCells({ rowNodes: [event.node!], columns: ['__status'], force: true })
+      event.api.refreshCells({ rowNodes: [event.node!], force: true })
     },
     [rawData, setRawData, validateRow],
   )
 
-  const { columnDefs, defaultColDef } = useColumns(
-    columns,
+  const { columnDefs, defaultColDef } = useColumns(columns)
+
+  // Grid context — cellStyle reads from this (not closures) for fresh values
+  const gridContext = useMemo(() => ({
     selectedProvince,
     selectedDistrict,
     selectedData,
     locationLevel,
-  )
+  }), [selectedProvince, selectedDistrict, selectedData, locationLevel])
 
   // Match counts
   const matchCount = useMemo(() => rowData.filter((r) => r.__status === 'matched').length, [rowData])
@@ -202,6 +209,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
           onCellValueChanged={onCellValueChanged}
           isLoading={isLoading}
           variant="modal"
+          gridContext={gridContext}
         />
       </div>
     )
@@ -229,6 +237,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
         onCellValueChanged={onCellValueChanged}
         isLoading={isLoading}
         variant="default"
+        gridContext={gridContext}
       />
 
       {/* D. Match Summary Bar */}

@@ -5,11 +5,19 @@
 import type { ColDef, CellValueChangedEvent } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import type { RefObject } from 'react'
+import { useMemo } from 'react'
 
 interface RowWithStatus {
   __rowIndex: number
   __status: 'matched' | 'unmatched'
   [key: string]: unknown
+}
+
+export interface GridContext {
+  selectedProvince: string
+  selectedDistrict: string
+  selectedData: string
+  locationLevel: 'province' | 'mixed'
 }
 
 interface GridProps {
@@ -20,6 +28,7 @@ interface GridProps {
   onCellValueChanged: (event: CellValueChangedEvent) => void
   isLoading?: boolean
   variant: 'default' | 'modal'
+  gridContext: GridContext
 }
 
 export function Grid({
@@ -30,12 +39,21 @@ export function Grid({
   onCellValueChanged,
   isLoading,
   variant,
+  gridContext,
 }: GridProps) {
   const isModal = variant === 'modal'
   const containerClass = isModal ? 'flex-1 min-h-0' : ''
   const containerStyle = isModal ? { fontSize: '11px' } : { height: 320, width: '100%', fontSize: '11px' }
   const headerHeight = isModal ? 32 : 28
   const rowHeight = isModal ? 28 : 26
+
+  // Memoize context object to avoid unnecessary re-renders
+  const context = useMemo(() => gridContext, [
+    gridContext.selectedProvince,
+    gridContext.selectedDistrict,
+    gridContext.selectedData,
+    gridContext.locationLevel,
+  ])
 
   return (
     <div className={containerClass} style={containerStyle}>
@@ -54,6 +72,7 @@ export function Grid({
           getRowId={(params) => String(params.data.__rowIndex)}
           headerHeight={headerHeight}
           rowHeight={rowHeight}
+          context={context}
           suppressMovableColumns
           animateRows={false}
         />

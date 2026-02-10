@@ -1,7 +1,6 @@
 /**
  * DataMapper Modal
  * Opens the DataMapper (AG Grid spreadsheet + column mapping) in a centered modal
- * so it has enough horizontal space instead of being cramped in the sidebar.
  */
 
 import { createPortal } from 'react-dom'
@@ -19,31 +18,38 @@ export default function DataMapperModal({ isOpen, onClose, geoJsonKeys, isLoadin
   if (!isOpen) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-99999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
-        {/* Header */}
-        <div className="bg-zinc-900 text-white px-5 py-2.5 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <i className="fa-solid fa-table-columns text-blue-400"></i>
-            <h2 className="text-sm font-semibold">Veri Eşleştirme Tablosu</h2>
+    <div className="fixed inset-0 z-99999 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
+      <div className="bg-white rounded-xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25)] w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden">
+        {/* Header — refined, not heavy */}
+        <div className="bg-[#1e2330] text-white px-5 py-2.5 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center">
+              <i className="fa-solid fa-table-columns text-[11px] text-emerald-400"></i>
+            </div>
+            <div>
+              <h2 className="text-[13px] font-semibold tracking-[-0.01em]">Veri Eslestirme</h2>
+            </div>
           </div>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors p-1">
-            <i className="fa-solid fa-xmark text-base"></i>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+          >
+            <i className="fa-solid fa-xmark text-sm"></i>
           </button>
         </div>
 
-        {/* Content - DataMapper fills remaining space */}
+        {/* Content — DataMapper fills remaining space */}
         <div className="flex-1 min-h-0 flex flex-col">
           <DataMapper geoJsonKeys={geoJsonKeys} isLoading={isLoading} variant="modal" />
         </div>
 
-        {/* Footer */}
-        <div className="px-4 py-2.5 border-t border-zinc-200 flex items-center justify-end shrink-0 bg-zinc-50">
+        {/* Footer — minimal, integrated */}
+        <div className="px-4 py-2 border-t border-zinc-100 flex items-center justify-end shrink-0 bg-[#fafbfc]">
           <button
             onClick={onClose}
-            className="px-5 py-1.5 text-xs text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg font-medium shadow-xs transition-all flex items-center hover:scale-105 active:scale-95"
+            className="px-5 py-1.5 text-[11px] text-white bg-[#1e2330] hover:bg-[#2a3040] rounded-lg font-semibold transition-all flex items-center gap-1.5 shadow-sm"
           >
-            <i className="fa-solid fa-check mr-1.5"></i>
+            <i className="fa-solid fa-check text-emerald-400 text-[10px]"></i>
             Tamam
           </button>
         </div>
