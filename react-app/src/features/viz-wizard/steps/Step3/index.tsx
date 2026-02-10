@@ -163,8 +163,10 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         <StepsSection
           classCount={vizSettings.classCount}
           classificationMethod={vizSettings.classificationMethod}
+          customBreaks={vizSettings.customBreaks}
           setClassCount={(n) => setVizSettings({ classCount: n })}
           setClassificationMethod={(m) => setVizSettings({ classificationMethod: m })}
+          setCustomBreaks={(breaks) => setVizSettings({ customBreaks: breaks, classCount: breaks.length - 1 })}
         />
       )}
 
@@ -202,18 +204,16 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         </div>
       )}
 
-      {/* Custom Range Configuration - Only for continuous scales */}
-      {colorConfig.scaleType === 'continuous' && (
-        <div className="bg-white border border-zinc-200 rounded-lg p-3">
-          <h4 className="text-[11px] font-semibold text-zinc-700 mb-2">Değer Aralığı</h4>
-          <CustomRangeConfig
-            customRange={colorConfig.customRange!}
-            autoMin={dataValues.length > 0 ? Math.min(...dataValues) : 0}
-            autoMax={dataValues.length > 0 ? Math.max(...dataValues) : 100}
-            onChange={(range) => setCustomRange(range)}
-          />
-        </div>
-      )}
+      {/* Custom Range Configuration */}
+      <div className="bg-white border border-zinc-200 rounded-lg p-3">
+        <h4 className="text-[11px] font-semibold text-zinc-700 mb-2">Değer Aralığı</h4>
+        <CustomRangeConfig
+          customRange={colorConfig.customRange!}
+          autoMin={dataValues.length > 0 ? Math.min(...dataValues) : 0}
+          autoMax={dataValues.length > 0 ? Math.max(...dataValues) : 100}
+          onChange={(range) => setCustomRange(range)}
+        />
+      </div>
 
       {/* Legend Configuration Panel */}
       <div className="bg-white border border-zinc-200 rounded-lg">

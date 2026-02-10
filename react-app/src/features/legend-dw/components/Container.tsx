@@ -37,9 +37,21 @@ export default function Container() {
 
       return [min, max]
     } else {
-      // For steps, calculate breaks
+      // For steps: use custom breaks if available, otherwise calculate
+      if (vizSettings.classificationMethod === 'custom' && vizSettings.customBreaks?.length) {
+        return vizSettings.customBreaks
+      }
+
+      // Apply custom range clamp for steps mode too
+      let values = dataValues
+      if (colorConfig.customRange?.enabled) {
+        const rangeMin = colorConfig.customRange.min ?? Math.min(...dataValues)
+        const rangeMax = colorConfig.customRange.max ?? Math.max(...dataValues)
+        values = dataValues.map((v) => Math.max(rangeMin, Math.min(rangeMax, v)))
+      }
+
       return calculateBreaks(
-        dataValues,
+        values,
         vizSettings.classificationMethod,
         vizSettings.classCount,
       )
@@ -52,10 +64,13 @@ export default function Container() {
       // For continuous, generate smooth gradient
       return getInterpolatedColorPalette(vizSettings.colorScheme, 30, 'lab')
     } else {
-      // For steps, get discrete colors
-      return getInterpolatedColorPalette(vizSettings.colorScheme, vizSettings.classCount, 'lab')
+      // For steps, get discrete colors — use custom breaks count if available
+      const count = vizSettings.classificationMethod === 'custom' && vizSettings.customBreaks?.length
+        ? vizSettings.customBreaks.length - 1
+        : vizSettings.classCount
+      return getInterpolatedColorPalette(vizSettings.colorScheme, count, 'lab')
     }
-  }, [colorConfig.scaleType, vizSettings.colorScheme, vizSettings.classCount])
+  }, [colorConfig.scaleType, vizSettings.colorScheme, vizSettings.classCount, vizSettings.classificationMethod, vizSettings.customBreaks])
 
   // NOW we can do conditional returns after all hooks are called
   if (!currentVisualization.type || !currentVisualization.data) {

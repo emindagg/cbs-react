@@ -15,6 +15,7 @@ export type ClassificationMethod =
   | 'equal'
   | 'jenks'
   | 'kmeans'
+  | 'custom'
   | 'continuous-linear'
   | 'continuous-quantile'
   | 'continuous-natural'
@@ -82,6 +83,8 @@ export interface VisualizationSettings {
   legendType: LegendType;
   /** Continuous modda renk ölçeği: equidistant, quantiles-*, natural-9 */
   interpolation?: InterpolationMethod;
+  /** Custom breaks for 'custom' classification method */
+  customBreaks?: number[];
   // Symbol Map Settings
   symbolShape?: SymbolShape;
   symbolScaling?: SymbolScaling;

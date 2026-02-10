@@ -43,8 +43,12 @@ export class PointRenderer {
     }
 
     // Calculate breaks
-    const breaks = calculateBreaks(values, settings.classificationMethod, settings.classCount)
-    const colorPalette = getColorPalette(settings.colorScheme, settings.classCount)
+    const isCustom = settings.classificationMethod === 'custom' && settings.customBreaks?.length
+    const breaks = isCustom
+      ? settings.customBreaks!
+      : calculateBreaks(values, settings.classificationMethod, settings.classCount)
+    const effectiveClassCount = isCustom ? breaks.length - 1 : settings.classCount
+    const colorPalette = getColorPalette(settings.colorScheme, effectiveClassCount)
 
     // Create data map
     const dataMap = this.createDataMap(userData, dataColumn, locationLevel)

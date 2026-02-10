@@ -4,11 +4,15 @@
 
 import type { ClassificationMethod } from '@/types/visualization'
 
+import { CustomBreaksInput } from './CustomBreaksInput'
+
 interface StepsSectionProps {
   classCount: number
   classificationMethod: ClassificationMethod
+  customBreaks: number[] | undefined
   setClassCount: (n: number) => void
   setClassificationMethod: (m: ClassificationMethod) => void
+  setCustomBreaks: (breaks: number[]) => void
 }
 
 const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; description: string }[] = [
@@ -16,33 +20,40 @@ const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; desc
   { value: 'equal', label: 'Doğrusal (Eşit Aralık)', description: 'Eşit genişlikte aralıklar' },
   { value: 'quantile', label: 'Çeyrekler (Eşit Sayı)', description: 'Her sınıfta eşit sayıda öğe' },
   { value: 'kmeans', label: 'K-Ortalamalar', description: 'Benzer değerleri otomatik gruplar' },
+  { value: 'custom', label: 'Özel Sınıflar', description: 'Sınır değerlerini elle belirleyin' },
 ]
 
 export function StepsSection({
   classCount,
   classificationMethod,
+  customBreaks,
   setClassCount,
   setClassificationMethod,
+  setCustomBreaks,
 }: StepsSectionProps) {
+  const isCustom = classificationMethod === 'custom'
+
   return (
     <div className="bg-white border border-zinc-200 rounded-lg p-3 space-y-3">
       <div>
-        <div className="flex items-center gap-3 mb-2">
-          <label className="text-[11px] font-semibold text-zinc-700 min-w-[60px]">Basamak</label>
-          <input
-            type="number"
-            min={3}
-            max={9}
-            value={classCount}
-            onChange={(e) => {
-              const count = parseInt(e.target.value)
-              if (count >= 3 && count <= 9) {
-                setClassCount(count)
-              }
-            }}
-            className="w-16 px-2 py-1.5 text-[11px] text-center border border-zinc-200 rounded-md bg-white hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-          />
-        </div>
+        {!isCustom && (
+          <div className="flex items-center gap-3 mb-2">
+            <label className="text-[11px] font-semibold text-zinc-700 min-w-[60px]">Basamak</label>
+            <input
+              type="number"
+              min={3}
+              max={9}
+              value={classCount}
+              onChange={(e) => {
+                const count = parseInt(e.target.value)
+                if (count >= 3 && count <= 9) {
+                  setClassCount(count)
+                }
+              }}
+              className="w-16 px-2 py-1.5 text-[11px] text-center border border-zinc-200 rounded-md bg-white hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            />
+          </div>
+        )}
 
         <select
           value={classificationMethod}
@@ -61,6 +72,15 @@ export function StepsSection({
         <p className="text-[9px] text-zinc-500 mt-1.5 leading-relaxed">
           {CLASSIFICATION_METHODS.find((m) => m.value === classificationMethod)?.description}
         </p>
+
+        {isCustom && (
+          <div className="mt-2">
+            <CustomBreaksInput
+              customBreaks={customBreaks}
+              onChange={setCustomBreaks}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

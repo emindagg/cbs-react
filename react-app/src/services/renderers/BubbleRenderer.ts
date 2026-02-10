@@ -49,8 +49,12 @@ export class BubbleRenderer {
     }
 
     // Calculate breaks for color (used in steps mode)
-    const breaks = calculateBreaks(values, settings.classificationMethod, settings.classCount)
-    const colorPalette = getColorPalette(settings.colorScheme, settings.classCount)
+    const isCustom = settings.classificationMethod === 'custom' && settings.customBreaks?.length
+    const breaks = isCustom
+      ? settings.customBreaks!
+      : calculateBreaks(values, settings.classificationMethod, settings.classCount)
+    const effectiveClassCount = isCustom ? breaks.length - 1 : settings.classCount
+    const colorPalette = getColorPalette(settings.colorScheme, effectiveClassCount)
     const isContinuous = settings.legendType === 'continuous'
 
     // Find min/max for size scaling
