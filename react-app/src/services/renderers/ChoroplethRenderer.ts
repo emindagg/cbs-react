@@ -1,15 +1,21 @@
 /**
  * Choropleth Renderer
  * Handles choropleth map rendering with classification and coloring
+ * Uses MapLibre data-driven styling (GPU-side color rendering)
  */
 
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
-import { getColorForValue, getColorPalette, getContinuousColorForValue } from '../../constants/colorSchemes'
+import { getContinuousColor, getColorPalette } from '../../constants/colorSchemes'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBreaks } from '../../utils/classification'
+import { buildInterpolateExpression, buildStepExpression } from '../../utils/mapExpressions'
+import { normalizeValue } from '../../utils/interpolation'
 import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
+
+const NO_DATA_COLOR = '#dddddd'
+const CONTINUOUS_STOPS = 16
 
 export class ChoroplethRenderer {
   private map: Map
@@ -38,7 +44,7 @@ export class ChoroplethRenderer {
       return
     }
 
-    // Calculate breaks
+    // Calculate breaks and palette
     const breaks = calculateBreaks(values, settings.classificationMethod, settings.classCount)
     const colorPalette = getColorPalette(settings.colorScheme, settings.classCount)
     const isContinuous = settings.legendType === 'continuous'
@@ -46,16 +52,11 @@ export class ChoroplethRenderer {
     // Create data map
     const dataMap = this.createDataMap(userData, dataColumn, locationLevel)
 
-    // Process all features
+    // Process all features — only assigns dataValue/hasData, no color
     const { allFeatures, featuresWithData } = this.processFeatures(
       geojson.features,
       dataMap,
-      breaks,
-      colorPalette,
       locationLevel,
-      values,
-      isContinuous,
-      settings,
     )
 
     const allFeaturesGeoJSON: GeoJSONFeatureCollection = {
@@ -70,8 +71,46 @@ export class ChoroplethRenderer {
       `📊 Visualization: ${userData.length} data → ${featuresWithData.length} ${locationLevel === 'province' ? 'provinces' : 'districts'} on map (Total: ${allFeatures.length})`,
     )
 
+    // Build MapLibre color expression
+    let colorExpression: unknown[]
+    if (isContinuous) {
+      colorExpression = this.buildContinuousExpression(values, settings)
+    } else {
+      colorExpression = buildStepExpression('dataValue', breaks, colorPalette, NO_DATA_COLOR)
+    }
+
     // Render to map
-    this.renderToMap(allFeaturesGeoJSON)
+    this.renderToMap(allFeaturesGeoJSON, colorExpression)
+  }
+
+  /**
+   * Build continuous interpolate expression by sampling color stops from the Chroma scale
+   */
+  private buildContinuousExpression(
+    values: number[],
+    settings: VisualizationSettings,
+  ): unknown[] {
+    const sorted = [...values].sort((a, b) => a - b)
+    const min = sorted[0]
+    const max = sorted[sorted.length - 1]
+    if (max === min) {
+      return ['literal', getContinuousColor(0.5, settings.colorScheme, 'lab')]
+    }
+
+    const interpolation = settings.interpolation ?? 'equidistant'
+    const colorStops: [number, string][] = []
+
+    for (let i = 0; i < CONTINUOUS_STOPS; i++) {
+      const t = i / (CONTINUOUS_STOPS - 1)
+      // Map t (0-1) back to data domain
+      const dataVal = min + t * (max - min)
+      // Normalize using the interpolation method (handles quantile/natural warping)
+      const normalized = normalizeValue(dataVal, min, max, interpolation, values)
+      const color = getContinuousColor(normalized, settings.colorScheme, 'lab')
+      colorStops.push([dataVal, color])
+    }
+
+    return buildInterpolateExpression('dataValue', colorStops)
   }
 
   /**
@@ -112,17 +151,12 @@ export class ChoroplethRenderer {
   }
 
   /**
-     * Process GeoJSON features and apply data
+     * Process GeoJSON features — assigns dataValue and hasData only (no color)
      */
   private processFeatures(
     features: GeoJSONFeature[],
     dataMap: Record<string, number>,
-    breaks: number[],
-    colorPalette: string[],
     locationLevel: 'province' | 'district',
-    allValues: number[],
-    isContinuous: boolean,
-    settings: VisualizationSettings,
   ): { allFeatures: GeoJSONFeature[]; featuresWithData: GeoJSONFeature[] } {
     const allFeatures: GeoJSONFeature[] = []
     const featuresWithData: GeoJSONFeature[] = []
@@ -141,24 +175,11 @@ export class ChoroplethRenderer {
       if (dataValue !== undefined && dataValue !== 0) {
         feature.properties.value = dataValue
         feature.properties.dataValue = dataValue
-        // Choose color based on mode: continuous or steps
-        if (isContinuous) {
-          feature.properties.color = getContinuousColorForValue(
-            dataValue,
-            allValues,
-            settings.colorScheme,
-            'lab',
-            settings.interpolation ?? 'equidistant',
-          )
-        } else {
-          feature.properties.color = getColorForValue(dataValue, breaks, colorPalette)
-        }
         feature.properties.hasData = true
         featuresWithData.push(feature)
       } else {
         feature.properties.value = 0
         feature.properties.dataValue = 0
-        feature.properties.color = '#dddddd'
         feature.properties.hasData = false
       }
 
@@ -233,9 +254,9 @@ export class ChoroplethRenderer {
   }
 
   /**
-     * Render processed GeoJSON to map
+     * Render processed GeoJSON to map with data-driven color expression
      */
-  private renderToMap(geojson: GeoJSONFeatureCollection): void {
+  private renderToMap(geojson: GeoJSONFeatureCollection, colorExpression: unknown[]): void {
     const sourceId = 'choropleth-source'
 
     // Convert to MapLibre-compatible GeoJSON
@@ -277,13 +298,13 @@ export class ChoroplethRenderer {
         source: sourceId,
         filter: ['==', ['get', 'hasData'], true],
         paint: {
-          'fill-color': ['get', 'color'],
+          'fill-color': colorExpression as Parameters<Map['setPaintProperty']>[2],
           'fill-opacity': 1,
         },
       })
     } else {
       this.map.setFilter('choropleth-fill', ['==', ['get', 'hasData'], true])
-      this.map.setPaintProperty('choropleth-fill', 'fill-color', ['get', 'color'])
+      this.map.setPaintProperty('choropleth-fill', 'fill-color', colorExpression)
       this.map.setPaintProperty('choropleth-fill', 'fill-opacity', 1)
     }
 

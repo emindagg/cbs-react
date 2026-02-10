@@ -1,17 +1,23 @@
 /**
  * Bubble Renderer
  * Handles bubble map rendering with variable-size circles
+ * Uses MapLibre data-driven styling (GPU-side color rendering)
  */
 
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
-import { getColorForValue, getColorPalette, getContinuousColorForValue } from '../../constants/colorSchemes'
+import { getContinuousColor, getColorPalette } from '../../constants/colorSchemes'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBreaks } from '../../utils/classification'
 import { calculateCentroid } from '../../utils/geometryUtils'
+import { normalizeValue } from '../../utils/interpolation'
+import { buildInterpolateExpression, buildStepExpression } from '../../utils/mapExpressions'
 import { calculateSymbolSize } from '../../utils/symbolShapes'
 import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
+
+const NO_DATA_COLOR = 'transparent'
+const CONTINUOUS_STOPS = 16
 
 export class BubbleRenderer {
   private map: Map
@@ -54,26 +60,58 @@ export class BubbleRenderer {
     // Create data map
     const dataMap = this.createDataMap(userData, dataColumn, locationLevel)
 
-    // Process features and convert to bubbles
+    // Process features and convert to bubbles (no color assignment)
     const bubblesGeoJSON = this.processFeatures(
       geojson.features,
       dataMap,
-      breaks,
-      colorPalette,
       minValue,
       maxValue,
       locationLevel,
       settings,
-      values,
-      isContinuous,
     )
 
     console.debug(
       `⚫ Bubble visualization: ${userData.length} data → ${bubblesGeoJSON.features.length} bubbles on map`,
     )
 
+    // Build MapLibre color expression
+    let colorExpression: unknown[]
+    if (isContinuous) {
+      colorExpression = this.buildContinuousExpression(values, settings)
+    } else {
+      colorExpression = buildStepExpression('dataValue', breaks, colorPalette, NO_DATA_COLOR)
+    }
+
     // Render to map
-    this.renderToMap(bubblesGeoJSON, settings)
+    this.renderToMap(bubblesGeoJSON, settings, colorExpression)
+  }
+
+  /**
+   * Build continuous interpolate expression by sampling color stops from the Chroma scale
+   */
+  private buildContinuousExpression(
+    values: number[],
+    settings: VisualizationSettings,
+  ): unknown[] {
+    const sorted = [...values].sort((a, b) => a - b)
+    const min = sorted[0]
+    const max = sorted[sorted.length - 1]
+    if (max === min) {
+      return ['literal', getContinuousColor(0.5, settings.colorScheme, 'lab')]
+    }
+
+    const interpolation = settings.interpolation ?? 'equidistant'
+    const colorStops: [number, string][] = []
+
+    for (let i = 0; i < CONTINUOUS_STOPS; i++) {
+      const t = i / (CONTINUOUS_STOPS - 1)
+      const dataVal = min + t * (max - min)
+      const normalized = normalizeValue(dataVal, min, max, interpolation, values)
+      const color = getContinuousColor(normalized, settings.colorScheme, 'lab')
+      colorStops.push([dataVal, color])
+    }
+
+    return buildInterpolateExpression('dataValue', colorStops)
   }
 
   /**
@@ -114,19 +152,15 @@ export class BubbleRenderer {
   }
 
   /**
-   * Process GeoJSON features and convert to bubble features
+   * Process GeoJSON features and convert to bubble features (no color assignment)
    */
   private processFeatures(
     features: GeoJSONFeature[],
     dataMap: Record<string, number>,
-    breaks: number[],
-    colorPalette: string[],
     minValue: number,
     maxValue: number,
     locationLevel: 'province' | 'district',
     settings: VisualizationSettings,
-    allValues: number[],
-    isContinuous: boolean,
   ): GeoJSON.FeatureCollection {
     const bubbleFeatures: GeoJSON.Feature[] = []
 
@@ -144,89 +178,29 @@ export class BubbleRenderer {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const centroid = calculateCentroid(feature.geometry as any)
 
-      // Create bubble feature
-      const bubbleFeature = this.createBubbleFeature(
-        feature,
-        featureName,
-        dataValue,
-        breaks,
-        colorPalette,
-        minValue,
-        maxValue,
-        centroid,
-        settings,
-        allValues,
-        isContinuous,
-      )
+      // Calculate radius (stays in JS — sqrt/log scaling is complex for expressions)
+      const radius = this.calculateSymbolSizeValue(dataValue, minValue, maxValue, settings)
 
-      bubbleFeatures.push(bubbleFeature)
+      bubbleFeatures.push({
+        type: 'Feature',
+        properties: {
+          displayName: featureName,
+          name: featureName,
+          value: dataValue,
+          dataValue,
+          radius,
+          hasData: true,
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: centroid,
+        },
+      })
     })
 
     return {
       type: 'FeatureCollection',
       features: bubbleFeatures,
-    }
-  }
-
-  /**
-   * Create a bubble feature from a polygon feature
-   */
-  private createBubbleFeature(
-    _originalFeature: GeoJSONFeature,
-    featureName: string,
-    dataValue: number | undefined,
-    breaks: number[],
-    colorPalette: string[],
-    minValue: number,
-    maxValue: number,
-    centroid: [number, number],
-    settings: VisualizationSettings,
-    allValues: number[],
-    isContinuous: boolean,
-  ): GeoJSON.Feature {
-    let color: string
-    let radius: number
-    let hasData: boolean
-
-    if (dataValue !== undefined && dataValue !== 0) {
-      // Choose color based on mode: continuous or steps
-      if (isContinuous) {
-        color = getContinuousColorForValue(
-          dataValue,
-          allValues,
-          settings.colorScheme,
-          'lab',
-          settings.interpolation ?? 'equidistant',
-        )
-      } else {
-        color = getColorForValue(dataValue, breaks, colorPalette)
-      }
-      radius = this.calculateSymbolSizeValue(dataValue, minValue, maxValue, settings)
-      hasData = true
-    } else {
-      // Should not reach here since we filter in processFeatures
-      return {
-        type: 'Feature',
-        properties: { displayName: featureName, name: featureName, value: 0, dataValue: 0, color: 'transparent', radius: 0, hasData: false },
-        geometry: { type: 'Point', coordinates: centroid },
-      }
-    }
-
-    return {
-      type: 'Feature',
-      properties: {
-        displayName: featureName,
-        name: featureName,
-        value: dataValue || 0,
-        dataValue: dataValue || 0,
-        color,
-        radius,
-        hasData,
-      },
-      geometry: {
-        type: 'Point',
-        coordinates: centroid,
-      },
     }
   }
 
@@ -311,9 +285,13 @@ export class BubbleRenderer {
   }
 
   /**
-   * Render processed bubble GeoJSON to map
+   * Render processed bubble GeoJSON to map with data-driven color expression
    */
-  private renderToMap(geojson: GeoJSON.FeatureCollection, settings: VisualizationSettings): void {
+  private renderToMap(
+    geojson: GeoJSON.FeatureCollection,
+    settings: VisualizationSettings,
+    colorExpression: unknown[],
+  ): void {
     const sourceId = 'bubble-source'
     const layerId = 'bubble-circles'
 
@@ -335,7 +313,7 @@ export class BubbleRenderer {
       })
     }
 
-    // Add circle layer with variable size and customizable styling
+    // Add circle layer with variable size and data-driven color
     if (!this.map.getLayer(layerId)) {
       this.map.addLayer({
         id: layerId,
@@ -344,7 +322,7 @@ export class BubbleRenderer {
         filter: ['==', ['get', 'hasData'], true],
         paint: {
           'circle-radius': ['get', 'radius'],
-          'circle-color': ['get', 'color'],
+          'circle-color': colorExpression as Parameters<Map['setPaintProperty']>[2],
           'circle-opacity': opacity,
           'circle-stroke-color': strokeColor,
           'circle-stroke-width': strokeWidth,
@@ -353,7 +331,7 @@ export class BubbleRenderer {
     } else {
       this.map.setFilter(layerId, ['==', ['get', 'hasData'], true])
       this.map.setPaintProperty(layerId, 'circle-radius', ['get', 'radius'])
-      this.map.setPaintProperty(layerId, 'circle-color', ['get', 'color'])
+      this.map.setPaintProperty(layerId, 'circle-color', colorExpression)
       this.map.setPaintProperty(layerId, 'circle-opacity', opacity)
       this.map.setPaintProperty(layerId, 'circle-stroke-color', strokeColor)
       this.map.setPaintProperty(layerId, 'circle-stroke-width', strokeWidth)

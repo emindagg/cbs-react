@@ -1,15 +1,17 @@
 /**
  * Point Renderer
  * Handles dot/point map rendering with fixed-size circles
+ * Uses MapLibre data-driven styling (GPU-side color rendering)
  */
 
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
-import { getColorForValue, getColorPalette } from '../../constants/colorSchemes'
+import { getColorPalette } from '../../constants/colorSchemes'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBreaks } from '../../utils/classification'
 import { calculateCentroid } from '../../utils/geometryUtils'
+import { buildStepExpression } from '../../utils/mapExpressions'
 import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
 
 export class PointRenderer {
@@ -47,15 +49,18 @@ export class PointRenderer {
     // Create data map
     const dataMap = this.createDataMap(userData, dataColumn, locationLevel)
 
-    // Process features and convert to points
-    const pointsGeoJSON = this.processFeatures(geojson.features, dataMap, breaks, colorPalette, locationLevel)
+    // Process features and convert to points (no color assignment)
+    const pointsGeoJSON = this.processFeatures(geojson.features, dataMap, locationLevel)
 
     console.debug(
       `📍 Point visualization: ${userData.length} data → ${pointsGeoJSON.features.length} points on map`,
     )
 
+    // Build MapLibre color expression
+    const colorExpression = buildStepExpression('dataValue', breaks, colorPalette, 'transparent')
+
     // Render to map
-    this.renderToMap(pointsGeoJSON)
+    this.renderToMap(pointsGeoJSON, colorExpression)
   }
 
   /**
@@ -96,13 +101,11 @@ export class PointRenderer {
   }
 
   /**
-   * Process GeoJSON features and convert to point features
+   * Process GeoJSON features and convert to point features (no color assignment)
    */
   private processFeatures(
     features: GeoJSONFeature[],
     dataMap: Record<string, number>,
-    breaks: number[],
-    colorPalette: string[],
     locationLevel: 'province' | 'district',
   ): GeoJSON.FeatureCollection {
     const pointFeatures: GeoJSON.Feature[] = []
@@ -118,58 +121,42 @@ export class PointRenderer {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const centroid = calculateCentroid(feature.geometry as any)
 
-      // Create point feature
-      const pointFeature = this.createPointFeature(feature, featureName, dataValue, breaks, colorPalette, centroid)
-
-      pointFeatures.push(pointFeature)
+      if (dataValue !== undefined && dataValue !== 0) {
+        pointFeatures.push({
+          type: 'Feature',
+          properties: {
+            displayName: featureName,
+            name: featureName,
+            value: dataValue,
+            dataValue,
+            hasData: true,
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: centroid,
+          },
+        })
+      } else {
+        pointFeatures.push({
+          type: 'Feature',
+          properties: {
+            displayName: featureName,
+            name: featureName,
+            value: 0,
+            dataValue: 0,
+            hasData: false,
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: centroid,
+          },
+        })
+      }
     })
 
     return {
       type: 'FeatureCollection',
       features: pointFeatures,
-    }
-  }
-
-  /**
-   * Create a point feature from a polygon feature
-   */
-  private createPointFeature(
-    _originalFeature: GeoJSONFeature,
-    featureName: string,
-    dataValue: number | undefined,
-    breaks: number[],
-    colorPalette: string[],
-    centroid: [number, number],
-  ): GeoJSON.Feature {
-    let color: string
-    let hasData: boolean
-
-    if (dataValue !== undefined && dataValue !== 0) {
-      color = getColorForValue(dataValue, breaks, colorPalette)
-      hasData = true
-    } else {
-      // Skip features without data - make invisible
-      return {
-        type: 'Feature',
-        properties: { displayName: featureName, name: featureName, value: 0, dataValue: 0, color: 'transparent', hasData: false },
-        geometry: { type: 'Point', coordinates: centroid },
-      }
-    }
-
-    return {
-      type: 'Feature',
-      properties: {
-        displayName: featureName,
-        name: featureName,
-        value: dataValue || 0,
-        dataValue: dataValue || 0,
-        color,
-        hasData,
-      },
-      geometry: {
-        type: 'Point',
-        coordinates: centroid,
-      },
     }
   }
 
@@ -238,9 +225,9 @@ export class PointRenderer {
   }
 
   /**
-   * Render processed point GeoJSON to map
+   * Render processed point GeoJSON to map with data-driven color expression
    */
-  private renderToMap(geojson: GeoJSON.FeatureCollection): void {
+  private renderToMap(geojson: GeoJSON.FeatureCollection, colorExpression: unknown[]): void {
     const sourceId = 'dot-source'
     const layerId = 'dot-circles'
 
@@ -266,7 +253,7 @@ export class PointRenderer {
         filter: ['==', ['get', 'hasData'], true],
         paint: {
           'circle-radius': PointRenderer.POINT_RADIUS,
-          'circle-color': ['get', 'color'],
+          'circle-color': colorExpression as Parameters<Map['setPaintProperty']>[2],
           'circle-stroke-color': '#ffffff',
           'circle-stroke-width': 1,
         },
@@ -274,7 +261,7 @@ export class PointRenderer {
     } else {
       this.map.setFilter(layerId, ['==', ['get', 'hasData'], true])
       this.map.setPaintProperty(layerId, 'circle-radius', PointRenderer.POINT_RADIUS)
-      this.map.setPaintProperty(layerId, 'circle-color', ['get', 'color'])
+      this.map.setPaintProperty(layerId, 'circle-color', colorExpression)
       this.map.setPaintProperty(layerId, 'circle-stroke-color', '#ffffff')
       this.map.setPaintProperty(layerId, 'circle-stroke-width', 1)
     }
