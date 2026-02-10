@@ -7,7 +7,7 @@
 import chroma from 'chroma-js'
 
 import type { ColorScheme, InterpolationMethod } from '../types/visualization'
-import { normalizeValue } from '../utils/classificationMethods'
+import { normalizeValue } from '../utils/interpolation'
 import { type ColorSpace, generateColorScale } from '../utils/colorInterpolation'
 
 export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {

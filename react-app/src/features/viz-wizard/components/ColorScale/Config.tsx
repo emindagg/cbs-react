@@ -7,7 +7,7 @@ import { useState } from 'react'
 
 import { COLOR_SCHEMES } from '@/constants/colorSchemes'
 import type { ColorScheme, InterpolationMethod, ColorScaleType } from '@/types/visualization'
-import { INTERPOLATION_INFO } from '@/utils/classificationMethods'
+import { INTERPOLATION_INFO } from '@/utils/interpolation'
 import { generateColorScale } from '@/utils/colorInterpolation'
 
 interface ConfigProps {

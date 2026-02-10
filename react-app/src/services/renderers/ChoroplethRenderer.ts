@@ -8,7 +8,7 @@ import type { GeoJSONSource, Map } from 'maplibre-gl'
 import { getColorForValue, getColorPalette, getContinuousColorForValue } from '../../constants/colorSchemes'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
-import { calculateBreaks } from '../../utils/classificationMethods'
+import { calculateBreaks } from '../../utils/classification'
 import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
 
 export class ChoroplethRenderer {
@@ -39,7 +39,7 @@ export class ChoroplethRenderer {
     }
 
     // Calculate breaks
-    const breaks = calculateBreaks(values, settings.classificationMethod, settings.classCount, settings.customBreaks)
+    const breaks = calculateBreaks(values, settings.classificationMethod, settings.classCount)
     const colorPalette = getColorPalette(settings.colorScheme, settings.classCount)
     const isContinuous = settings.legendType === 'continuous'
 

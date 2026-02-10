@@ -16,9 +16,6 @@ const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; desc
   { value: 'equal', label: 'Doğrusal (Eşit Aralık)', description: 'Eşit genişlikte aralıklar' },
   { value: 'quantile', label: 'Çeyrekler (Eşit Sayı)', description: 'Her sınıfta eşit sayıda öğe' },
   { value: 'kmeans', label: 'K-Ortalamalar', description: 'Benzer değerleri otomatik gruplar' },
-  { value: 'logarithmic', label: 'Logaritmik', description: 'Çok geniş değer aralıkları için logaritmik ölçekleme' },
-  { value: 'rounded-sm', label: 'Yuvarlanmış Değerler', description: 'Güzel yuvarlak sayılar (10, 20, 50...)' },
-  { value: 'custom', label: 'Özel Aralıklar', description: 'Özel aralıklar tanımla' },
 ]
 
 export function StepsSection({

@@ -8,13 +8,13 @@ import { useMemo } from 'react'
 
 import { getColorPalette } from '@/constants/colorSchemes'
 import type { ColorScheme, ClassificationMethod, InterpolationMethod } from '@/types/visualization'
+import { calculateBreaks } from '@/utils/classification'
+import { calculateDataStats } from '@/utils/dataStats'
 import {
-  calculateBreaks,
   calculateBreaksFromInterpolation,
-  calculateDataStats,
   getClassCountFromInterpolation,
   INTERPOLATION_INFO,
-} from '@/utils/classificationMethods'
+} from '@/utils/interpolation'
 
 interface DistributionPreviewProps {
   values: number[];
@@ -94,14 +94,14 @@ export default function DistributionPreview({
           </div>
         </div>
 
-        {(stats.cv > 50 || Math.abs(stats.skewness) > 0.3) && (
+        {(stats.cv > 50 || Math.abs(stats.skewness) > 0.5) && (
           <div className="mt-2 pt-2 border-t border-zinc-200">
             <div className="flex items-start gap-1">
               <i className="fa-solid fa-triangle-exclamation text-amber-600 text-[9px] mt-0.5"></i>
               <div className="flex-1">
                 <p className="text-[8px] text-amber-700 leading-relaxed">
                   {stats.cv > 50 && `Yüksek varyasyon (CV: ${stats.cv.toFixed(1)}%). `}
-                  {Math.abs(stats.skewness) > 0.3 && 'Veri çarpık dağılımlı. '}
+                  {Math.abs(stats.skewness) > 0.5 && 'Veri çarpık dağılımlı. '}
                   {stats.hasOutliers && 'Uç değerler mevcut.'}
                 </p>
               </div>
@@ -161,10 +161,8 @@ export default function DistributionPreview({
                 'Eşit Aralık: Değer aralığı eşit genişlikte sınıflara bölünür.'}
               {!isContinuous && classificationMethod === 'jenks' &&
                 'Jenks: Verideki doğal grupları ve kırılma noktalarını bulur.'}
-              {!isContinuous && classificationMethod === 'rounded-sm' &&
-                'Yuvarlanmış: Okunması kolay yuvarlak sayılar kullanır.'}
-              {!isContinuous && classificationMethod === 'logarithmic' &&
-                'Logaritmik: Üstel dağılımlı verilerde küçük değerleri daha iyi gösterir.'}
+              {!isContinuous && classificationMethod === 'kmeans' &&
+                'K-Ortalamalar: Benzer değerleri istatistiksel olarak optimal gruplara ayırır.'}
             </p>
           </div>
         </div>

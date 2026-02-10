@@ -9,7 +9,7 @@ import { DynamicLegend } from '@/components/Legend'
 import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
 import { Legend } from '@/features/legend-dw'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
-import { calculateBreaks } from '@/utils/classificationMethods'
+import { calculateBreaks } from '@/utils/classification'
 
 export default function Container() {
   const { colorConfig, vizSettings, matchResults, currentVisualization, setLegendConfig } = useVisualizationStore()
@@ -42,7 +42,6 @@ export default function Container() {
         dataValues,
         vizSettings.classificationMethod,
         vizSettings.classCount,
-        vizSettings.customBreaks,
       )
     }
   }, [dataValues, colorConfig, vizSettings])

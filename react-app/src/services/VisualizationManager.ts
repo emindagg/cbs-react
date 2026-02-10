@@ -11,7 +11,7 @@ import type {
   LocationInfo,
 } from '../types/geojson'
 import type { ClassificationMethod, VisualizationSettings } from '../types/visualization'
-import { suggestClassificationMethod } from '../utils/classificationMethods'
+import { suggestClassificationMethod } from '../utils/dataStats'
 import { getPlateCodeByName, normalizeTurkishText } from '../utils/turkishNormalizer'
 import { BubbleRenderer } from './renderers/BubbleRenderer'
 import { ChoroplethRenderer } from './renderers/ChoroplethRenderer'

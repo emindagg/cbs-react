@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 
 import type { ClassificationMethod, MatchResults } from '@/types/visualization'
-import { suggestClassificationMethod } from '@/utils/classificationMethods'
+import { suggestClassificationMethod } from '@/utils/dataStats'
 
 interface UseVizSuggestionProps {
   matchResults: MatchResults
