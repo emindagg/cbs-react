@@ -3,8 +3,11 @@
  * Controls: dot value (input), dot size (slider), dots-represent label
  */
 
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { VisualizationSettings } from '@/types/visualization'
 import { DotColorPicker } from './DotColorPicker'
+
+const DOT_VALUE_DEBOUNCE_MS = 500
 
 interface DotDensitySettingsProps {
     vizSettings: VisualizationSettings
@@ -57,17 +60,55 @@ export function DotDensitySettings({
 
     const dotCount = effectiveDotValue > 0 ? Math.round(totalValue / effectiveDotValue) : 0
 
-    const handleDotValueChange = (raw: string) => {
-        // Allow clearing (revert to auto)
-        if (raw === '') {
-            setVizSettings({ dotValue: undefined })
-            return
+    const [inputStr, setInputStr] = useState(() =>
+        vizSettings.dotValue !== undefined ? vizSettings.dotValue.toLocaleString('tr-TR') : ''
+    )
+    const debounceRef = useRef<NodeJS.Timeout | null>(null)
+
+    useEffect(() => {
+        if (vizSettings.dotValue === undefined) setInputStr('')
+        else setInputStr(vizSettings.dotValue.toLocaleString('tr-TR'))
+    }, [vizSettings.dotValue])
+
+    const applyDotValue = useCallback(
+        (raw: string) => {
+            if (raw === '') {
+                setVizSettings({ dotValue: undefined })
+                return
+            }
+            const num = parseInt(raw.replace(/\./g, '').replace(/,/g, ''), 10)
+            if (!isNaN(num) && num >= 1) setVizSettings({ dotValue: num })
+        },
+        [setVizSettings]
+    )
+
+    const handleDotValueChange = useCallback(
+        (raw: string) => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current)
+                debounceRef.current = null
+            }
+            setInputStr(raw)
+            if (raw === '') {
+                applyDotValue('')
+                return
+            }
+            debounceRef.current = setTimeout(() => applyDotValue(raw), DOT_VALUE_DEBOUNCE_MS)
+        },
+        [applyDotValue]
+    )
+
+    const flushDotValue = useCallback(() => {
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current)
+            debounceRef.current = null
         }
-        const num = parseInt(raw.replace(/\./g, '').replace(/,/g, ''), 10)
-        if (!isNaN(num) && num >= 1) {
-            setVizSettings({ dotValue: num })
-        }
-    }
+        const raw = inputStr.trim()
+        if (raw === '') applyDotValue('')
+        else applyDotValue(raw)
+    }, [inputStr, applyDotValue])
+
+    useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
 
     return (
         <div className="bg-white border border-zinc-200 rounded-lg p-3 space-y-4">
@@ -113,8 +154,9 @@ export function DotDensitySettings({
                     <input
                         type="text"
                         inputMode="numeric"
-                        value={vizSettings.dotValue !== undefined ? vizSettings.dotValue.toLocaleString('tr-TR') : ''}
+                        value={inputStr}
                         onChange={(e) => handleDotValueChange(e.target.value)}
+                        onBlur={flushDotValue}
                         placeholder={smartDotValue.toLocaleString('tr-TR')}
                         className="flex-1 px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded-md bg-white hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all tabular-nums"
                     />
@@ -128,7 +170,7 @@ export function DotDensitySettings({
                     <div className="mt-1.5 flex items-center gap-1">
                         <i className="fa-solid fa-wand-magic-sparkles text-[9px] text-amber-500"></i>
                         <span className="text-[9px] text-amber-600">
-                            Akıllı öneri: {smartDotValue.toLocaleString('tr-TR')} (otomatik)
+                            Önerilen değer: {smartDotValue.toLocaleString('tr-TR')}
                         </span>
                     </div>
                 )}
