@@ -10,20 +10,49 @@ import { BufferModal } from './GISToolsControl.buffer'
 /**
  * GISToolsControl Component
  * 
- * Compact Light List Design - Minimalist and efficient GIS tools menu.
- * Includes all measurement, analysis, and cleaning tools.
+ * 3-state toggle: closed → full (icons+labels) → icons-only → closed
  */
+
+interface ToolDef {
+  id: string
+  icon: string
+  label: string
+  color: string
+  disabled?: boolean
+  group: string
+}
+
+const TOOL_GROUPS: { key: string; label: string }[] = [
+  { key: 'measure', label: 'Ölçüm & Analiz' },
+  { key: 'analysis', label: 'İleri Analizler' },
+  { key: 'general', label: 'Genel Araçlar' },
+  { key: 'reset', label: '' },
+]
+
+const TOOLS: ToolDef[] = [
+  { id: 'measure-distance', icon: 'fa-ruler-combined', label: 'Mesafe & Alan', color: 'text-blue-500', group: 'measure' },
+  { id: 'buffer', icon: 'fa-circle-dot', label: 'Etki Alanı Analizi', color: 'text-purple-500', group: 'analysis' },
+  { id: 'clustering', icon: 'fa-layer-group', label: 'Nokta Kümeleri', color: 'text-blue-500', group: 'analysis' },
+  { id: 'convex-hull', icon: 'fa-vector-square', label: 'Dış Sınır', color: 'text-orange-400', disabled: true, group: 'analysis' },
+  { id: 'voronoi', icon: 'fa-border-all', label: 'En Yakın Alanlar', color: 'text-teal-400', disabled: true, group: 'analysis' },
+  { id: 'heatmap', icon: 'fa-fire', label: 'Isı Haritası', color: 'text-red-400', disabled: true, group: 'analysis' },
+  { id: 'screenshot', icon: 'fa-camera', label: 'Ekran Görüntüsü', color: 'text-zinc-500', group: 'general' },
+  { id: 'clean-visuals', icon: 'fa-eraser', label: 'Haritayı Temizle', color: 'text-indigo-500', group: 'general' },
+  { id: 'clear-data', icon: 'fa-broom', label: 'Verileri Sıfırla', color: 'text-amber-500', group: 'reset' },
+  { id: 'clear-measurements', icon: 'fa-trash-can', label: 'Ölçümleri Sil', color: 'text-rose-500', group: 'reset' },
+]
+
 export default function GISToolsControl() {
   const [showBufferModal, setShowBufferModal] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const { current: map } = useMap()
 
-  // Clustering Store
   const { isEnabled: isClusteringEnabled, toggle: toggleClustering } = useClusteringStore()
 
   const {
-    isToolsMenuOpen,
-    setIsToolsMenuOpen,
+    toolsMenuMode,
+    cycleToolsMenu,
+    closeToolsMenu,
     setActiveTool,
     activeTool,
     resetDistance,
@@ -32,18 +61,25 @@ export default function GISToolsControl() {
 
   const { clearAll } = useDataStore()
 
-  // Close dropdown when clicking outside
+  const isOpen = toolsMenuMode !== 'closed'
+
+  // Close dropdown when clicking outside (only in full mode)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsToolsMenuOpen(false)
+        if (toolsMenuMode === 'full') closeToolsMenu()
       }
     }
-    if (isToolsMenuOpen) {
+    if (toolsMenuMode === 'full') {
       document.addEventListener('mousedown', handleClickOutside)
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isToolsMenuOpen, setIsToolsMenuOpen])
+  }, [toolsMenuMode, closeToolsMenu])
+
+  // Only close menu when in full mode; icons-only stays open
+  const maybeClose = () => {
+    if (toolsMenuMode === 'full') closeToolsMenu()
+  }
 
   const handleScreenshot = () => {
     if (!map) return
@@ -52,35 +88,53 @@ export default function GISToolsControl() {
       const dataURL = canvas.toDataURL('image/png')
       const a = document.createElement('a')
       a.href = dataURL
-      a.download = `harita - goruntusu - ${new Date().toISOString().slice(0, 19).replace('T', '_')}.png`
+      a.download = `harita-goruntusu-${new Date().toISOString().slice(0, 19).replace('T', '_')}.png`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
-      setIsToolsMenuOpen(false)
+      maybeClose()
     } catch (e) {
       console.error('Screenshot error:', e)
     }
   }
 
-  const handleToolSelect = (tool: ToolType | string) => {
-    if (tool === 'buffer') {
+  const handleToolSelect = (toolId: string) => {
+    if (toolId === 'buffer') {
       setShowBufferModal(true)
-      setIsToolsMenuOpen(false)
-    } else if (tool === 'clustering') {
+      maybeClose()
+    } else if (toolId === 'clustering') {
       toggleClustering()
-      setIsToolsMenuOpen(false)
-    } else if (tool === 'screenshot') {
+      maybeClose()
+    } else if (toolId === 'screenshot') {
       handleScreenshot()
-    } else if (tool === 'clean-visuals') {
+    } else if (toolId === 'clean-visuals') {
       resetDistance()
       resetDraw()
-      setIsToolsMenuOpen(false)
+      maybeClose()
+    } else if (toolId === 'clear-data') {
+      clearAll()
+      maybeClose()
+    } else if (toolId === 'clear-measurements') {
+      resetDistance()
+      maybeClose()
     } else {
-      setActiveTool(tool as ToolType)
-      setIsToolsMenuOpen(false)
+      // Toggle: if already active, deactivate; otherwise activate
+      setActiveTool(activeTool === toolId ? 'none' as ToolType : toolId as ToolType)
+      maybeClose()
     }
   }
 
+  const isToolActive = (toolId: string) => {
+    if (toolId === 'clustering') return isClusteringEnabled
+    return activeTool === toolId
+  }
+
+  const getToolLabel = (tool: ToolDef) => {
+    if (tool.id === 'clustering' && isClusteringEnabled) return 'Kümeleri Kapat'
+    return tool.label
+  }
+
+  const enabledTools = TOOLS.filter((t) => !t.disabled)
 
   return (
     <div ref={containerRef} className="absolute top-3 right-3 z-10002 flex flex-col items-end">
@@ -89,84 +143,65 @@ export default function GISToolsControl() {
         id="toggle-gis-tools"
         onClick={(e) => {
           e.stopPropagation()
-          setIsToolsMenuOpen(!isToolsMenuOpen)
+          cycleToolsMenu()
         }}
-        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 border-none text-white cursor-pointer ${isToolsMenuOpen ? 'bg-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)]' : 'bg-[#1c1c1e] hover:bg-black shadow-[0_2px_8px_rgba(0,0,0,0.3)]'}`}
+        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 border-none text-white cursor-pointer ${isOpen ? 'bg-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)]' : 'bg-[#1c1c1e] hover:bg-black shadow-[0_2px_8px_rgba(0,0,0,0.3)]'}`}
         title="CBS Araçları"
       >
-        <i className={`fa-solid fa-screwdriver-wrench text-[13px] ${isToolsMenuOpen ? 'rotate-45' : ''} transition-transform duration-300`}></i>
+        <i className={`fa-solid fa-screwdriver-wrench text-[13px] ${isOpen ? 'rotate-45' : ''} transition-transform duration-300`}></i>
       </button>
 
-      {/* Compact Light List Dropdown */}
-      {isToolsMenuOpen && (
+      {/* Full Mode: Icons + Labels */}
+      {toolsMenuMode === 'full' && (
         <div className="mt-2 w-52 bg-white rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-zinc-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="py-1.5 divide-y divide-zinc-50">
-            {/* Ölçüm & Analiz */}
-            <div className="py-1">
-              <div className="px-3 py-1 text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Ölçüm & Analiz</div>
-              <CompactMenuItem
-                icon="fa-ruler-combined"
-                label="Mesafe & Alan"
-                color="text-blue-500"
-                onClick={() => handleToolSelect('measure-distance')}
-                active={activeTool === 'measure-distance'}
-              />
-            </div>
-
-            {/* İleri Analizler */}
-            <div className="py-1">
-              <div className="px-3 py-1 text-[9px] font-bold text-zinc-400 uppercase tracking-wider">İleri Analizler</div>
-              <CompactMenuItem
-                icon="fa-circle-dot"
-                label="Etki Alanı Analizi"
-                color="text-purple-500"
-                onClick={() => handleToolSelect('buffer')}
-              />
-              <CompactMenuItem
-                icon="fa-layer-group"
-                label={isClusteringEnabled ? 'Kümeleri Kapat' : 'Nokta Kümeleri'}
-                color="text-blue-500"
-                onClick={() => handleToolSelect('clustering')}
-                active={isClusteringEnabled}
-              />
-              <CompactMenuItem icon="fa-vector-square" label="Dış Sınır" color="text-orange-400" disabled />
-              <CompactMenuItem icon="fa-border-all" label="En Yakın Alanlar" color="text-teal-400" disabled />
-              <CompactMenuItem icon="fa-fire" label="Isı Haritası" color="text-red-400" disabled />
-            </div>
-
-            {/* Genel Araçlar */}
-            <div className="py-1">
-              <div className="px-3 py-1 text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Genel Araçlar</div>
-              <CompactMenuItem
-                icon="fa-camera"
-                label="Ekran Görüntüsü"
-                color="text-zinc-500"
-                onClick={() => handleToolSelect('screenshot')}
-              />
-              <CompactMenuItem
-                icon="fa-eraser"
-                label="Haritayı Temizle"
-                color="text-indigo-500"
-                onClick={() => handleToolSelect('clean-visuals')}
-              />
-            </div>
-
-            {/* Sıfırlama Araçları */}
-            <div className="py-1">
-              <CompactMenuItem
-                icon="fa-broom"
-                label="Verileri Sıfırla"
-                color="text-amber-500"
-                onClick={clearAll}
-              />
-              <CompactMenuItem
-                icon="fa-trash-can"
-                label="Ölçümleri Sil"
-                color="text-rose-500"
-                onClick={resetDistance}
-              />
-            </div>
+            {TOOL_GROUPS.map((group) => {
+              const groupTools = TOOLS.filter((t) => t.group === group.key)
+              if (groupTools.length === 0) return null
+              return (
+                <div key={group.key} className="py-1">
+                  {group.label && (
+                    <div className="px-3 py-1 text-[9px] font-bold text-zinc-400 uppercase tracking-wider">
+                      {group.label}
+                    </div>
+                  )}
+                  {groupTools.map((tool) => (
+                    <CompactMenuItem
+                      key={tool.id}
+                      icon={tool.icon}
+                      label={getToolLabel(tool)}
+                      color={tool.color}
+                      onClick={() => handleToolSelect(tool.id)}
+                      active={isToolActive(tool.id)}
+                      disabled={tool.disabled}
+                    />
+                  ))}
+                </div>
+              )
+            })}
           </div>
+        </div>
+      )}
+
+      {/* Icons-Only Mode: Compact icon strip */}
+      {toolsMenuMode === 'icons-only' && (
+        <div className="mt-2 bg-white rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-zinc-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 p-1.5 flex flex-col gap-2">
+          {enabledTools.map((tool) => {
+            const active = isToolActive(tool.id)
+            return (
+              <button
+                key={tool.id}
+                onClick={() => handleToolSelect(tool.id)}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 ${active
+                  ? 'bg-blue-500 text-white shadow-[0_2px_8px_rgba(59,130,246,0.4)] ring-2 ring-blue-300'
+                  : 'hover:bg-zinc-100 text-zinc-600 hover:scale-105'
+                  }`}
+                title={getToolLabel(tool)}
+              >
+                <i className={`fa-solid ${tool.icon} text-[13px] ${active ? 'text-white' : tool.color}`}></i>
+              </button>
+            )
+          })}
         </div>
       )}
 
@@ -180,7 +215,7 @@ export default function GISToolsControl() {
 }
 
 /**
- * Compact List MenuItem
+ * Compact List MenuItem (Full mode)
  */
 interface CompactMenuItemProps {
   icon: string
@@ -196,12 +231,26 @@ function CompactMenuItem({ icon, label, onClick, active, color, disabled }: Comp
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full flex items-center gap-3 px-3 py-1.5 transition-colors text-left ${active ? 'bg-blue-50 text-blue-600' : disabled ? 'opacity-40 cursor-not-allowed text-zinc-400' : 'hover:bg-zinc-50 text-zinc-700 cursor-pointer'}`}
+      className={`w-full flex items-center gap-3 px-3 py-2 transition-all duration-200 text-left border-l-[3px] ${active
+        ? 'bg-blue-50 text-blue-700 border-l-blue-500'
+        : disabled
+          ? 'opacity-40 cursor-not-allowed text-zinc-400 border-l-transparent'
+          : 'hover:bg-zinc-50 text-zinc-700 cursor-pointer border-l-transparent hover:border-l-zinc-300'
+        }`}
     >
-      <i className={`fa-solid ${icon} ${active ? 'text-blue-600' : color} w-4 text-center text-[12px]`}></i>
-      <span className={`text-[11px] ${active ? 'font-bold' : 'font-medium'} truncate`}>{label}</span>
-      {active && <div className="ml-auto w-1 h-1 rounded-full bg-blue-600"></div>}
+      <div className={`w-[18px] h-[18px] flex items-center justify-center rounded transition-colors ${active ? 'bg-blue-500 text-white' : 'bg-transparent'
+        }`}>
+        <i className={`fa-solid ${icon} ${active ? 'text-white' : color} text-[10px]`}></i>
+      </div>
+      <span className={`text-[11px] ${active ? 'font-bold text-blue-700' : 'font-medium'} truncate`}>{label}</span>
+      {active && (
+        <div className="ml-auto flex items-center gap-1">
+          <span className="text-[8px] font-bold text-blue-500 uppercase tracking-wider">Aktif</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+        </div>
+      )}
       {disabled && <span className="ml-auto text-[8px] bg-zinc-100 text-zinc-400 px-1 py-0.5 rounded-sm uppercase">Yakında</span>}
     </button>
   )
 }
+

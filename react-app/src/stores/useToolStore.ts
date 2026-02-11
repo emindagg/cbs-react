@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 export type ToolType = 'none' | 'measure-distance' | 'measure-area' | 'analysis' | 'timeline'
 export type DrawMode = 'none' | 'point' | 'polygon' | 'line' | 'circle'
+export type ToolsMenuMode = 'closed' | 'full' | 'icons-only'
 
 interface ToolState {
   activeTool: ToolType
@@ -18,11 +19,12 @@ interface ToolState {
   drawCenter: [number, number] | null // For Circle
   drawRadius: number | null // For Circle
   isDrawing: boolean
-  isToolsMenuOpen: boolean
+  toolsMenuMode: ToolsMenuMode
 
   // Actions
   setActiveTool: (tool: ToolType) => void
-  setIsToolsMenuOpen: (isOpen: boolean) => void
+  cycleToolsMenu: () => void
+  closeToolsMenu: () => void
   setDistancePoints: (points: [number, number][]) => void
   setDistanceGhostPoint: (point: [number, number] | null) => void
   setIsDrawingDistance: (isDrawing: boolean) => void
@@ -51,7 +53,7 @@ export const useToolStore = create<ToolState>((set) => ({
   drawCenter: null,
   drawRadius: null,
   isDrawing: false,
-  isToolsMenuOpen: false,
+  toolsMenuMode: 'closed',
 
   setActiveTool: (tool) => set((state) => {
     // Reset other tools when switching
@@ -61,7 +63,15 @@ export const useToolStore = create<ToolState>((set) => ({
     return { activeTool: tool }
   }),
 
-  setIsToolsMenuOpen: (isOpen) => set({ isToolsMenuOpen: isOpen }),
+  cycleToolsMenu: () => set((state) => {
+    const next: Record<ToolsMenuMode, ToolsMenuMode> = {
+      closed: 'full',
+      full: 'icons-only',
+      'icons-only': 'closed',
+    }
+    return { toolsMenuMode: next[state.toolsMenuMode] }
+  }),
+  closeToolsMenu: () => set({ toolsMenuMode: 'closed' }),
 
   setDistancePoints: (points) => set({ distancePoints: points }),
   setDistanceGhostPoint: (point) => set({ distanceGhostPoint: point }),

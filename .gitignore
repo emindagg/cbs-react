@@ -65,3 +65,5 @@ test-verisi/*.gdb
 TEST/
 TEST-VERİSİ/
 *.zip
+
+nul
