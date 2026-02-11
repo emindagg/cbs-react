@@ -233,6 +233,7 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
             <LegendConfig
               config={colorConfig.legend}
               onChange={(config) => setLegendConfig(config)}
+              classCount={vizSettings.classCount}
             />
           </div>
         )}

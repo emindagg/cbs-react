@@ -13,9 +13,10 @@ import { ConfigTitleSection } from './ConfigTitleSection'
 interface LegendConfigProps {
   config: LegendConfiguration;
   onChange: (config: Partial<LegendConfiguration>) => void;
+  classCount: number;
 }
 
-export default function LegendConfig({ config, onChange }: LegendConfigProps) {
+export default function LegendConfig({ config, onChange, classCount }: LegendConfigProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -45,11 +46,10 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                 onClick={() => onChange({ orientation: 'horizontal' })}
                 className={`
                   flex-1 px-3 py-2 text-[11px] rounded border transition-all
-                  ${
-        config.orientation === 'horizontal'
-          ? 'border-blue-500 bg-blue-50 text-blue-700'
-          : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
-        }
+                  ${config.orientation === 'horizontal'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
+                  }
                 `}
               >
                 Yatay
@@ -58,11 +58,10 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
                 onClick={() => onChange({ orientation: 'vertical' })}
                 className={`
                   flex-1 px-3 py-2 text-[11px] rounded border transition-all
-                  ${
-        config.orientation === 'vertical'
-          ? 'border-blue-500 bg-blue-50 text-blue-700'
-          : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
-        }
+                  ${config.orientation === 'vertical'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
+                  }
                 `}
               >
                 Dikey
@@ -70,7 +69,7 @@ export default function LegendConfig({ config, onChange }: LegendConfigProps) {
             </div>
           </div>
 
-          <ConfigLabelsSection config={config} onChange={onChange} />
+          <ConfigLabelsSection config={config} onChange={onChange} classCount={classCount} />
 
           {/* Format */}
           <div>

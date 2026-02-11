@@ -29,7 +29,11 @@
       "Bash(cat:*)",
       "Bash(ren:*)",
       "Bash(cmd /c \"ren \"\"C:\\\\Users\\\\MED\\\\Documents\\\\cbsv5.1\"\" \"\"cbs-react\"\"\")",
-      "Bash(cmd /c \"dir C:\\\\Users\\\\MED\\\\Documents\\\\cbs-react\\\\.git /b\")"
+      "Bash(cmd /c \"dir C:\\\\Users\\\\MED\\\\Documents\\\\cbs-react\\\\.git /b\")",
+      "Bash(grep:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm run build:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
