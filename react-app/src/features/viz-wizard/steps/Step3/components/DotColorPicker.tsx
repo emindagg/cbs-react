@@ -1,7 +1,9 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import chroma from 'chroma-js'
 import { motion, AnimatePresence } from 'framer-motion'
+
+const COLOR_DEBOUNCE_MS = 400
 
 interface DotColorPickerProps {
     color: string
@@ -19,11 +21,15 @@ export function DotColorPicker({ color, onChange }: DotColorPickerProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [internalColor, setInternalColor] = useState(color)
     const popoverRef = useRef<HTMLDivElement>(null)
+    const colorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     // Sync internal color when prop changes
     useEffect(() => {
         setInternalColor(color)
     }, [color])
+
+    // Cleanup timer
+    useEffect(() => () => { if (colorTimerRef.current) clearTimeout(colorTimerRef.current) }, [])
 
     // Handle click outside
     useEffect(() => {
@@ -40,16 +46,29 @@ export function DotColorPicker({ color, onChange }: DotColorPickerProps) {
         }
     }, [isOpen])
 
-    const handleConfirm = () => {
+    /** Debounced renk güncelleme — slider sürüklerken harita her kareyi yeniden çizmez */
+    const debouncedOnChange = useCallback(
+        (hex: string) => {
+            if (colorTimerRef.current) clearTimeout(colorTimerRef.current)
+            colorTimerRef.current = setTimeout(() => onChange(hex), COLOR_DEBOUNCE_MS)
+        },
+        [onChange],
+    )
+
+    /** Flush: slider bırakıldığında veya popover kapanırken bekleyen rengi hemen uygula */
+    const flushColor = useCallback(() => {
+        if (colorTimerRef.current) clearTimeout(colorTimerRef.current)
         onChange(internalColor)
+    }, [internalColor, onChange])
+
+    const handleConfirm = () => {
+        flushColor()
         setIsOpen(false)
     }
 
     const handlePresetClick = (preset: string) => {
         setInternalColor(preset)
-        // Optionally update immediately or wait for check
-        // For better UX during dot density styling, real-time feedback is usually better
-        onChange(preset)
+        onChange(preset) // Preset seçimi anında uygulansın
     }
 
     const hql = chroma(internalColor).hsl()
@@ -60,19 +79,19 @@ export function DotColorPicker({ color, onChange }: DotColorPickerProps) {
     const handleHueChange = (val: number) => {
         const newColor = chroma.hsl(val, sat, lum).hex()
         setInternalColor(newColor)
-        onChange(newColor)
+        debouncedOnChange(newColor)
     }
 
     const handleSatChange = (val: number) => {
         const newColor = chroma.hsl(hue, val, lum).hex()
         setInternalColor(newColor)
-        onChange(newColor)
+        debouncedOnChange(newColor)
     }
 
     const handleLumChange = (val: number) => {
         const newColor = chroma.hsl(hue, sat, val).hex()
         setInternalColor(newColor)
-        onChange(newColor)
+        debouncedOnChange(newColor)
     }
 
     // Gradient backgrounds for sliders
@@ -129,6 +148,7 @@ export function DotColorPicker({ color, onChange }: DotColorPickerProps) {
                                     step="0.01"
                                     value={lum}
                                     onChange={(e) => handleLumChange(parseFloat(e.target.value))}
+                                    onPointerUp={flushColor}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
                                 <div
@@ -146,6 +166,7 @@ export function DotColorPicker({ color, onChange }: DotColorPickerProps) {
                                     step="0.01"
                                     value={sat}
                                     onChange={(e) => handleSatChange(parseFloat(e.target.value))}
+                                    onPointerUp={flushColor}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
                                 <div
@@ -162,6 +183,7 @@ export function DotColorPicker({ color, onChange }: DotColorPickerProps) {
                                     max="360"
                                     value={hue}
                                     onChange={(e) => handleHueChange(parseFloat(e.target.value))}
+                                    onPointerUp={flushColor}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
                                 <div
@@ -184,9 +206,10 @@ export function DotColorPicker({ color, onChange }: DotColorPickerProps) {
                                         const val = e.target.value
                                         if (chroma.valid(val)) {
                                             setInternalColor(val)
-                                            onChange(val)
+                                            debouncedOnChange(val)
                                         }
                                     }}
+                                    onBlur={flushColor}
                                     className="w-full h-8 px-3 text-[12px] font-bold outline-none bg-transparent"
                                     style={{ color: chroma.contrast(internalColor, 'white') > 4.5 ? 'white' : 'black' }}
                                 />

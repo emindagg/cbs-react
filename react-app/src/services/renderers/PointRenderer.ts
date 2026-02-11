@@ -15,6 +15,14 @@
 
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
+import {
+  DEFAULT_DOT_COLOR,
+  DEFAULT_DOT_SIZE,
+  MAX_DOTS_PER_FEATURE,
+  MAX_TOTAL_DOTS,
+  MIN_DOTS_PER_FEATURE,
+} from '../../features/viz-wizard/constants/dot-density'
+import { calculateSmartDotValue } from '../../features/viz-wizard/utils/dot-density'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBounds } from '../../utils/geometryUtils'
@@ -25,26 +33,7 @@ type Ring = Coordinate[]
 type Polygon = Ring[]
 type MultiPolygon = Polygon[]
 
-/**
- * Maximum total dots placed on the map (performance guard)
- */
-const MAX_TOTAL_DOTS = 15_000
-
-/**
- * Target total dots for the entire dataset – used to auto-calculate dotValue
- */
-const TARGET_TOTAL_DOTS = 5_000
-
-/**
- * Minimum / maximum dots per feature that has data
- */
-const MIN_DOTS_PER_FEATURE = 1
-const MAX_DOTS_PER_FEATURE = 2_000
-
-/**
- * Default dot radius (px)
- */
-const DOT_RADIUS = 3
+/* Sabitler artık features/viz-wizard/constants/dot-density.ts'den geliyor */
 
 export class PointRenderer {
   private map: Map
@@ -74,13 +63,12 @@ export class PointRenderer {
       return
     }
 
-    // 2. Calculate dot value: prefer user setting, fallback to auto
-    const totalValue = values.reduce((sum, v) => sum + Math.abs(v), 0)
-    const dotValue = settings.dotValue ?? Math.max(1, Math.round(totalValue / TARGET_TOTAL_DOTS))
-    const dotSize = settings.dotSize ?? DOT_RADIUS
-    const dotColor = settings.dotColor ?? '#2d6a4f'
+    // 2. Calculate dot value: prefer user setting, fallback to smart auto (shared algorithm)
+    const dotValue = settings.dotValue ?? calculateSmartDotValue(values)
+    const dotSize = settings.dotSize ?? DEFAULT_DOT_SIZE
+    const dotColor = settings.dotColor ?? DEFAULT_DOT_COLOR
 
-    console.debug(`🔵 Dot Density: dotValue=${dotValue}, dotSize=${dotSize}px, color=${dotColor}, totalValue=${totalValue}`)
+    console.debug(`🔵 Dot Density: dotValue=${dotValue}, dotSize=${dotSize}px, color=${dotColor}, features=${values.length}`)
 
     // 3. Build data map
     const dataMap = this.createDataMap(userData, dataColumn, locationLevel)
