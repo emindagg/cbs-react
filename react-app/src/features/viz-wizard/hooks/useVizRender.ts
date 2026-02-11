@@ -32,7 +32,7 @@ export function useVizRender({
   const { setCurrentVisualization } = useVisualizationStore()
 
   // Görselleştirmeyi etkileyen ayarlar değişince (çeyrek, jenks, sınıf sayısı vb.) haritayı otomatik güncelle
-  const vizKey = `${vizSettings.classificationMethod}-${vizSettings.classCount}-${vizSettings.colorScheme}-${vizSettings.type}-${vizSettings.legendType || 'steps'}-${vizSettings.interpolation || 'equidistant'}`
+  const vizKey = `${vizSettings.classificationMethod}-${vizSettings.classCount}-${vizSettings.colorScheme}-${vizSettings.type}-${vizSettings.legendType || 'steps'}-${vizSettings.interpolation || 'equidistant'}-${vizSettings.dotValue ?? 'auto'}-${vizSettings.dotSize ?? 'auto'}-${vizSettings.dotColor ?? 'auto'}`
   const prevVizKeyRef = useRef<string | null>(null)
 
   useEffect(() => {

@@ -93,6 +93,15 @@ export interface VisualizationSettings {
   symbolStrokeColor?: string;
   symbolStrokeWidth?: number;
   symbolOpacity?: number;
+  // Dot Density Settings
+  /** Her noktanın temsil ettiği birim sayısı (ör. 1 nokta = 55868 kişi). undefined = otomatik */
+  dotValue?: number;
+  /** Nokta boyutu (px). Varsayılan: 2.4 */
+  dotSize?: number;
+  /** Noktaların neyi temsil ettiği (lejant etiketi, ör. "Nüfus", "Satış") */
+  dotLabel?: string;
+  /** Nokta rengi (hex). Varsayılan: #2d6a4f */
+  dotColor?: string;
 }
 
 export interface CurrentVisualization {

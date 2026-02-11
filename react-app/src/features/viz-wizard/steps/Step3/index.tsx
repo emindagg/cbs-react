@@ -6,6 +6,7 @@
 import { LegendConfig } from '@/features/legend-dw'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
 
+import { DotDensitySettings } from './components/DotDensitySettings'
 import { MapTitleSection } from './components/MapTitleSection'
 import { StepsSection } from './components/StepsSection'
 import { SymbolSettings } from './components/SymbolSettings'
@@ -97,69 +98,82 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         </p>
       </div>
 
-      {/* Datawrapper-style Color Scale Configuration */}
-      <ColorScaleConfig
-        colorScheme={vizSettings.colorScheme}
-        classCount={vizSettings.classCount}
-        scaleType={colorConfig.scaleType}
-        interpolation={colorConfig.interpolation}
-        onScaleTypeChange={(type) => {
-          setColorConfig({ scaleType: type })
-          if (type === 'continuous') {
-            setVizSettings({
-              classificationMethod: 'continuous-linear',
-              legendType: 'continuous',
-              interpolation: colorConfig.interpolation ?? 'equidistant',
-            })
-          } else {
-            setVizSettings({
-              classificationMethod: 'equal',
-              legendType: 'discrete',
-            })
-          }
-        }}
-        onInterpolationChange={(interpolation) => {
-          setColorConfig({ interpolation })
-          const methodMap: Record<string, ClassificationMethod> = {
-            equidistant: 'continuous-linear',
-            'quantiles-4': 'continuous-quantile',
-            'quantiles-5': 'continuous-quantile',
-            'quantiles-10': 'continuous-quantile',
-            'natural-9': 'continuous-natural',
-          }
-          setVizSettings({
-            classificationMethod: methodMap[interpolation] || 'continuous-linear',
-            interpolation,
-          })
-        }}
-      />
+      {/* Datawrapper-style Color Scale Configuration — not needed for dot density */}
+      {vizSettings.type !== 'dot' && (
+        <>
+          <ColorScaleConfig
+            colorScheme={vizSettings.colorScheme}
+            classCount={vizSettings.classCount}
+            scaleType={colorConfig.scaleType}
+            interpolation={colorConfig.interpolation}
+            onScaleTypeChange={(type) => {
+              setColorConfig({ scaleType: type })
+              if (type === 'continuous') {
+                setVizSettings({
+                  classificationMethod: 'continuous-linear',
+                  legendType: 'continuous',
+                  interpolation: colorConfig.interpolation ?? 'equidistant',
+                })
+              } else {
+                setVizSettings({
+                  classificationMethod: 'equal',
+                  legendType: 'discrete',
+                })
+              }
+            }}
+            onInterpolationChange={(interpolation) => {
+              setColorConfig({ interpolation })
+              const methodMap: Record<string, ClassificationMethod> = {
+                equidistant: 'continuous-linear',
+                'quantiles-4': 'continuous-quantile',
+                'quantiles-5': 'continuous-quantile',
+                'quantiles-10': 'continuous-quantile',
+                'natural-9': 'continuous-natural',
+              }
+              setVizSettings({
+                classificationMethod: methodMap[interpolation] || 'continuous-linear',
+                interpolation,
+              })
+            }}
+          />
 
-      {/* Color scheme */}
-      <div>
-        <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Renk Paleti</label>
-        <select
-          value={vizSettings.colorScheme}
-          onChange={(e) =>
-            setVizSettings({ colorScheme: e.target.value as ColorScheme })
-          }
-          className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-        >
-          {COLOR_SCHEMES.map((scheme) => (
-            <option key={scheme.value} value={scheme.value}>
-              {scheme.label}
-            </option>
-          ))}
-        </select>
-        <ColorSchemePreview colorScheme={vizSettings.colorScheme} />
-      </div>
+          {/* Color scheme */}
+          <div>
+            <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Renk Paleti</label>
+            <select
+              value={vizSettings.colorScheme}
+              onChange={(e) =>
+                setVizSettings({ colorScheme: e.target.value as ColorScheme })
+              }
+              className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+            >
+              {COLOR_SCHEMES.map((scheme) => (
+                <option key={scheme.value} value={scheme.value}>
+                  {scheme.label}
+                </option>
+              ))}
+            </select>
+            <ColorSchemePreview colorScheme={vizSettings.colorScheme} />
+          </div>
+        </>
+      )}
 
       {/* Symbol Map Settings - only for bubble visualization */}
       {vizSettings.type === 'bubble' && (
         <SymbolSettings vizSettings={vizSettings} setVizSettings={setVizSettings} />
       )}
 
-      {/* Steps section - only for stepped scales */}
-      {colorConfig.scaleType === 'steps' && (
+      {/* Dot Density Settings - only for dot visualization */}
+      {vizSettings.type === 'dot' && (
+        <DotDensitySettings
+          vizSettings={vizSettings}
+          setVizSettings={(s) => setVizSettings(s)}
+          dataValues={dataValues}
+        />
+      )}
+
+      {/* Steps section - only for stepped scales, NOT for dot density */}
+      {colorConfig.scaleType === 'steps' && vizSettings.type !== 'dot' && (
         <StepsSection
           classCount={vizSettings.classCount}
           classificationMethod={vizSettings.classificationMethod}
@@ -170,8 +184,8 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         />
       )}
 
-      {/* Smart Suggestion Panel */}
-      {suggestion && showSuggestion && (
+      {/* Smart Suggestion Panel — not for dot density */}
+      {vizSettings.type !== 'dot' && suggestion && showSuggestion && (
         <div className="suggestion-card">
           <div className="suggestion-card-inner">
             <span className="text-[8px] font-semibold text-indigo-500 uppercase tracking-wider">Akıllı Öneri</span>

@@ -1,30 +1,62 @@
 /**
- * Point Renderer
- * Handles dot/point map rendering with fixed-size circles
+ * Point Renderer — ArcGIS-style Dot Density
+ *
+ * Each dot represents a fixed quantity (dot value).
+ * Dots are randomly scattered inside each polygon's bounding box,
+ * filtered by a simple point-in-polygon test.
+ *
+ * Key concepts (ArcGIS):
+ *  - dotValue   : how many units a single dot represents
+ *  - dotCount   : Math.round(featureValue / dotValue)
+ *  - Dots vary by map scale (optional, not implemented yet)
+ *
  * Uses MapLibre data-driven styling (GPU-side color rendering)
  */
 
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
-import { getColorPalette } from '../../constants/colorSchemes'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
-import { calculateBreaks } from '../../utils/classification'
-import { calculateCentroid } from '../../utils/geometryUtils'
-import { buildStepExpression } from '../../utils/mapExpressions'
+import { calculateBounds } from '../../utils/geometryUtils'
 import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
+
+type Coordinate = [number, number]
+type Ring = Coordinate[]
+type Polygon = Ring[]
+type MultiPolygon = Polygon[]
+
+/**
+ * Maximum total dots placed on the map (performance guard)
+ */
+const MAX_TOTAL_DOTS = 15_000
+
+/**
+ * Target total dots for the entire dataset – used to auto-calculate dotValue
+ */
+const TARGET_TOTAL_DOTS = 5_000
+
+/**
+ * Minimum / maximum dots per feature that has data
+ */
+const MIN_DOTS_PER_FEATURE = 1
+const MAX_DOTS_PER_FEATURE = 2_000
+
+/**
+ * Default dot radius (px)
+ */
+const DOT_RADIUS = 3
 
 export class PointRenderer {
   private map: Map
-  private static readonly POINT_RADIUS = 7
 
   constructor(map: Map) {
     this.map = map
   }
 
-  /**
-   * Render point/dot map
-   */
+  /* ------------------------------------------------------------------ */
+  /*  PUBLIC                                                             */
+  /* ------------------------------------------------------------------ */
+
   async render(
     geojson: GeoJSONFeatureCollection,
     userData: Record<string, unknown>[],
@@ -32,44 +64,47 @@ export class PointRenderer {
     settings: VisualizationSettings,
     locationLevel: 'province' | 'district' = 'province',
   ): Promise<void> {
-    // Extract values for classification
+    // 1. Extract numeric values
     const values = userData
       .map((d) => parseFloat(String(d[dataColumn])))
       .filter((v) => !isNaN(v) && v !== 0)
 
     if (values.length === 0) {
-      console.warn('⚠️  No valid data for visualization')
+      console.warn('⚠️  No valid data for dot-density visualization')
       return
     }
 
-    // Calculate breaks
-    const isCustom = settings.classificationMethod === 'custom' && settings.customBreaks?.length
-    const breaks = isCustom
-      ? settings.customBreaks!
-      : calculateBreaks(values, settings.classificationMethod, settings.classCount)
-    const effectiveClassCount = isCustom ? breaks.length - 1 : settings.classCount
-    const colorPalette = getColorPalette(settings.colorScheme, effectiveClassCount)
+    // 2. Calculate dot value: prefer user setting, fallback to auto
+    const totalValue = values.reduce((sum, v) => sum + Math.abs(v), 0)
+    const dotValue = settings.dotValue ?? Math.max(1, Math.round(totalValue / TARGET_TOTAL_DOTS))
+    const dotSize = settings.dotSize ?? DOT_RADIUS
+    const dotColor = settings.dotColor ?? '#2d6a4f'
 
-    // Create data map
+    console.debug(`🔵 Dot Density: dotValue=${dotValue}, dotSize=${dotSize}px, color=${dotColor}, totalValue=${totalValue}`)
+
+    // 3. Build data map
     const dataMap = this.createDataMap(userData, dataColumn, locationLevel)
 
-    // Process features and convert to points (no color assignment)
-    const pointsGeoJSON = this.processFeatures(geojson.features, dataMap, locationLevel)
-
-    console.debug(
-      `📍 Point visualization: ${userData.length} data → ${pointsGeoJSON.features.length} points on map`,
+    // 4. Generate dot-density points
+    const dotsGeoJSON = this.generateDots(
+      geojson.features,
+      dataMap,
+      locationLevel,
+      dotValue,
     )
 
-    // Build MapLibre color expression
-    const colorExpression = buildStepExpression('dataValue', breaks, colorPalette, 'transparent')
+    console.debug(
+      `📍 Dot density: ${userData.length} data rows → ${dotsGeoJSON.features.length} dots (1 dot = ${dotValue} units)`,
+    )
 
-    // Render to map
-    this.renderToMap(pointsGeoJSON, colorExpression)
+    // 5. Render with single color (no classification needed)
+    this.renderToMap(dotsGeoJSON, dotColor, dotSize)
   }
 
-  /**
-   * Create data map from user data
-   */
+  /* ------------------------------------------------------------------ */
+  /*  DATA MAP                                                          */
+  /* ------------------------------------------------------------------ */
+
   private createDataMap(
     userData: Record<string, unknown>[],
     dataColumn: string,
@@ -82,7 +117,6 @@ export class PointRenderer {
       if (locationName) {
         const normalizedKey = normalizeTurkishText(String(locationName))
 
-        // For district level, use composite key
         if (locationLevel === 'district' && d._province) {
           const provinceName = String(d._province)
           const provinceNormalized = normalizeTurkishText(provinceName)
@@ -90,7 +124,6 @@ export class PointRenderer {
           const value = parseFloat(String(d[dataColumn]))
           dataMap[compositeKey] = value
 
-          // Also store plate-code-based key (e.g. "27_sehitkamil")
           const plateCode = getPlateCodeByName(provinceName)
           if (plateCode) {
             dataMap[`${plateCode}_${normalizedKey}`] = value
@@ -104,29 +137,87 @@ export class PointRenderer {
     return dataMap
   }
 
-  /**
-   * Process GeoJSON features and convert to point features (no color assignment)
-   */
-  private processFeatures(
+  /* ------------------------------------------------------------------ */
+  /*  DOT GENERATION (ArcGIS-style)                                     */
+  /* ------------------------------------------------------------------ */
+
+  private generateDots(
     features: GeoJSONFeature[],
     dataMap: Record<string, number>,
     locationLevel: 'province' | 'district',
+    dotValue: number,
   ): GeoJSON.FeatureCollection {
-    const pointFeatures: GeoJSON.Feature[] = []
+    const allDots: GeoJSON.Feature[] = []
+    let totalPlaced = 0
 
-    features.forEach((feature) => {
+    for (const feature of features) {
+      if (totalPlaced >= MAX_TOTAL_DOTS) break
+
       const featureName = this.getFeatureName(feature, locationLevel)
-      const normalizedFeatureName = normalizeTurkishText(featureName)
+      const normalizedName = normalizeTurkishText(featureName)
+      const dataValue = this.getDataValue(feature, dataMap, normalizedName, locationLevel)
 
-      // Get data value
-      const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
+      if (dataValue === undefined || dataValue === 0) continue
 
-      // Calculate centroid
+      // How many dots for this feature?
+      let dotCount = Math.round(Math.abs(dataValue) / dotValue)
+      dotCount = Math.max(MIN_DOTS_PER_FEATURE, Math.min(dotCount, MAX_DOTS_PER_FEATURE))
+
+      // Don't exceed global cap
+      if (totalPlaced + dotCount > MAX_TOTAL_DOTS) {
+        dotCount = MAX_TOTAL_DOTS - totalPlaced
+      }
+
+      // Get geometry rings for point-in-polygon test
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const centroid = calculateCentroid(feature.geometry as any)
+      const geometry = feature.geometry as any
+      const bbox = calculateBounds(geometry)
+      const rings = this.extractRings(geometry)
 
-      if (dataValue !== undefined && dataValue !== 0) {
-        pointFeatures.push({
+      // Scatter dots
+      const dots = this.scatterDotsInPolygon(
+        dotCount,
+        bbox,
+        rings,
+        featureName,
+        dataValue,
+      )
+
+      allDots.push(...dots)
+      totalPlaced += dots.length
+    }
+
+    return {
+      type: 'FeatureCollection',
+      features: allDots,
+    }
+  }
+
+  /**
+   * Scatter N dots randomly inside a polygon (rejection sampling)
+   */
+  private scatterDotsInPolygon(
+    count: number,
+    bbox: [number, number, number, number],
+    rings: Ring[],
+    featureName: string,
+    dataValue: number,
+  ): GeoJSON.Feature[] {
+    const [minLng, minLat, maxLng, maxLat] = bbox
+    const dots: GeoJSON.Feature[] = []
+    const maxAttempts = count * 20 // Avoid infinite loop
+    let attempts = 0
+
+    while (dots.length < count && attempts < maxAttempts) {
+      attempts++
+
+      // Random point in bbox
+      const lng = minLng + Math.random() * (maxLng - minLng)
+      const lat = minLat + Math.random() * (maxLat - minLat)
+
+      // Point-in-polygon test (any ring)
+      if (this.pointInAnyRing([lng, lat], rings)) {
+        dots.push({
           type: 'Feature',
           properties: {
             displayName: featureName,
@@ -137,36 +228,67 @@ export class PointRenderer {
           },
           geometry: {
             type: 'Point',
-            coordinates: centroid,
-          },
-        })
-      } else {
-        pointFeatures.push({
-          type: 'Feature',
-          properties: {
-            displayName: featureName,
-            name: featureName,
-            value: 0,
-            dataValue: 0,
-            hasData: false,
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: centroid,
+            coordinates: [lng, lat],
           },
         })
       }
-    })
-
-    return {
-      type: 'FeatureCollection',
-      features: pointFeatures,
     }
+
+    return dots
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  GEOMETRY HELPERS                                                   */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Extract all exterior rings from a Polygon or MultiPolygon
+   */
+  private extractRings(geometry: { type: string; coordinates: Polygon | MultiPolygon }): Ring[] {
+    if (geometry.type === 'Polygon') {
+      const poly = geometry.coordinates as Polygon
+      return poly.length > 0 ? [poly[0]] : []
+    } else if (geometry.type === 'MultiPolygon') {
+      const multi = geometry.coordinates as MultiPolygon
+      return multi.map((poly) => poly[0]).filter(Boolean)
+    }
+    return []
   }
 
   /**
-   * Get feature name based on location level
+   * Test if a point lies inside any of the given rings (ray-casting)
    */
+  private pointInAnyRing(point: Coordinate, rings: Ring[]): boolean {
+    for (const ring of rings) {
+      if (this.pointInRing(point, ring)) return true
+    }
+    return false
+  }
+
+  /**
+   * Ray-casting point-in-polygon for one ring
+   */
+  private pointInRing(point: Coordinate, ring: Ring): boolean {
+    const [x, y] = point
+    let inside = false
+
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const xi = ring[i][0], yi = ring[i][1]
+      const xj = ring[j][0], yj = ring[j][1]
+
+      const intersect = ((yi > y) !== (yj > y)) &&
+        (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+
+      if (intersect) inside = !inside
+    }
+
+    return inside
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  FEATURE NAME / DATA VALUE LOOKUP                                  */
+  /* ------------------------------------------------------------------ */
+
   private getFeatureName(feature: GeoJSONFeature, locationLevel: 'province' | 'district'): string {
     const props = feature.properties
 
@@ -177,9 +299,6 @@ export class PointRenderer {
     }
   }
 
-  /**
-   * Get data value for a feature
-   */
   private getDataValue(
     feature: GeoJSONFeature,
     dataMap: Record<string, number>,
@@ -189,7 +308,6 @@ export class PointRenderer {
     if (locationLevel === 'district') {
       const props = feature.properties
 
-      // Önce GeoJSON key ile dene (benzersiz anahtar)
       if (props.key) {
         const normalizedKey = normalizeTurkishText(String(props.key))
         if (dataMap[normalizedKey] !== undefined) return dataMap[normalizedKey]
@@ -203,19 +321,16 @@ export class PointRenderer {
         if (dataMap[compositeKey] !== undefined) return dataMap[compositeKey]
       }
 
-      // Plaka + ilçe ile dene
       if (props.plaka !== undefined && props.plaka !== null) {
         const plakaKey = `${String(props.plaka).trim()}_${normalizedFeatureName}`
         if (dataMap[plakaKey] !== undefined) return dataMap[plakaKey]
       }
     }
 
-    // Önce normalize edilmiş isimle dene
     if (dataMap[normalizedFeatureName] !== undefined) {
       return dataMap[normalizedFeatureName]
     }
 
-    // Plaka koduyla da dene (il seviyesi: IL, ilçe seviyesi: plaka)
     const props = feature.properties
     const plateCode = props.IL ?? props.plaka
     if (plateCode !== undefined && plateCode !== null) {
@@ -228,10 +343,11 @@ export class PointRenderer {
     return undefined
   }
 
-  /**
-   * Render processed point GeoJSON to map with data-driven color expression
-   */
-  private renderToMap(geojson: GeoJSON.FeatureCollection, colorExpression: unknown[]): void {
+  /* ------------------------------------------------------------------ */
+  /*  MAP RENDERING                                                     */
+  /* ------------------------------------------------------------------ */
+
+  private renderToMap(geojson: GeoJSON.FeatureCollection, dotColor: string, dotSize: number): void {
     const sourceId = 'dot-source'
     const layerId = 'dot-circles'
 
@@ -248,7 +364,7 @@ export class PointRenderer {
       })
     }
 
-    // Add circle layer (only features with data)
+    // Add circle layer (single color, no classification)
     if (!this.map.getLayer(layerId)) {
       this.map.addLayer({
         id: layerId,
@@ -256,18 +372,20 @@ export class PointRenderer {
         source: sourceId,
         filter: ['==', ['get', 'hasData'], true],
         paint: {
-          'circle-radius': PointRenderer.POINT_RADIUS,
-          'circle-color': colorExpression as Parameters<Map['setPaintProperty']>[2],
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': 1,
+          'circle-radius': dotSize,
+          'circle-color': dotColor,
+          'circle-stroke-color': 'rgba(255,255,255,0.6)',
+          'circle-stroke-width': 0.5,
+          'circle-opacity': 0.85,
         },
       })
     } else {
       this.map.setFilter(layerId, ['==', ['get', 'hasData'], true])
-      this.map.setPaintProperty(layerId, 'circle-radius', PointRenderer.POINT_RADIUS)
-      this.map.setPaintProperty(layerId, 'circle-color', colorExpression)
-      this.map.setPaintProperty(layerId, 'circle-stroke-color', '#ffffff')
-      this.map.setPaintProperty(layerId, 'circle-stroke-width', 1)
+      this.map.setPaintProperty(layerId, 'circle-radius', dotSize)
+      this.map.setPaintProperty(layerId, 'circle-color', dotColor)
+      this.map.setPaintProperty(layerId, 'circle-stroke-color', 'rgba(255,255,255,0.6)')
+      this.map.setPaintProperty(layerId, 'circle-stroke-width', 0.5)
+      this.map.setPaintProperty(layerId, 'circle-opacity', 0.85)
     }
   }
 }
