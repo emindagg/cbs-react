@@ -4,7 +4,7 @@
  * and ensure proper priority-based routing
  */
 
-// Güvenli Logger helper'lar?
+// Gï¿½venli Logger helper'lar?
 // eslint-disable-next-line no-unused-vars
 const safeLogOrch = (...args) => window.Logger?.log ? window.Logger.log(...args) : console.log(...args);
 const safeWarnOrch = (...args) => window.Logger?.warn ? window.Logger.warn(...args) : console.warn(...args);
