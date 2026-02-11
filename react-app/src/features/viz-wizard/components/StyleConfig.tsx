@@ -55,7 +55,7 @@ export default function StyleConfig({ dataValues = [] }: StyleConfigProps) {
 
       <div>
         <h4 className="text-xs font-medium text-zinc-700 mb-2">Lejant</h4>
-        <LegendConfig config={colorConfig.legend} onChange={(config) => setLegendConfig(config)} />
+        <LegendConfig config={colorConfig.legend} onChange={(config) => setLegendConfig(config)} classCount={vizSettings.classCount} />
       </div>
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
