@@ -4,7 +4,6 @@
  * Opens DataMapper in a centered modal for better horizontal space
  */
 
-import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import DataMapperModal from '@/components/modals/DataMapperModal'
@@ -96,11 +95,8 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
     )
   }, [columnMapping.locationLevel, provinceIndex, districtIndex])
 
-  // Match summary counts
-  const successCount = matchResults.successful.length
-  const failedCount = matchResults.failed.length
-  const ambiguousCount = matchResults.ambiguous.length
-  const totalCount = successCount + failedCount + ambiguousCount
+  // Match summary count
+  const totalCount = matchResults.successful.length + matchResults.failed.length + matchResults.ambiguous.length
 
   // Validate before proceeding
   const handleNext = () => {
@@ -155,32 +151,11 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
           </div>
         )}
 
-        {/* Match results stats */}
-        {totalCount > 0 && (
-          <div className="flex items-center gap-3 text-[10px] pt-1 border-t border-zinc-200">
-            <span className="flex items-center gap-1">
-              <CheckCircle size={12} className="text-emerald-500" />
-              <span className="text-emerald-700 font-medium">{successCount} başarılı</span>
-            </span>
-            {ambiguousCount > 0 && (
-              <span className="flex items-center gap-1">
-                <i className="fa-solid fa-exclamation-triangle text-amber-500 text-[10px]"></i>
-                <span className="text-amber-700 font-medium">{ambiguousCount} belirsiz</span>
-              </span>
-            )}
-            {failedCount > 0 && (
-              <span className="flex items-center gap-1">
-                <AlertCircle size={12} className="text-red-400" />
-                <span className="text-red-600 font-medium">{failedCount} hatalı</span>
-              </span>
-            )}
-          </div>
-        )}
 
         {/* Open modal button */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="w-full px-3 py-2 text-[11px] font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors flex items-center justify-center gap-1.5"
+          className="w-full px-3 py-2 text-[11px] font-medium text-white bg-zinc-800 hover:bg-zinc-900 rounded-md transition-colors flex items-center justify-center gap-1.5"
         >
           <i className="fa-solid fa-up-right-from-square text-[9px]"></i>
           {totalCount > 0 ? 'Tabloyu Düzenle' : 'Eşleştirme Tablosunu Aç'}

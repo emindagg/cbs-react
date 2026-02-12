@@ -149,26 +149,6 @@ body {
     border-width: 8px;
 }
 
-/* Custom Scrollbar */
-.sidebar-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.sidebar-content::-webkit-scrollbar-track {
-    background: #f8fafc;
-    border-radius: 10px;
-}
-
-.sidebar-content::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #cbd5e1, #94a3b8);
-    border-radius: 10px;
-    border: 2px solid #f8fafc;
-}
-
-.sidebar-content::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #94a3b8, #64748b);
-}
-
 /* Sidebar Styles */
 .sidebar-content {
     padding: 0;
@@ -176,11 +156,6 @@ body {
 
 #sidebar.tips-hidden .edu-hint {
     display: none;
-}
-
-.sidebar-footer {
-    flex-shrink: 0;
-    flex-grow: 0;
 }
 
 /* Gradient Effects */

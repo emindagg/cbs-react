@@ -1,26 +1,14 @@
-import { create } from 'zustand'
-
-// Mock Data Store (will be replaced by real data store)
-interface DataItem {
-  id: string
-  name: string
-  type: 'point' | 'area' | 'line'
-}
-
-interface DataStore {
-  items: DataItem[]
-}
-
-const useDataStore = create<DataStore>(() => ({
-  items: [],
-}))
+import { useDataStore } from '@/stores/useDataStore'
 
 export default function SidebarDataCatalog() {
   const items = useDataStore(state => state.items)
 
   return (
     <section className="hover:bg-zinc-50 rounded-lg px-2.5 py-1.5 transition-colors group">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-900 mb-2 group-hover:text-emerald-700 transition-colors">Veri Kataloğu</h3>
+      <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 mb-2 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
+        <i className="fa-solid fa-database text-emerald-600 text-[10px]"></i>
+        Veri Kataloğu
+      </h3>
       <div className="space-y-2 max-h-40 overflow-y-auto text-sm custom-scrollbar">
         {items.length === 0 ? (
           <div className="flex items-center justify-center py-8 text-zinc-400 bg-zinc-50/50 rounded-lg border-2 border-dashed border-zinc-200">
@@ -32,7 +20,11 @@ export default function SidebarDataCatalog() {
           </div>
         ) : (
           items.map(item => (
-            <div key={item.id}>{item.name}</div>
+            <div key={item.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-zinc-100 bg-white hover:bg-zinc-50 transition-colors">
+              <i className={`fa-solid text-[10px] ${item.type === 'point' ? 'fa-location-dot text-blue-500' : item.type === 'line' ? 'fa-route text-orange-500' : 'fa-draw-polygon text-emerald-500'}`}></i>
+              <span className="text-xs text-zinc-700 font-medium truncate">{item.name}</span>
+              {item.visible && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400"></div>}
+            </div>
           ))
         )}
       </div>

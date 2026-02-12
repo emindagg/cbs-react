@@ -73,7 +73,10 @@ export default function SidebarDataCreation() {
 
   return (
     <section className="hover:bg-zinc-50 rounded-lg px-2.5 py-1.5 transition-colors group">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-900 mb-2 group-hover:text-emerald-700 transition-colors">Veri Oluşturma</h3>
+      <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 mb-2 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
+        <i className="fa-solid fa-pen-ruler text-emerald-600 text-[10px]"></i>
+        Veri Oluşturma
+      </h3>
 
       <div className="space-y-3">
         <div>
