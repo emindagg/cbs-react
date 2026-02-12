@@ -158,7 +158,7 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
           className="w-full px-3 py-2 text-[11px] font-medium text-white bg-zinc-800 hover:bg-zinc-900 rounded-md transition-colors flex items-center justify-center gap-1.5"
         >
           <i className="fa-solid fa-up-right-from-square text-[9px]"></i>
-          {totalCount > 0 ? 'Tabloyu Düzenle' : 'Eşleştirme Tablosunu Aç'}
+          {totalCount > 0 ? 'Veri Tablosunu Düzenle' : 'Eşleştirme Tablosunu Aç'}
         </button>
       </div>
 
