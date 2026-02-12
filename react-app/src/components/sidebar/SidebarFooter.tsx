@@ -15,6 +15,9 @@ export default function SidebarFooter() {
         <i className="fa-solid fa-building-columns text-emerald-600 mr-1"></i>
         <span>Ortaöğretim Genel Müdürlüğü tarafından geliştirilmiştir.</span>
       </div>
+      <div className="text-center text-[9px] text-zinc-400 pt-1">
+        <span>© {new Date().getFullYear()} Tüm hakları saklıdır.</span>
+      </div>
     </div>
   )
 }
