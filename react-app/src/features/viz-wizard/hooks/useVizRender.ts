@@ -1,12 +1,17 @@
 /**
  * Visualization Render Hook
  * Handles choropleth rendering logic
+ *
+ * vizKey split: dataVizKey triggers full re-render,
+ * paintVizKey triggers paint-only update (dotSize/dotColor) via setPaintProperty.
  */
 
 import type maplibregl from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
+import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE } from '@/features/viz-wizard/constants/dot-density'
+import { buildZoomRadius } from '@/features/viz-wizard/utils/dot-density'
 import { VisualizationManager } from '@/services/VisualizationManager'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import type { MatchResults, VisualizationSettings } from '@/types/visualization'
@@ -21,6 +26,16 @@ interface UseVizRenderProps {
   map: maplibregl.Map | null
 }
 
+/** Update dot paint properties without full re-render */
+function updateDotPaintProperties(map: maplibregl.Map, settings: VisualizationSettings) {
+  if (!map.getLayer('dot-circles')) return
+  const dotSize = settings.dotSize ?? DEFAULT_DOT_SIZE
+  const dotColor = settings.dotColor ?? DEFAULT_DOT_COLOR
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  map.setPaintProperty('dot-circles', 'circle-radius', buildZoomRadius(dotSize) as any)
+  map.setPaintProperty('dot-circles', 'circle-color', dotColor)
+}
+
 export function useVizRender({
   matchResults,
   columnMapping,
@@ -31,23 +46,42 @@ export function useVizRender({
   const [hasRendered, setHasRendered] = useState(false)
   const { setCurrentVisualization } = useVisualizationStore()
 
-  // Görselleştirmeyi etkileyen ayarlar değişince (çeyrek, jenks, sınıf sayısı vb.) haritayı otomatik güncelle
-  const vizKey = `${vizSettings.classificationMethod}-${vizSettings.classCount}-${vizSettings.colorScheme}-${vizSettings.type}-${vizSettings.legendType || 'steps'}-${vizSettings.interpolation || 'equidistant'}-${vizSettings.dotValue ?? 'auto'}-${vizSettings.dotSize ?? 'auto'}-${vizSettings.dotColor ?? 'auto'}`
-  const prevVizKeyRef = useRef<string | null>(null)
+  // Data-affecting settings → full re-render
+  const dataVizKey = `${vizSettings.classificationMethod}-${vizSettings.classCount}-${vizSettings.colorScheme}-${vizSettings.type}-${vizSettings.legendType || 'steps'}-${vizSettings.interpolation || 'equidistant'}-${vizSettings.dotValue ?? 'auto'}`
+  // Paint-only settings → setPaintProperty (no dot regeneration)
+  const paintVizKey = `${vizSettings.dotSize ?? 'auto'}-${vizSettings.dotColor ?? 'auto'}`
 
+  const prevDataVizKeyRef = useRef<string | null>(null)
+  const prevPaintVizKeyRef = useRef<string | null>(null)
+
+  // Full re-render when data-affecting settings change
   useEffect(() => {
     if (!hasRendered || !map) return
-    if (prevVizKeyRef.current === null) {
-      prevVizKeyRef.current = vizKey
+    if (prevDataVizKeyRef.current === null) {
+      prevDataVizKeyRef.current = dataVizKey
       return
     }
-    if (prevVizKeyRef.current !== vizKey) {
-      prevVizKeyRef.current = vizKey
+    if (prevDataVizKeyRef.current !== dataVizKey) {
+      prevDataVizKeyRef.current = dataVizKey
+      prevPaintVizKeyRef.current = paintVizKey // sync paint key on full render
       void handleRender()
     }
-    // Sadece vizKey/hasRendered/map değişince tetikle; handleRender her render'da yeniden oluştuğu için deps'e eklenmez
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vizKey, hasRendered, map])
+  }, [dataVizKey, hasRendered, map])
+
+  // Paint-only update when dotSize/dotColor change (no full re-render)
+  useEffect(() => {
+    if (!hasRendered || !map || vizSettings.type !== 'dot') return
+    if (prevPaintVizKeyRef.current === null) {
+      prevPaintVizKeyRef.current = paintVizKey
+      return
+    }
+    if (prevPaintVizKeyRef.current !== paintVizKey) {
+      prevPaintVizKeyRef.current = paintVizKey
+      updateDotPaintProperties(map, vizSettings)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paintVizKey, hasRendered, map])
 
   const handleRender = async () => {
     if (!map) {

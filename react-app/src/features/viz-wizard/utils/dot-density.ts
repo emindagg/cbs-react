@@ -33,3 +33,19 @@ export function calculateSmartDotValue(dataValues: number[]): number {
   // Ortalamayı geçmesin (her bölge en az 1 nokta alsın)
   return Math.max(1, Math.min(Math.round(result), Math.round(avgValue)))
 }
+
+/**
+ * Zoom-dependent dot size — MapLibre interpolate expression.
+ * ArcGIS referenceScale konseptinin karşılığı:
+ *   zoom 4  → dotSize × 0.5
+ *   zoom 6  → dotSize (referans — Türkiye görünümü)
+ *   zoom 10 → dotSize × 3
+ */
+export function buildZoomRadius(dotSize: number): unknown[] {
+  return [
+    'interpolate', ['linear'], ['zoom'],
+    4, dotSize * 0.5,
+    6, dotSize,
+    10, dotSize * 3,
+  ]
+}

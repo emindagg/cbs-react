@@ -14,7 +14,7 @@ const PRESET_COLORS = [
     // Row 1
     '#22a1c4', '#1b7a9e', '#164c63', '#00d0b1', '#2eb88d', '#158564',
     // Row 2
-    '#c0c0c0', '#e52d2d', '#f39221', '#ffcc33', '#fff3ac', '#fce2ad'
+    '#c0c0c0', '#e52d2d', '#d97757', '#ffcc33', '#fff3ac', '#fce2ad'
 ]
 
 export function DotColorPicker({ color, onChange }: DotColorPickerProps) {

@@ -2,13 +2,14 @@
  * Point Renderer — ArcGIS-style Dot Density
  *
  * Each dot represents a fixed quantity (dot value).
- * Dots are randomly scattered inside each polygon's bounding box,
- * filtered by a simple point-in-polygon test.
+ * Dots are scattered inside each polygon using seeded PRNG
+ * (deterministic placement — same feature name → same dot positions).
  *
  * Key concepts (ArcGIS):
  *  - dotValue   : how many units a single dot represents
  *  - dotCount   : Math.round(featureValue / dotValue)
- *  - Dots vary by map scale (optional, not implemented yet)
+ *  - Zoom-dependent dot size (referenceScale equivalent)
+ *  - Hole polygon support (GeoJSON spec: coordinates[1..n] = holes)
  *
  * Uses MapLibre data-driven styling (GPU-side color rendering)
  */
@@ -22,10 +23,11 @@ import {
   MAX_TOTAL_DOTS,
   MIN_DOTS_PER_FEATURE,
 } from '../../features/viz-wizard/constants/dot-density'
-import { calculateSmartDotValue } from '../../features/viz-wizard/utils/dot-density'
+import { buildZoomRadius, calculateSmartDotValue } from '../../features/viz-wizard/utils/dot-density'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBounds } from '../../utils/geometryUtils'
+import { hashString, mulberry32 } from '../../utils/prng'
 import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
 
 type Coordinate = [number, number]
@@ -33,7 +35,10 @@ type Ring = Coordinate[]
 type Polygon = Ring[]
 type MultiPolygon = Polygon[]
 
-/* Sabitler artık features/viz-wizard/constants/dot-density.ts'den geliyor */
+interface PolygonRings {
+  exterior: Ring
+  holes: Ring[]
+}
 
 export class PointRenderer {
   private map: Map
@@ -141,6 +146,13 @@ export class PointRenderer {
     for (const feature of features) {
       if (totalPlaced >= MAX_TOTAL_DOTS) break
 
+      // Geometry validation
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const geometry = feature.geometry as any
+      if (!geometry || (geometry.type !== 'Polygon' && geometry.type !== 'MultiPolygon')) {
+        continue
+      }
+
       const featureName = this.getFeatureName(feature, locationLevel)
       const normalizedName = normalizeTurkishText(featureName)
       const dataValue = this.getDataValue(feature, dataMap, normalizedName, locationLevel)
@@ -156,17 +168,24 @@ export class PointRenderer {
         dotCount = MAX_TOTAL_DOTS - totalPlaced
       }
 
-      // Get geometry rings for point-in-polygon test
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const geometry = feature.geometry as any
+      // Get geometry rings for point-in-polygon test (with hole support)
       const bbox = calculateBounds(geometry)
-      const rings = this.extractRings(geometry)
+      const polygonRings = this.extractRings(geometry)
 
-      // Scatter dots
+      // Validate bbox (non-degenerate)
+      const [minLng, minLat, maxLng, maxLat] = bbox
+      if (maxLng - minLng === 0 || maxLat - minLat === 0) {
+        console.warn(`⚠️  Degenerate bbox for feature "${featureName}", skipping`)
+        continue
+      }
+
+      if (polygonRings.length === 0) continue
+
+      // Scatter dots with seeded PRNG
       const dots = this.scatterDotsInPolygon(
         dotCount,
         bbox,
-        rings,
+        polygonRings,
         featureName,
         dataValue,
       )
@@ -182,12 +201,13 @@ export class PointRenderer {
   }
 
   /**
-   * Scatter N dots randomly inside a polygon (rejection sampling)
+   * Scatter N dots inside a polygon using seeded PRNG (rejection sampling).
+   * Same featureName → same seed → deterministic dot positions.
    */
   private scatterDotsInPolygon(
     count: number,
     bbox: [number, number, number, number],
-    rings: Ring[],
+    polygonRings: PolygonRings[],
     featureName: string,
     dataValue: number,
   ): GeoJSON.Feature[] {
@@ -196,15 +216,18 @@ export class PointRenderer {
     const maxAttempts = count * 20 // Avoid infinite loop
     let attempts = 0
 
+    // Seeded PRNG: same feature name → same dot positions every render
+    const rand = mulberry32(hashString(featureName))
+
     while (dots.length < count && attempts < maxAttempts) {
       attempts++
 
-      // Random point in bbox
-      const lng = minLng + Math.random() * (maxLng - minLng)
-      const lat = minLat + Math.random() * (maxLat - minLat)
+      // Random point in bbox (seeded)
+      const lng = minLng + rand() * (maxLng - minLng)
+      const lat = minLat + rand() * (maxLat - minLat)
 
-      // Point-in-polygon test (any ring)
-      if (this.pointInAnyRing([lng, lat], rings)) {
+      // Point-in-polygon test: inside exterior AND outside all holes
+      if (this.pointInPolygonWithHoles([lng, lat], polygonRings)) {
         dots.push({
           type: 'Feature',
           properties: {
@@ -230,25 +253,39 @@ export class PointRenderer {
   /* ------------------------------------------------------------------ */
 
   /**
-   * Extract all exterior rings from a Polygon or MultiPolygon
+   * Extract exterior + hole rings from a Polygon or MultiPolygon.
+   * GeoJSON spec: coordinates[0] = exterior, coordinates[1..n] = holes
    */
-  private extractRings(geometry: { type: string; coordinates: Polygon | MultiPolygon }): Ring[] {
+  private extractRings(geometry: { type: string; coordinates: Polygon | MultiPolygon }): PolygonRings[] {
     if (geometry.type === 'Polygon') {
       const poly = geometry.coordinates as Polygon
-      return poly.length > 0 ? [poly[0]] : []
+      if (poly.length === 0 || !poly[0]) return []
+      return [{
+        exterior: poly[0],
+        holes: poly.slice(1).filter(Boolean),
+      }]
     } else if (geometry.type === 'MultiPolygon') {
       const multi = geometry.coordinates as MultiPolygon
-      return multi.map((poly) => poly[0]).filter(Boolean)
+      return multi
+        .filter((poly) => poly.length > 0 && poly[0])
+        .map((poly) => ({
+          exterior: poly[0],
+          holes: poly.slice(1).filter(Boolean),
+        }))
     }
     return []
   }
 
   /**
-   * Test if a point lies inside any of the given rings (ray-casting)
+   * Test if a point lies inside any polygon (exterior) and outside all holes.
    */
-  private pointInAnyRing(point: Coordinate, rings: Ring[]): boolean {
-    for (const ring of rings) {
-      if (this.pointInRing(point, ring)) return true
+  private pointInPolygonWithHoles(point: Coordinate, polygonRings: PolygonRings[]): boolean {
+    for (const { exterior, holes } of polygonRings) {
+      if (this.pointInRing(point, exterior)) {
+        // Check it's not inside any hole
+        const inHole = holes.some((hole) => this.pointInRing(point, hole))
+        if (!inHole) return true
+      }
     }
     return false
   }
@@ -338,6 +375,7 @@ export class PointRenderer {
   private renderToMap(geojson: GeoJSON.FeatureCollection, dotColor: string, dotSize: number): void {
     const sourceId = 'dot-source'
     const layerId = 'dot-circles'
+    const zoomRadius = buildZoomRadius(dotSize)
 
     // Add or update source
     if (this.map.getSource(sourceId)) {
@@ -360,7 +398,8 @@ export class PointRenderer {
         source: sourceId,
         filter: ['==', ['get', 'hasData'], true],
         paint: {
-          'circle-radius': dotSize,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          'circle-radius': zoomRadius as any,
           'circle-color': dotColor,
           'circle-stroke-color': 'rgba(255,255,255,0.6)',
           'circle-stroke-width': 0.5,
@@ -369,7 +408,8 @@ export class PointRenderer {
       })
     } else {
       this.map.setFilter(layerId, ['==', ['get', 'hasData'], true])
-      this.map.setPaintProperty(layerId, 'circle-radius', dotSize)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.map.setPaintProperty(layerId, 'circle-radius', zoomRadius as any)
       this.map.setPaintProperty(layerId, 'circle-color', dotColor)
       this.map.setPaintProperty(layerId, 'circle-stroke-color', 'rgba(255,255,255,0.6)')
       this.map.setPaintProperty(layerId, 'circle-stroke-width', 0.5)
