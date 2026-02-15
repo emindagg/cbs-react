@@ -33,7 +33,11 @@
       "Bash(grep:*)",
       "Bash(pnpm install:*)",
       "Bash(pnpm run build:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(ls:*)",
+      "WebFetch(domain:developers.arcgis.com)",
+      "WebFetch(domain:pro.arcgis.com)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []
