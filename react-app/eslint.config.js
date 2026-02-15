@@ -242,6 +242,25 @@ export default [
     },
   },
 
+  // Feature-First KURAL 4: Feature'lar arası doğrudan import yasak (sadece public API)
+  {
+    files: ['src/features/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['@/features/*/components/*', '@/features/*/hooks/*', '@/features/*/utils/*', '@/features/*/services/*'],
+            message: "Cross-feature imports must use the public barrel (index.ts). Import from '@/features/feature-name' instead of internal paths.",
+          },
+          {
+            group: ['../*/components/*', '../*/hooks/*', '../*/utils/*', '../*/services/*'],
+            message: "Cross-feature imports must use the public barrel (index.ts). Use '@/features/feature-name' instead of relative paths.",
+          },
+        ],
+      }],
+    },
+  },
+
   // Recommended configs
   js.configs.recommended,
   ...tseslint.configs.recommended,
