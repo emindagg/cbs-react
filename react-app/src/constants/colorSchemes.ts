@@ -7,8 +7,8 @@
 import chroma from 'chroma-js'
 
 import type { ColorScheme, InterpolationMethod } from '../types/visualization'
-import { normalizeValue } from '../utils/interpolation'
 import { type ColorSpace, generateColorScale } from '../utils/colorInterpolation'
+import { normalizeValue } from '../utils/interpolation'
 
 export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
   // Original Viridis

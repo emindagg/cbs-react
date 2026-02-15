@@ -1,3 +1,5 @@
+import type { InterpolateExpression, StepExpression } from '@/types/maplibre-expressions'
+
 /**
  * MapLibre Expression Builders
  * Builds data-driven styling expressions for GPU-side color rendering
@@ -14,7 +16,7 @@ export function buildStepExpression(
   breaks: number[],
   colors: string[],
   defaultColor: string,
-): unknown[] {
+): StepExpression {
   // step expression: values below first break get defaultColor
   // then each break threshold maps to the corresponding color
   const expr: unknown[] = ['step', ['get', property], defaultColor]
@@ -23,7 +25,7 @@ export function buildStepExpression(
     expr.push(breaks[i], colors[i] ?? colors[colors.length - 1])
   }
 
-  return expr
+  return expr as StepExpression
 }
 
 /**
@@ -35,12 +37,12 @@ export function buildStepExpression(
 export function buildInterpolateExpression(
   property: string,
   colorStops: [number, string][],
-): unknown[] {
+): InterpolateExpression {
   const expr: unknown[] = ['interpolate', ['linear'], ['get', property]]
 
   for (const [stop, color] of colorStops) {
     expr.push(stop, color)
   }
 
-  return expr
+  return expr as InterpolateExpression
 }

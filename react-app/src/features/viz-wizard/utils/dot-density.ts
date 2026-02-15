@@ -3,7 +3,14 @@
  * UI ve renderer aynı dotValue algoritmasını kullanır.
  */
 
+import type { ZoomRadiusExpression } from '@/types/maplibre-expressions'
+
 import { TARGET_TOTAL_DOTS } from '../constants/dot-density'
+
+// Nice number rounding thresholds
+const NICE_NUMBER_THRESHOLD_LOW = 1.5
+const NICE_NUMBER_THRESHOLD_MID = 3.5
+const NICE_NUMBER_THRESHOLD_HIGH = 7.5
 
 /**
  * "Nice number" yuvarlama ile akıllı dotValue hesabı.
@@ -24,9 +31,9 @@ export function calculateSmartDotValue(dataValues: number[]): number {
   const magnitude = Math.pow(10, Math.floor(Math.log10(raw)))
   const normalized = raw / magnitude
   let nice: number
-  if (normalized <= 1.5) nice = 1
-  else if (normalized <= 3.5) nice = 2
-  else if (normalized <= 7.5) nice = 5
+  if (normalized <= NICE_NUMBER_THRESHOLD_LOW) nice = 1
+  else if (normalized <= NICE_NUMBER_THRESHOLD_MID) nice = 2
+  else if (normalized <= NICE_NUMBER_THRESHOLD_HIGH) nice = 5
   else nice = 10
   const result = nice * magnitude
 
@@ -41,7 +48,7 @@ export function calculateSmartDotValue(dataValues: number[]): number {
  *   zoom 6  → dotSize (referans — Türkiye görünümü)
  *   zoom 10 → dotSize × 3
  */
-export function buildZoomRadius(dotSize: number): unknown[] {
+export function buildZoomRadius(dotSize: number): ZoomRadiusExpression {
   return [
     'interpolate', ['linear'], ['zoom'],
     4, dotSize * 0.5,

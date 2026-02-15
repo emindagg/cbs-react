@@ -6,4 +6,4 @@ export { default as MapTitle } from './components/MapTitle'
 
 // Dot density ortak sabitler & utils
 export * from './constants/dot-density'
-export { calculateSmartDotValue } from './utils/dot-density'
+export { buildZoomRadius, calculateSmartDotValue } from './utils/dot-density'

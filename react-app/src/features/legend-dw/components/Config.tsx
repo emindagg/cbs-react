@@ -47,9 +47,9 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
                 className={`
                   flex-1 px-3 py-2 text-[11px] rounded border transition-all
                   ${config.orientation === 'horizontal'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
-                  }
+          ? 'border-blue-500 bg-blue-50 text-blue-700'
+          : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
+        }
                 `}
               >
                 Yatay
@@ -59,9 +59,9 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
                 className={`
                   flex-1 px-3 py-2 text-[11px] rounded border transition-all
                   ${config.orientation === 'vertical'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
-                  }
+          ? 'border-blue-500 bg-blue-50 text-blue-700'
+          : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'
+        }
                 `}
               >
                 Dikey

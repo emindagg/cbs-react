@@ -1,9 +1,11 @@
+/* eslint-disable no-restricted-imports -- DataLayer needs clustering store */
 import type { FeatureCollection, Feature } from 'geojson'
 import { useMemo, useCallback } from 'react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 
 import { useClusteringStore } from '@/features/clustering/stores/useClusteringStore'
 import { useDataStore } from '@/stores/useDataStore'
+import { type StyleProperties, isStyleProperties } from '@/types/style'
 
 export default function DataLayer() {
   const { items, activeItemId } = useDataStore()
@@ -14,8 +16,8 @@ export default function DataLayer() {
     return items
       .filter(i => i.visible && (i.geometry.type === itemType || i.geometry.type === `Multi${itemType}`))
       .map(i => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const style = (i.properties.style || {}) as any
+        const rawStyle = i.properties.style
+        const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
 
         // LEGACY DEFAULTS (Exact match from LayerStylePanel.js)
         // Default Color: #3b82f6 (Blue-500)

@@ -10,6 +10,7 @@ import { getContinuousColor, getColorPalette } from '../../constants/colorScheme
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBreaks } from '../../utils/classification'
+import { isPolygonOrMultiPolygon } from '../../utils/geometryTypeGuards'
 import { calculateCentroid } from '../../utils/geometryUtils'
 import { normalizeValue } from '../../utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '../../utils/mapExpressions'
@@ -178,9 +179,12 @@ export class BubbleRenderer {
       // Skip features without data
       if (dataValue === undefined || dataValue === 0) return
 
-      // Calculate centroid
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const centroid = calculateCentroid(feature.geometry as any)
+      // Calculate centroid - only process Polygon/MultiPolygon geometries
+      const geometry = feature.geometry
+      if (!isPolygonOrMultiPolygon(geometry)) {
+        return
+      }
+      const centroid = calculateCentroid(geometry)
 
       // Calculate radius (stays in JS — sqrt/log scaling is complex for expressions)
       const radius = this.calculateSymbolSizeValue(dataValue, minValue, maxValue, settings)

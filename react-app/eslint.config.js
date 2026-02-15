@@ -105,7 +105,7 @@ export default [
       // ========================================
 
       // any kullanımı (geliştirme aşamasında warning, production'da error olmalı)
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
 
       // Kullanılmayan değişkenler
       '@typescript-eslint/no-unused-vars': ['error', {

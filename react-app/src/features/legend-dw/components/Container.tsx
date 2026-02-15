@@ -8,9 +8,8 @@ import { useMemo } from 'react'
 
 import { DotDensityLegend, DynamicLegend } from '@/components/Legend'
 import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
-import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE } from '@/features/viz-wizard/constants/dot-density'
-import { calculateSmartDotValue } from '@/features/viz-wizard/utils/dot-density'
 import { Legend } from '@/features/legend-dw'
+import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, calculateSmartDotValue } from '@/features/viz-wizard'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { calculateBreaks } from '@/utils/classification'
 

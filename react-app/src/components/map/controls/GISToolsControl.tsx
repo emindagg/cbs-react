@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports -- GISToolsControl needs clustering feature */
 import { useState, useRef, useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
@@ -195,7 +196,7 @@ export default function GISToolsControl() {
                 className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 ${active
                   ? 'bg-blue-500 text-white shadow-[0_2px_8px_rgba(59,130,246,0.4)] ring-2 ring-blue-300'
                   : 'hover:bg-zinc-100 text-zinc-600 hover:scale-105'
-                  }`}
+                }`}
                 title={getToolLabel(tool)}
               >
                 <i className={`fa-solid ${tool.icon} text-[13px] ${active ? 'text-white' : tool.color}`}></i>
@@ -236,10 +237,10 @@ function CompactMenuItem({ icon, label, onClick, active, color, disabled }: Comp
         : disabled
           ? 'opacity-40 cursor-not-allowed text-zinc-400 border-l-transparent'
           : 'hover:bg-zinc-50 text-zinc-700 cursor-pointer border-l-transparent hover:border-l-zinc-300'
-        }`}
+      }`}
     >
       <div className={`w-[18px] h-[18px] flex items-center justify-center rounded transition-colors ${active ? 'bg-blue-500 text-white' : 'bg-transparent'
-        }`}>
+      }`}>
         <i className={`fa-solid ${icon} ${active ? 'text-white' : color} text-[10px]`}></i>
       </div>
       <span className={`text-[11px] ${active ? 'font-bold text-blue-700' : 'font-medium'} truncate`}>{label}</span>

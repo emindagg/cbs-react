@@ -48,12 +48,8 @@ export function Grid({
   const rowHeight = isModal ? 28 : 26
 
   // Memoize context object to avoid unnecessary re-renders
-  const context = useMemo(() => gridContext, [
-    gridContext.selectedProvince,
-    gridContext.selectedDistrict,
-    gridContext.selectedData,
-    gridContext.locationLevel,
-  ])
+  // Note: Including full gridContext object to satisfy exhaustive-deps
+  const context = useMemo(() => gridContext, [gridContext])
 
   return (
     <div className={containerClass} style={containerStyle}>

@@ -10,10 +10,10 @@ import type maplibregl from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE } from '@/features/viz-wizard/constants/dot-density'
-import { buildZoomRadius } from '@/features/viz-wizard/utils/dot-density'
+import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, buildZoomRadius } from '@/features/viz-wizard'
 import { VisualizationManager } from '@/services/VisualizationManager'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
+import type { PaintPropertyValue } from '@/types/maplibre-expressions'
 import type { MatchResults, VisualizationSettings } from '@/types/visualization'
 
 interface UseVizRenderProps {
@@ -31,8 +31,7 @@ function updateDotPaintProperties(map: maplibregl.Map, settings: VisualizationSe
   if (!map.getLayer('dot-circles')) return
   const dotSize = settings.dotSize ?? DEFAULT_DOT_SIZE
   const dotColor = settings.dotColor ?? DEFAULT_DOT_COLOR
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  map.setPaintProperty('dot-circles', 'circle-radius', buildZoomRadius(dotSize) as any)
+  map.setPaintProperty('dot-circles', 'circle-radius', buildZoomRadius(dotSize) as PaintPropertyValue<number>)
   map.setPaintProperty('dot-circles', 'circle-color', dotColor)
 }
 

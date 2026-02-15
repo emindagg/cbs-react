@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports -- Modal component needs feature types */
 import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 

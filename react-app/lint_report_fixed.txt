@@ -1,0 +1,56 @@
+﻿
+> react-app@0.0.0 lint
+> eslint src/**/*.{ts,tsx} --report-unused-disable-directives
+
+
+C:\Users\MED\Documents\cbs-react\react-app\src\components\layout\AppLayout.tsx
+   8:1  warning  '@/features/astronomy' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic                            no-restricted-imports
+   9:1  warning  '@/features/clustering' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic                           no-restricted-imports
+  10:1  warning  '@/features/geocoder/components/SearchContainer' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic  no-restricted-imports
+  11:1  warning  '@/features/legend-dw' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic                            no-restricted-imports
+  12:1  warning  '@/features/map' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic                                  no-restricted-imports
+  13:1  warning  '@/features/viz-wizard' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic                           no-restricted-imports
+
+C:\Users\MED\Documents\cbs-react\react-app\src\components\map\controls\GISToolsControl.tsx
+  4:1  warning  '@/features/clustering' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic  no-restricted-imports
+
+C:\Users\MED\Documents\cbs-react\react-app\src\components\map\layers\DataLayer.tsx
+  5:1  warning  '@/features/clustering/stores/useClusteringStore' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic  no-restricted-imports
+
+C:\Users\MED\Documents\cbs-react\react-app\src\components\modals\ColumnMapperModal.tsx
+  4:1  warning  '@/features/data-import/types' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic  no-restricted-imports
+
+C:\Users\MED\Documents\cbs-react\react-app\src\components\modals\DataMapperModal.tsx
+  8:1  warning  '@/features/data-mapper' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic  no-restricted-imports
+
+C:\Users\MED\Documents\cbs-react\react-app\src\components\sidebar\sections\SidebarProjectManagement.tsx
+  1:1  warning  '@/features/data-import' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic  no-restricted-imports
+
+C:\Users\MED\Documents\cbs-react\react-app\src\components\sidebar\sections\SidebarVizWizard.tsx
+  6:1  warning  '@/features/viz-wizard' import is restricted from being used by a pattern. Global 'components' cannot import from 'features'. Move this component into the respective feature folder or make it agnostic  no-restricted-imports
+
+C:\Users\MED\Documents\cbs-react\react-app\src\features\data-mapper\components\Grid.tsx
+  51:46  warning  React Hook useMemo has a missing dependency: 'gridContext'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\MED\Documents\cbs-react\react-app\src\features\legend-dw\components\ConfigLabelsSection.tsx
+  29:9  warning  The 'customLabels' logical expression could make the dependencies of useCallback Hook (at line 54) change on every render. To fix this, wrap the initialization of 'customLabels' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\MED\Documents\cbs-react\react-app\src\features\viz-wizard\steps\Step3\components\DotColorPicker.tsx
+  214:77  warning  No magic number: 4.5  no-magic-numbers
+
+C:\Users\MED\Documents\cbs-react\react-app\src\features\viz-wizard\utils\dot-density.ts
+  28:26  warning  No magic number: 3.5  no-magic-numbers
+  29:26  warning  No magic number: 7.5  no-magic-numbers
+
+C:\Users\MED\Documents\cbs-react\react-app\src\services\renderers\PointRenderer.ts
+  416:60  warning  No magic number: 0.85  no-magic-numbers
+
+C:\Users\MED\Documents\cbs-react\react-app\src\utils\prng.ts
+  10:14  warning  Number constants declarations must use 'const'  no-magic-numbers
+  21:14  warning  No magic number: 0x6d2b79f5                     no-magic-numbers
+  23:39  warning  No magic number: 61                             no-magic-numbers
+  24:25  warning  No magic number: 14                             no-magic-numbers
+  24:39  warning  No magic number: 4294967296                     no-magic-numbers
+
+Ô£û 23 problems (0 errors, 23 warnings)
+

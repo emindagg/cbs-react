@@ -2,7 +2,7 @@
  * Legend label type section: ruler / ranges / custom (LegendConfig içinde kullanılır)
  */
 
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import type { LegendConfiguration, LegendLabelType } from '@/types/visualization'
 
@@ -26,7 +26,8 @@ const LABEL_DESCRIPTIONS: Record<string, string> = {
 
 export function ConfigLabelsSection({ config, onChange, classCount }: ConfigLabelsSectionProps) {
   const type = config.labels.type
-  const customLabels = config.labels.customLabels ?? []
+  // Memoize customLabels to prevent dependency changes on every render
+  const customLabels = useMemo(() => config.labels.customLabels ?? [], [config.labels.customLabels])
 
   const handleTypeChange = useCallback(
     (newType: LegendLabelType) => {

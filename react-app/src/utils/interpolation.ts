@@ -4,8 +4,8 @@
  * Handles break calculation, class counting, normalization
  */
 
-import type { InterpolationMethod } from '../types/visualization'
 import { calculateBreaks } from './classification'
+import type { InterpolationMethod } from '../types/visualization'
 
 /**
  * Calculate breaks using Datawrapper-style interpolation methods

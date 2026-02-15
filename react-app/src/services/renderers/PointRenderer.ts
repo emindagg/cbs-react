@@ -26,8 +26,13 @@ import {
 import { buildZoomRadius, calculateSmartDotValue } from '../../features/viz-wizard/utils/dot-density'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
+import { isPolygonOrMultiPolygon } from '../../utils/geometryTypeGuards'
 import { calculateBounds } from '../../utils/geometryUtils'
 import { hashString, mulberry32 } from '../../utils/prng'
+// Dot rendering style constants
+const DOT_STROKE_COLOR = 'rgba(255,255,255,0.6)'
+const DOT_STROKE_WIDTH = 0.5
+const DOT_OPACITY = 0.85
 import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
 
 type Coordinate = [number, number]
@@ -147,9 +152,8 @@ export class PointRenderer {
       if (totalPlaced >= MAX_TOTAL_DOTS) break
 
       // Geometry validation
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const geometry = feature.geometry as any
-      if (!geometry || (geometry.type !== 'Polygon' && geometry.type !== 'MultiPolygon')) {
+      const geometry = feature.geometry
+      if (!geometry || !isPolygonOrMultiPolygon(geometry)) {
         continue
       }
 
@@ -256,7 +260,7 @@ export class PointRenderer {
    * Extract exterior + hole rings from a Polygon or MultiPolygon.
    * GeoJSON spec: coordinates[0] = exterior, coordinates[1..n] = holes
    */
-  private extractRings(geometry: { type: string; coordinates: Polygon | MultiPolygon }): PolygonRings[] {
+  private extractRings(geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon): PolygonRings[] {
     if (geometry.type === 'Polygon') {
       const poly = geometry.coordinates as Polygon
       if (poly.length === 0 || !poly[0]) return []
@@ -398,8 +402,7 @@ export class PointRenderer {
         source: sourceId,
         filter: ['==', ['get', 'hasData'], true],
         paint: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          'circle-radius': zoomRadius as any,
+          'circle-radius': zoomRadius,
           'circle-color': dotColor,
           'circle-stroke-color': 'rgba(255,255,255,0.6)',
           'circle-stroke-width': 0.5,
@@ -408,12 +411,11 @@ export class PointRenderer {
       })
     } else {
       this.map.setFilter(layerId, ['==', ['get', 'hasData'], true])
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.map.setPaintProperty(layerId, 'circle-radius', zoomRadius as any)
+      this.map.setPaintProperty(layerId, 'circle-radius', zoomRadius)
       this.map.setPaintProperty(layerId, 'circle-color', dotColor)
-      this.map.setPaintProperty(layerId, 'circle-stroke-color', 'rgba(255,255,255,0.6)')
-      this.map.setPaintProperty(layerId, 'circle-stroke-width', 0.5)
-      this.map.setPaintProperty(layerId, 'circle-opacity', 0.85)
+      this.map.setPaintProperty(layerId, 'circle-stroke-color', DOT_STROKE_COLOR)
+      this.map.setPaintProperty(layerId, 'circle-stroke-width', DOT_STROKE_WIDTH)
+      this.map.setPaintProperty(layerId, 'circle-opacity', DOT_OPACITY)
     }
   }
 }

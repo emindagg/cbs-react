@@ -2,6 +2,7 @@
  * Sidebar Visualization Wizard
  * Multi-step wizard for data visualization
  */
+/* eslint-disable no-restricted-imports -- Sidebar section orchestrates viz-wizard feature */
 
 import {
   VizWizardStep1,

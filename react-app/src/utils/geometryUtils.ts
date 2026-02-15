@@ -7,25 +7,17 @@ type Coordinate = [number, number]
 type Polygon = Coordinate[][]
 type MultiPolygon = Coordinate[][][]
 
-interface Geometry {
-  type: string
-  coordinates: Polygon | MultiPolygon
-}
-
 /**
  * Calculate centroid for a polygon geometry
  * Returns [longitude, latitude] point
  */
-export function calculateCentroid(geometry: Geometry): Coordinate {
+export function calculateCentroid(geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon): Coordinate {
   if (geometry.type === 'Polygon') {
     return calculatePolygonCentroid(geometry.coordinates as Polygon)
-  } else if (geometry.type === 'MultiPolygon') {
-    return calculateMultiPolygonCentroid(geometry.coordinates as MultiPolygon)
   }
-
-  // Fallback: return [0, 0] if unknown geometry type
-  console.warn('⚠️  Unknown geometry type:', geometry.type)
-  return [0, 0]
+  
+  // MultiPolygon case
+  return calculateMultiPolygonCentroid(geometry.coordinates as MultiPolygon)
 }
 
 /**
@@ -87,7 +79,7 @@ function calculateMultiPolygonCentroid(coordinates: MultiPolygon): Coordinate {
  * Calculate bounding box for a geometry
  * Returns [minLng, minLat, maxLng, maxLat]
  */
-export function calculateBounds(geometry: Geometry): [number, number, number, number] {
+export function calculateBounds(geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon): [number, number, number, number] {
   let minLng = Infinity
   let minLat = Infinity
   let maxLng = -Infinity
