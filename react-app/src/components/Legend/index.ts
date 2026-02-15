@@ -2,6 +2,7 @@
  * Legend — Barrel Export
  */
 
+export { default as DotDensityLegend } from './DotDensityLegend'
 export { default as DynamicLegend } from './DynamicLegend'
 export { default as LegendBar } from './LegendBar'
 export { default as LegendLabels } from './LegendLabels'

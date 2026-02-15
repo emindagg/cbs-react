@@ -1,12 +1,15 @@
 /**
  * Legend Container
- * Connects DynamicLegend component to visualization store and renders on map
+ * Connects DynamicLegend component to visualization store and renders on map.
+ * Dot density maps get a specialized "1 nokta = X" legend (ArcGIS style).
  */
 
 import { useMemo } from 'react'
 
-import { DynamicLegend } from '@/components/Legend'
+import { DotDensityLegend, DynamicLegend } from '@/components/Legend'
 import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
+import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE } from '@/features/viz-wizard/constants/dot-density'
+import { calculateSmartDotValue } from '@/features/viz-wizard/utils/dot-density'
 import { Legend } from '@/features/legend-dw'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { calculateBreaks } from '@/utils/classification'
@@ -81,6 +84,32 @@ export default function Container() {
     return null
   }
 
+  const handleTitleChange = (title: string) => {
+    setLegendConfig({
+      title: {
+        show: colorConfig.legend.title?.show ?? true,
+        text: title,
+      },
+    })
+  }
+
+  // Dot density → ArcGIS-style "1 nokta = X" legend
+  if (vizSettings.type === 'dot') {
+    const dotValue = vizSettings.dotValue ?? calculateSmartDotValue(dataValues)
+    const dotColor = vizSettings.dotColor ?? DEFAULT_DOT_COLOR
+    const dotSize = vizSettings.dotSize ?? DEFAULT_DOT_SIZE
+
+    return (
+      <DotDensityLegend
+        config={colorConfig.legend}
+        dotColor={dotColor}
+        dotSize={dotSize}
+        dotValue={dotValue}
+        onTitleChange={handleTitleChange}
+      />
+    )
+  }
+
   if (colorConfig.legend.orientation === 'vertical') {
     return (
       <Legend
@@ -88,14 +117,7 @@ export default function Container() {
         breaks={breaks}
         colors={colors}
         scaleType={colorConfig.scaleType}
-        onTitleChange={(title) => {
-          setLegendConfig({
-            title: {
-              show: colorConfig.legend.title?.show ?? true,
-              text: title,
-            },
-          })
-        }}
+        onTitleChange={handleTitleChange}
       />
     )
   }
@@ -106,14 +128,7 @@ export default function Container() {
       breaks={breaks}
       colors={colors}
       scaleType={colorConfig.scaleType}
-      onTitleChange={(title) => {
-        setLegendConfig({
-          title: {
-            show: colorConfig.legend.title?.show ?? true,
-            text: title,
-          },
-        })
-      }}
+      onTitleChange={handleTitleChange}
     />
   )
 }
