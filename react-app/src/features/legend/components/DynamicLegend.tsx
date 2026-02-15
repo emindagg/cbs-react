@@ -12,11 +12,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { formatNumber, type NumberFormat } from '@/utils/numberFormatter'
+
 import './DynamicLegend.css'
-import type { DynamicLegendProps } from './legend.types'
+import type { DynamicLegendProps } from '../types'
 import LegendBar from './LegendBar'
 import LegendLabels from './LegendLabels'
-import { formatNumber, type NumberFormat } from '../../utils/numberFormatter'
 
 export default function DynamicLegend({
   config,

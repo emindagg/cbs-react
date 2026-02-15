@@ -6,6 +6,9 @@
 // Main component
 export { DataImportSection } from './components/DataImportSection'
 
+// Modal
+export { default as ColumnMapperModal } from './components/ColumnMapperModal'
+
 // Sub-components (if needed elsewhere)
 export { ExportControls } from './components/ExportControls'
 export { UrlImporter } from './components/UrlImporter'

@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { LegendConfiguration, ColorScaleType } from '@/types/visualization'
 
-import { BarContent } from './components/BarContent'
+import { BarContent } from './BarContent'
 
 interface LegendProps {
   config: LegendConfiguration;

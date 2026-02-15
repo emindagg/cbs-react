@@ -25,9 +25,9 @@ describe('colorSchemes', () => {
     })
 
     it('should handle all available schemes', () => {
-      const schemes = Object.keys(COLOR_SCHEMES)
+      const schemes = Object.keys(COLOR_SCHEMES) as Array<keyof typeof COLOR_SCHEMES>
       schemes.forEach(scheme => {
-        const palette = getColorPalette(scheme as any, 5)
+        const palette = getColorPalette(scheme, 5)
         expect(palette).toHaveLength(5)
       })
     })

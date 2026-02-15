@@ -209,6 +209,16 @@ export default [
     },
   },
 
+  // Test dosyaları için özel kurallar
+  {
+    files: ['**/*.test.{ts,tsx}', '**/test/**/*.{ts,tsx}'],
+    rules: {
+      'no-magic-numbers': 'off', // Test dosyalarında magic number serbest
+      '@typescript-eslint/no-explicit-any': 'warn', // Test'lerde any daha esnek
+      'max-lines-per-function': 'off', // Test fonksiyonları uzun olabilir
+    },
+  },
+
   // Feature-First KURAL 1: src/components (global) feature'lardan import edemez (warn = hedef mimari, mevcut kod geçiş sonrası error yapılabilir)
   {
     files: ['src/components/**/*.{ts,tsx}'],

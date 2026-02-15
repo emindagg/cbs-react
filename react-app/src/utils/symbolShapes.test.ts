@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
+import type { SymbolShape } from '@/types/visualization'
+
 import { generateSymbolPath, calculateSymbolSize } from './symbolShapes'
 
 describe('symbolShapes', () => {
@@ -51,7 +53,7 @@ describe('symbolShapes', () => {
     })
 
     it('should default to circle for unknown shape', () => {
-      const path = generateSymbolPath('unknown' as any, centerX, centerY, size)
+      const path = generateSymbolPath('unknown' as SymbolShape, centerX, centerY, size)
       expect(path).toContain('a') // Circle uses arc command
     })
 

@@ -2,7 +2,7 @@
  * DataMapper Modal
  * Opens the DataMapper (AG Grid spreadsheet + column mapping) in a centered modal
  */
-/* eslint-disable no-restricted-imports -- Modal wraps data-mapper feature */
+ 
 
 import { createPortal } from 'react-dom'
 

@@ -3,7 +3,7 @@
  * Configure visualization settings and render (moved from old Step 4)
  */
 
-import { LegendConfig } from '@/features/legend-dw'
+import { LegendConfig } from '@/features/legend'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
 
 import { DotDensitySettings } from './components/DotDensitySettings'
@@ -17,6 +17,7 @@ import {
   DataDistributionPreview,
 } from '../../components/ColorScale'
 import { CustomRangeConfig } from '../../components/CustomRange'
+
 
 interface VizWizardStep3Props {
   onBack: () => void;

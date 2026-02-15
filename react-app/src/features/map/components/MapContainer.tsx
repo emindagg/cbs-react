@@ -4,10 +4,10 @@ import Map, { ScaleControl, Source, Layer } from 'react-map-gl/maplibre'
 
 import { useMapStore } from '@/stores/useMapStore'
 
-import GISToolsControl from './controls/GISToolsControl'
-import DataLayer from './layers/DataLayer'
-import DistanceTool from './tools/DistanceTool'
-import DrawTool from './tools/DrawTool'
+import GISToolsControl from '../controls/GISToolsControl'
+import DataLayer from '../layers/DataLayer'
+import DistanceTool from '../tools/DistanceTool'
+import DrawTool from '../tools/DrawTool'
 
 
 
@@ -98,3 +98,4 @@ export default function MapContainer() {
     </Map>
   )
 }
+

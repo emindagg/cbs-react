@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
-import DataMapperModal from '@/components/modals/DataMapperModal'
+import { DataMapperModal } from '@/features/data-mapper'
 import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { normalizeTurkishText } from '@/utils/turkishNormalizer'

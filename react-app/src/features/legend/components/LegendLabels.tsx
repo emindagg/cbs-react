@@ -10,9 +10,9 @@
  * Uses useLabelCollision to auto-switch inline → staggered → thinned.
  */
 
-import type { LegendLabelsProps } from './legend.types'
+import type { LegendLabelsProps } from '../types'
 import SmartLabel from './SmartLabel'
-import { useLabelCollision } from './useLabelCollision'
+import { useLabelCollision } from '../hooks/useLabelCollision'
 
 const BAR_HEIGHT = 14
 

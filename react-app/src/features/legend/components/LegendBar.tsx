@@ -10,7 +10,7 @@
 
 import { useMemo } from 'react'
 
-import type { LegendBarProps } from './legend.types'
+import type { LegendBarProps } from '../types'
 
 /**
  * Build a CSS linear-gradient string from colors and breaks.

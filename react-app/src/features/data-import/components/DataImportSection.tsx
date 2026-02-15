@@ -1,4 +1,4 @@
-import ColumnMapperModal from '@/components/modals/ColumnMapperModal'
+import { ColumnMapperModal } from '@/features/data-import'
 
 import { ExportControls } from './ExportControls'
 import { UrlImporter } from './UrlImporter'

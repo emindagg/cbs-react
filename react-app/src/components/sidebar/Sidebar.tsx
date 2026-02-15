@@ -1,9 +1,11 @@
+/* eslint-disable no-restricted-imports -- Sidebar orchestrates features */
+import { DataImportSection } from '@/features/data-import'
+import { VizWizardSidebar } from '@/features/viz-wizard'
+
 import SidebarDataCatalog from './sections/SidebarDataCatalog'
 import SidebarDataCreation from './sections/SidebarDataCreation'
-import SidebarProjectManagement from './sections/SidebarProjectManagement'
 import SidebarProjectPurpose from './sections/SidebarProjectPurpose'
 import SidebarTools from './sections/SidebarTools'
-import SidebarVizWizard from './sections/SidebarVizWizard'
 import SidebarFooter from './SidebarFooter'
 import SidebarHeader from './SidebarHeader'
 
@@ -20,8 +22,8 @@ export default function Sidebar() {
         <SidebarTools />
         <SidebarDataCreation />
         <SidebarDataCatalog />
-        <SidebarVizWizard />
-        <SidebarProjectManagement />
+        <VizWizardSidebar />
+        <DataImportSection />
       </div>
 
       <SidebarFooter />

@@ -7,8 +7,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import type { LegendConfiguration } from './legend.types'
-import { formatNumber, type NumberFormat } from '../../utils/numberFormatter'
+import { formatNumber, type NumberFormat } from '@/utils/numberFormatter'
+
+import type { LegendConfiguration } from '../types'
 
 interface DotDensityLegendProps {
   config: LegendConfiguration

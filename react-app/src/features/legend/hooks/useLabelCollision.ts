@@ -9,7 +9,7 @@
 
 import { useMemo } from 'react'
 
-import type { LabelDescriptor, LabelLayoutMode } from './legend.types'
+import type { LabelDescriptor, LabelLayoutMode } from '../types'
 
 /** Average character width in px for a sans-serif font at ~11px */
 const CHAR_WIDTH_PX = 6.5

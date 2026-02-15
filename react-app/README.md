@@ -1,13 +1,65 @@
-# React + TypeScript + Vite
+# React Map Visualization Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A feature-rich map visualization application built with React, TypeScript, and MapLibre GL.
 
-Currently, two official plugins are available:
+## 🚀 Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+# Install dependencies
+npm install
 
-## Testing
+# Start development server
+npm run dev
+
+# Open browser at http://localhost:5173
+```
+
+## 📚 Documentation
+
+- **[Architecture Guide](./ARCHITECTURE.md)** - System architecture and design principles
+- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute to the project
+- **[Features Documentation](./FEATURES.md)** - Detailed feature descriptions
+
+## 🎯 Features
+
+- 🗺️ **Interactive Map** - MapLibre GL based map with multiple basemaps
+- 📊 **Visualizations** - Choropleth, bubble, and dot density maps
+- 📁 **Data Import** - Support for Excel, CSV, GeoJSON, KML, Shapefile
+- 🎨 **Customization** - Color schemes, legends, and styling options
+- 📐 **GIS Tools** - Buffer, measurement, and drawing tools
+- 🌍 **Basemaps** - HGM Atlas, CartoDB, and custom basemaps
+- ⭐ **Astronomy** - Sun and moon position visualization
+- 🔍 **Geocoding** - Address search and location finding
+
+## 🛠️ Tech Stack
+
+- **Framework:** React 19.2.0 + TypeScript 5.9.3
+- **Build Tool:** Vite 7.3.1
+- **Map:** MapLibre GL 5.17.0
+- **State:** Zustand 5.0.11
+- **Styling:** Tailwind CSS 4.1.18
+- **Testing:** Vitest 4.0.18
+- **Linting:** ESLint 9.39.1
+
+## 📦 Project Structure
+
+```
+src/
+├── features/          # Feature modules (domain code)
+│   ├── astronomy/     # Sun/moon position
+│   ├── data-import/   # File import
+│   ├── legend/        # Legend components
+│   ├── map/           # Core map
+│   └── viz-wizard/    # Visualization wizard
+├── components/        # Global components (orchestrators)
+├── stores/            # Global state (Zustand)
+├── utils/             # Shared utilities
+└── types/             # Shared types
+```
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed structure.
+
+## 🧪 Testing
 
 This project uses [Vitest](https://vitest.dev/) for unit testing with comprehensive coverage reporting.
 
@@ -92,6 +144,110 @@ Tests run automatically on:
 - Pull requests to `main` or `develop`
 
 See `.github/workflows/test.yml` for CI/CD configuration.
+
+## 🏗️ Architecture
+
+This project follows **Feature-First Architecture** principles:
+
+- **Domain code in features:** Each feature is self-contained
+- **Barrel exports:** Clean public APIs via `index.ts`
+- **Single responsibility:** Each module has one clear purpose
+- **Dependency direction:** Features → Shared, never Shared → Features
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for complete architecture guide.
+
+## 🤝 Contributing
+
+We welcome contributions! Please read our [Contributing Guide](./CONTRIBUTING.md) for:
+
+- Development workflow
+- Code standards
+- Testing guidelines
+- Pull request process
+
+### Quick Contribution Steps
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/my-feature
+
+# 2. Make changes
+# ... code ...
+
+# 3. Run checks
+npm run lint:fix
+npm run test:run
+npm run build
+
+# 4. Commit and push
+git commit -m "feat: add new feature"
+git push origin feature/my-feature
+
+# 5. Create Pull Request
+```
+
+## 📊 Project Status
+
+- **Test Coverage:** 86.52% ✅
+- **ESLint:** 0 errors, 0 warnings ✅
+- **Build:** Passing ✅
+- **Features:** 10 active features ✅
+- **Architecture:** Feature-First (100% compliant) ✅
+
+## 📝 Scripts
+
+```bash
+# Development
+npm run dev              # Start dev server
+npm run build            # Build for production
+npm run preview          # Preview production build
+
+# Testing
+npm test                 # Run tests in watch mode
+npm run test:run         # Run tests once
+npm run test:coverage    # Generate coverage report
+npm run test:ui          # Open test UI
+
+# Linting
+npm run lint             # Check for lint errors
+npm run lint:fix         # Fix lint errors
+npm run lint:strict      # Strict mode (max warnings 0)
+```
+
+## 🔧 Configuration
+
+### ESLint
+
+The project uses a comprehensive ESLint configuration with:
+- TypeScript strict rules
+- React Hooks rules
+- Feature-First architecture rules
+- Import order enforcement
+- Code quality rules
+
+See [eslint.config.js](./eslint.config.js) for details.
+
+### TypeScript
+
+Strict mode enabled with:
+- `strict: true`
+- `noImplicitAny: true`
+- `strictNullChecks: true`
+
+See [tsconfig.json](./tsconfig.json) for details.
+
+## 📄 License
+
+This project is proprietary. See LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- MapLibre GL for the mapping library
+- React team for the framework
+- Vite team for the build tool
+- All contributors to this project
+
+---
 
 ## React Compiler
 

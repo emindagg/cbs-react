@@ -3,11 +3,12 @@
  * Complete panel integrating color scale, interpolation, custom range, and legend
  */
 
-import { LegendConfig } from '@/features/legend-dw'
+import { LegendConfig } from '@/features/legend'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
 import { ColorScaleConfig } from './ColorScale'
 import { CustomRangeConfig } from './CustomRange'
+
 
 interface StyleConfigProps {
   dataValues?: number[];

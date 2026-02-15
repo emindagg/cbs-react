@@ -323,7 +323,7 @@ describe('mapExpressions', () => {
         'dataValue',
         [0, 10, 20, 30, 40],
         ['#fff', '#ccc', '#999', '#666'],
-        '#000'
+        '#000',
       )
 
       // Interpolate expression for continuous choropleth

@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-imports -- GISToolsControl needs clustering feature */
 import { useState, useRef, useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 

@@ -6,12 +6,14 @@
 
 import { useMemo } from 'react'
 
-import { DotDensityLegend, DynamicLegend } from '@/components/Legend'
 import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
-import { Legend } from '@/features/legend-dw'
 import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, calculateSmartDotValue } from '@/features/viz-wizard'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { calculateBreaks } from '@/utils/classification'
+
+import DatawrapperLegend from './DatawrapperLegend'
+import DotDensityLegend from './DotDensityLegend'
+import DynamicLegend from './DynamicLegend'
 
 export default function Container() {
   const { colorConfig, vizSettings, matchResults, currentVisualization, setLegendConfig } = useVisualizationStore()
@@ -111,7 +113,7 @@ export default function Container() {
 
   if (colorConfig.legend.orientation === 'vertical') {
     return (
-      <Legend
+      <DatawrapperLegend
         config={colorConfig.legend}
         breaks={breaks}
         colors={colors}

@@ -1,19 +1,19 @@
 import { useState, useMemo } from 'react'
 
 /* eslint-disable no-restricted-imports -- AppLayout is a root component that orchestrates all features */
-import MapContainer from '@/components/map/MapContainer'
 import Sidebar from '@/components/sidebar/Sidebar'
 import { LAYOUT } from '@/constants/layout'
 import { useAstroMap, AstroPanel } from '@/features/astronomy'
 import { useClustering } from '@/features/clustering'
 import { SearchContainer } from '@/features/geocoder/components/SearchContainer'
-import { LegendContainer } from '@/features/legend-dw'
-import { MapControlStack } from '@/features/map'
+import { LegendContainer } from '@/features/legend'
+import { MapContainer, MapControlStack } from '@/features/map'
 import { MapTitle } from '@/features/viz-wizard'
 /* eslint-enable no-restricted-imports */
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
+
 
 /**
  * AppLayout Component

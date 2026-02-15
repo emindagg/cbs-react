@@ -8,7 +8,7 @@
  *   - thinned  → same as vertical but some labels hidden
  */
 
-import type { SmartLabelProps } from './legend.types'
+import type { SmartLabelProps } from '../types'
 
 export default function SmartLabel({ label, layoutMode }: SmartLabelProps) {
   if (!label.visible) return null
