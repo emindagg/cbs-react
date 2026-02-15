@@ -15,7 +15,7 @@ This implementation plan eliminates all `any` type usage from the codebase by in
   - Export all types for use across the codebase
   - _Requirements: AC-1.3_
 
-- [-] 1.1 Write unit tests for MapLibre expression types
+- [ ] 1.1 Write unit tests for MapLibre expression types
   - Test that expression types accept valid MapLibre expression arrays
   - Test that `PaintPropertyValue<number>` accepts both numbers and expressions
   - _Requirements: AC-1.3_
@@ -29,14 +29,14 @@ This implementation plan eliminates all `any` type usage from the codebase by in
   - Export all type guard functions
   - _Requirements: AC-1.3_
 
-- [~] 2.1 Write unit tests for geometry type guards
+- [ ] 2.1 Write unit tests for geometry type guards
   - Test `isPolygon` returns `true` for Polygon geometry
   - Test `isPolygon` returns `false` for Point geometry
   - Test `isPolygonOrMultiPolygon` handles both Polygon and MultiPolygon
   - Test all type guards with various geometry types
   - _Requirements: AC-1.3_
 
-- [~] 2.2 Write property test for type guard correctness
+- [ ] 2.2 Write property test for type guard correctness
   - **Property 3: Type guards correctly narrow geometry types**
   - **Validates: Requirements AC-1.3**
   - Generate random GeoJSON geometries
@@ -50,7 +50,7 @@ This implementation plan eliminates all `any` type usage from the codebase by in
   - Export interface and type guard
   - _Requirements: AC-1.2_
 
-- [~] 3.1 Write unit tests for style property type guards
+- [ ] 3.1 Write unit tests for style property type guards
   - Test `isStyleProperties` with valid style object
   - Test `isStyleProperties` with invalid object (wrong types)
   - Test `isStyleProperties` with null/undefined
@@ -72,7 +72,7 @@ This implementation plan eliminates all `any` type usage from the codebase by in
     - Change return type from `unknown[]` to `InterpolateExpression`
     - _Requirements: AC-1.3_
 
-- [~] 4.4 Write property test for expression builder types
+- [ ] 4.4 Write property test for expression builder types
   - **Property 2: MapLibre expression builders return typed values**
   - **Validates: Requirements AC-1.3**
   - Verify `buildZoomRadius` returns `ZoomRadiusExpression` type
@@ -111,7 +111,7 @@ This implementation plan eliminates all `any` type usage from the codebase by in
   - Use empty object fallback if type guard returns false
   - _Requirements: AC-1.2_
 
-- [~] 10. Write property test for no `any` usage
+- [ ] 10. Write property test for no `any` usage
   - **Property 1: No explicit `any` types in codebase**
   - **Validates: Requirements AC-1.2**
   - Get list of all TypeScript files in `src/` directory
@@ -124,18 +124,18 @@ This implementation plan eliminates all `any` type usage from the codebase by in
   - Save configuration file
   - _Requirements: AC-1.1_
 
-- [~] 11.1 Write unit test for ESLint configuration
+- [ ] 11.1 Write unit test for ESLint configuration
   - Read ESLint config file
   - Assert `@typescript-eslint/no-explicit-any` is set to `error`
   - _Requirements: AC-1.1_
 
-- [~] 12. Verify build and type checking
+- [ ] 12. Verify build and type checking
   - Run `tsc --noEmit` to verify no type errors
   - Run `npm run build` to verify successful build
   - Run full test suite to ensure no regressions
   - _Requirements: AC-2.2, AC-2.3_
 
-- [~] 12.1 Write unit test for build success
+- [ ] 12.1 Write unit test for build success
   - Execute `tsc --noEmit` command
   - Assert exit code is 0
   - _Requirements: AC-2.2_

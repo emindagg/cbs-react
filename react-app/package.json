@@ -9,7 +9,12 @@
     "lint": "eslint src/**/*.{ts,tsx} --report-unused-disable-directives",
     "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
     "lint:strict": "eslint src/**/*.{ts,tsx} --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch"
   },
   "dependencies": {
     "@tmcw/togeojson": "^7.1.2",
