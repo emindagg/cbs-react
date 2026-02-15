@@ -16,9 +16,12 @@ npm run dev
 
 ## 📚 Documentation
 
-- **[Architecture Guide](./ARCHITECTURE.md)** - System architecture and design principles
-- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute to the project
-- **[Features Documentation](./FEATURES.md)** - Detailed feature descriptions
+Tüm proje dokümantasyonu `docs/` klasöründe organize edilmiştir:
+
+- **[Dokümantasyon İndeksi](./docs/README.md)** - Tüm dokümanların listesi
+- **[Architecture Guide](./docs/ARCHITECTURE.md)** - System architecture and design principles
+- **[Contributing Guide](./docs/CONTRIBUTING.md)** - How to contribute to the project
+- **[Features Documentation](./docs/FEATURES.md)** - Detailed feature descriptions
 
 ## 🎯 Features
 
