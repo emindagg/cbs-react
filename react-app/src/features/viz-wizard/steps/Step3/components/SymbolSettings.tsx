@@ -104,7 +104,7 @@ export function SymbolSettings({
 
       {/* Opaklık slider */}
       <SingleSlider
-        label="Opaklık"
+        label="Şeffaflık"
         min={0}
         max={1}
         step={0.05}
@@ -138,24 +138,6 @@ export function SymbolSettings({
         </div>
       </div>
 
-      {/* Outlier exclusion — */}
-      <div>
-        <label className="block text-[10px] font-medium text-zinc-600 mb-1">
-          Aykırı Değer Filtresi
-        </label>
-        <select
-          value={vizSettings.outlierExclusion || 'none'}
-          onChange={(e) => setVizSettings({ outlierExclusion: e.target.value as 'none' | 'iqr' | 'iqr-strict' })}
-          className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-        >
-          <option value="none">Yok</option>
-          <option value="iqr">IQR (1.5x) — Orta</option>
-          <option value="iqr-strict">IQR (3x) — Sadece aşırılar</option>
-        </select>
-        <p className="text-[9px] text-zinc-400 mt-0.5">
-          Uç değerleri otomatik hariç tutarak daha dengeli görselleştirme sağlar.
-        </p>
-      </div>
     </div>
   )
 }

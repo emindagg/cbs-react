@@ -50,17 +50,14 @@ export class BubbleRenderer {
     const colorColumn = settings.colorColumn || dataColumn
     const isBivariate = colorColumn !== dataColumn
 
-    // Apply outlier exclusion if configured
-    const filteredData = this.applyOutlierExclusion(normalizedData, dataColumn, settings)
-
     // Extract size values
-    const sizeValues = filteredData
+    const sizeValues = normalizedData
       .map((d) => parseFloat(String(d[dataColumn])))
       .filter((v) => !isNaN(v) && v !== 0)
 
     // Extract color values (may be from a different column in bivariate mode)
     const colorValues = isBivariate
-      ? filteredData
+      ? normalizedData
           .map((d) => parseFloat(String(d[colorColumn])))
           .filter((v) => !isNaN(v) && v !== 0)
       : sizeValues
@@ -84,9 +81,9 @@ export class BubbleRenderer {
     const maxValue = Math.max(...sizeValues)
 
     // Create data maps
-    const sizeDataMap = this.createDataMap(filteredData, dataColumn, locationLevel)
+    const sizeDataMap = this.createDataMap(normalizedData, dataColumn, locationLevel)
     const colorDataMap = isBivariate
-      ? this.createDataMap(filteredData, colorColumn, locationLevel)
+      ? this.createDataMap(normalizedData, colorColumn, locationLevel)
       : sizeDataMap
 
     // Process features and convert to bubbles
@@ -183,38 +180,6 @@ export class BubbleRenderer {
     })
 
     return dataMap
-  }
-
-  /**
-   * Apply outlier exclusion using IQR method
-   */
-  private applyOutlierExclusion(
-    data: Record<string, unknown>[],
-    dataColumn: string,
-    settings: VisualizationSettings,
-  ): Record<string, unknown>[] {
-    const mode = settings.outlierExclusion || 'none'
-    if (mode === 'none') return data
-
-    const values = data
-      .map((d) => parseFloat(String(d[dataColumn])))
-      .filter((v) => !isNaN(v))
-      .sort((a, b) => a - b)
-
-    if (values.length < 4) return data
-
-    const q1 = values[Math.floor(values.length * 0.25)]
-    const q3 = values[Math.floor(values.length * 0.75)]
-    const iqr = q3 - q1
-    const multiplier = mode === 'iqr-strict' ? 3 : 1.5
-    const lower = q1 - iqr * multiplier
-    const upper = q3 + iqr * multiplier
-
-    return data.filter((d) => {
-      const v = parseFloat(String(d[dataColumn]))
-      if (isNaN(v)) return false
-      return v >= lower && v <= upper
-    })
   }
 
   /**

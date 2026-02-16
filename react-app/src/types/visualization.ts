@@ -112,9 +112,6 @@ export interface VisualizationSettings {
   // Bivariate Settings
   /** Renk için ayrı sütun (bivariate mod). undefined = boyut sütunuyla aynı */
   colorColumn?: string;
-  // Outlier Settings
-  /** Outlier filtreleme: 'none' | 'iqr' (IQR×1.5) | 'iqr-strict' (IQR×3) */
-  outlierExclusion?: 'none' | 'iqr' | 'iqr-strict';
 }
 
 export interface CurrentVisualization {
