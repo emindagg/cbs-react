@@ -1,7 +1,10 @@
 /**
  * Geometry Utilities
  * Calculate centroids and geometric properties for GeoJSON features
+ * Uses turf's pointOnFeature for guaranteed point-in-polygon placement
  */
+
+import { pointOnFeature } from '@turf/point-on-feature'
 
 type Coordinate = [number, number]
 type Polygon = Coordinate[][]
@@ -9,29 +12,39 @@ type MultiPolygon = Coordinate[][][]
 
 /**
  * Calculate centroid for a polygon geometry
- * Returns [longitude, latitude] point
+ * Uses turf pointOnFeature (pole of inaccessibility approximation)
+ * to guarantee the point falls inside the polygon — important for
+ * concave shapes like Antalya.
+ * Falls back to simple average if turf fails.
  */
 export function calculateCentroid(geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon): Coordinate {
-  if (geometry.type === 'Polygon') {
-    return calculatePolygonCentroid(geometry.coordinates as Polygon)
+  try {
+    const feature: GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon> = {
+      type: 'Feature',
+      properties: {},
+      geometry,
+    }
+    const pt = pointOnFeature(feature)
+    return pt.geometry.coordinates as Coordinate
+  } catch {
+    // Fallback to simple average
+    if (geometry.type === 'Polygon') {
+      return calculatePolygonCentroidSimple(geometry.coordinates as Polygon)
+    }
+    return calculateMultiPolygonCentroidSimple(geometry.coordinates as MultiPolygon)
   }
-  
-  // MultiPolygon case
-  return calculateMultiPolygonCentroid(geometry.coordinates as MultiPolygon)
 }
 
 /**
- * Calculate centroid for a simple polygon
- * Uses the exterior ring (first ring) only
+ * Simple average centroid (fallback)
  */
-function calculatePolygonCentroid(coordinates: Polygon): Coordinate {
-  const ring = coordinates[0] // Exterior ring
+function calculatePolygonCentroidSimple(coordinates: Polygon): Coordinate {
+  const ring = coordinates[0]
 
   if (!ring || ring.length === 0) {
     return [0, 0]
   }
 
-  // Calculate simple average of coordinates
   let sumLng = 0
   let sumLat = 0
   let count = 0
@@ -52,15 +65,13 @@ function calculatePolygonCentroid(coordinates: Polygon): Coordinate {
 }
 
 /**
- * Calculate centroid for a multi-polygon
- * Uses the largest polygon by point count
+ * Simple average centroid for multi-polygon (fallback)
  */
-function calculateMultiPolygonCentroid(coordinates: MultiPolygon): Coordinate {
+function calculateMultiPolygonCentroidSimple(coordinates: MultiPolygon): Coordinate {
   if (!coordinates || coordinates.length === 0) {
     return [0, 0]
   }
 
-  // Find largest polygon by number of points
   let largestPolygon: Polygon = coordinates[0]
   let maxPoints = 0
 
@@ -72,7 +83,7 @@ function calculateMultiPolygonCentroid(coordinates: MultiPolygon): Coordinate {
     }
   }
 
-  return calculatePolygonCentroid(largestPolygon)
+  return calculatePolygonCentroidSimple(largestPolygon)
 }
 
 /**

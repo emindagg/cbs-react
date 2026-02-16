@@ -10,7 +10,9 @@ import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
 import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, calculateSmartDotValue } from '@/features/viz-wizard'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { calculateBreaks } from '@/utils/classification'
+import { calculateSymbolSize } from '@/utils/symbolShapes'
 
+import BubbleSizeLegend from './BubbleSizeLegend'
 import DatawrapperLegend from './DatawrapperLegend'
 import DotDensityLegend from './DotDensityLegend'
 import DynamicLegend from './DynamicLegend'
@@ -111,25 +113,58 @@ export default function Container() {
     )
   }
 
+  // Bubble map → show color legend + size legend
+  const isBubble = vizSettings.type === 'bubble'
+  const bubbleSizeLegend = isBubble ? (() => {
+    const minVal = Math.min(...dataValues)
+    const maxVal = Math.max(...dataValues)
+    const minSize = vizSettings.symbolMinSize || 5
+    const maxSize = vizSettings.symbolMaxSize || 40
+    const scaling = vizSettings.symbolScaling || 'sqrt'
+    const minR = calculateSymbolSize(minVal, minVal, maxVal, minSize, maxSize, scaling)
+    const maxR = calculateSymbolSize(maxVal, minVal, maxVal, minSize, maxSize, scaling)
+
+    return (
+      <BubbleSizeLegend
+        config={{
+          ...colorConfig.legend,
+          // Size legend positioned at bottom-right, offset from color legend
+          position: 'inside-right-bottom',
+        }}
+        minValue={minVal}
+        maxValue={maxVal}
+        minRadius={minR}
+        maxRadius={maxR}
+        onTitleChange={handleTitleChange}
+      />
+    )
+  })() : null
+
   if (colorConfig.legend.orientation === 'vertical') {
     return (
-      <DatawrapperLegend
+      <>
+        <DatawrapperLegend
+          config={colorConfig.legend}
+          breaks={breaks}
+          colors={colors}
+          scaleType={colorConfig.scaleType}
+          onTitleChange={handleTitleChange}
+        />
+        {bubbleSizeLegend}
+      </>
+    )
+  }
+
+  return (
+    <>
+      <DynamicLegend
         config={colorConfig.legend}
         breaks={breaks}
         colors={colors}
         scaleType={colorConfig.scaleType}
         onTitleChange={handleTitleChange}
       />
-    )
-  }
-
-  return (
-    <DynamicLegend
-      config={colorConfig.legend}
-      breaks={breaks}
-      colors={colors}
-      scaleType={colorConfig.scaleType}
-      onTitleChange={handleTitleChange}
-    />
+      {bubbleSizeLegend}
+    </>
   )
 }

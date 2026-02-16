@@ -15,6 +15,7 @@ export function useVizWizardStep3() {
   const {
     matchResults,
     columnMapping,
+    columns,
     vizSettings,
     setVizSettings,
     colorConfig,
@@ -60,6 +61,7 @@ export function useVizWizardStep3() {
   return {
     matchResults,
     columnMapping,
+    columns,
     vizSettings,
     setVizSettings,
     colorConfig,

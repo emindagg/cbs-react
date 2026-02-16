@@ -161,7 +161,12 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
 
       {/* Symbol Map Settings - only for bubble visualization */}
       {vizSettings.type === 'bubble' && (
-        <SymbolSettings vizSettings={vizSettings} setVizSettings={setVizSettings} />
+        <SymbolSettings
+          vizSettings={vizSettings}
+          setVizSettings={setVizSettings}
+          columns={step.columns}
+          dataColumn={step.columnMapping.dataColumn ?? undefined}
+        />
       )}
 
       {/* Dot Density Settings - only for dot visualization */}

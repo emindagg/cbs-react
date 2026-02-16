@@ -6,7 +6,9 @@
 export type VizType = 'choropleth' | 'bubble' | 'dot'
 
 export type SymbolShape = 'circle' | 'square' | 'triangle' | 'star' | 'diamond' | 'pin'
-export type SymbolScaling = 'linear' | 'sqrt' | 'log'
+export type SymbolScaling = 'linear' | 'sqrt' | 'log' | 'flannery'
+
+export type NormalizationType = 'none' | 'percent-of-total' | 'field'
 
 export type LocationLevel = 'province' | 'district' | 'mixed'
 
@@ -102,6 +104,17 @@ export interface VisualizationSettings {
   dotLabel?: string;
   /** Nokta rengi (hex). Varsayılan: #2d6a4f */
   dotColor?: string;
+  // Normalization Settings
+  /** Normalizasyon türü: none (ham değer), percent-of-total, field (başka sütuna böl) */
+  normalization?: NormalizationType;
+  /** 'field' normalizasyonunda bölen sütun adı */
+  normalizationField?: string;
+  // Bivariate Settings
+  /** Renk için ayrı sütun (bivariate mod). undefined = boyut sütunuyla aynı */
+  colorColumn?: string;
+  // Outlier Settings
+  /** Outlier filtreleme: 'none' | 'iqr' (IQR×1.5) | 'iqr-strict' (IQR×3) */
+  outlierExclusion?: 'none' | 'iqr' | 'iqr-strict';
 }
 
 export interface CurrentVisualization {

@@ -124,7 +124,7 @@ export function calculateSymbolSize(
   maxValue: number,
   minSize: number,
   maxSize: number,
-  scaling: 'linear' | 'sqrt' | 'log' = 'sqrt',
+  scaling: 'linear' | 'sqrt' | 'log' | 'flannery' = 'sqrt',
 ): number {
   if (maxValue === minValue) return (minSize + maxSize) / 2
 
@@ -149,6 +149,12 @@ export function calculateSymbolSize(
       normalizedValue = (logValue - logMin) / (logMax - logMin)
       break
     }
+
+    case 'flannery':
+      // Flannery perceptual compensation (^0.5716)
+      // İnsan gözü daire alanlarını küçük algılar; Flannery bunu telafi eder
+      normalizedValue = Math.pow((value - minValue) / (maxValue - minValue), 0.5716)
+      break
 
     default:
       normalizedValue = Math.sqrt((value - minValue) / (maxValue - minValue))

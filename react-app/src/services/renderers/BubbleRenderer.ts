@@ -10,6 +10,7 @@ import { getContinuousColor, getColorPalette } from '../../constants/colorScheme
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
 import type { VisualizationSettings } from '../../types/visualization'
 import { calculateBreaks } from '../../utils/classification'
+import { applyNormalization } from '../../utils/normalization'
 import { isPolygonOrMultiPolygon } from '../../utils/geometryTypeGuards'
 import { calculateCentroid } from '../../utils/geometryUtils'
 import { normalizeValue } from '../../utils/interpolation'
@@ -39,52 +40,79 @@ export class BubbleRenderer {
     settings: VisualizationSettings,
     locationLevel: 'province' | 'district' = 'province',
   ): Promise<void> {
-    // Extract values for classification
-    const values = userData
+    // Apply normalization if configured
+    const normalizedData = applyNormalization(userData, dataColumn, {
+      type: settings.normalization || 'none',
+      divisionField: settings.normalizationField,
+    })
+
+    // Bivariate: renk sütunu ayrıysa colorColumn kullan, yoksa dataColumn
+    const colorColumn = settings.colorColumn || dataColumn
+    const isBivariate = colorColumn !== dataColumn
+
+    // Apply outlier exclusion if configured
+    const filteredData = this.applyOutlierExclusion(normalizedData, dataColumn, settings)
+
+    // Extract size values
+    const sizeValues = filteredData
       .map((d) => parseFloat(String(d[dataColumn])))
       .filter((v) => !isNaN(v) && v !== 0)
 
-    if (values.length === 0) {
+    // Extract color values (may be from a different column in bivariate mode)
+    const colorValues = isBivariate
+      ? filteredData
+          .map((d) => parseFloat(String(d[colorColumn])))
+          .filter((v) => !isNaN(v) && v !== 0)
+      : sizeValues
+
+    if (sizeValues.length === 0) {
       console.warn('⚠️  No valid data for visualization')
       return
     }
 
-    // Calculate breaks for color (used in steps mode)
+    // Calculate breaks for color
     const isCustom = settings.classificationMethod === 'custom' && settings.customBreaks?.length
     const breaks = isCustom
       ? settings.customBreaks!
-      : calculateBreaks(values, settings.classificationMethod, settings.classCount)
+      : calculateBreaks(colorValues, settings.classificationMethod, settings.classCount)
     const effectiveClassCount = isCustom ? breaks.length - 1 : settings.classCount
     const colorPalette = getColorPalette(settings.colorScheme, effectiveClassCount)
     const isContinuous = settings.legendType === 'continuous'
 
     // Find min/max for size scaling
-    const minValue = Math.min(...values)
-    const maxValue = Math.max(...values)
+    const minValue = Math.min(...sizeValues)
+    const maxValue = Math.max(...sizeValues)
 
-    // Create data map
-    const dataMap = this.createDataMap(userData, dataColumn, locationLevel)
+    // Create data maps
+    const sizeDataMap = this.createDataMap(filteredData, dataColumn, locationLevel)
+    const colorDataMap = isBivariate
+      ? this.createDataMap(filteredData, colorColumn, locationLevel)
+      : sizeDataMap
 
-    // Process features and convert to bubbles (no color assignment)
+    // Process features and convert to bubbles
     const bubblesGeoJSON = this.processFeatures(
       geojson.features,
-      dataMap,
+      sizeDataMap,
+      colorDataMap,
       minValue,
       maxValue,
       locationLevel,
       settings,
+      isBivariate,
     )
 
     console.debug(
-      `⚫ Bubble visualization: ${userData.length} data → ${bubblesGeoJSON.features.length} bubbles on map`,
+      `⚫ Bubble visualization: ${userData.length} data → ${bubblesGeoJSON.features.length} bubbles on map` +
+      (isBivariate ? ` (bivariate: boyut=${dataColumn}, renk=${colorColumn})` : ''),
     )
 
-    // Build MapLibre color expression
+    // Build MapLibre color expression — bivariate ise 'colorValue' property'sini kullan
+    const colorProperty = isBivariate ? 'colorValue' : 'dataValue'
     let colorExpression: unknown[]
     if (isContinuous) {
-      colorExpression = this.buildContinuousExpression(values, settings)
+      colorExpression = this.buildContinuousExpression(colorValues, settings, colorProperty)
     } else {
-      colorExpression = buildStepExpression('dataValue', breaks, colorPalette, NO_DATA_COLOR)
+      colorExpression = buildStepExpression(colorProperty, breaks, colorPalette, NO_DATA_COLOR)
     }
 
     // Render to map
@@ -97,6 +125,7 @@ export class BubbleRenderer {
   private buildContinuousExpression(
     values: number[],
     settings: VisualizationSettings,
+    propertyName: string = 'dataValue',
   ): unknown[] {
     const sorted = [...values].sort((a, b) => a - b)
     const min = sorted[0]
@@ -116,7 +145,7 @@ export class BubbleRenderer {
       colorStops.push([dataVal, color])
     }
 
-    return buildInterpolateExpression('dataValue', colorStops)
+    return buildInterpolateExpression(propertyName, colorStops)
   }
 
   /**
@@ -157,15 +186,49 @@ export class BubbleRenderer {
   }
 
   /**
-   * Process GeoJSON features and convert to bubble features (no color assignment)
+   * Apply outlier exclusion using IQR method
+   */
+  private applyOutlierExclusion(
+    data: Record<string, unknown>[],
+    dataColumn: string,
+    settings: VisualizationSettings,
+  ): Record<string, unknown>[] {
+    const mode = settings.outlierExclusion || 'none'
+    if (mode === 'none') return data
+
+    const values = data
+      .map((d) => parseFloat(String(d[dataColumn])))
+      .filter((v) => !isNaN(v))
+      .sort((a, b) => a - b)
+
+    if (values.length < 4) return data
+
+    const q1 = values[Math.floor(values.length * 0.25)]
+    const q3 = values[Math.floor(values.length * 0.75)]
+    const iqr = q3 - q1
+    const multiplier = mode === 'iqr-strict' ? 3 : 1.5
+    const lower = q1 - iqr * multiplier
+    const upper = q3 + iqr * multiplier
+
+    return data.filter((d) => {
+      const v = parseFloat(String(d[dataColumn]))
+      if (isNaN(v)) return false
+      return v >= lower && v <= upper
+    })
+  }
+
+  /**
+   * Process GeoJSON features and convert to bubble features
    */
   private processFeatures(
     features: GeoJSONFeature[],
-    dataMap: Record<string, number>,
+    sizeDataMap: Record<string, number>,
+    colorDataMap: Record<string, number>,
     minValue: number,
     maxValue: number,
     locationLevel: 'province' | 'district',
     settings: VisualizationSettings,
+    isBivariate: boolean = false,
   ): GeoJSON.FeatureCollection {
     const bubbleFeatures: GeoJSON.Feature[] = []
 
@@ -173,11 +236,16 @@ export class BubbleRenderer {
       const featureName = this.getFeatureName(feature, locationLevel)
       const normalizedFeatureName = normalizeTurkishText(featureName)
 
-      // Get data value
-      const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
+      // Get size data value
+      const dataValue = this.getDataValue(feature, sizeDataMap, normalizedFeatureName, locationLevel)
 
       // Skip features without data
       if (dataValue === undefined || dataValue === 0) return
+
+      // Get color data value (same as size unless bivariate)
+      const colorValue = isBivariate
+        ? this.getDataValue(feature, colorDataMap, normalizedFeatureName, locationLevel) ?? dataValue
+        : dataValue
 
       // Calculate centroid - only process Polygon/MultiPolygon geometries
       const geometry = feature.geometry
@@ -196,6 +264,7 @@ export class BubbleRenderer {
           name: featureName,
           value: dataValue,
           dataValue,
+          colorValue,
           radius,
           hasData: true,
         },
@@ -205,6 +274,9 @@ export class BubbleRenderer {
         },
       })
     })
+
+    // Z-order: sort descending by radius so large bubbles render first (underneath)
+    bubbleFeatures.sort((a, b) => (b.properties!.radius as number) - (a.properties!.radius as number))
 
     return {
       type: 'FeatureCollection',
@@ -321,6 +393,17 @@ export class BubbleRenderer {
       })
     }
 
+    // Zoom-dependent radius: zoom must be at top-level interpolate
+    // Each stop output is a data expression ['*', ['get','radius'], factor]
+    const radiusExpression: unknown[] = [
+      'interpolate', ['linear'], ['zoom'],
+      4, ['*', ['get', 'radius'], 0.5],
+      6, ['*', ['get', 'radius'], 1],
+      8, ['*', ['get', 'radius'], 1.5],
+      10, ['*', ['get', 'radius'], 2],
+      12, ['*', ['get', 'radius'], 3],
+    ]
+
     // Add circle layer with variable size and data-driven color
     if (!this.map.getLayer(layerId)) {
       this.map.addLayer({
@@ -328,8 +411,12 @@ export class BubbleRenderer {
         type: 'circle',
         source: sourceId,
         filter: ['==', ['get', 'hasData'], true],
+        layout: {
+          // Z-order: smaller radius → higher sort key → drawn on top
+          'circle-sort-key': ['-', 0, ['get', 'radius']],
+        },
         paint: {
-          'circle-radius': ['get', 'radius'],
+          'circle-radius': radiusExpression as Parameters<Map['setPaintProperty']>[2],
           'circle-color': colorExpression as Parameters<Map['setPaintProperty']>[2],
           'circle-opacity': opacity,
           'circle-stroke-color': strokeColor,
@@ -338,7 +425,7 @@ export class BubbleRenderer {
       })
     } else {
       this.map.setFilter(layerId, ['==', ['get', 'hasData'], true])
-      this.map.setPaintProperty(layerId, 'circle-radius', ['get', 'radius'])
+      this.map.setPaintProperty(layerId, 'circle-radius', radiusExpression)
       this.map.setPaintProperty(layerId, 'circle-color', colorExpression)
       this.map.setPaintProperty(layerId, 'circle-opacity', opacity)
       this.map.setPaintProperty(layerId, 'circle-stroke-color', strokeColor)
