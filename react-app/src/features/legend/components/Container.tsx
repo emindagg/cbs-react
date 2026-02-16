@@ -115,6 +115,7 @@ export default function Container() {
 
   // Bubble map → show color legend + size legend
   const isBubble = vizSettings.type === 'bubble'
+  const isBubbleBivariate = isBubble && !!vizSettings.colorColumn
   const bubbleSizeLegend = isBubble ? (() => {
     const minVal = Math.min(...dataValues)
     const maxVal = Math.max(...dataValues)
@@ -124,21 +125,49 @@ export default function Container() {
     const minR = calculateSymbolSize(minVal, minVal, maxVal, minSize, maxSize, scaling)
     const maxR = calculateSymbolSize(maxVal, minVal, maxVal, minSize, maxSize, scaling)
 
+    // Graduated mode: compute class info for the legend
+    const isGraduated = vizSettings.bubbleSizeMode === 'graduated'
+    const graduatedClasses = isGraduated ? (() => {
+      const sizeBreaks = calculateBreaks(dataValues, vizSettings.classificationMethod, vizSettings.classCount)
+      const classCount = sizeBreaks.length - 1
+      return Array.from({ length: classCount }, (_, i) => ({
+        minVal: sizeBreaks[i],
+        maxVal: sizeBreaks[i + 1],
+        radius: classCount <= 1
+          ? (minSize + maxSize) / 2
+          : minSize + (i / (classCount - 1)) * (maxSize - minSize),
+      }))
+    })() : undefined
+
     return (
       <BubbleSizeLegend
         config={{
           ...colorConfig.legend,
-          // Size legend positioned at bottom-right, offset from color legend
           position: 'inside-right-bottom',
+          title: {
+            ...colorConfig.legend.title,
+            show: colorConfig.legend.title?.show ?? true,
+            text: isBubbleBivariate ? 'Boyut' : (colorConfig.legend.title?.text || 'Lejant'),
+          },
         }}
         minValue={minVal}
         maxValue={maxVal}
         minRadius={minR}
         maxRadius={maxR}
+        graduatedClasses={graduatedClasses}
         onTitleChange={handleTitleChange}
       />
     )
   })() : null
+
+  // Graduated + non-bivariate: only show size legend (color legend is redundant)
+  const isGraduatedNonBivariate = isBubble
+    && vizSettings.bubbleSizeMode === 'graduated'
+    && !vizSettings.colorColumn
+
+  if (isGraduatedNonBivariate) {
+    return <>{bubbleSizeLegend}</>
+  }
 
   if (colorConfig.legend.orientation === 'vertical') {
     return (

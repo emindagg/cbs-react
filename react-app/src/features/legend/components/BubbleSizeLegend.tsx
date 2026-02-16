@@ -11,12 +11,20 @@ import { formatNumber, type NumberFormat } from '@/utils/numberFormatter'
 
 import type { LegendConfiguration } from '../types'
 
+interface GraduatedClass {
+  minVal: number
+  maxVal: number
+  radius: number
+}
+
 interface BubbleSizeLegendProps {
   config: LegendConfiguration
   minValue: number
   maxValue: number
   minRadius: number
   maxRadius: number
+  /** Graduated mod: sınıf bilgileri */
+  graduatedClasses?: GraduatedClass[]
   onTitleChange?: (title: string) => void
 }
 
@@ -26,6 +34,7 @@ export default function BubbleSizeLegend({
   maxValue,
   minRadius,
   maxRadius,
+  graduatedClasses,
   onTitleChange,
 }: BubbleSizeLegendProps) {
   const legendRef = useRef<HTMLDivElement>(null)
@@ -165,54 +174,84 @@ export default function BubbleSizeLegend({
         </div>
       )}
 
-      {/* Nested circles SVG */}
-      <svg
-        width={svgWidth}
-        height={svgHeight}
-        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        style={{ display: 'block' }}
-      >
-        {circles.map((c, i) => {
-          const cy = bottomY - c.radius
-          const cx = padding + maxRadius
-
-          return (
-            <g key={i}>
-              {/* Circle */}
-              <circle
-                cx={cx}
-                cy={cy}
-                r={c.radius}
-                fill="none"
-                stroke="#666"
-                strokeWidth={1}
-                strokeDasharray={i === 0 ? 'none' : '3,2'}
-                opacity={0.8}
-              />
-              {/* Dashed line from top of circle to label area */}
-              <line
-                x1={cx}
-                y1={cy - c.radius}
-                x2={padding + maxRadius * 2 + 6}
-                y2={cy - c.radius}
-                stroke="#999"
-                strokeWidth={0.8}
-                strokeDasharray="2,2"
-              />
-              {/* Value label */}
-              <text
-                x={padding + maxRadius * 2 + 10}
-                y={cy - c.radius + 4}
-                fontSize={11}
-                fill="#444"
-                fontFamily="system-ui, sans-serif"
+      {/* Graduated: horizontal row of circles with range labels */}
+      {graduatedClasses ? (
+        <div className="flex flex-col gap-1">
+          {graduatedClasses.map((cls, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <svg
+                width={cls.radius * 2 + 4}
+                height={cls.radius * 2 + 4}
+                style={{ display: 'block', flexShrink: 0 }}
               >
-                {c.label}
-              </text>
-            </g>
-          )
-        })}
-      </svg>
+                <circle
+                  cx={cls.radius + 2}
+                  cy={cls.radius + 2}
+                  r={cls.radius}
+                  fill="none"
+                  stroke="#666"
+                  strokeWidth={1}
+                  opacity={0.8}
+                />
+              </svg>
+              <span
+                style={{ fontSize: 10, color: '#444', fontFamily: 'system-ui, sans-serif', whiteSpace: 'nowrap' }}
+              >
+                {fmt(cls.minVal)} – {fmt(cls.maxVal)}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* Nested circles SVG (proportional) */
+        <svg
+          width={svgWidth}
+          height={svgHeight}
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          style={{ display: 'block' }}
+        >
+          {circles.map((c, i) => {
+            const cy = bottomY - c.radius
+            const cx = padding + maxRadius
+
+            return (
+              <g key={i}>
+                {/* Circle */}
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={c.radius}
+                  fill="none"
+                  stroke="#666"
+                  strokeWidth={1}
+                  strokeDasharray={i === 0 ? 'none' : '3,2'}
+                  opacity={0.8}
+                />
+                {/* Dashed line from top of circle to label area */}
+                <line
+                  x1={cx}
+                  y1={cy - c.radius}
+                  x2={padding + maxRadius * 2 + 6}
+                  y2={cy - c.radius}
+                  stroke="#999"
+                  strokeWidth={0.8}
+                  strokeDasharray="2,2"
+                />
+                {/* Value label */}
+                <text
+                  x={padding + maxRadius * 2 + 10}
+                  y={cy - c.radius + 4}
+                  fontSize={11}
+                  fill="#444"
+                  fontFamily="system-ui, sans-serif"
+                >
+                  {c.label}
+                </text>
+              </g>
+            )
+          })}
+        </svg>
+      )}
     </div>
   )
 }

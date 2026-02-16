@@ -4,7 +4,7 @@
 
 import { useCallback, useRef } from 'react'
 
-import type { SymbolScaling, VisualizationSettings } from '@/types/visualization'
+import type { BubbleSizeMode, ClassificationMethod, SymbolScaling, VisualizationSettings } from '@/types/visualization'
 
 /* ── Dual-handle range slider sabitleri ── */
 const SIZE_MIN = 2
@@ -13,6 +13,17 @@ const SIZE_MAX = 80
 const SCALING_OPTIONS: { value: SymbolScaling; label: string; description: string }[] = [
   { value: 'sqrt', label: 'Karekök', description: 'Alan-orantılı (varsayılan)' },
   { value: 'log', label: 'Logaritmik', description: 'Geniş aralıklar için' },
+]
+
+const SIZE_MODE_OPTIONS: { value: BubbleSizeMode; label: string }[] = [
+  { value: 'proportional', label: 'Oransal' },
+  { value: 'graduated', label: 'Dereceli' },
+]
+
+const CLASSIFICATION_OPTIONS: { value: ClassificationMethod; label: string }[] = [
+  { value: 'jenks', label: 'Doğal Kırılımlar (Jenks)' },
+  { value: 'quantile', label: 'Quantile' },
+  { value: 'equal', label: 'Eşit Aralık' },
 ]
 
 interface SymbolSettingsProps {
@@ -39,23 +50,87 @@ export function SymbolSettings({
         Sembol Ayarları
       </div>
 
-      {/* Scaling method */}
+      {/* Size mode toggle: Oransal / Dereceli */}
       <div>
         <label className="block text-[10px] font-medium text-zinc-600 mb-1">
-          Boyut Ölçekleme
+          Boyutlandırma Modu
         </label>
-        <select
-          value={vizSettings.symbolScaling || 'sqrt'}
-          onChange={(e) => setVizSettings({ symbolScaling: e.target.value as SymbolScaling })}
-          className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-        >
-          {SCALING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label} — {opt.description}
-            </option>
-          ))}
-        </select>
+        <div className="flex rounded-md border border-zinc-200 overflow-hidden">
+          {SIZE_MODE_OPTIONS.map((opt) => {
+            const active = (vizSettings.bubbleSizeMode || 'proportional') === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setVizSettings({ bubbleSizeMode: opt.value })}
+                className={`flex-1 px-2 py-1 text-[10px] font-medium transition-colors ${
+                  active
+                    ? 'bg-zinc-800 text-white'
+                    : 'bg-white text-zinc-600 hover:bg-zinc-50'
+                }`}
+              >
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
       </div>
+
+      {/* Proportional: scaling method */}
+      {(vizSettings.bubbleSizeMode || 'proportional') === 'proportional' && (
+        <div>
+          <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+            Boyut Ölçekleme
+          </label>
+          <select
+            value={vizSettings.symbolScaling || 'sqrt'}
+            onChange={(e) => setVizSettings({ symbolScaling: e.target.value as SymbolScaling })}
+            className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          >
+            {SCALING_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label} — {opt.description}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Graduated: class count + classification method */}
+      {vizSettings.bubbleSizeMode === 'graduated' && (
+        <div className="space-y-2">
+          <div>
+            <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+              Sınıf Sayısı
+            </label>
+            <select
+              value={vizSettings.classCount}
+              onChange={(e) => setVizSettings({ classCount: Number(e.target.value) })}
+              className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              {[3, 4, 5, 6, 7].map((n) => (
+                <option key={n} value={n}>{n} sınıf</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+              Sınıflandırma Yöntemi
+            </label>
+            <select
+              value={vizSettings.classificationMethod}
+              onChange={(e) => setVizSettings({ classificationMethod: e.target.value as ClassificationMethod })}
+              className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              {CLASSIFICATION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       {/* Bivariate: color column selection */}
       {colorColumnOptions.length > 0 && (

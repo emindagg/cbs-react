@@ -178,8 +178,8 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         />
       )}
 
-      {/* Steps section - only for stepped scales, NOT for dot density */}
-      {colorConfig.scaleType === 'steps' && vizSettings.type !== 'dot' && (
+      {/* Steps section - only for stepped scales, NOT for dot density or bubble non-bivariate */}
+      {colorConfig.scaleType === 'steps' && vizSettings.type !== 'dot' && !(vizSettings.type === 'bubble' && !vizSettings.colorColumn) && (
         <StepsSection
           classCount={vizSettings.classCount}
           classificationMethod={vizSettings.classificationMethod}

@@ -80,6 +80,12 @@ export class BubbleRenderer {
     const minValue = Math.min(...sizeValues)
     const maxValue = Math.max(...sizeValues)
 
+    // Calculate size breaks for graduated mode
+    const isGraduated = settings.bubbleSizeMode === 'graduated'
+    const sizeBreaks = isGraduated
+      ? calculateBreaks(sizeValues, settings.classificationMethod, settings.classCount)
+      : undefined
+
     // Create data maps
     const sizeDataMap = this.createDataMap(normalizedData, dataColumn, locationLevel)
     const colorDataMap = isBivariate
@@ -96,6 +102,7 @@ export class BubbleRenderer {
       locationLevel,
       settings,
       isBivariate,
+      sizeBreaks,
     )
 
     console.debug(
@@ -194,6 +201,7 @@ export class BubbleRenderer {
     locationLevel: 'province' | 'district',
     settings: VisualizationSettings,
     isBivariate: boolean = false,
+    sizeBreaks?: number[],
   ): GeoJSON.FeatureCollection {
     const bubbleFeatures: GeoJSON.Feature[] = []
 
@@ -219,8 +227,10 @@ export class BubbleRenderer {
       }
       const centroid = calculateCentroid(geometry)
 
-      // Calculate radius (stays in JS — sqrt/log scaling is complex for expressions)
-      const radius = this.calculateSymbolSizeValue(dataValue, minValue, maxValue, settings)
+      // Calculate radius — graduated uses class-based sizing, proportional uses continuous scaling
+      const radius = sizeBreaks
+        ? this.calculateGraduatedRadius(dataValue, sizeBreaks, settings)
+        : this.calculateSymbolSizeValue(dataValue, minValue, maxValue, settings)
 
       bubbleFeatures.push({
         type: 'Feature',
@@ -263,6 +273,37 @@ export class BubbleRenderer {
     const scaling = settings.symbolScaling || 'sqrt'
 
     return calculateSymbolSize(value, minValue, maxValue, minSize, maxSize, scaling)
+  }
+
+  /**
+   * Calculate radius for graduated (class-based) sizing.
+   * Each class gets an evenly spaced radius between minSize and maxSize.
+   */
+  private calculateGraduatedRadius(
+    value: number,
+    breaks: number[],
+    settings: VisualizationSettings,
+  ): number {
+    const minSize = settings.symbolMinSize || BubbleRenderer.MIN_RADIUS
+    const maxSize = settings.symbolMaxSize || BubbleRenderer.MAX_RADIUS
+    const classCount = breaks.length - 1
+
+    // Find which class this value belongs to
+    let classIndex = 0
+    for (let i = 1; i < breaks.length; i++) {
+      if (value > breaks[i]) {
+        classIndex = i
+      } else {
+        classIndex = i - 1
+        break
+      }
+    }
+    // Clamp to last class
+    classIndex = Math.min(classIndex, classCount - 1)
+
+    // Evenly spaced radius per class
+    if (classCount <= 1) return (minSize + maxSize) / 2
+    return minSize + (classIndex / (classCount - 1)) * (maxSize - minSize)
   }
 
   /**

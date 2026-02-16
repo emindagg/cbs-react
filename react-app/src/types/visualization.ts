@@ -7,6 +7,7 @@ export type VizType = 'choropleth' | 'bubble' | 'dot'
 
 export type SymbolShape = 'circle' | 'square' | 'triangle' | 'star' | 'diamond' | 'pin'
 export type SymbolScaling = 'sqrt' | 'log'
+export type BubbleSizeMode = 'proportional' | 'graduated'
 
 export type NormalizationType = 'none' | 'percent-of-total' | 'field'
 
@@ -88,6 +89,8 @@ export interface VisualizationSettings {
   /** Custom breaks for 'custom' classification method */
   customBreaks?: number[];
   // Symbol Map Settings
+  /** Kabarcık boyutlandırma modu: proportional (varsayılan) veya graduated (basamaklı) */
+  bubbleSizeMode?: BubbleSizeMode;
   symbolShape?: SymbolShape;
   symbolScaling?: SymbolScaling;
   symbolMinSize?: number;
