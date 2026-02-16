@@ -4,7 +4,7 @@
  * Uses turf's pointOnFeature for guaranteed point-in-polygon placement
  */
 
-import { pointOnFeature } from '@turf/point-on-feature'
+import { pointOnFeature } from '@turf/turf'
 
 type Coordinate = [number, number]
 type Polygon = Coordinate[][]
