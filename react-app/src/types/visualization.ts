@@ -6,7 +6,7 @@
 export type VizType = 'choropleth' | 'bubble' | 'dot'
 
 export type SymbolShape = 'circle' | 'square' | 'triangle' | 'star' | 'diamond' | 'pin'
-export type SymbolScaling = 'linear' | 'sqrt' | 'log' | 'flannery'
+export type SymbolScaling = 'sqrt' | 'log'
 
 export type NormalizationType = 'none' | 'percent-of-total' | 'field'
 

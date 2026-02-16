@@ -124,37 +124,24 @@ export function calculateSymbolSize(
   maxValue: number,
   minSize: number,
   maxSize: number,
-  scaling: 'linear' | 'sqrt' | 'log' | 'flannery' = 'sqrt',
+  scaling: 'sqrt' | 'log' = 'sqrt',
 ): number {
   if (maxValue === minValue) return (minSize + maxSize) / 2
 
   let normalizedValue: number
 
   switch (scaling) {
-    case 'linear':
-      // Linear scaling
-      normalizedValue = (value - minValue) / (maxValue - minValue)
-      break
-
     case 'sqrt':
-      // Square root scaling (area-based, better visual balance)
       normalizedValue = Math.sqrt((value - minValue) / (maxValue - minValue))
       break
 
     case 'log': {
-      // Logarithmic scaling (for wide ranges)
       const logMin = Math.log(minValue + 1)
       const logMax = Math.log(maxValue + 1)
       const logValue = Math.log(value + 1)
       normalizedValue = (logValue - logMin) / (logMax - logMin)
       break
     }
-
-    case 'flannery':
-      // Flannery perceptual compensation (^0.5716)
-      // İnsan gözü daire alanlarını küçük algılar; Flannery bunu telafi eder
-      normalizedValue = Math.pow((value - minValue) / (maxValue - minValue), 0.5716)
-      break
 
     default:
       normalizedValue = Math.sqrt((value - minValue) / (maxValue - minValue))

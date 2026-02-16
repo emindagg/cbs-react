@@ -12,8 +12,6 @@ const SIZE_MAX = 80
 
 const SCALING_OPTIONS: { value: SymbolScaling; label: string; description: string }[] = [
   { value: 'sqrt', label: 'Karekök', description: 'Alan-orantılı (varsayılan)' },
-  { value: 'flannery', label: 'Flannery', description: 'Algısal telafi (^0.57)' },
-  { value: 'linear', label: 'Doğrusal', description: 'Yarıçap-orantılı' },
   { value: 'log', label: 'Logaritmik', description: 'Geniş aralıklar için' },
 ]
 
