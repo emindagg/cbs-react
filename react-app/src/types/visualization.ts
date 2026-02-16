@@ -38,6 +38,13 @@ export type ColorScheme =
   | 'pinkGreen'
   | 'redBlue'
   | 'redTeal'
+  // New Palettes
+  | 'teal'
+  | 'slate'
+  | 'orange'
+  | 'amber'
+  | 'redBlueDiverging'
+  | 'redGreen'
 
 export type LegendType =
   | 'discrete'

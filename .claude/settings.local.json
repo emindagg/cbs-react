@@ -37,7 +37,11 @@
       "Bash(ls:*)",
       "WebFetch(domain:developers.arcgis.com)",
       "WebFetch(domain:pro.arcgis.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:desktop.arcgis.com)",
+      "WebFetch(domain:makingmaps.net)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:www.esri.com)"
     ],
     "deny": [],
     "ask": []

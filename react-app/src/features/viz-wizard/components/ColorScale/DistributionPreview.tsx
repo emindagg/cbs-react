@@ -77,11 +77,11 @@ export default function DistributionPreview({
         <div className="text-[10px] font-medium text-zinc-600 mb-1.5">Veri İstatistikleri</div>
         <div className="grid grid-cols-2 gap-2 text-[9px]">
           <div>
-            <div className="text-zinc-400">Min</div>
+            <div className="text-zinc-400">En Küçük</div>
             <div className="font-semibold text-zinc-700">{formatNumber(stats.min)}</div>
           </div>
           <div>
-            <div className="text-zinc-400">Max</div>
+            <div className="text-zinc-400">En Büyük</div>
             <div className="font-semibold text-zinc-700">{formatNumber(stats.max)}</div>
           </div>
           <div>

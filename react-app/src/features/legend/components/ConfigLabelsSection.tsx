@@ -58,25 +58,20 @@ export function ConfigLabelsSection({ config, onChange, classCount }: ConfigLabe
   return (
     <div>
       <label className="text-[11px] font-medium text-zinc-600 mb-1.5 block">Etiket Tipi</label>
-      <div className="flex gap-2">
+      <div className="flex rounded-md border border-zinc-200 overflow-hidden">
         {LABEL_OPTIONS.map((opt) => (
-          <label
+          <button
             key={opt.value}
-            className={`
-              flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] rounded border cursor-pointer transition-all
-              ${type === opt.value ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-zinc-200 hover:border-zinc-300 text-zinc-600'}
-            `}
+            type="button"
+            onClick={() => handleTypeChange(opt.value)}
+            className={`flex-1 px-3 py-1.5 text-[10px] font-medium transition-colors ${
+              type === opt.value
+                ? 'bg-zinc-800 text-white'
+                : 'bg-white text-zinc-600 hover:bg-zinc-50'
+            }`}
           >
-            <input
-              type="radio"
-              name="labelType"
-              value={opt.value}
-              checked={type === opt.value}
-              onChange={() => handleTypeChange(opt.value)}
-              className="w-3 h-3"
-            />
-            <span>{opt.label}</span>
-          </label>
+            {opt.label}
+          </button>
         ))}
       </div>
       <p className="text-[9px] text-zinc-400 mt-1.5">{LABEL_DESCRIPTIONS[type]}</p>

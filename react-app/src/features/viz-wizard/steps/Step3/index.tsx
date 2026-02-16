@@ -3,6 +3,7 @@
  * Configure visualization settings and render (moved from old Step 4)
  */
 
+import { COLOR_SCHEME_LIST } from '@/constants/colorSchemes'
 import { LegendConfig } from '@/features/legend'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
 
@@ -27,24 +28,6 @@ const VIZ_TYPES: { value: VizType; label: string; description: string }[] = [
   { value: 'choropleth', label: 'Koroplet Harita', description: 'Bölgeleri renklendirerek veriyi göster' },
   { value: 'bubble', label: 'Kabarcık Harita', description: 'Değeri daire boyutuyla göster' },
   { value: 'dot', label: 'Nokta Yoğunluk', description: 'Sabit boyutlu noktalarla göster' },
-]
-
-const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
-  // Datawrapper Sequential
-  { value: 'greenBlue', label: 'Yeşil-Mavi' },
-  { value: 'viridis', label: 'Viridis' },
-  { value: 'sunset', label: 'Gün Batımı' },
-  { value: 'plasma', label: 'Plasma' },
-  { value: 'yellowGreen', label: 'Sarı-Yeşil' },
-  { value: 'pinkPurple', label: 'Pembe-Mor' },
-  { value: 'yellowBlue', label: 'Sarı-Mavi' },
-  { value: 'rosePurple', label: 'Gül-Mor' },
-
-  // Datawrapper Diverging
-  { value: 'brownTeal', label: 'Kahve-Deniz' },
-  { value: 'pinkGreen', label: 'Pembe-Yeşil' },
-  { value: 'redBlue', label: 'Kırmızı-Mavi' },
-  { value: 'redTeal', label: 'Kırmızı-Deniz' },
 ]
 
 export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
@@ -148,7 +131,7 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
               }
               className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
             >
-              {COLOR_SCHEMES.map((scheme) => (
+              {COLOR_SCHEME_LIST.map((scheme) => (
                 <option key={scheme.value} value={scheme.value}>
                   {scheme.label}
                 </option>
@@ -272,9 +255,9 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         <div>
           <button
             onClick={() => setShowDataPreview(!showDataPreview)}
-            className="w-full px-2.5 py-1.5 text-[10px] font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors flex items-center justify-center gap-1"
+            className="w-full px-3 py-2 text-[10px] font-medium text-zinc-700 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-md transition-colors flex items-center justify-center gap-1.5"
           >
-            <i className={'fa-solid fa-chart-bar text-[9px]'}></i>
+            <i className={`fa-solid ${showDataPreview ? 'fa-eye-slash' : 'fa-chart-bar'} text-[10px]`}></i>
             {showDataPreview ? 'Veri Önizlemesini Gizle' : 'Veri Dağılımını Göster'}
           </button>
         </div>

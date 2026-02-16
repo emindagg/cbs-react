@@ -140,9 +140,9 @@ export function SearchContainer({ leftPosition, isSidebarOpen = false }: SearchC
           left: isOpen ? '447px' : '138px',
           letterSpacing: '-0.3px',
         }}
-        title="Hikaye Haritası"
+        title="Hikâye Haritası"
       >
-        <span>Hikaye Haritası</span>
+        <span>Hikâye Haritası</span>
       </button>
 
       {isOpen && (

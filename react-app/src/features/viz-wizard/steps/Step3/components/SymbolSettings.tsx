@@ -2,8 +2,7 @@
  * Bubble / symbol map ayarları (VizWizardStep3 içinde kullanılır)
  */
 
-import { useCallback, useRef } from 'react'
-
+import { DualRangeSlider, SingleSlider } from '@/components/ui'
 import type { BubbleSizeMode, ClassificationMethod, SymbolScaling, VisualizationSettings } from '@/types/visualization'
 
 /* ── Dual-handle range slider sabitleri ── */
@@ -63,11 +62,10 @@ export function SymbolSettings({
                 key={opt.value}
                 type="button"
                 onClick={() => setVizSettings({ bubbleSizeMode: opt.value })}
-                className={`flex-1 px-2 py-1 text-[10px] font-medium transition-colors ${
-                  active
-                    ? 'bg-zinc-800 text-white'
-                    : 'bg-white text-zinc-600 hover:bg-zinc-50'
-                }`}
+                className={`flex-1 px-2 py-1 text-[10px] font-medium transition-colors ${active
+                  ? 'bg-zinc-800 text-white'
+                  : 'bg-white text-zinc-600 hover:bg-zinc-50'
+                  }`}
               >
                 {opt.label}
               </button>
@@ -156,10 +154,12 @@ export function SymbolSettings({
 
       {/* Dual-handle boyut slider */}
       <DualRangeSlider
+        label="Boyut Aralığı"
         min={SIZE_MIN}
         max={SIZE_MAX}
         valueMin={vizSettings.symbolMinSize ?? 5}
         valueMax={vizSettings.symbolMaxSize ?? 40}
+        formatValue={(min, max) => `${min} – ${max} px`}
         onChangeMin={(v) => setVizSettings({ symbolMinSize: v })}
         onChangeMax={(v) => setVizSettings({ symbolMaxSize: v })}
       />
@@ -211,199 +211,6 @@ export function SymbolSettings({
         </div>
       </div>
 
-    </div>
-  )
-}
-
-/* ────────────────────────────────────────────
- * SingleSlider — tek baklava (diamond) tutamaçlı
- * ──────────────────────────────────────────── */
-interface SingleSliderProps {
-  label: string
-  min: number
-  max: number
-  step: number
-  value: number
-  formatValue?: (v: number) => string
-  onChange: (v: number) => void
-}
-
-function SingleSlider({ label, min, max, step, value, formatValue, onChange }: SingleSliderProps) {
-  const trackRef = useRef<HTMLDivElement>(null)
-  const dragging = useRef(false)
-
-  const pct = ((value - min) / (max - min)) * 100
-
-  const snap = useCallback(
-    (raw: number) => Math.round(raw / step) * step,
-    [step],
-  )
-
-  const resolveValue = useCallback(
-    (clientX: number) => {
-      const rect = trackRef.current?.getBoundingClientRect()
-      if (!rect) return null
-      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
-      return snap(min + ratio * (max - min))
-    },
-    [min, max, snap],
-  )
-
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
-    e.preventDefault()
-    dragging.current = true
-    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-  }, [])
-
-  const onPointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (!dragging.current) return
-      const v = resolveValue(e.clientX)
-      if (v !== null) onChange(v)
-    },
-    [resolveValue, onChange],
-  )
-
-  const onPointerUp = useCallback(() => {
-    dragging.current = false
-  }, [])
-
-  const display = formatValue ? formatValue(value) : String(value)
-
-  return (
-    <div>
-      <label className="block text-[10px] font-medium text-zinc-600 mb-1.5">
-        {label}
-        <span className="ml-1 text-zinc-400 font-normal">{display}</span>
-      </label>
-      <div
-        ref={trackRef}
-        className="relative h-5 select-none touch-none"
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
-      >
-        {/* Arka plan çizgi */}
-        <div className="absolute top-1/2 left-0 right-0 h-[2px] -translate-y-1/2 bg-zinc-200 rounded-full" />
-        {/* Aktif aralık */}
-        <div
-          className="absolute top-1/2 h-[2px] -translate-y-1/2 bg-zinc-800 rounded-full"
-          style={{ left: 0, right: `${100 - pct}%` }}
-        />
-        {/* Tutamaç (diamond) */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-grab active:cursor-grabbing"
-          style={{ left: `${pct}%` }}
-          onPointerDown={onPointerDown}
-        >
-          <div className="w-[10px] h-[10px] rotate-45 border-[1.5px] border-zinc-800 bg-white" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* ────────────────────────────────────────────
- * DualRangeSlider — baklava (diamond) tutamaçlı
- * ──────────────────────────────────────────── */
-interface DualRangeSliderProps {
-  min: number
-  max: number
-  valueMin: number
-  valueMax: number
-  onChangeMin: (v: number) => void
-  onChangeMax: (v: number) => void
-}
-
-function DualRangeSlider({
-  min,
-  max,
-  valueMin,
-  valueMax,
-  onChangeMin,
-  onChangeMax,
-}: DualRangeSliderProps) {
-  const trackRef = useRef<HTMLDivElement>(null)
-  const dragging = useRef<'min' | 'max' | null>(null)
-
-  const pct = (v: number) => ((v - min) / (max - min)) * 100
-  const pctMin = pct(valueMin)
-  const pctMax = pct(valueMax)
-
-  const resolveValue = useCallback(
-    (clientX: number) => {
-      const rect = trackRef.current?.getBoundingClientRect()
-      if (!rect) return null
-      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
-      return Math.round(min + ratio * (max - min))
-    },
-    [min, max],
-  )
-
-  const onPointerDown = useCallback(
-    (handle: 'min' | 'max') => (e: React.PointerEvent) => {
-      e.preventDefault()
-      dragging.current = handle
-      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-    },
-    [],
-  )
-
-  const onPointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (!dragging.current) return
-      const v = resolveValue(e.clientX)
-      if (v === null) return
-      if (dragging.current === 'min') {
-        onChangeMin(Math.min(v, valueMax - 1))
-      } else {
-        onChangeMax(Math.max(v, valueMin + 1))
-      }
-    },
-    [resolveValue, valueMin, valueMax, onChangeMin, onChangeMax],
-  )
-
-  const onPointerUp = useCallback(() => {
-    dragging.current = null
-  }, [])
-
-  return (
-    <div>
-      <label className="block text-[10px] font-medium text-zinc-600 mb-1.5">
-        Boyut Aralığı
-        <span className="ml-1 text-zinc-400 font-normal">{valueMin} – {valueMax} px</span>
-      </label>
-      <div
-        ref={trackRef}
-        className="relative h-5 select-none touch-none"
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
-      >
-        {/* Arka plan çizgi */}
-        <div className="absolute top-1/2 left-0 right-0 h-[2px] -translate-y-1/2 bg-zinc-200 rounded-full" />
-        {/* Aktif aralık */}
-        <div
-          className="absolute top-1/2 h-[2px] -translate-y-1/2 bg-zinc-800 rounded-full"
-          style={{ left: `${pctMin}%`, right: `${100 - pctMax}%` }}
-        />
-        {/* Min tutamacı (diamond) */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-grab active:cursor-grabbing"
-          style={{ left: `${pctMin}%` }}
-          onPointerDown={onPointerDown('min')}
-        >
-          <div className="w-[10px] h-[10px] rotate-45 border-[1.5px] border-zinc-800 bg-white" />
-        </div>
-        {/* Max tutamacı (diamond) */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-grab active:cursor-grabbing"
-          style={{ left: `${pctMax}%` }}
-          onPointerDown={onPointerDown('max')}
-        >
-          <div className="w-[10px] h-[10px] rotate-45 border-[1.5px] border-zinc-800 bg-white" />
-        </div>
-      </div>
     </div>
   )
 }
