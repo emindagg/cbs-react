@@ -91,46 +91,27 @@ export function SymbolSettings({
         onChangeMax={(v) => setVizSettings({ symbolMaxSize: v })}
       />
 
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="block text-[10px] font-medium text-zinc-600 mb-1">
-            Kenar Kalınlığı
-          </label>
-          <input
-            type="number"
-            min="0"
-            max="5"
-            step="0.5"
-            value={vizSettings.symbolStrokeWidth !== undefined ? vizSettings.symbolStrokeWidth : 1.5}
-            onChange={(e) => {
-              const val = parseFloat(e.target.value)
-              if (val >= 0 && val <= 5) {
-                setVizSettings({ symbolStrokeWidth: val })
-              }
-            }}
-            className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-          />
-        </div>
-        <div>
-          <label className="block text-[10px] font-medium text-zinc-600 mb-1">
-            Opaklık
-          </label>
-          <input
-            type="number"
-            min="0"
-            max="1"
-            step="0.1"
-            value={vizSettings.symbolOpacity !== undefined ? vizSettings.symbolOpacity : 0.6}
-            onChange={(e) => {
-              const val = parseFloat(e.target.value)
-              if (val >= 0 && val <= 1) {
-                setVizSettings({ symbolOpacity: val })
-              }
-            }}
-            className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-          />
-        </div>
-      </div>
+      {/* Kenar Kalınlığı slider */}
+      <SingleSlider
+        label="Kenar Kalınlığı"
+        min={0}
+        max={5}
+        step={0.1}
+        value={vizSettings.symbolStrokeWidth ?? 1.5}
+        formatValue={(v) => v.toFixed(1)}
+        onChange={(v) => setVizSettings({ symbolStrokeWidth: v })}
+      />
+
+      {/* Opaklık slider */}
+      <SingleSlider
+        label="Opaklık"
+        min={0}
+        max={1}
+        step={0.05}
+        value={vizSettings.symbolOpacity ?? 0.6}
+        formatValue={(v) => `%${Math.round(v * 100)}`}
+        onChange={(v) => setVizSettings({ symbolOpacity: v })}
+      />
 
       <div>
         <label className="block text-[10px] font-medium text-zinc-600 mb-1">
@@ -174,6 +155,94 @@ export function SymbolSettings({
         <p className="text-[9px] text-zinc-400 mt-0.5">
           Uç değerleri otomatik hariç tutarak daha dengeli görselleştirme sağlar.
         </p>
+      </div>
+    </div>
+  )
+}
+
+/* ────────────────────────────────────────────
+ * SingleSlider — tek baklava (diamond) tutamaçlı
+ * ──────────────────────────────────────────── */
+interface SingleSliderProps {
+  label: string
+  min: number
+  max: number
+  step: number
+  value: number
+  formatValue?: (v: number) => string
+  onChange: (v: number) => void
+}
+
+function SingleSlider({ label, min, max, step, value, formatValue, onChange }: SingleSliderProps) {
+  const trackRef = useRef<HTMLDivElement>(null)
+  const dragging = useRef(false)
+
+  const pct = ((value - min) / (max - min)) * 100
+
+  const snap = useCallback(
+    (raw: number) => Math.round(raw / step) * step,
+    [step],
+  )
+
+  const resolveValue = useCallback(
+    (clientX: number) => {
+      const rect = trackRef.current?.getBoundingClientRect()
+      if (!rect) return null
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+      return snap(min + ratio * (max - min))
+    },
+    [min, max, snap],
+  )
+
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault()
+    dragging.current = true
+    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+  }, [])
+
+  const onPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!dragging.current) return
+      const v = resolveValue(e.clientX)
+      if (v !== null) onChange(v)
+    },
+    [resolveValue, onChange],
+  )
+
+  const onPointerUp = useCallback(() => {
+    dragging.current = false
+  }, [])
+
+  const display = formatValue ? formatValue(value) : String(value)
+
+  return (
+    <div>
+      <label className="block text-[10px] font-medium text-zinc-600 mb-1.5">
+        {label}
+        <span className="ml-1 text-zinc-400 font-normal">{display}</span>
+      </label>
+      <div
+        ref={trackRef}
+        className="relative h-5 select-none touch-none"
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerUp}
+      >
+        {/* Arka plan çizgi */}
+        <div className="absolute top-1/2 left-0 right-0 h-[2px] -translate-y-1/2 bg-zinc-200 rounded-full" />
+        {/* Aktif aralık */}
+        <div
+          className="absolute top-1/2 h-[2px] -translate-y-1/2 bg-zinc-800 rounded-full"
+          style={{ left: 0, right: `${100 - pct}%` }}
+        />
+        {/* Tutamaç (diamond) */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-grab active:cursor-grabbing"
+          style={{ left: `${pct}%` }}
+          onPointerDown={onPointerDown}
+        >
+          <div className="w-[10px] h-[10px] rotate-45 border-[1.5px] border-zinc-800 bg-white" />
+        </div>
       </div>
     </div>
   )
