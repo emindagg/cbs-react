@@ -41,7 +41,10 @@
       "WebFetch(domain:desktop.arcgis.com)",
       "WebFetch(domain:makingmaps.net)",
       "WebFetch(domain:en.wikipedia.org)",
-      "WebFetch(domain:www.esri.com)"
+      "WebFetch(domain:www.esri.com)",
+      "Bash(done)",
+      "Bash(npx vitest run)",
+      "Bash(./node_modules/.bin/vitest run:*)"
     ],
     "deny": [],
     "ask": []

@@ -16,24 +16,26 @@
 
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
+import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
+import type { VisualizationSettings } from '@/types/visualization'
+import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
+import { calculateBounds } from '@/utils/geometryUtils'
+import { hashString, mulberry32 } from '@/utils/prng'
+import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
+
 import {
   DEFAULT_DOT_COLOR,
   DEFAULT_DOT_SIZE,
   MAX_DOTS_PER_FEATURE,
   MAX_TOTAL_DOTS,
   MIN_DOTS_PER_FEATURE,
-} from '../../features/viz-wizard/constants/dot-density'
-import { buildZoomRadius, calculateSmartDotValue } from '../../features/viz-wizard/utils/dot-density'
-import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
-import type { VisualizationSettings } from '../../types/visualization'
-import { isPolygonOrMultiPolygon } from '../../utils/geometryTypeGuards'
-import { calculateBounds } from '../../utils/geometryUtils'
-import { hashString, mulberry32 } from '../../utils/prng'
+} from '../constants/dot-density'
+import { buildZoomRadius, calculateSmartDotValue } from '../utils/dot-density'
+
 // Dot rendering style constants
 const DOT_STROKE_COLOR = 'rgba(255,255,255,0.6)'
 const DOT_STROKE_WIDTH = 0.5
 const DOT_OPACITY = 0.85
-import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
 
 type Coordinate = [number, number]
 type Ring = Coordinate[]

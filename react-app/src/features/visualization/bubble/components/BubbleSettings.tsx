@@ -25,7 +25,7 @@ const CLASSIFICATION_OPTIONS: { value: ClassificationMethod; label: string }[] =
   { value: 'equal', label: 'Eşit Aralık' },
 ]
 
-interface SymbolSettingsProps {
+interface BubbleSettingsProps {
   vizSettings: VisualizationSettings
   setVizSettings: (s: Partial<VisualizationSettings>) => void
   /** Bivariate seçimi için mevcut sütunlar */
@@ -34,12 +34,12 @@ interface SymbolSettingsProps {
   dataColumn?: string
 }
 
-export function SymbolSettings({
+export function BubbleSettings({
   vizSettings,
   setVizSettings,
   columns,
   dataColumn,
-}: SymbolSettingsProps) {
+}: BubbleSettingsProps) {
   // Bivariate: renk sütunu seçenekleri (veri sütunu hariç)
   const colorColumnOptions = columns?.filter((c) => c !== dataColumn) ?? []
 
@@ -134,7 +134,7 @@ export function SymbolSettings({
       {colorColumnOptions.length > 0 && (
         <div>
           <label className="block text-[10px] font-medium text-zinc-600 mb-1">
-            Renk Sütunu (Bivariate)
+            Renk Sütunu
           </label>
           <select
             value={vizSettings.colorColumn || ''}

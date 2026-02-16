@@ -6,13 +6,13 @@
 
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
-import { getContinuousColor, getColorPalette } from '../../constants/colorSchemes'
-import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
-import type { VisualizationSettings } from '../../types/visualization'
-import { calculateBreaks } from '../../utils/classification'
-import { normalizeValue } from '../../utils/interpolation'
-import { buildInterpolateExpression, buildStepExpression } from '../../utils/mapExpressions'
-import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
+import { getContinuousColor, getColorPalette } from '@/constants/colorSchemes'
+import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
+import type { VisualizationSettings } from '@/types/visualization'
+import { calculateBreaks } from '@/utils/classification'
+import { normalizeValue } from '@/utils/interpolation'
+import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
+import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 const NO_DATA_COLOR = '#dddddd'
 const CONTINUOUS_STOPS = 16

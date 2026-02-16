@@ -4,7 +4,3 @@ export { default as VizWizardStep3 } from './steps/Step3'
 export { default as WizardProgress } from './components/Progress'
 export { default as MapTitle } from './components/MapTitle'
 export { default as VizWizardSidebar } from './components/SidebarSection'
-
-// Dot density ortak sabitler & utils
-export * from './constants/dot-density'
-export { buildZoomRadius, calculateSmartDotValue } from './utils/dot-density'

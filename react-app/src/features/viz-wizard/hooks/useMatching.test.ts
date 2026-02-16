@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import toast from 'react-hot-toast'
 
-import { VisualizationManager } from '@/services/VisualizationManager'
+import { VisualizationManager } from '@/features/visualization'
 import { ColumnMapper } from '@/utils/columnMapper'
 
 import { useMatching } from './useMatching'
 
 // Mock dependencies
 vi.mock('react-hot-toast')
-vi.mock('@/services/VisualizationManager')
+vi.mock('@/features/visualization')
 vi.mock('@/utils/columnMapper')
 
 describe('useMatching', () => {

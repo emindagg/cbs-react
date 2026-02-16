@@ -9,13 +9,14 @@ import type {
   DistrictInfo,
   GeoJSONFeatureCollection,
   LocationInfo,
-} from '../types/geojson'
-import type { ClassificationMethod, VisualizationSettings } from '../types/visualization'
-import { suggestClassificationMethod } from '../utils/dataStats'
-import { getPlateCodeByName, normalizeTurkishText } from '../utils/turkishNormalizer'
-import { BubbleRenderer } from './renderers/BubbleRenderer'
-import { ChoroplethRenderer } from './renderers/ChoroplethRenderer'
-import { PointRenderer } from './renderers/PointRenderer'
+} from '@/types/geojson'
+import type { ClassificationMethod, VisualizationSettings } from '@/types/visualization'
+import { suggestClassificationMethod } from '@/utils/dataStats'
+import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
+
+import { BubbleRenderer } from '../bubble/services/BubbleRenderer'
+import { ChoroplethRenderer } from '../choropleth/services/ChoroplethRenderer'
+import { PointRenderer } from '../point/services/PointRenderer'
 
 export class VisualizationManager {
   private map: Map

@@ -7,7 +7,7 @@ import type maplibregl from 'maplibre-gl'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { VisualizationManager } from '@/services/VisualizationManager'
+import { VisualizationManager } from '@/features/visualization'
 import type { DistrictInfo, LocationInfo } from '@/types/geojson'
 import type { MatchResults } from '@/types/visualization'
 import { ColumnMapper } from '@/utils/columnMapper'

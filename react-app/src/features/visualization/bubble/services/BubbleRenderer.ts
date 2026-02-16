@@ -6,17 +6,17 @@
 
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
-import { getContinuousColor, getColorPalette } from '../../constants/colorSchemes'
-import type { GeoJSONFeature, GeoJSONFeatureCollection } from '../../types/geojson'
-import type { VisualizationSettings } from '../../types/visualization'
-import { calculateBreaks } from '../../utils/classification'
-import { applyNormalization } from '../../utils/normalization'
-import { isPolygonOrMultiPolygon } from '../../utils/geometryTypeGuards'
-import { calculateCentroid } from '../../utils/geometryUtils'
-import { normalizeValue } from '../../utils/interpolation'
-import { buildInterpolateExpression, buildStepExpression } from '../../utils/mapExpressions'
-import { calculateSymbolSize } from '../../utils/symbolShapes'
-import { getPlateCodeByName, normalizeTurkishText } from '../../utils/turkishNormalizer'
+import { getContinuousColor, getColorPalette } from '@/constants/colorSchemes'
+import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
+import type { VisualizationSettings } from '@/types/visualization'
+import { calculateBreaks } from '@/utils/classification'
+import { applyNormalization } from '@/utils/normalization'
+import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
+import { calculateCentroid } from '@/utils/geometryUtils'
+import { normalizeValue } from '@/utils/interpolation'
+import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
+import { calculateSymbolSize } from '@/utils/symbolShapes'
+import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 const NO_DATA_COLOR = 'transparent'
 const CONTINUOUS_STOPS = 16

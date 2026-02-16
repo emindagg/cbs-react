@@ -7,10 +7,10 @@ import { COLOR_SCHEME_LIST } from '@/constants/colorSchemes'
 import { LegendConfig } from '@/features/legend'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
 
-import { DotDensitySettings } from './components/DotDensitySettings'
+import { BubbleSettings, DotDensitySettings } from '@/features/visualization'
+
 import { MapTitleSection } from './components/MapTitleSection'
 import { StepsSection } from './components/StepsSection'
-import { SymbolSettings } from './components/SymbolSettings'
 import { useVizWizardStep3 } from './useVizWizardStep3'
 import {
   ColorScaleConfig,
@@ -144,7 +144,7 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
 
       {/* Symbol Map Settings - only for bubble visualization */}
       {vizSettings.type === 'bubble' && (
-        <SymbolSettings
+        <BubbleSettings
           vizSettings={vizSettings}
           setVizSettings={setVizSettings}
           columns={step.columns}
@@ -174,7 +174,7 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
       )}
 
       {/* Smart Suggestion Panel — not for dot density */}
-      {vizSettings.type !== 'dot' && suggestion && showSuggestion && (
+      {vizSettings.type !== 'dot' && vizSettings.type !== 'bubble' && suggestion && showSuggestion && (
         <div className="suggestion-card">
           <div className="suggestion-card-inner">
             <span className="text-[8px] font-semibold text-indigo-500 uppercase tracking-wider">Akıllı Öneri</span>

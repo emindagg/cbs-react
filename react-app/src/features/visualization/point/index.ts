@@ -1,0 +1,5 @@
+export { PointRenderer } from './services/PointRenderer'
+export { DotDensitySettings } from './components/DotDensitySettings'
+export { DotColorPicker } from './components/DotColorPicker'
+export * from './constants/dot-density'
+export { buildZoomRadius, calculateSmartDotValue } from './utils/dot-density'

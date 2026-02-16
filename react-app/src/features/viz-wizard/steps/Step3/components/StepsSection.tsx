@@ -39,19 +39,15 @@ export function StepsSection({
         {!isCustom && (
           <div className="flex items-center gap-3 mb-2">
             <label className="text-[11px] font-semibold text-zinc-700 min-w-[60px]">Basamak</label>
-            <input
-              type="number"
-              min={3}
-              max={9}
+            <select
               value={classCount}
-              onChange={(e) => {
-                const count = parseInt(e.target.value)
-                if (count >= 3 && count <= 9) {
-                  setClassCount(count)
-                }
-              }}
+              onChange={(e) => setClassCount(parseInt(e.target.value))}
               className="w-16 px-2 py-1.5 text-[11px] text-center border border-zinc-200 rounded-md bg-white hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-            />
+            >
+              {[3, 4, 5, 6, 7, 8, 9].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
           </div>
         )}
 

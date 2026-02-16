@@ -5,8 +5,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, MAX_TOTAL_DOTS, calculateSmartDotValue } from '@/features/viz-wizard'
 import type { VisualizationSettings } from '@/types/visualization'
+
+import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, MAX_TOTAL_DOTS } from '../constants/dot-density'
+import { calculateSmartDotValue } from '../utils/dot-density'
 
 import { DotColorPicker } from './DotColorPicker'
 
