@@ -46,7 +46,10 @@ export function useVizRender({
   const { setCurrentVisualization } = useVisualizationStore()
 
   // Data-affecting settings → full re-render
-  const dataVizKey = `${vizSettings.classificationMethod}-${vizSettings.classCount}-${vizSettings.colorScheme}-${vizSettings.type}-${vizSettings.legendType || 'steps'}-${vizSettings.interpolation || 'equidistant'}-${vizSettings.dotValue ?? 'auto'}`
+  // NOTE: vizSettings.type is intentionally excluded so that changing the
+  // visualization type alone does NOT trigger an automatic re-render.
+  // The user must click the "Yeniden Görselleştir" button for the type change to take effect.
+  const dataVizKey = `${vizSettings.classificationMethod}-${vizSettings.classCount}-${vizSettings.colorScheme}-${vizSettings.legendType || 'steps'}-${vizSettings.interpolation || 'equidistant'}-${vizSettings.dotValue ?? 'auto'}`
   // Paint-only settings → setPaintProperty (no dot regeneration)
   const paintVizKey = `${vizSettings.dotSize ?? 'auto'}-${vizSettings.dotColor ?? 'auto'}`
 
@@ -108,6 +111,9 @@ export function useVizRender({
 
       // Determine location level
       const locationLevel = columnMapping.locationLevel === 'province' ? 'province' : 'district'
+
+      // Clear previous visualization layers before rendering new type
+      vizManager.clearVisualization()
 
       // Route based on visualization type
       switch (vizSettings.type) {
