@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "version:generate": "node scripts/version-from-git.cjs",
+    "predev": "node scripts/version-from-git.cjs",
+    "prebuild": "node scripts/version-from-git.cjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint src/**/*.{ts,tsx} --report-unused-disable-directives",

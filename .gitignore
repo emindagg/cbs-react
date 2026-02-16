@@ -61,6 +61,9 @@ test-verisi/*.cpg
 test-verisi/*.geojson
 test-verisi/*.gdb
 
+# Sürüm build/git'ten üretilir, commit edilmez
+react-app/version.json
+
 # Proje-specific ignore edilen klasörler ve dosyalar
 TEST/
 TEST-VERİSİ/
