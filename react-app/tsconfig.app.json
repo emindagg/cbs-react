@@ -37,7 +37,8 @@
     }
   },
   "include": [
-    "src"
+    "src",
+    "version.json"
   ],
   "exclude": [
     "**/*.test.ts",

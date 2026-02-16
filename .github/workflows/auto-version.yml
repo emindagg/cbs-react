@@ -1,0 +1,52 @@
+name: Auto Version Bump
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'react-app/version.json'
+      - '.github/workflows/auto-version.yml'
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: ''
+
+      - name: Bump version
+        run: |
+          cd react-app
+          
+          # Read current version
+          CURRENT_BUILD=$(node -p "require('./version.json').build")
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+          
+          # Update version.json
+          echo "{
+            \"version\": \"0.1.$NEW_BUILD\",
+            \"build\": $NEW_BUILD
+          }" > version.json
+          
+          echo "New version: 0.1.$NEW_BUILD"
+
+      - name: Commit version bump
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add react-app/version.json
+          git commit -m "chore: bump version to $(node -p "require('./react-app/version.json').version") [skip ci]"
+          git push
