@@ -242,6 +242,21 @@ export default [
     },
   },
 
+  // Root orchestratorlar feature'lari sadece public API (index.ts) uzerinden tuketsin
+  {
+    files: ['src/components/layout/AppLayout.tsx', 'src/components/sidebar/Sidebar.tsx'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['@/features/*/*'],
+            message: "Root orchestrators must import features only via public API: '@/features/<name>' (no deep feature imports).",
+          },
+        ],
+      }],
+    },
+  },
+
   // Feature-First KURAL 4: Feature'lar arasÄ± doÄŸrudan import yasak (sadece public API)
   {
     files: ['src/features/**/*.{ts,tsx}'],
