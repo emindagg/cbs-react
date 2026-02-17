@@ -33,6 +33,25 @@ function formatObscuration(value: number | undefined): string {
   return `${(value * 100).toFixed(1)}%`
 }
 
+function formatPeakDate(date: Date): string {
+  return date.toLocaleDateString('tr-TR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'UTC',
+  })
+}
+
+function formatPeakTime(date: Date): string {
+  return date.toLocaleTimeString('tr-TR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: 'UTC',
+  })
+}
+
 function buildFeature(
   lon: number,
   lat: number,
@@ -61,29 +80,44 @@ export function getEclipseAnalysisCollection(currentDate: Date): GeoJSON.Feature
     const lunar = Astronomy.SearchLunarEclipse(currentDate)
 
     if (typeof globalSolar.latitude === 'number' && typeof globalSolar.longitude === 'number') {
+      const peakDate = globalSolar.peak.date
       features.push(buildFeature(globalSolar.longitude, globalSolar.latitude, {
         label: 'Global Güneş Tutulması',
         eventType: 'solar-global',
+        type: 'Güneş Tutulması (Global)',
         kind: globalSolar.kind,
         peakUtc: toIsoString(globalSolar.peak.date),
-        obscuration: formatObscuration(globalSolar.obscuration),
+        date: formatPeakDate(peakDate),
+        time: `${formatPeakTime(peakDate)} UTC`,
+        magnitude: formatObscuration(globalSolar.obscuration),
+        description: 'Dünya genelinde izlenebilen bir sonraki güneş tutulması.',
       }))
     }
 
+    const localPeakDate = localSolar.peak.time.date
     features.push(buildFeature(TURKEY_OBSERVER_LON, TURKEY_OBSERVER_LAT, {
       label: 'Türkiye Güneş Tutulması',
       eventType: 'solar-local',
+      type: 'Güneş Tutulması (Türkiye)',
       kind: localSolar.kind,
       peakUtc: toIsoString(localSolar.peak.time.date),
-      obscuration: formatObscuration(localSolar.obscuration),
+      date: formatPeakDate(localPeakDate),
+      time: `${formatPeakTime(localPeakDate)} UTC`,
+      magnitude: formatObscuration(localSolar.obscuration),
+      description: 'Türkiye merkezli gözlem noktası için hesaplanan tutulma olayı.',
     }))
 
+    const lunarPeakDate = lunar.peak.date
     features.push(buildFeature(TURKEY_OBSERVER_LON + LUNAR_MARKER_OFFSET_LON, TURKEY_OBSERVER_LAT, {
       label: 'Sonraki Ay Tutulması',
       eventType: 'lunar',
+      type: 'Ay Tutulması',
       kind: lunar.kind,
       peakUtc: toIsoString(lunar.peak.date),
-      obscuration: formatObscuration(lunar.obscuration),
+      date: formatPeakDate(lunarPeakDate),
+      time: `${formatPeakTime(lunarPeakDate)} UTC`,
+      magnitude: formatObscuration(lunar.obscuration),
+      description: 'Bir sonraki ay tutulmasının tepe zamanı ve türü.',
     }))
   } catch {
     // Eclipse search can fail in edge cases; return what we have instead of breaking the map updates.

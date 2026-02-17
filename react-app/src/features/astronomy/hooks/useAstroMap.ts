@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { useMapStore } from '@/stores/useMapStore'
 
 import { updateAstroData } from './useAstroData'
+import { useAstroInteraction } from './useAstroInteraction'
 import { cleanupAstroLayers, setupAstroLayers } from './useAstroLayers'
 import { useAstroStore } from '../stores/useAstroStore'
 
@@ -13,6 +14,12 @@ export function useAstroMap() {
   const lastUpdateRef = useRef<number>(0)
   const currentDateRef = useRef<Date>(currentDate)
   const speedRef = useRef<number>(speed)
+
+  useAstroInteraction({
+    map,
+    isEnabled,
+    isEclipseEnabled: features.eclipses,
+  })
 
   useEffect(() => {
     currentDateRef.current = currentDate

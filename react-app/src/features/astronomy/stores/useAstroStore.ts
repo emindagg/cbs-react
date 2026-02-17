@@ -35,9 +35,9 @@ export const useAstroStore = create<AstroState>((set) => ({
   timeMode: 'local',
   isPlaying: false,
   features: {
-    sunPosition: true,
-    terminator: true,
-    moonPhase: true,
+    sunPosition: false,
+    terminator: false,
+    moonPhase: false,
     axialTilt: false,
     eclipses: false,
   },
