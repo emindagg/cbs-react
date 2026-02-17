@@ -1,5 +1,8 @@
 import { create } from 'zustand'
 
+const MIN_ASTRO_SPEED = 0.1
+const MAX_ASTRO_SPEED = 100
+
 export interface AstroFeatures {
   sunPosition: boolean
   terminator: boolean
@@ -41,7 +44,9 @@ export const useAstroStore = create<AstroState>((set) => ({
 
   setIsEnabled: (enabled) => set({ isEnabled: enabled }),
   setCurrentDate: (date) => set({ currentDate: date }),
-  setSpeed: (speed) => set({ speed }),
+  setSpeed: (speed) => set({
+    speed: Math.max(MIN_ASTRO_SPEED, Math.min(MAX_ASTRO_SPEED, speed)),
+  }),
   setTimeMode: (mode) => set({ timeMode: mode }),
   setIsPlaying: (playing) => set({ isPlaying: playing }),
   toggleFeature: (feature) => set((state) => ({

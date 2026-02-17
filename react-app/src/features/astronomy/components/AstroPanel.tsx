@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { formatDateForInput } from '../../../utils/dateUtils'
 import { useAstroStore } from '../stores/useAstroStore'
 
+const MIN_ASTRO_SPEED = 0.1
+const MAX_ASTRO_SPEED = 100
+
 function pad2(n: number): string {
   return String(n).padStart(2, '0')
 }
@@ -40,6 +43,7 @@ export function AstroPanel() {
     setIsPlaying,
     toggleFeature,
   } = useAstroStore()
+
   const nowToleranceMs = 1000 * 60
   const [nowTimestamp, setNowTimestamp] = useState(0)
   const inputValue = useMemo(
@@ -85,30 +89,30 @@ export function AstroPanel() {
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className="fixed top-20 right-4 z-10002 w-[296px] font-['Outfit']"
       >
-        <div className="overflow-hidden rounded-2xl border border-slate-700 bg-[#0b1220] shadow-[0_10px_24px_rgba(0,0,0,0.35)]">
-          <div className="flex items-center justify-between border-b border-slate-700 bg-[#111a2b] px-4 py-3">
+        <div className="overflow-hidden rounded-2xl border border-stone-300 bg-[#fcfcfd] shadow-[0_12px_28px_rgba(15,23,42,0.14)]">
+          <div className="flex items-center justify-between border-b border-stone-200 bg-white px-4 py-3">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-400/30 bg-cyan-500/10">
-                <i className="fa-solid fa-satellite-dish text-[12px] text-cyan-300"></i>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-sky-200 bg-sky-50">
+                <i className="fa-solid fa-satellite-dish text-[12px] text-sky-700"></i>
               </div>
               <div>
-                <h3 className="text-[12px] font-bold tracking-tight text-slate-100">Astronomi Veri Paneli</h3>
+                <h3 className="text-[12px] font-bold tracking-tight text-slate-900">Astronomi Veri Paneli</h3>
                 {isPlaying && (
                   <div className="mt-0.5 flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300"></span>
-                    <span className="text-[8px] font-bold uppercase text-cyan-300">Canlı İzleme</span>
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sky-500"></span>
+                    <span className="text-[8px] font-bold uppercase text-sky-700">Canlı İzleme</span>
                   </div>
                 )}
               </div>
             </div>
-            <div className="flex rounded-lg border border-slate-600 bg-slate-900 p-0.5">
+            <div className="flex rounded-lg border border-stone-300 bg-stone-100 p-0.5">
               {['local', 'utc'].map((mode) => (
                 <button
                   key={mode}
                   onClick={() => setTimeMode(mode as 'local' | 'utc')}
                   className={`rounded-md px-2.5 py-1 text-[9px] font-bold transition-colors ${timeMode === mode
-                    ? 'bg-cyan-400 text-slate-950'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-500 hover:text-slate-700'
                   }`}
                 >
                   {mode.toUpperCase()}
@@ -120,12 +124,12 @@ export function AstroPanel() {
           <div className="space-y-4 p-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Zaman</label>
+                <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600">Zaman</label>
                 <button
                   onClick={() => setCurrentDate(new Date())}
                   className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold transition-colors ${isNowSelected
-                    ? 'border-cyan-400/40 bg-cyan-500/15 text-cyan-200 hover:bg-cyan-500/25'
-                    : 'border-rose-400/30 bg-rose-500/15 text-rose-200 hover:bg-rose-500/25'
+                    ? 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100'
+                    : 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
                   }`}
                 >
                   <i className="fa-solid fa-clock-rotate-left"></i>
@@ -136,33 +140,33 @@ export function AstroPanel() {
                 type="datetime-local"
                 value={inputValue}
                 onChange={handleDateChange}
-                className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-[11px] font-['JetBrains_Mono'] text-slate-100 outline-hidden transition-colors focus:border-cyan-400"
+                className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-[11px] font-['JetBrains_Mono'] text-slate-800 outline-hidden transition-colors focus:border-sky-500"
               />
             </div>
 
-            <div className="space-y-3 border-t border-slate-700 pt-3">
+            <div className="space-y-3 border-t border-stone-200 pt-3">
               <div className="flex items-center justify-between">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Hız</label>
-                <span className="rounded-md border border-slate-600 bg-slate-900 px-2 py-1 text-[10px] font-bold font-['JetBrains_Mono'] text-slate-100">
+                <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600">Hız</label>
+                <span className="rounded-md border border-stone-300 bg-stone-50 px-2 py-1 text-[10px] font-bold font-['JetBrains_Mono'] text-slate-900">
                   {speed.toFixed(1)}x
                 </span>
               </div>
 
               <input
                 type="range"
-                min="0.1"
-                max="1000"
+                min={MIN_ASTRO_SPEED}
+                max={MAX_ASTRO_SPEED}
                 step="0.1"
                 value={speed}
                 onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-700 accent-cyan-400"
+                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-stone-200 accent-slate-800"
               />
 
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
                 className={`flex h-10 w-full items-center justify-center gap-2 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-colors ${isPlaying
-                  ? 'border-slate-500 bg-slate-700 text-slate-100 hover:bg-slate-600'
-                  : 'border-cyan-400/40 bg-cyan-400 text-slate-950 hover:bg-cyan-300'
+                  ? 'border-stone-300 bg-white text-slate-800 hover:bg-stone-50'
+                  : 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800'
                 }`}
               >
                 <i className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'} text-[9px]`}></i>
@@ -170,42 +174,42 @@ export function AstroPanel() {
               </button>
             </div>
 
-            <div className="border-t border-slate-700 pt-3">
+            <div className="border-t border-stone-200 pt-3">
               <div className="grid grid-cols-1 gap-1.5">
                 <MatrixToggle
                   icon="fa-sun"
                   label="Güneş Konumu"
                   checked={features.sunPosition}
                   onChange={() => toggleFeature('sunPosition')}
-                  activeColor="text-amber-300 bg-amber-500/15"
+                  activeColor="text-amber-700 bg-amber-50"
                 />
                 <MatrixToggle
                   icon="fa-circle-half-stroke"
                   label="Aydınlanma Çizgisi"
                   checked={features.terminator}
                   onChange={() => toggleFeature('terminator')}
-                  activeColor="text-violet-300 bg-violet-500/15"
+                  activeColor="text-indigo-700 bg-indigo-50"
                 />
                 <MatrixToggle
                   icon="fa-moon"
                   label="Ay Evreleri"
                   checked={features.moonPhase}
                   onChange={() => toggleFeature('moonPhase')}
-                  activeColor="text-slate-200 bg-slate-500/15"
+                  activeColor="text-slate-700 bg-slate-100"
                 />
                 <MatrixToggle
                   icon="fa-earth-americas"
                   label="Eksen Eğikliği"
                   checked={features.axialTilt}
                   onChange={() => toggleFeature('axialTilt')}
-                  activeColor="text-cyan-300 bg-cyan-500/15"
+                  activeColor="text-sky-700 bg-sky-50"
                 />
                 <MatrixToggle
                   icon="fa-cloud-moon"
                   label="Tutulma Analizi"
                   checked={features.eclipses}
                   onChange={() => toggleFeature('eclipses')}
-                  activeColor="text-rose-300 bg-rose-500/15"
+                  activeColor="text-rose-700 bg-rose-50"
                 />
               </div>
             </div>
@@ -228,24 +232,23 @@ function MatrixToggle({ icon, label, checked, onChange, activeColor }: MatrixTog
   return (
     <label
       className={`group flex cursor-pointer items-center justify-between rounded-xl border p-2 transition-colors ${checked
-        ? 'border-cyan-400/40 bg-cyan-500/10'
-        : 'border-slate-700 bg-slate-900 hover:border-slate-600 hover:bg-slate-800'
+        ? 'border-sky-200 bg-sky-50/70'
+        : 'border-stone-300 bg-white hover:border-stone-400 hover:bg-stone-50'
       }`}
     >
       <div className="flex items-center gap-3">
-        <div className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${checked ? activeColor : 'border border-slate-600 bg-slate-800 text-slate-400'}`}>
+        <div className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${checked ? activeColor : 'border border-stone-300 bg-stone-100 text-stone-500'}`}>
           <i className={`fa-solid ${icon} text-[12px]`}></i>
         </div>
-        <span className={`text-[10px] font-bold leading-tight transition-colors ${checked ? 'text-slate-100' : 'text-slate-300'}`}>
+        <span className={`text-[10px] font-bold leading-tight transition-colors ${checked ? 'text-slate-900' : 'text-slate-600'}`}>
           {label}
         </span>
       </div>
 
       <div className="relative">
         <input type="checkbox" checked={checked} onChange={onChange} className="peer sr-only" />
-        <div className="h-4 w-9 rounded-full bg-slate-600 transition-colors peer-checked:bg-cyan-400 after:absolute after:left-[2px] after:top-[2px] after:h-3 after:w-3 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5"></div>
+        <div className="h-4 w-9 rounded-full bg-stone-300 transition-colors peer-checked:bg-slate-900 after:absolute after:left-[2px] after:top-[2px] after:h-3 after:w-3 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5"></div>
       </div>
     </label>
   )
 }
-
