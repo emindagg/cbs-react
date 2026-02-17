@@ -5,6 +5,19 @@ export interface TerminatorResult {
   nightPolygon: GeoJSON.Feature<GeoJSON.Polygon>;
 }
 
+const SUN_RISE_DIRECTION = 1
+const SUN_SET_DIRECTION = -1
+const SUN_SEARCH_WINDOW_DAYS = 2
+const SUN_COORD_DECIMALS = 2
+const SUN_ANGLE_DECIMALS = 1
+
+interface SunObserverData {
+  altitude: string
+  azimuth: string
+  sunrise: string
+  sunset: string
+}
+
 /**
  * Calculates sun declination (approximate)
  */
@@ -21,6 +34,54 @@ export function getSunDeclination(date: Date): number {
 export function getSunHourAngle(date: Date): number {
   const hour = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600
   return -(hour - 12) * 15
+}
+
+function formatUtcTime(date: Date): string {
+  return date.toLocaleTimeString('tr-TR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: 'UTC',
+  })
+}
+
+function formatAngle(value: number): string {
+  return `${value.toFixed(SUN_ANGLE_DECIMALS)}°`
+}
+
+function formatCoord(value: number): string {
+  return value.toFixed(SUN_COORD_DECIMALS)
+}
+
+function getSunObserverData(date: Date, lat: number, lon: number): SunObserverData {
+  const observer = new Astronomy.Observer(lat, lon, 0)
+  const sunEquator = Astronomy.Equator(Astronomy.Body.Sun, date, observer, true, true)
+  const horizon = Astronomy.Horizon(date, observer, sunEquator.ra, sunEquator.dec, 'normal')
+  const dayStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0))
+  const sunrise = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, SUN_RISE_DIRECTION, dayStart, SUN_SEARCH_WINDOW_DAYS)
+  const sunset = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, SUN_SET_DIRECTION, dayStart, SUN_SEARCH_WINDOW_DAYS)
+
+  return {
+    altitude: formatAngle(horizon.altitude),
+    azimuth: formatAngle(horizon.azimuth),
+    sunrise: sunrise ? `${formatUtcTime(sunrise.date)} UTC` : '-',
+    sunset: sunset ? `${formatUtcTime(sunset.date)} UTC` : '-',
+  }
+}
+
+export function getSunMarkerData(date: Date) {
+  const lat = getSunDeclination(date)
+  const lon = getSunHourAngle(date)
+  const observerData = getSunObserverData(date, lat, lon)
+
+  return {
+    lat,
+    lon,
+    latText: formatCoord(lat),
+    lonText: formatCoord(lon),
+    ...observerData,
+  }
 }
 
 /**
@@ -111,6 +172,14 @@ export function getMoonPosition(date: Date) {
       fraction: illumination.phase_fraction,
     },
   }
+}
+
+/**
+ * Get moon phase angle in degrees (0-360)
+ */
+export function getMoonPhaseAngle(date: Date): number {
+  const angle = Astronomy.MoonPhase(date)
+  return ((angle % 360) + 360) % 360
 }
 
 /**

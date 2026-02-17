@@ -46,60 +46,11 @@ export function setupAstroLayers(map: maplibregl.Map): void {
     })
   }
 
-  // Sun Position Source
-  if (!map.getSource('astro-sun-position')) {
-    map.addSource('astro-sun-position', {
-      type: 'geojson',
-      data: { type: 'FeatureCollection', features: [] },
-    })
-
-    map.addLayer({
-      id: 'astro-sun-marker',
-      type: 'circle',
-      source: 'astro-sun-position',
-      paint: {
-        'circle-radius': 10,
-        'circle-color': '#FFD700',
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#FFA500',
-      },
-    })
-  }
-
   // Moon Position Source
   if (!map.getSource('astro-moon-position')) {
     map.addSource('astro-moon-position', {
       type: 'geojson',
       data: { type: 'FeatureCollection', features: [] },
-    })
-
-    map.addLayer({
-      id: 'astro-moon-marker',
-      type: 'circle',
-      source: 'astro-moon-position',
-      paint: {
-        'circle-radius': 8,
-        'circle-color': '#e2e8f0',
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#94a3b8',
-      },
-    })
-
-    map.addLayer({
-      id: 'astro-moon-label',
-      type: 'symbol',
-      source: 'astro-moon-position',
-      layout: {
-        'text-field': ['get', 'phaseName'],
-        'text-size': 10,
-        'text-offset': [0, 1.5],
-        'text-anchor': 'top',
-      },
-      paint: {
-        'text-color': '#475569',
-        'text-halo-color': '#ffffff',
-        'text-halo-width': 1,
-      },
     })
   }
 
@@ -193,15 +144,12 @@ export function cleanupAstroLayers(map: maplibregl.Map): void {
   const layers = [
     'astro-night-shadow',
     'astro-terminator-line',
-    'astro-sun-marker',
-    'astro-moon-marker',
-    'astro-moon-label',
     'astro-axial-line',
     'astro-axial-label',
     'astro-eclipse-marker',
     'astro-eclipse-label',
   ]
-  const sources = ['astro-terminator', 'astro-sun-position', 'astro-moon-position', 'astro-axial-tilt', 'astro-eclipse-events']
+  const sources = ['astro-terminator', 'astro-moon-position', 'astro-axial-tilt', 'astro-eclipse-events']
 
   layers.forEach(id => {
     if (map.getLayer(id)) map.removeLayer(id)

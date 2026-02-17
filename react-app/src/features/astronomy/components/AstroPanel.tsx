@@ -1,6 +1,7 @@
 ﻿import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
 
+import { MoonPhaseDisplay } from './MoonPhaseDisplay'
 import { useAstroStore } from '../stores/useAstroStore'
 
 const MIN_ASTRO_SPEED = 0.1
@@ -64,6 +65,7 @@ export function AstroPanel() {
   const {
     isEnabled,
     currentDate,
+    moonPhaseAngle,
     speed,
     timeMode,
     isPlaying,
@@ -240,6 +242,7 @@ export function AstroPanel() {
                   checked={features.moonPhase}
                   onChange={() => toggleFeature('moonPhase')}
                   activeColor="text-slate-700 bg-slate-100"
+                  customLeading={<MoonPhaseDisplay phaseAngle={moonPhaseAngle} />}
                 />
                 <MatrixToggle
                   icon="fa-earth-americas"
@@ -270,9 +273,10 @@ interface MatrixToggleProps {
   checked: boolean
   onChange: () => void
   activeColor: string
+  customLeading?: React.ReactNode
 }
 
-function MatrixToggle({ icon, label, checked, onChange, activeColor }: MatrixToggleProps) {
+function MatrixToggle({ icon, label, checked, onChange, activeColor, customLeading }: MatrixToggleProps) {
   return (
     <label
       className={`group flex cursor-pointer items-center justify-between rounded-xl border p-2 transition-colors ${checked
@@ -281,9 +285,11 @@ function MatrixToggle({ icon, label, checked, onChange, activeColor }: MatrixTog
       }`}
     >
       <div className="flex items-center gap-3">
-        <div className={`flex h-6 w-6 items-center justify-center rounded-lg transition-colors ${checked ? activeColor : 'border border-slate-300 bg-slate-100 text-slate-500'}`}>
-          <i className={`fa-solid ${icon} text-[10px]`}></i>
-        </div>
+        {customLeading || (
+          <div className={`flex h-6 w-6 items-center justify-center rounded-lg transition-colors ${checked ? activeColor : 'border border-slate-300 bg-slate-100 text-slate-500'}`}>
+            <i className={`fa-solid ${icon} text-[10px]`}></i>
+          </div>
+        )}
         <span className={`text-[9px] font-bold leading-tight transition-colors ${checked ? 'text-slate-800' : 'text-slate-600'}`}>
           {label}
         </span>
@@ -296,3 +302,5 @@ function MatrixToggle({ icon, label, checked, onChange, activeColor }: MatrixTog
     </label>
   )
 }
+
+

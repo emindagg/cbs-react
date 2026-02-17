@@ -1,3 +1,4 @@
+import maplibregl from 'maplibre-gl'
 import { useEffect, useRef } from 'react'
 
 import { useMapStore } from '@/stores/useMapStore'
@@ -6,14 +7,34 @@ import { updateAstroData } from './useAstroData'
 import { useAstroInteraction } from './useAstroInteraction'
 import { cleanupAstroLayers, setupAstroLayers } from './useAstroLayers'
 import { useAstroStore } from '../stores/useAstroStore'
+import { getMoonPhaseAngle, getMoonPosition, getSunMarkerData } from '../utils/astroUtils'
+import { buildMoonPhaseSvgMarkup, getMoonIlluminationPercent, getMoonPhaseName } from '../utils/moonPhaseVisual'
+import { buildSunMarkerSvgMarkup } from '../utils/sunVisual'
+
+const MOON_MARKER_SIZE = '28px'
+const MOON_MARKER_HOVER_SCALE = 'scale(1.1)'
+const MOON_MARKER_NORMAL_SCALE = 'scale(1)'
+const MOON_POPUP_OFFSET = 24
+const MOON_COORD_FRACTION_DIGITS = 2
+const SUN_MARKER_SIZE = '28px'
+const SUN_MARKER_HOVER_SCALE = 'scale(1.1)'
+const SUN_MARKER_NORMAL_SCALE = 'scale(1)'
+const SUN_POPUP_OFFSET = 24
+const SUN_MARKER_TITLE = 'Güneş Bilgisi'
 
 export function useAstroMap() {
   const map = useMapStore(state => state.mapInstance)
-  const { isEnabled, currentDate, features, isPlaying, speed, setCurrentDate } = useAstroStore()
+  const { isEnabled, currentDate, moonPhaseAngle, features, isPlaying, speed, setCurrentDate, setMoonPhaseAngle } = useAstroStore()
   const animationFrameRef = useRef<number | null>(null)
   const lastUpdateRef = useRef<number>(0)
   const currentDateRef = useRef<Date>(currentDate)
   const speedRef = useRef<number>(speed)
+  const moonMarkerRef = useRef<maplibregl.Marker | null>(null)
+  const moonMarkerElementRef = useRef<HTMLDivElement | null>(null)
+  const moonPopupRef = useRef<maplibregl.Popup | null>(null)
+  const sunMarkerRef = useRef<maplibregl.Marker | null>(null)
+  const sunMarkerElementRef = useRef<HTMLDivElement | null>(null)
+  const sunPopupRef = useRef<maplibregl.Popup | null>(null)
 
   useAstroInteraction({
     map,
@@ -28,6 +49,212 @@ export function useAstroMap() {
   useEffect(() => {
     speedRef.current = speed
   }, [speed])
+
+  useEffect(() => {
+    setMoonPhaseAngle(getMoonPhaseAngle(currentDate))
+  }, [currentDate, setMoonPhaseAngle])
+
+  useEffect(() => {
+    if (!map || !isEnabled || !features.sunPosition) {
+      sunMarkerRef.current?.remove()
+      sunMarkerRef.current = null
+      sunMarkerElementRef.current = null
+      sunPopupRef.current?.remove()
+      sunPopupRef.current = null
+      return
+    }
+
+    const sunData = getSunMarkerData(currentDate)
+    const sunSvgMarkup = buildSunMarkerSvgMarkup()
+
+    if (!sunMarkerRef.current) {
+      const element = document.createElement('div')
+      element.style.width = SUN_MARKER_SIZE
+      element.style.height = SUN_MARKER_SIZE
+      element.style.pointerEvents = 'auto'
+      element.style.cursor = 'pointer'
+      sunMarkerElementRef.current = element
+      sunMarkerRef.current = new maplibregl.Marker({
+        element,
+        anchor: 'center',
+      })
+    }
+
+    if (sunMarkerElementRef.current) {
+      sunMarkerElementRef.current.innerHTML = sunSvgMarkup
+      const sunSvg = sunMarkerElementRef.current.querySelector('svg') as SVGElement | null
+      if (sunSvg) {
+        sunSvg.style.transition = 'transform 120ms ease'
+        sunSvg.style.transformOrigin = '50% 50%'
+        sunSvg.style.transformBox = 'fill-box'
+        sunSvg.style.transform = SUN_MARKER_NORMAL_SCALE
+      }
+
+      sunMarkerElementRef.current.onmouseenter = () => {
+        const hoverSvg = sunMarkerElementRef.current?.querySelector('svg') as SVGElement | null
+        if (hoverSvg) {
+          hoverSvg.style.transform = SUN_MARKER_HOVER_SCALE
+        }
+        map.getCanvas().style.cursor = 'pointer'
+      }
+
+      sunMarkerElementRef.current.onmouseleave = () => {
+        const leaveSvg = sunMarkerElementRef.current?.querySelector('svg') as SVGElement | null
+        if (leaveSvg) {
+          leaveSvg.style.transform = SUN_MARKER_NORMAL_SCALE
+        }
+        map.getCanvas().style.cursor = ''
+      }
+
+      sunMarkerElementRef.current.onclick = (event) => {
+        event.stopPropagation()
+
+        if (!sunPopupRef.current) {
+          sunPopupRef.current = new maplibregl.Popup({
+            closeButton: true,
+            closeOnClick: true,
+            offset: [0, -SUN_POPUP_OFFSET],
+            maxWidth: '280px',
+            className: 'astro-sun-popup',
+          })
+        }
+
+        sunPopupRef.current
+          .setLngLat([sunData.lon, sunData.lat])
+          .setHTML(
+            '<div style="font-family:Outfit,ui-sans-serif,system-ui;padding:2px 0;color:#0f172a">' +
+            `<div style="font-size:12px;font-weight:700;letter-spacing:.01em">${SUN_MARKER_TITLE}</div>` +
+            '<div style="margin-top:6px;border-top:1px solid #e2e8f0;padding-top:6px;font-size:11px;line-height:1.45">' +
+            `<div><strong>Güneş Yüksekliği:</strong> ${sunData.altitude}</div>` +
+            `<div><strong>Yönü (Azimuth):</strong> ${sunData.azimuth}</div>` +
+            `<div><strong>Gün Doğumu:</strong> ${sunData.sunrise}</div>` +
+            `<div><strong>Gün Batımı:</strong> ${sunData.sunset}</div>` +
+            `<div><strong>Konum:</strong> ${sunData.latText}, ${sunData.lonText}</div>` +
+            '</div></div>',
+          )
+          .addTo(map)
+      }
+    }
+
+    sunMarkerRef.current
+      .setLngLat([sunData.lon, sunData.lat])
+      .addTo(map)
+
+    return () => {
+      if (!features.sunPosition) {
+        sunMarkerRef.current?.remove()
+        sunMarkerRef.current = null
+        if (sunMarkerElementRef.current) {
+          sunMarkerElementRef.current.onclick = null
+          sunMarkerElementRef.current.onmouseenter = null
+          sunMarkerElementRef.current.onmouseleave = null
+        }
+        sunMarkerElementRef.current = null
+        sunPopupRef.current?.remove()
+        sunPopupRef.current = null
+      }
+    }
+  }, [map, isEnabled, features.sunPosition, currentDate])
+
+  useEffect(() => {
+    if (!map || !isEnabled || !features.moonPhase) {
+      moonMarkerRef.current?.remove()
+      moonMarkerRef.current = null
+      moonMarkerElementRef.current = null
+      moonPopupRef.current?.remove()
+      moonPopupRef.current = null
+      return
+    }
+
+    const moonData = getMoonPosition(currentDate)
+    const phaseName = getMoonPhaseName(moonPhaseAngle)
+    const illuminationPercent = getMoonIlluminationPercent(moonPhaseAngle)
+    const lon = moonData.lon.toFixed(MOON_COORD_FRACTION_DIGITS)
+    const lat = moonData.lat.toFixed(MOON_COORD_FRACTION_DIGITS)
+
+    if (!moonMarkerRef.current) {
+      const element = document.createElement('div')
+      element.style.width = MOON_MARKER_SIZE
+      element.style.height = MOON_MARKER_SIZE
+      element.style.pointerEvents = 'auto'
+      element.style.cursor = 'pointer'
+      moonMarkerElementRef.current = element
+      moonMarkerRef.current = new maplibregl.Marker({
+        element,
+        anchor: 'center',
+      })
+    }
+
+    if (moonMarkerElementRef.current) {
+      moonMarkerElementRef.current.innerHTML = buildMoonPhaseSvgMarkup(moonPhaseAngle)
+      const moonSvg = moonMarkerElementRef.current.querySelector('svg') as SVGElement | null
+      if (moonSvg) {
+        moonSvg.style.transition = 'transform 120ms ease'
+        moonSvg.style.transformOrigin = '50% 50%'
+        moonSvg.style.transformBox = 'fill-box'
+        moonSvg.style.transform = MOON_MARKER_NORMAL_SCALE
+      }
+      moonMarkerElementRef.current.onmouseenter = () => {
+        const hoverSvg = moonMarkerElementRef.current?.querySelector('svg') as SVGElement | null
+        if (hoverSvg) {
+          hoverSvg.style.transform = MOON_MARKER_HOVER_SCALE
+        }
+        map.getCanvas().style.cursor = 'pointer'
+      }
+      moonMarkerElementRef.current.onmouseleave = () => {
+        const leaveSvg = moonMarkerElementRef.current?.querySelector('svg') as SVGElement | null
+        if (leaveSvg) {
+          leaveSvg.style.transform = MOON_MARKER_NORMAL_SCALE
+        }
+        map.getCanvas().style.cursor = ''
+      }
+      moonMarkerElementRef.current.onclick = (event) => {
+        event.stopPropagation()
+
+        if (!moonPopupRef.current) {
+          moonPopupRef.current = new maplibregl.Popup({
+            closeButton: true,
+            closeOnClick: true,
+            offset: [0, -MOON_POPUP_OFFSET],
+            maxWidth: '260px',
+            className: 'astro-moon-popup',
+          })
+        }
+
+        moonPopupRef.current
+          .setLngLat([moonData.lon, moonData.lat])
+          .setHTML(
+            '<div style="font-family:Outfit,ui-sans-serif,system-ui;padding:2px 0;color:#0f172a">' +
+            '<div style="font-size:12px;font-weight:700;letter-spacing:.01em">Ay Bilgisi</div>' +
+            '<div style="margin-top:6px;border-top:1px solid #e2e8f0;padding-top:6px;font-size:11px;line-height:1.45">' +
+            `<div><strong>Evre:</strong> ${phaseName}</div>` +
+            `<div><strong>Aydinlanma:</strong> %${illuminationPercent}</div>` +
+            `<div><strong>Konum:</strong> ${lat}, ${lon}</div>` +
+            '</div></div>',
+          )
+          .addTo(map)
+      }
+    }
+
+    moonMarkerRef.current
+      .setLngLat([moonData.lon, moonData.lat])
+      .addTo(map)
+
+    return () => {
+      if (!features.moonPhase) {
+        moonMarkerRef.current?.remove()
+        moonMarkerRef.current = null
+        if (moonMarkerElementRef.current) {
+          moonMarkerElementRef.current.onclick = null
+          moonMarkerElementRef.current.onmouseenter = null
+          moonMarkerElementRef.current.onmouseleave = null
+        }
+        moonMarkerElementRef.current = null
+        moonPopupRef.current?.remove()
+        moonPopupRef.current = null
+      }
+    }
+  }, [map, isEnabled, features.moonPhase, currentDate, moonPhaseAngle])
 
   // Initialize Sources and Layers
   useEffect(() => {
@@ -60,11 +287,8 @@ export function useAstroMap() {
       }
     }
 
-    setVisibility('astro-sun-marker', features.sunPosition)
     setVisibility('astro-night-shadow', features.terminator)
     setVisibility('astro-terminator-line', features.terminator)
-    setVisibility('astro-moon-marker', features.moonPhase)
-    setVisibility('astro-moon-label', features.moonPhase)
     setVisibility('astro-axial-line', features.axialTilt)
     setVisibility('astro-axial-label', features.axialTilt)
     setVisibility('astro-eclipse-marker', features.eclipses)
@@ -109,6 +333,19 @@ export function useAstroMap() {
       animationFrameRef.current = null
     }
   }, [isPlaying, isEnabled, setCurrentDate])
+
+  useEffect(() => () => {
+    sunMarkerRef.current?.remove()
+    sunMarkerRef.current = null
+    sunPopupRef.current?.remove()
+    sunPopupRef.current = null
+    sunMarkerElementRef.current = null
+    moonMarkerRef.current?.remove()
+    moonMarkerRef.current = null
+    moonPopupRef.current?.remove()
+    moonPopupRef.current = null
+    moonMarkerElementRef.current = null
+  }, [])
 
   return null
 }

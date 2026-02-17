@@ -5,7 +5,7 @@
 
 import type maplibregl from 'maplibre-gl'
 
-import { computeTerminator, getSunDeclination, getSunHourAngle, getMoonPosition } from '../utils/astroUtils'
+import { computeTerminator, getMoonPosition } from '../utils/astroUtils'
 import { getEclipseAnalysisCollection } from '../utils/eclipseUtils'
 
 export function updateAstroData(map: maplibregl.Map, currentDate: Date, showEclipseAnalysis: boolean): void {
@@ -16,21 +16,6 @@ export function updateAstroData(map: maplibregl.Map, currentDate: Date, showEcli
     terminatorSource.setData({
       type: 'FeatureCollection',
       features: [data.line, data.nightPolygon],
-    })
-  }
-
-  // Update Sun
-  const sunSource = map.getSource('astro-sun-position') as maplibregl.GeoJSONSource
-  if (sunSource) {
-    const lat = getSunDeclination(currentDate)
-    const lon = getSunHourAngle(currentDate)
-    sunSource.setData({
-      type: 'FeatureCollection',
-      features: [{
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: [lon, lat] },
-        properties: { name: 'Güneş' },
-      }],
     })
   }
 
@@ -56,8 +41,8 @@ export function updateAstroData(map: maplibregl.Map, currentDate: Date, showEcli
         geometry: { type: 'Point', coordinates: [moonData.lon, moonData.lat] },
         properties: {
           name: 'Ay',
-          phase: phase,
-          phaseName: phaseName,
+          phase,
+          phaseName,
         },
       }],
     })
