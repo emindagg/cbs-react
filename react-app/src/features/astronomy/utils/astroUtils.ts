@@ -18,6 +18,16 @@ interface SunObserverData {
   sunset: string
 }
 
+export interface LocalAstronomyData {
+  latText: string
+  lonText: string
+  altitude: string
+  azimuth: string
+  sunrise: string
+  sunset: string
+  shadowLength: string
+}
+
 /**
  * Calculates sun declination (approximate)
  */
@@ -54,6 +64,15 @@ function formatCoord(value: number): string {
   return value.toFixed(SUN_COORD_DECIMALS)
 }
 
+function formatShadowLengthMeters(altitudeDegrees: number): string {
+  if (altitudeDegrees <= 0) return '-'
+  const rad = altitudeDegrees * Math.PI / 180
+  const tanAlt = Math.tan(rad)
+  if (tanAlt <= 0) return '-'
+  const meters = 1 / tanAlt
+  return `${meters.toFixed(2)} m`
+}
+
 function getSunObserverData(date: Date, lat: number, lon: number): SunObserverData {
   const observer = new Astronomy.Observer(lat, lon, 0)
   const sunEquator = Astronomy.Equator(Astronomy.Body.Sun, date, observer, true, true)
@@ -81,6 +100,24 @@ export function getSunMarkerData(date: Date) {
     latText: formatCoord(lat),
     lonText: formatCoord(lon),
     ...observerData,
+  }
+}
+
+export function getLocalAstronomyData(date: Date, lat: number, lon: number): LocalAstronomyData {
+  const observer = new Astronomy.Observer(lat, lon, 0)
+  const sunEquator = Astronomy.Equator(Astronomy.Body.Sun, date, observer, true, true)
+  const horizon = Astronomy.Horizon(date, observer, sunEquator.ra, sunEquator.dec, 'normal')
+  const sunrise = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, SUN_RISE_DIRECTION, date, SUN_SEARCH_WINDOW_DAYS)
+  const sunset = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, SUN_SET_DIRECTION, date, SUN_SEARCH_WINDOW_DAYS)
+
+  return {
+    latText: formatCoord(lat),
+    lonText: formatCoord(lon),
+    altitude: formatAngle(horizon.altitude),
+    azimuth: formatAngle(horizon.azimuth),
+    sunrise: sunrise ? `${formatUtcTime(sunrise.date)} UTC` : '-',
+    sunset: sunset ? `${formatUtcTime(sunset.date)} UTC` : '-',
+    shadowLength: formatShadowLengthMeters(horizon.altitude),
   }
 }
 

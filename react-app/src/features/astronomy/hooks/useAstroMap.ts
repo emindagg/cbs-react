@@ -21,6 +21,7 @@ const SUN_MARKER_HOVER_SCALE = 'scale(1.1)'
 const SUN_MARKER_NORMAL_SCALE = 'scale(1)'
 const SUN_POPUP_OFFSET = 24
 const SUN_MARKER_TITLE = 'Güneş Bilgisi'
+const INTERACTIVE_MARKER_CLASSNAME = 'astro-interactive-marker'
 
 export function useAstroMap() {
   const map = useMapStore(state => state.mapInstance)
@@ -40,6 +41,7 @@ export function useAstroMap() {
     map,
     isEnabled,
     isEclipseEnabled: features.eclipses,
+    currentDate,
   })
 
   useEffect(() => {
@@ -69,6 +71,7 @@ export function useAstroMap() {
 
     if (!sunMarkerRef.current) {
       const element = document.createElement('div')
+      element.className = INTERACTIVE_MARKER_CLASSNAME
       element.style.width = SUN_MARKER_SIZE
       element.style.height = SUN_MARKER_SIZE
       element.style.pointerEvents = 'auto'
@@ -174,6 +177,7 @@ export function useAstroMap() {
 
     if (!moonMarkerRef.current) {
       const element = document.createElement('div')
+      element.className = INTERACTIVE_MARKER_CLASSNAME
       element.style.width = MOON_MARKER_SIZE
       element.style.height = MOON_MARKER_SIZE
       element.style.pointerEvents = 'auto'
