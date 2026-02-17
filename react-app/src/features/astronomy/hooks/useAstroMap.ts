@@ -11,6 +11,16 @@ export function useAstroMap() {
   const { isEnabled, currentDate, features, isPlaying, speed, setCurrentDate } = useAstroStore()
   const animationFrameRef = useRef<number | null>(null)
   const lastUpdateRef = useRef<number>(0)
+  const currentDateRef = useRef<Date>(currentDate)
+  const speedRef = useRef<number>(speed)
+
+  useEffect(() => {
+    currentDateRef.current = currentDate
+  }, [currentDate])
+
+  useEffect(() => {
+    speedRef.current = speed
+  }, [speed])
 
   // Initialize Sources and Layers
   useEffect(() => {
@@ -62,6 +72,8 @@ export function useAstroMap() {
   useEffect(() => {
     if (!isPlaying || !isEnabled) {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
+      lastUpdateRef.current = 0
       return
     }
 
@@ -75,17 +87,19 @@ export function useAstroMap() {
       const delta = now - lastUpdateRef.current
       lastUpdateRef.current = now
 
-      const timeStep = delta * speed * 60
-
-      setCurrentDate(new Date(currentDate.getTime() + timeStep))
+      const timeStep = delta * speedRef.current * 60
+      const nextDate = new Date(currentDateRef.current.getTime() + timeStep)
+      currentDateRef.current = nextDate
+      setCurrentDate(nextDate)
       animationFrameRef.current = requestAnimationFrame(animate)
     }
 
     animationFrameRef.current = requestAnimationFrame(animate)
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
     }
-  }, [isPlaying, isEnabled, speed, currentDate, setCurrentDate])
+  }, [isPlaying, isEnabled, setCurrentDate])
 
   return null
 }

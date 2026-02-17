@@ -1,5 +1,4 @@
 import * as Astronomy from 'astronomy-engine'
-import SunCalc from 'suncalc'
 
 export interface TerminatorResult {
   line: GeoJSON.Feature<GeoJSON.LineString>;
@@ -97,6 +96,8 @@ export function computeTerminator(date: Date): TerminatorResult {
 export function getMoonPosition(date: Date) {
   const observer = new Astronomy.Observer(0, 0, 0)
   const equat = Astronomy.Equator(Astronomy.Body.Moon, date, observer, true, true)
+  const phaseDegrees = Astronomy.MoonPhase(date)
+  const illumination = Astronomy.Illumination(Astronomy.Body.Moon, date)
 
   // Convert Right Ascension to Longitude: lon = RA - GST
   // This is still a simplified placeholder conversion, 
@@ -104,7 +105,11 @@ export function getMoonPosition(date: Date) {
   return {
     lat: equat.dec,
     lon: equat.ra * 15 - 180,
-    illumination: SunCalc.getMoonIllumination(date),
+    illumination: {
+      // 0..1 cycle where 0/1=new, 0.25=first quarter, 0.5=full, 0.75=last quarter
+      phase: phaseDegrees / 360,
+      fraction: illumination.phase_fraction,
+    },
   }
 }
 

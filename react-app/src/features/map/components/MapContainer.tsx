@@ -70,6 +70,7 @@ export default function MapContainer() {
   return (
     <Map
       mapLib={maplibregl}
+      attributionControl={false}
       initialViewState={{
         longitude: 35.2433,
         latitude: 38.9637,

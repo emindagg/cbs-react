@@ -1,7 +1,6 @@
 ﻿import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
 
-import { formatDateForInput } from '../../../utils/dateUtils'
 import { useAstroStore } from '../stores/useAstroStore'
 
 const MIN_ASTRO_SPEED = 0.1
@@ -11,22 +10,54 @@ function pad2(n: number): string {
   return String(n).padStart(2, '0')
 }
 
-function formatUtcForInput(date: Date): string {
-  return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())}T${pad2(date.getUTCHours())}:${pad2(date.getUTCMinutes())}`
+function formatBrowserUtcOffset(offsetMinutes: number): string {
+  const totalMinutes = -offsetMinutes
+  const sign = totalMinutes >= 0 ? '+' : '-'
+  const absMinutes = Math.abs(totalMinutes)
+  const hours = Math.floor(absMinutes / 60)
+  const minutes = absMinutes % 60
+
+  if (minutes === 0) {
+    return `UTC${sign}${hours}`
+  }
+
+  return `UTC${sign}${hours}:${pad2(minutes)}`
+}
+
+function parseDateTimeLocal(value: string): {
+  year: number
+  month: number
+  day: number
+  hour: number
+  minute: number
+} | null {
+  const [datePart, timePart] = value.split('T')
+  if (!datePart || !timePart) return null
+
+  const [year, month, day] = datePart.split('-').map(Number)
+  const [hour, minute] = timePart.split(':').map(Number)
+  if ([year, month, day, hour, minute].some((v) => Number.isNaN(v))) return null
+
+  return { year, month, day, hour, minute }
+}
+
+function formatInputByMode(date: Date, mode: 'local' | 'utc'): string {
+  if (mode === 'utc') {
+    return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())}T${pad2(date.getUTCHours())}:${pad2(date.getUTCMinutes())}`
+  }
+
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`
 }
 
 function parseInputByMode(value: string, mode: 'local' | 'utc'): Date {
-  if (mode === 'local') {
-    return new Date(value)
+  const parts = parseDateTimeLocal(value)
+  if (!parts) return new Date('invalid')
+
+  if (mode === 'utc') {
+    return new Date(Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute))
   }
 
-  // datetime-local gives "YYYY-MM-DDTHH:mm"; interpret this as UTC wall clock
-  const [datePart, timePart] = value.split('T')
-  if (!datePart || !timePart) return new Date('invalid')
-  const [year, month, day] = datePart.split('-').map(Number)
-  const [hour, minute] = timePart.split(':').map(Number)
-
-  return new Date(Date.UTC(year, month - 1, day, hour, minute))
+  return new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute)
 }
 
 export function AstroPanel() {
@@ -46,8 +77,12 @@ export function AstroPanel() {
 
   const nowToleranceMs = 1000 * 60
   const [nowTimestamp, setNowTimestamp] = useState(0)
+  const browserUtcLabel = useMemo(
+    () => formatBrowserUtcOffset(new Date(nowTimestamp || currentDate.getTime()).getTimezoneOffset()),
+    [nowTimestamp, currentDate],
+  )
   const inputValue = useMemo(
-    () => (timeMode === 'utc' ? formatUtcForInput(currentDate) : formatDateForInput(currentDate)),
+    () => formatInputByMode(currentDate, timeMode),
     [currentDate, timeMode],
   )
 
@@ -87,48 +122,55 @@ export function AstroPanel() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 6 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
-        className="fixed top-20 right-4 z-10002 w-[296px] font-['Outfit']"
+        className="fixed top-20 right-4 z-10002 w-[204px] font-['Outfit']"
       >
-        <div className="overflow-hidden rounded-2xl border border-stone-300 bg-[#fcfcfd] shadow-[0_12px_28px_rgba(15,23,42,0.14)]">
-          <div className="flex items-center justify-between border-b border-stone-200 bg-white px-4 py-3">
+        <div className="overflow-hidden rounded-[24px] border border-white/70 bg-linear-to-br from-[#f8fafc] via-[#f5f7fb] to-[#edf2f9] shadow-[0_18px_34px_rgba(15,23,42,0.18)]">
+          <div className="flex items-center justify-between border-b border-slate-200/70 bg-white/65 px-3 py-2.5 backdrop-blur-[1px]">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-sky-200 bg-sky-50">
-                <i className="fa-solid fa-satellite-dish text-[12px] text-sky-700"></i>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">
+                <i className="fa-solid fa-satellite-dish text-[10px] text-slate-700"></i>
               </div>
               <div>
-                <h3 className="text-[12px] font-bold tracking-tight text-slate-900">Astronomi Veri Paneli</h3>
+                <h3 className="text-[10px] font-bold tracking-tight text-slate-900">Astronomi Modülü</h3>
                 {isPlaying && (
                   <div className="mt-0.5 flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sky-500"></span>
-                    <span className="text-[8px] font-bold uppercase text-sky-700">Canlı İzleme</span>
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
+                    <span className="text-[8px] font-bold uppercase text-emerald-700">Canlı İzleme</span>
                   </div>
                 )}
               </div>
             </div>
-            <div className="flex rounded-lg border border-stone-300 bg-stone-100 p-0.5">
-              {['local', 'utc'].map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setTimeMode(mode as 'local' | 'utc')}
-                  className={`rounded-md px-2.5 py-1 text-[9px] font-bold transition-colors ${timeMode === mode
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  {mode.toUpperCase()}
-                </button>
-              ))}
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex rounded-xl border border-slate-300/90 bg-slate-100 p-0.5 shadow-[inset_0_1px_1px_rgba(15,23,42,0.08)]">
+                {['local', 'utc'].map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setTimeMode(mode as 'local' | 'utc')}
+                    className={`rounded-lg px-1.5 py-0.5 text-[8px] font-bold transition-colors ${timeMode === mode
+                      ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.14)]'
+                      : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    {mode.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+              {timeMode === 'local' && (
+                <span className="rounded-md border border-slate-300/90 bg-white/75 px-1.5 py-0.5 text-[7px] font-bold tracking-wide text-slate-600">
+                  {browserUtcLabel}
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="space-y-4 p-4">
-            <div className="space-y-2">
+          <div className="space-y-3 p-3">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600">Zaman</label>
+                <label className="text-[8px] font-bold uppercase tracking-[0.16em] text-slate-500">Zaman</label>
                 <button
                   onClick={() => setCurrentDate(new Date())}
-                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold transition-colors ${isNowSelected
-                    ? 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100'
+                  className={`flex items-center gap-1 rounded-lg border px-1.5 py-0.5 text-[8px] font-bold transition-colors ${isNowSelected
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                     : 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
                   }`}
                 >
@@ -140,14 +182,14 @@ export function AstroPanel() {
                 type="datetime-local"
                 value={inputValue}
                 onChange={handleDateChange}
-                className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-[11px] font-['JetBrains_Mono'] text-slate-800 outline-hidden transition-colors focus:border-sky-500"
+                className="w-full rounded-xl border border-slate-300/85 bg-white px-2.5 py-2 text-[10px] font-['JetBrains_Mono'] text-slate-800 shadow-[inset_0_1px_1px_rgba(15,23,42,0.05)] outline-hidden transition-colors focus:border-slate-500"
               />
             </div>
 
-            <div className="space-y-3 border-t border-stone-200 pt-3">
+            <div className="space-y-2.5 border-t border-slate-200/80 pt-3">
               <div className="flex items-center justify-between">
-                <label className="text-[9px] font-bold uppercase tracking-widest text-slate-600">Hız</label>
-                <span className="rounded-md border border-stone-300 bg-stone-50 px-2 py-1 text-[10px] font-bold font-['JetBrains_Mono'] text-slate-900">
+                <label className="text-[8px] font-bold uppercase tracking-[0.16em] text-slate-500">Hız</label>
+                <span className="rounded-lg border border-slate-300/90 bg-white px-1.5 py-0.5 text-[9px] font-bold font-['JetBrains_Mono'] text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.08)]">
                   {speed.toFixed(1)}x
                 </span>
               </div>
@@ -159,22 +201,24 @@ export function AstroPanel() {
                 step="0.1"
                 value={speed}
                 onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-stone-200 accent-slate-800"
+                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-slate-700"
               />
 
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className={`flex h-10 w-full items-center justify-center gap-2 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-colors ${isPlaying
-                  ? 'border-stone-300 bg-white text-slate-800 hover:bg-stone-50'
-                  : 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800'
-                }`}
-              >
-                <i className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'} text-[9px]`}></i>
-                {isPlaying ? 'Durdur' : 'Başlat'}
-              </button>
+              <div>
+                <button
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  className={`flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border text-[8px] font-bold uppercase tracking-wider transition-colors ${isPlaying
+                    ? 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50'
+                    : 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <i className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'} text-[8px]`}></i>
+                  {isPlaying ? 'Durdur' : 'Başlat'}
+                </button>
+              </div>
             </div>
 
-            <div className="border-t border-stone-200 pt-3">
+            <div className="border-t border-slate-200/80 pt-3">
               <div className="grid grid-cols-1 gap-1.5">
                 <MatrixToggle
                   icon="fa-sun"
@@ -232,22 +276,22 @@ function MatrixToggle({ icon, label, checked, onChange, activeColor }: MatrixTog
   return (
     <label
       className={`group flex cursor-pointer items-center justify-between rounded-xl border p-2 transition-colors ${checked
-        ? 'border-sky-200 bg-sky-50/70'
-        : 'border-stone-300 bg-white hover:border-stone-400 hover:bg-stone-50'
+        ? 'border-slate-300 bg-white/85 shadow-[0_2px_10px_rgba(15,23,42,0.08)]'
+        : 'border-slate-300/90 bg-white/70 hover:border-slate-400 hover:bg-white'
       }`}
     >
       <div className="flex items-center gap-3">
-        <div className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${checked ? activeColor : 'border border-stone-300 bg-stone-100 text-stone-500'}`}>
-          <i className={`fa-solid ${icon} text-[12px]`}></i>
+        <div className={`flex h-6 w-6 items-center justify-center rounded-lg transition-colors ${checked ? activeColor : 'border border-slate-300 bg-slate-100 text-slate-500'}`}>
+          <i className={`fa-solid ${icon} text-[10px]`}></i>
         </div>
-        <span className={`text-[10px] font-bold leading-tight transition-colors ${checked ? 'text-slate-900' : 'text-slate-600'}`}>
+        <span className={`text-[9px] font-bold leading-tight transition-colors ${checked ? 'text-slate-800' : 'text-slate-600'}`}>
           {label}
         </span>
       </div>
 
       <div className="relative">
         <input type="checkbox" checked={checked} onChange={onChange} className="peer sr-only" />
-        <div className="h-4 w-9 rounded-full bg-stone-300 transition-colors peer-checked:bg-slate-900 after:absolute after:left-[2px] after:top-[2px] after:h-3 after:w-3 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5"></div>
+        <div className="h-4 w-8 rounded-full bg-slate-300 transition-colors peer-checked:bg-emerald-500 after:absolute after:left-[2px] after:top-[2px] after:h-3 after:w-3 after:rounded-full after:bg-white after:shadow-[0_1px_2px_rgba(15,23,42,0.25)] after:transition-transform peer-checked:after:translate-x-4"></div>
       </div>
     </label>
   )
