@@ -83,7 +83,29 @@ export function useBubbleTooltip() {
       const features = map.querySourceFeatures(BUBBLE_SOURCE_ID)
       if (features.length === 0) return
 
-      const sizeVals = features
+      // Aynı feature farklı tile'lardan birden fazla kez gelebilir.
+      // Koordinat bazlı tekilleştirme ile gerçek feature sayısını koru.
+      const uniqueByCoord = new Map<string, (typeof features)[number]>()
+      for (const feature of features) {
+        const geom = feature.geometry
+        if (geom?.type === 'Point' && Array.isArray(geom.coordinates)) {
+          const [lng, lat] = geom.coordinates
+          const key = `${Number(lng).toFixed(6)}_${Number(lat).toFixed(6)}`
+          if (!uniqueByCoord.has(key)) {
+            uniqueByCoord.set(key, feature)
+          }
+          continue
+        }
+
+        const fallbackKey = `${feature.properties?.displayName ?? ''}_${feature.properties?.dataValue ?? ''}`
+        if (!uniqueByCoord.has(fallbackKey)) {
+          uniqueByCoord.set(fallbackKey, feature)
+        }
+      }
+
+      const uniqueFeatures = Array.from(uniqueByCoord.values())
+
+      const sizeVals = uniqueFeatures
         .map((f) => f.properties?.dataValue as number)
         .filter((v) => typeof v === 'number' && !isNaN(v))
       const sizeAsc = [...sizeVals].sort((a, b) => a - b)
@@ -91,7 +113,7 @@ export function useBubbleTooltip() {
       sizeValuesRef.current = { sorted: sizeAsc, desc: sizeDesc }
 
       if (isBivariate) {
-        const colorVals = features
+        const colorVals = uniqueFeatures
           .map((f) => f.properties?.colorValue as number)
           .filter((v) => typeof v === 'number' && !isNaN(v))
         const colorAsc = [...colorVals].sort((a, b) => a - b)

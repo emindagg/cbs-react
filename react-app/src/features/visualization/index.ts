@@ -2,7 +2,7 @@
 export { BubbleRenderer, BubbleSettings, useBubbleTooltip } from './bubble'
 
 // Choropleth visualization
-export { ChoroplethRenderer } from './choropleth'
+export { ChoroplethRenderer, useChoroplethTooltip } from './choropleth'
 
 // Point / Dot-density visualization
 export {

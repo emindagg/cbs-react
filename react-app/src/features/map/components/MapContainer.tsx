@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl'
 import { useMemo } from 'react'
 import Map, { ScaleControl, Source, Layer } from 'react-map-gl/maplibre'
 
-import { useBubbleTooltip } from '@/shared/visualization'
+import { useBubbleTooltip, useChoroplethTooltip } from '@/shared/visualization'
 import { useMapStore } from '@/stores/useMapStore'
 
 import GISToolsControl from '../controls/GISToolsControl'
@@ -17,6 +17,7 @@ export default function MapContainer() {
 
   // Bubble haritası tooltip hook'u
   useBubbleTooltip()
+  useChoroplethTooltip()
 
   // HGM Atlas API Key
   const apiKey = 'ESqJcw5RWSD5Unw0CVYL2z8oP8gOqIUC'

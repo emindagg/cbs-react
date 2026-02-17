@@ -9,4 +9,5 @@ export {
   DotDensitySettings,
   BubbleSettings,
   useBubbleTooltip,
+  useChoroplethTooltip,
 } from '@/features/visualization'
