@@ -1,123 +1,36 @@
 /**
  * CSV Parser Module
- * Handles CSV file parsing with RFC 4180 compliance
- * Enhanced: auto-delimiter detection, robust number parsing
+ * Uses PapaParse for RFC 4180 compliant parsing with auto-delimiter detection
+ * Enhanced: robust Turkish/European number parsing via parseSmartNumber
  */
+
+import Papa from 'papaparse'
 
 import type { RawDataRow } from './types'
 
 /**
  * Parse CSV - RFC 4180 compliant (supports quoted fields)
- * Auto-detects delimiter (comma, semicolon, tab)
+ * Auto-detects delimiter (comma, semicolon, tab) via PapaParse
  */
 export function parseCSV(text: string): RawDataRow[] {
-  const lines = text.trim().split(/\r?\n/)
+  const result = Papa.parse<Record<string, string>>(text.trim(), {
+    header: true,
+    skipEmptyLines: true,
+    dynamicTyping: false, // parseSmartNumber handles number parsing
+  })
 
-  if (lines.length < 2) {
+  if (result.data.length === 0) {
     throw new Error('CSV dosyası en az 2 satır içermelidir')
   }
 
-  // Auto-detect delimiter from first line
-  const delimiter = detectDelimiter(lines[0])
-
-  // Get headers from first line
-  const headers = parseCSVLine(lines[0], delimiter)
-  const data: RawDataRow[] = []
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim()
-
-    // Skip empty lines
-    if (!line) continue
-
-    const values = parseCSVLine(line, delimiter)
-
-    // If column count doesn't match
-    if (values.length !== headers.length) {
-      const hasData = values.some((v) => v !== '')
-      if (!hasData) continue // Empty line, skip silently
-
-      // Has data but wrong column count - warn and skip
-      console.warn(
-        `Row ${i + 1}: Column count mismatch (Expected: ${headers.length}, Found: ${values.length})`,
-      )
-      continue
+  return result.data.map(row => {
+    const out: RawDataRow = {}
+    for (const [key, value] of Object.entries(row)) {
+      const parsed = parseSmartNumber(String(value ?? ''))
+      out[key] = parsed !== null ? parsed : value
     }
-
-    const row: RawDataRow = {}
-    headers.forEach((header, index) => {
-      const value = values[index]
-      const parsed = parseSmartNumber(value)
-      row[header] = parsed !== null ? parsed : value
-    })
-
-    data.push(row)
-  }
-
-  return data
-}
-
-/**
- * Auto-detect CSV delimiter by counting occurrences in header line.
- * Supports: comma (,), semicolon (;), tab (\t)
- */
-function detectDelimiter(headerLine: string): string {
-  const candidates = [
-    { char: ',', count: 0 },
-    { char: ';', count: 0 },
-    { char: '\t', count: 0 },
-  ]
-
-  // Count occurrences outside quotes
-  let inQuotes = false
-  for (const ch of headerLine) {
-    if (ch === '"') {
-      inQuotes = !inQuotes
-      continue
-    }
-    if (!inQuotes) {
-      for (const c of candidates) {
-        if (ch === c.char) c.count++
-      }
-    }
-  }
-
-  // Pick the delimiter with highest count (minimum 1)
-  candidates.sort((a, b) => b.count - a.count)
-  return candidates[0].count > 0 ? candidates[0].char : ','
-}
-
-/**
- * Parse CSV line (supports quoted fields)
- */
-function parseCSVLine(line: string, delimiter: string): string[] {
-  const result: string[] = []
-  let current = ''
-  let inQuotes = false
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i]
-
-    if (char === '"') {
-      // Handle escaped quotes ""
-      if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
-        current += '"'
-        i++ // skip next quote
-      } else {
-        inQuotes = !inQuotes
-      }
-    } else if (char === delimiter && !inQuotes) {
-      result.push(current.trim())
-      current = ''
-    } else {
-      current += char
-    }
-  }
-
-  // Add last field
-  result.push(current.trim())
-
-  return result
+    return out
+  })
 }
 
 /**

@@ -32,9 +32,13 @@
     "d3-color": "^3.1.0",
     "d3-interpolate": "^3.0.1",
     "d3-scale": "^4.0.2",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.31.0",
+    "fuse.js": "^7.1.0",
     "lucide-react": "^0.563.0",
     "maplibre-gl": "^5.17.0",
+    "papaparse": "^5.5.3",
+    "rc-slider": "^11.1.9",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
@@ -44,6 +48,7 @@
     "suncalc": "^1.9.0",
     "tailwind-merge": "^3.4.0",
     "togeojson": "^0.16.0",
+    "usehooks-ts": "^3.1.1",
     "uuid": "^13.0.0",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.11"
@@ -52,9 +57,12 @@
     "@eslint/js": "^9.39.1",
     "@stylistic/eslint-plugin": "^5.7.1",
     "@tailwindcss/postcss": "^4.1.18",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/chroma-js": "^3.1.2",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^25.2.0",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@types/suncalc": "^1.9.2",
@@ -65,10 +73,12 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.0",
     "globals": "^17.3.0",
+    "jsdom": "^27.0.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^3.2.4"
   }
 }

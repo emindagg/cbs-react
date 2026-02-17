@@ -124,13 +124,17 @@ export function calculateSymbolSize(
   maxValue: number,
   minSize: number,
   maxSize: number,
-  scaling: 'sqrt' | 'log' = 'sqrt',
+  scaling: 'linear' | 'sqrt' | 'log' = 'sqrt',
 ): number {
   if (maxValue === minValue) return (minSize + maxSize) / 2
 
   let normalizedValue: number
 
   switch (scaling) {
+    case 'linear':
+      normalizedValue = (value - minValue) / (maxValue - minValue)
+      break
+
     case 'sqrt':
       normalizedValue = Math.sqrt((value - minValue) / (maxValue - minValue))
       break

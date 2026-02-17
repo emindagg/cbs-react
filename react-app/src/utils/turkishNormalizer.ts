@@ -264,50 +264,21 @@ export function getAllPlateCodesWithNames(): Array<{ code: string; name: string 
   return Array.from(PLATE_DISPLAY_MAP.entries()).map(([code, name]) => ({ code, name }))
 }
 
-// ── Levenshtein Distance ────────────────────────────────────────
+// ── Fuzzy Matching (fuse.js) ────────────────────────────────────
 
-/**
- * Calculate Levenshtein distance between two strings
- */
-export function levenshteinDistance(a: string, b: string): number {
-  const m = a.length
-  const n = b.length
+import Fuse from 'fuse.js'
 
-  if (m === 0) return n
-  if (n === 0) return m
-
-  // Use single-row DP for memory efficiency
-  let prev = Array.from({ length: n + 1 }, (_, i) => i)
-  let curr = new Array<number>(n + 1)
-
-  for (let i = 1; i <= m; i++) {
-    curr[0] = i
-    for (let j = 1; j <= n; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1
-      curr[j] = Math.min(
-        curr[j - 1] + 1,      // insertion
-        prev[j] + 1,          // deletion
-        prev[j - 1] + cost,   // substitution
-      )
-    }
-    ;[prev, curr] = [curr, prev]
-  }
-
-  return prev[n]
-}
-
-/**
- * Dynamic threshold based on text length
- */
-function getMaxDistance(textLength: number): number {
-  if (textLength <= 3) return 1
-  if (textLength <= 6) return 2
-  return 3
-}
+const FUSE_CLOSE_MATCH_THRESHOLD = 0.15
+const FUSE_MAX_THRESHOLD = 0.4
 
 /**
  * Find the closest match from a set of known keys using fuzzy matching.
  * Returns the best match and its distance, or null if no good match found.
+ *
+ * Distance semantics (compatible with consumers expecting distance <= 2):
+ *  - 0: exact match or contains match
+ *  - 1: very close fuzzy match (score <= 0.15) or reverse contains
+ *  - 2: close fuzzy match (score <= 0.4)
  *
  * Also checks if the input "contains" a known key or vice versa.
  */
@@ -317,32 +288,35 @@ export function findClosestMatch(
 ): { key: string; distance: number } | null {
   if (!input || knownKeys.length === 0) return null
 
-  const maxDist = getMaxDistance(input.length)
-  let bestKey = ''
-  let bestDist = Infinity
+  // Exact match
+  if (knownKeys.includes(input)) return { key: input, distance: 0 }
 
+  // Contains check: "ankarail" contains "ankara", "merkez" in "merkezefendi"
   for (const key of knownKeys) {
-    // Exact match — skip fuzzy
-    if (key === input) return { key, distance: 0 }
-
-    // Contains check: "ankarail" contains "ankara", "merkez" in "merkezefendi"
     if (key.length >= 3 && input.includes(key)) {
       return { key, distance: 0 }
     }
     if (input.length >= 3 && key.includes(input)) {
       return { key, distance: 1 }
     }
-
-    // Levenshtein distance
-    const dist = levenshteinDistance(input, key)
-    if (dist < bestDist) {
-      bestDist = dist
-      bestKey = key
-    }
   }
 
-  if (bestDist <= maxDist) {
-    return { key: bestKey, distance: bestDist }
+  // Fuse.js fuzzy search (works well for strings >= 3 chars)
+  const fuse = new Fuse(knownKeys, {
+    includeScore: true,
+    threshold: FUSE_MAX_THRESHOLD,
+    distance: 100,
+    minMatchCharLength: 1,
+  })
+  const results = fuse.search(input)
+
+  if (results.length > 0 && results[0].score !== undefined) {
+    const score = results[0].score
+    if (score <= FUSE_MAX_THRESHOLD) {
+      // Map fuse score to integer distance compatible with `distance <= 2` checks
+      const distance = score <= FUSE_CLOSE_MATCH_THRESHOLD ? 1 : 2
+      return { key: results[0].item, distance }
+    }
   }
 
   return null

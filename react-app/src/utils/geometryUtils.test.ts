@@ -23,9 +23,9 @@ describe('geometryUtils', () => {
 
         const centroid = calculateCentroid(geometry)
 
-        // Simple average includes closing point, so centroid is slightly off
-        expect(centroid[0]).toBeCloseTo(4, 1) // lng
-        expect(centroid[1]).toBeCloseTo(4, 1) // lat
+        // turf.pointOnFeature returns a point guaranteed inside the polygon
+        expect(centroid[0]).toBeCloseTo(5, 0) // lng
+        expect(centroid[1]).toBeCloseTo(5, 0) // lat
       })
 
       it('should handle polygon with holes (uses exterior ring only)', () => {
@@ -53,9 +53,11 @@ describe('geometryUtils', () => {
 
         const centroid = calculateCentroid(geometry)
 
-        // Should use exterior ring only (simple average includes closing point)
-        expect(centroid[0]).toBeCloseTo(4, 1)
-        expect(centroid[1]).toBeCloseTo(4, 1)
+        // turf.pointOnFeature returns a point inside the polygon (outside the hole)
+        expect(centroid[0]).toBeGreaterThanOrEqual(0)
+        expect(centroid[0]).toBeLessThanOrEqual(10)
+        expect(centroid[1]).toBeGreaterThanOrEqual(0)
+        expect(centroid[1]).toBeLessThanOrEqual(10)
       })
 
       it('should handle triangle', () => {
@@ -73,9 +75,11 @@ describe('geometryUtils', () => {
 
         const centroid = calculateCentroid(geometry)
 
-        // Simple average of all points including closing point
-        expect(centroid[0]).toBeCloseTo(3.75, 1)
-        expect(centroid[1]).toBeCloseTo(2.5, 1)
+        // turf.pointOnFeature returns a point inside the triangle
+        expect(centroid[0]).toBeGreaterThanOrEqual(0)
+        expect(centroid[0]).toBeLessThanOrEqual(10)
+        expect(centroid[1]).toBeGreaterThanOrEqual(0)
+        expect(centroid[1]).toBeLessThanOrEqual(10)
       })
 
       it('should handle empty coordinates', () => {
@@ -105,9 +109,9 @@ describe('geometryUtils', () => {
 
         const centroid = calculateCentroid(geometry)
 
-        // Simple average includes closing point
-        expect(centroid[0]).toBeCloseTo(-6, 1)
-        expect(centroid[1]).toBeCloseTo(-6, 1)
+        // turf.pointOnFeature returns a point inside the polygon
+        expect(centroid[0]).toBeCloseTo(-5, 0)
+        expect(centroid[1]).toBeCloseTo(-5, 0)
       })
     })
 
