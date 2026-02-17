@@ -7,6 +7,8 @@ import type maplibregl from 'maplibre-gl'
 
 import { getAxialTiltLines } from '../utils/astroUtils'
 
+const ECLIPSE_LABEL_OFFSET_Y = 1.4
+
 export function setupAstroLayers(map: maplibregl.Map): void {
   if (!map.getStyle()) {
     return
@@ -141,6 +143,50 @@ export function setupAstroLayers(map: maplibregl.Map): void {
       },
     })
   }
+
+  // Eclipse Analysis Source
+  if (!map.getSource('astro-eclipse-events')) {
+    map.addSource('astro-eclipse-events', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] },
+    })
+
+    map.addLayer({
+      id: 'astro-eclipse-marker',
+      type: 'circle',
+      source: 'astro-eclipse-events',
+      paint: {
+        'circle-radius': 7,
+        'circle-color': [
+          'match',
+          ['get', 'eventType'],
+          'solar-global', '#f97316',
+          'solar-local', '#ef4444',
+          'lunar', '#6366f1',
+          '#64748b',
+        ],
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff',
+      },
+    })
+
+    map.addLayer({
+      id: 'astro-eclipse-label',
+      type: 'symbol',
+      source: 'astro-eclipse-events',
+      layout: {
+        'text-field': ['get', 'label'],
+        'text-size': 10,
+        'text-offset': [0, ECLIPSE_LABEL_OFFSET_Y],
+        'text-anchor': 'top',
+      },
+      paint: {
+        'text-color': '#334155',
+        'text-halo-color': '#ffffff',
+        'text-halo-width': 1.2,
+      },
+    })
+  }
 }
 
 export function cleanupAstroLayers(map: maplibregl.Map): void {
@@ -152,8 +198,10 @@ export function cleanupAstroLayers(map: maplibregl.Map): void {
     'astro-moon-label',
     'astro-axial-line',
     'astro-axial-label',
+    'astro-eclipse-marker',
+    'astro-eclipse-label',
   ]
-  const sources = ['astro-terminator', 'astro-sun-position', 'astro-moon-position', 'astro-axial-tilt']
+  const sources = ['astro-terminator', 'astro-sun-position', 'astro-moon-position', 'astro-axial-tilt', 'astro-eclipse-events']
 
   layers.forEach(id => {
     if (map.getLayer(id)) map.removeLayer(id)

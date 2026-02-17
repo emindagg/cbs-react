@@ -6,8 +6,9 @@
 import type maplibregl from 'maplibre-gl'
 
 import { computeTerminator, getSunDeclination, getSunHourAngle, getMoonPosition } from '../utils/astroUtils'
+import { getEclipseAnalysisCollection } from '../utils/eclipseUtils'
 
-export function updateAstroData(map: maplibregl.Map, currentDate: Date): void {
+export function updateAstroData(map: maplibregl.Map, currentDate: Date, showEclipseAnalysis: boolean): void {
   // Update Terminator
   const terminatorSource = map.getSource('astro-terminator') as maplibregl.GeoJSONSource
   if (terminatorSource) {
@@ -60,5 +61,13 @@ export function updateAstroData(map: maplibregl.Map, currentDate: Date): void {
         },
       }],
     })
+  }
+
+  // Update Eclipse Analysis
+  const eclipseSource = map.getSource('astro-eclipse-events') as maplibregl.GeoJSONSource
+  if (eclipseSource) {
+    eclipseSource.setData(showEclipseAnalysis
+      ? getEclipseAnalysisCollection(currentDate)
+      : { type: 'FeatureCollection', features: [] })
   }
 }

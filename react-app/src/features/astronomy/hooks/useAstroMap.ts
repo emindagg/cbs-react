@@ -60,13 +60,15 @@ export function useAstroMap() {
     setVisibility('astro-moon-label', features.moonPhase)
     setVisibility('astro-axial-line', features.axialTilt)
     setVisibility('astro-axial-label', features.axialTilt)
+    setVisibility('astro-eclipse-marker', features.eclipses)
+    setVisibility('astro-eclipse-label', features.eclipses)
   }, [map, isEnabled, features])
 
   // Update Data
   useEffect(() => {
     if (!map || !isEnabled) return
-    updateAstroData(map, currentDate)
-  }, [map, isEnabled, currentDate])
+    updateAstroData(map, currentDate, features.eclipses)
+  }, [map, isEnabled, currentDate, features.eclipses])
 
   // Animation Loop
   useEffect(() => {
