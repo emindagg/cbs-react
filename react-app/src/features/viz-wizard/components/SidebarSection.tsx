@@ -3,16 +3,27 @@
  * Multi-step wizard for data visualization
  */
  
+import type { ComponentType } from 'react'
 
-import {
-  VizWizardStep1,
-  VizWizardStep2,
-  VizWizardStep3,
-  WizardProgress,
-} from '@/features/viz-wizard'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
-export default function SidebarVizWizard() {
+import WizardProgress from './Progress'
+import VizWizardStep1 from '../steps/Step1'
+import VizWizardStep2 from '../steps/Step2'
+import VizWizardStep3 from '../steps/Step3'
+
+interface DataMapperModalProps {
+  isOpen: boolean
+  onClose: () => void
+  geoJsonKeys: string[]
+  isLoading?: boolean
+}
+
+interface SidebarVizWizardProps {
+  DataMapperModalComponent: ComponentType<DataMapperModalProps>
+}
+
+export default function SidebarVizWizard({ DataMapperModalComponent }: SidebarVizWizardProps) {
   const { currentStep, setCurrentStep } = useVisualizationStore()
 
   const goToStep = (step: number) => {
@@ -36,7 +47,11 @@ export default function SidebarVizWizard() {
       <div className="mt-3">
         {currentStep === 1 && <VizWizardStep1 onNext={() => goToStep(2)} />}
         {currentStep === 2 && (
-          <VizWizardStep2 onBack={() => goToStep(1)} onNext={() => goToStep(3)} />
+          <VizWizardStep2
+            onBack={() => goToStep(1)}
+            onNext={() => goToStep(3)}
+            DataMapperModalComponent={DataMapperModalComponent}
+          />
         )}
         {currentStep === 3 && <VizWizardStep3 onBack={() => goToStep(2)} />}
       </div>

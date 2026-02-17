@@ -1,9 +1,9 @@
-/* eslint-disable no-restricted-imports -- DataLayer needs clustering store */
+ 
 import type { FeatureCollection, Feature } from 'geojson'
 import { useMemo, useCallback } from 'react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 
-import { useClusteringStore } from '@/features/clustering/stores/useClusteringStore'
+import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useDataStore } from '@/stores/useDataStore'
 import { type StyleProperties, isStyleProperties } from '@/types/style'
 

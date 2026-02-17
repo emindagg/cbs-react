@@ -1,10 +1,10 @@
 import type { GeoJSONSource, MapMouseEvent } from 'maplibre-gl'
 import { useEffect } from 'react'
 
+import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useDataStore } from '@/stores/useDataStore'
 import { useMapStore } from '@/stores/useMapStore'
 
-import { useClusteringStore } from '../stores/useClusteringStore'
 
 export function useClustering() {
   const map = useMapStore((state) => state.mapInstance)

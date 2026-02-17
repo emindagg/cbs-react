@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 
-import { GlobeToggleButton } from '@/features/globe-view'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMapStore } from '@/stores/useMapStore'
 
@@ -11,6 +11,7 @@ import { GeocoderManager, type GeocoderResponse, type GeocoderResult } from '../
 interface SearchContainerProps {
   leftPosition: string;
   isSidebarOpen?: boolean;
+  globeControl?: ReactNode;
 }
 
 const MIN_QUERY_LENGTH = 3
@@ -20,7 +21,7 @@ const DEBOUNCE_DELAY = 500 // ms
  * SearchContainer Component
  * Horizontal search bar with geocoder, layers, globe, storymap buttons
  */
-export function SearchContainer({ leftPosition, isSidebarOpen = false }: SearchContainerProps) {
+export function SearchContainer({ leftPosition, isSidebarOpen = false, globeControl }: SearchContainerProps) {
   const { isOpen, query, setQuery, open, close, inputRef } = useGeocoder()
   const { mapInstance } = useMapStore()
   const isMobile = !useMediaQuery('(min-width: 768px)')
@@ -128,10 +129,14 @@ export function SearchContainer({ leftPosition, isSidebarOpen = false }: SearchC
         <i className="fa-solid fa-map"></i>
       </button>
 
-      <GlobeToggleButton
-        className="absolute top-0"
-        style={{ left: isOpen ? '401px' : '92px' }}
-      />
+      {globeControl && (
+        <div
+          className="absolute top-0"
+          style={{ left: isOpen ? '401px' : '92px' }}
+        >
+          {globeControl}
+        </div>
+      )}
 
       <button
         id="storymap-toggle-btn"

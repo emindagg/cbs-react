@@ -3,9 +3,11 @@ import { useState, useMemo } from 'react'
 /* eslint-disable no-restricted-imports -- AppLayout is a root component that orchestrates all features */
 import Sidebar from '@/components/sidebar/Sidebar'
 import { LAYOUT } from '@/constants/layout'
-import { useAstroMap, AstroPanel } from '@/features/astronomy'
+import { useAstroMap, AstroPanel, useAstroStore } from '@/features/astronomy'
+import { BasemapSwitcher } from '@/features/basemap'
 import { useClustering } from '@/features/clustering'
 import { SearchContainer } from '@/features/geocoder/components/SearchContainer'
+import { GlobeToggleButton } from '@/features/globe-view'
 import { LegendContainer } from '@/features/legend'
 import { MapContainer, MapControlStack } from '@/features/map'
 import { MapTitle } from '@/features/viz-wizard'
@@ -23,6 +25,7 @@ import { useVisualizationStore } from '@/stores/useVisualizationStore'
 export default function AppLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(false)
   const mapInstance = useMapStore((state) => state.mapInstance)
+  const { isEnabled: isAstronomyEnabled, setIsEnabled: setAstronomyEnabled } = useAstroStore()
   const isMdUp = useMediaQuery('(min-width: 768px)')
   const { mapTitle, setMapTitle } = useVisualizationStore()
 
@@ -85,11 +88,18 @@ export default function AppLayout() {
         <MapControlStack
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={toggleSidebar}
+          isAstronomyEnabled={isAstronomyEnabled}
+          onToggleAstronomy={() => setAstronomyEnabled(!isAstronomyEnabled)}
+          basemapControl={<BasemapSwitcher />}
         />
       </div>
 
       {/* Search Container (Horizontal) */}
-      <SearchContainer leftPosition={searchLeft} isSidebarOpen={isSidebarOpen} />
+      <SearchContainer
+        leftPosition={searchLeft}
+        isSidebarOpen={isSidebarOpen}
+        globeControl={<GlobeToggleButton />}
+      />
 
       {/* Astronomy Feature */}
       <AstroPanel />

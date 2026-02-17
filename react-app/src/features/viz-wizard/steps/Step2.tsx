@@ -5,8 +5,8 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
+import type { ComponentType } from 'react'
 
-import { DataMapperModal } from '@/features/data-mapper'
 import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { normalizeTurkishText } from '@/utils/turkishNormalizer'
@@ -16,9 +16,21 @@ import { useMatching } from '../hooks/useMatching'
 interface VizWizardStep2Props {
   onBack: () => void
   onNext: () => void
+  DataMapperModalComponent: ComponentType<DataMapperModalProps>
 }
 
-export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) {
+interface DataMapperModalProps {
+  isOpen: boolean
+  onClose: () => void
+  geoJsonKeys: string[]
+  isLoading?: boolean
+}
+
+export default function VizWizardStep2({
+  onBack,
+  onNext,
+  DataMapperModalComponent,
+}: VizWizardStep2Props) {
   const {
     rawData,
     columnMapping,
@@ -163,7 +175,7 @@ export default function VizWizardStep2({ onBack, onNext }: VizWizardStep2Props) 
       </div>
 
       {/* DataMapper Modal */}
-      <DataMapperModal
+      <DataMapperModalComponent
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         geoJsonKeys={geoJsonKeys}

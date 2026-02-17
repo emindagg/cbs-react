@@ -1,5 +1,4 @@
-import { ColumnMapperModal } from '@/features/data-import'
-
+import ColumnMapperModal from './ColumnMapperModal'
 import { ExportControls } from './ExportControls'
 import { UrlImporter } from './UrlImporter'
 import { FILE_ACCEPT_PATTERN } from '../constants/formats'

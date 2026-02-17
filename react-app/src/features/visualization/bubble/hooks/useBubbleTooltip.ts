@@ -10,6 +10,12 @@ import { useEffect, useRef } from 'react'
 import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
+import {
+  PERCENTILE_HIGH_THRESHOLD,
+  PERCENTILE_LOW_THRESHOLD,
+  PERCENTILE_MEDIUM_THRESHOLD,
+} from '../constants/tooltip'
+
 const BUBBLE_LAYER_ID = 'bubble-circles'
 const BUBBLE_SOURCE_ID = 'bubble-source'
 
@@ -34,17 +40,17 @@ function rankOf(value: number, descValues: number[]): number {
 /** Yüzdelik dilim için kısa açıklama etiketi */
 function percentileLabel(pct: number): string {
   if (pct >= 90) return 'Çok yüksek'
-  if (pct >= 75) return 'Yüksek'
+  if (pct >= PERCENTILE_HIGH_THRESHOLD) return 'Yüksek'
   if (pct >= 50) return 'Ortanın üstü'
-  if (pct >= 25) return 'Ortanın altı'
+  if (pct >= PERCENTILE_LOW_THRESHOLD) return 'Ortanın altı'
   if (pct >= 10) return 'Düşük'
   return 'Çok düşük'
 }
 
 function percentileBadgeColor(pct: number): string {
-  if (pct >= 75) return '#16a34a'
-  if (pct >= 50) return '#ca8a04'
-  if (pct >= 25) return '#ea580c'
+  if (pct >= PERCENTILE_HIGH_THRESHOLD) return '#16a34a'
+  if (pct >= PERCENTILE_MEDIUM_THRESHOLD) return '#ca8a04'
+  if (pct >= PERCENTILE_LOW_THRESHOLD) return '#ea580c'
   return '#dc2626'
 }
 
@@ -136,25 +142,25 @@ export function useBubbleTooltip() {
         let indicatorHtml = ''
         if (indicator === 'size') {
           indicatorHtml =
-            `<span style="display:inline-flex;align-items:center;margin-right:4px" title="Daire boyutunu belirler">` +
-            `<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#555" stroke-width="1.2"/></svg>` +
-            `</span>`
+            '<span style="display:inline-flex;align-items:center;margin-right:4px" title="Daire boyutunu belirler">' +
+            '<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#555" stroke-width="1.2"/></svg>' +
+            '</span>'
         } else if (indicator === 'color') {
           indicatorHtml =
-            `<span style="display:inline-flex;align-items:center;margin-right:4px" title="Daire rengini belirler">` +
-            `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:linear-gradient(135deg,#da7756,#3b82f6)"></span>` +
-            `</span>`
+            '<span style="display:inline-flex;align-items:center;margin-right:4px" title="Daire rengini belirler">' +
+            '<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:linear-gradient(135deg,#da7756,#3b82f6)"></span>' +
+            '</span>'
         }
 
         return (
-          `<div style="margin-top:4px">` +
+          '<div style="margin-top:4px">' +
           `<div style="font-size:11px;color:#888;display:flex;align-items:center">${indicatorHtml}${label}</div>` +
           `<div style="font-size:13px;font-weight:600;color:#1a1a2e">${formatTR(value)}</div>` +
-          `<div style="font-size:10px;color:#777;margin-top:1px">` +
+          '<div style="font-size:10px;color:#777;margin-top:1px">' +
           `${rank}/${total} sırada` +
           `<span style="margin-left:6px;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;color:white;background:${badgeColor}">${pLabel}</span>` +
-          `</div>` +
-          `</div>`
+          '</div>' +
+          '</div>'
         )
       }
 
@@ -163,7 +169,7 @@ export function useBubbleTooltip() {
       if (isBivariate && colorVal !== sizeVal) {
         rows =
           buildRow(dataColumn!, sizeVal, sizeValuesRef.current, 'size') +
-          `<div style="border-top:1px solid #eee;margin-top:5px;padding-top:4px"></div>` +
+          '<div style="border-top:1px solid #eee;margin-top:5px;padding-top:4px"></div>' +
           buildRow(colorColumn!, colorVal, colorValuesRef.current, 'color')
       } else {
         rows = buildRow(dataColumn!, sizeVal, sizeValuesRef.current)
@@ -172,10 +178,10 @@ export function useBubbleTooltip() {
       popup
         .setLngLat(e.lngLat)
         .setHTML(
-          `<div style="font-family:system-ui,sans-serif;padding:3px 0">` +
+          '<div style="font-family:system-ui,sans-serif;padding:3px 0">' +
           `<div style="font-weight:700;font-size:14px;color:#0f172a;border-bottom:1px solid #eee;padding-bottom:4px">${name}</div>` +
           rows +
-          `</div>`,
+          '</div>',
         )
         .addTo(map)
     }

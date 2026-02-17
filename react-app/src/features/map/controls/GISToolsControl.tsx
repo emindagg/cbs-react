@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
-import { useClusteringStore } from '@/features/clustering'
+import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useDataStore } from '@/stores/useDataStore'
 import { useToolStore, type ToolType } from '@/stores/useToolStore'
 

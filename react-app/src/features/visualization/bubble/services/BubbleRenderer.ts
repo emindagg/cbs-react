@@ -10,13 +10,15 @@ import { getContinuousColor, getColorPalette } from '@/constants/colorSchemes'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
 import type { VisualizationSettings } from '@/types/visualization'
 import { calculateBreaks } from '@/utils/classification'
-import { applyNormalization } from '@/utils/normalization'
 import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
 import { calculateCentroid } from '@/utils/geometryUtils'
 import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
+import { applyNormalization } from '@/utils/normalization'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
 import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
+
+import { ZOOM_LEVEL_EIGHT } from '../constants/renderer'
 
 const NO_DATA_COLOR = 'transparent'
 const CONTINUOUS_STOPS = 16
@@ -58,8 +60,8 @@ export class BubbleRenderer {
     // Extract color values (may be from a different column in bivariate mode)
     const colorValues = isBivariate
       ? normalizedData
-          .map((d) => parseFloat(String(d[colorColumn])))
-          .filter((v) => !isNaN(v) && v !== 0)
+        .map((d) => parseFloat(String(d[colorColumn])))
+        .filter((v) => !isNaN(v) && v !== 0)
       : sizeValues
 
     if (sizeValues.length === 0) {
@@ -405,7 +407,7 @@ export class BubbleRenderer {
       'interpolate', ['linear'], ['zoom'],
       4, ['*', ['get', 'radius'], 0.5],
       6, ['*', ['get', 'radius'], 1],
-      8, ['*', ['get', 'radius'], 1.5],
+      ZOOM_LEVEL_EIGHT, ['*', ['get', 'radius'], 1.5],
       10, ['*', ['get', 'radius'], 2],
       12, ['*', ['get', 'radius'], 3],
     ]

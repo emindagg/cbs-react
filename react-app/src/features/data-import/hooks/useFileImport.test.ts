@@ -1,12 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
+import type { ChangeEvent } from 'react'
 import toast from 'react-hot-toast'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { useDataStore } from '@/stores/useDataStore'
 
 import { useFileImport } from './useFileImport'
 import { parseFile } from '../services/fileParser'
 import { transformToGeoItems } from '../utils/dataMapper'
+
+type FileImportChangeEvent = ChangeEvent<HTMLInputElement>
 
 // Mock dependencies
 vi.mock('react-hot-toast')
@@ -15,312 +18,312 @@ vi.mock('../services/fileParser')
 vi.mock('../utils/dataMapper')
 
 describe('useFileImport', () => {
-    const mockAddItems = vi.fn()
-    const mockParseFile = vi.mocked(parseFile)
-    const mockToast = vi.mocked(toast)
-    const mockTransformToGeoItems = vi.mocked(transformToGeoItems)
+  const mockAddItems = vi.fn()
+  const mockParseFile = vi.mocked(parseFile)
+  const mockToast = vi.mocked(toast)
+  const mockTransformToGeoItems = vi.mocked(transformToGeoItems)
 
-    beforeEach(() => {
-        vi.clearAllMocks()
-        vi.mocked(useDataStore).mockReturnValue({
-            addItems: mockAddItems,
-            items: [],
-            setItems: vi.fn(),
-            clearItems: vi.fn(),
-        } as any)
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(useDataStore).mockReturnValue({
+      addItems: mockAddItems,
+      items: [],
+      setItems: vi.fn(),
+      clearItems: vi.fn(),
+    } as unknown as ReturnType<typeof useDataStore>)
 
-        // Mock transformToGeoItems to return mock items
-        mockTransformToGeoItems.mockReturnValue([
-            {
-                id: '1',
-                type: 'Feature',
-                geometry: { type: 'Point', coordinates: [28.0, 41.0] },
-                properties: { name: 'Istanbul' },
-                date: new Date(),
-                visible: true,
-            },
-            {
-                id: '2',
-                type: 'Feature',
-                geometry: { type: 'Point', coordinates: [32.8, 39.9] },
-                properties: { name: 'Ankara' },
-                date: new Date(),
-                visible: true,
-            },
-        ] as any)
+    // Mock transformToGeoItems to return mock items
+    mockTransformToGeoItems.mockReturnValue([
+      {
+        id: '1',
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [28.0, 41.0] },
+        properties: { name: 'Istanbul' },
+        date: new Date(),
+        visible: true,
+      },
+      {
+        id: '2',
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [32.8, 39.9] },
+        properties: { name: 'Ankara' },
+        date: new Date(),
+        visible: true,
+      },
+    ] as unknown as ReturnType<typeof transformToGeoItems>)
+  })
+
+  describe('initial state', () => {
+    it('should initialize with correct default values', () => {
+      const { result } = renderHook(() => useFileImport())
+
+      expect(result.current.isLoading).toBe(false)
+      expect(result.current.showMapper).toBe(false)
+      expect(result.current.mapperData).toBeNull()
+      expect(result.current.fileInputRef.current).toBeNull()
+    })
+  })
+
+  describe('handleFileImport', () => {
+    it('should handle GeoJSON file without mapping', async () => {
+      const { result } = renderHook(() => useFileImport())
+
+      const mockItems = [
+        {
+          id: '1',
+          name: 'Item 1',
+          type: 'point' as const,
+          geometry: { type: 'Point' as const, coordinates: [28.0, 41.0] },
+          properties: { name: 'Item 1' },
+          date: new Date().toISOString(),
+          visible: true,
+        },
+        {
+          id: '2',
+          name: 'Item 2',
+          type: 'point' as const,
+          geometry: { type: 'Point' as const, coordinates: [28.5, 41.5] },
+          properties: { name: 'Item 2' },
+          date: new Date().toISOString(),
+          visible: true,
+        },
+      ]
+
+      mockParseFile.mockResolvedValue({
+        needsMapping: false,
+        items: mockItems,
+      })
+
+      const mockFile = new File(['{}'], 'test.geojson', { type: 'application/json' })
+      const mockEvent = {
+        target: {
+          files: [mockFile],
+        },
+      } as unknown as FileImportChangeEvent
+
+      await act(async () => {
+        await result.current.handleFileImport(mockEvent)
+      })
+
+      await waitFor(() => {
+        expect(mockAddItems).toHaveBeenCalledWith(mockItems)
+        expect(mockToast.success).toHaveBeenCalledWith('2 adet veri başarıyla yüklendi.')
+        expect(result.current.isLoading).toBe(false)
+      })
     })
 
-    describe('initial state', () => {
-        it('should initialize with correct default values', () => {
-            const { result } = renderHook(() => useFileImport())
+    it('should show mapper for Excel files', async () => {
+      const { result } = renderHook(() => useFileImport())
 
-            expect(result.current.isLoading).toBe(false)
-            expect(result.current.showMapper).toBe(false)
-            expect(result.current.mapperData).toBeNull()
-            expect(result.current.fileInputRef.current).toBeNull()
+      const mockHeaders = ['City', 'Population', 'Lat', 'Lon']
+      const mockData = [
+        { City: 'Istanbul', Population: 15000000, Lat: 41.0, Lon: 28.0 },
+        { City: 'Ankara', Population: 5000000, Lat: 39.9, Lon: 32.8 },
+      ]
+
+      mockParseFile.mockResolvedValue({
+        needsMapping: true,
+        headers: mockHeaders,
+        data: mockData,
+        mapping: { lat: 'Lat', lon: 'Lon', name: 'City' },
+      })
+
+      const mockFile = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const mockEvent = {
+        target: {
+          files: [mockFile],
+        },
+      } as unknown as FileImportChangeEvent
+
+      await act(async () => {
+        await result.current.handleFileImport(mockEvent)
+      })
+
+      await waitFor(() => {
+        expect(result.current.showMapper).toBe(true)
+        expect(result.current.mapperData).toEqual({
+          headers: mockHeaders,
+          previewData: mockData.slice(0, 5),
+          initialMapping: { lat: 'Lat', lon: 'Lon', name: 'City' },
+          jsonData: mockData,
         })
+        expect(result.current.isLoading).toBe(false)
+      })
     })
 
-    describe('handleFileImport', () => {
-        it('should handle GeoJSON file without mapping', async () => {
-            const { result } = renderHook(() => useFileImport())
+    it('should handle file with no data', async () => {
+      const { result } = renderHook(() => useFileImport())
 
-            const mockItems = [
-                {
-                    id: '1',
-                    name: 'Item 1',
-                    type: 'point' as const,
-                    geometry: { type: 'Point' as const, coordinates: [28.0, 41.0] },
-                    properties: { name: 'Item 1' },
-                    date: new Date().toISOString(),
-                    visible: true,
-                },
-                {
-                    id: '2',
-                    name: 'Item 2',
-                    type: 'point' as const,
-                    geometry: { type: 'Point' as const, coordinates: [28.5, 41.5] },
-                    properties: { name: 'Item 2' },
-                    date: new Date().toISOString(),
-                    visible: true,
-                },
-            ]
+      mockParseFile.mockResolvedValue({
+        needsMapping: false,
+        items: [],
+      })
 
-            mockParseFile.mockResolvedValue({
-                needsMapping: false,
-                items: mockItems,
-            })
+      const mockFile = new File(['{}'], 'empty.geojson', { type: 'application/json' })
+      const mockEvent = {
+        target: {
+          files: [mockFile],
+        },
+      } as unknown as FileImportChangeEvent
 
-            const mockFile = new File(['{}'], 'test.geojson', { type: 'application/json' })
-            const mockEvent = {
-                target: {
-                    files: [mockFile],
-                },
-            } as any
+      await act(async () => {
+        await result.current.handleFileImport(mockEvent)
+      })
 
-            await act(async () => {
-                await result.current.handleFileImport(mockEvent)
-            })
-
-            await waitFor(() => {
-                expect(mockAddItems).toHaveBeenCalledWith(mockItems)
-                expect(mockToast.success).toHaveBeenCalledWith('2 adet veri başarıyla yüklendi.')
-                expect(result.current.isLoading).toBe(false)
-            })
-        })
-
-        it('should show mapper for Excel files', async () => {
-            const { result } = renderHook(() => useFileImport())
-
-            const mockHeaders = ['City', 'Population', 'Lat', 'Lon']
-            const mockData = [
-                { City: 'Istanbul', Population: 15000000, Lat: 41.0, Lon: 28.0 },
-                { City: 'Ankara', Population: 5000000, Lat: 39.9, Lon: 32.8 },
-            ]
-
-            mockParseFile.mockResolvedValue({
-                needsMapping: true,
-                headers: mockHeaders,
-                data: mockData,
-                mapping: { lat: 'Lat', lon: 'Lon', name: 'City' },
-            })
-
-            const mockFile = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-            const mockEvent = {
-                target: {
-                    files: [mockFile],
-                },
-            } as any
-
-            await act(async () => {
-                await result.current.handleFileImport(mockEvent)
-            })
-
-            await waitFor(() => {
-                expect(result.current.showMapper).toBe(true)
-                expect(result.current.mapperData).toEqual({
-                    headers: mockHeaders,
-                    previewData: mockData.slice(0, 5),
-                    initialMapping: { lat: 'Lat', lon: 'Lon', name: 'City' },
-                    jsonData: mockData,
-                })
-                expect(result.current.isLoading).toBe(false)
-            })
-        })
-
-        it('should handle file with no data', async () => {
-            const { result } = renderHook(() => useFileImport())
-
-            mockParseFile.mockResolvedValue({
-                needsMapping: false,
-                items: [],
-            })
-
-            const mockFile = new File(['{}'], 'empty.geojson', { type: 'application/json' })
-            const mockEvent = {
-                target: {
-                    files: [mockFile],
-                },
-            } as any
-
-            await act(async () => {
-                await result.current.handleFileImport(mockEvent)
-            })
-
-            await waitFor(() => {
-                expect(mockAddItems).not.toHaveBeenCalled()
-                expect(mockToast.success).not.toHaveBeenCalled()
-                expect(result.current.isLoading).toBe(false)
-            })
-        })
-
-        it('should handle parse error', async () => {
-            const { result } = renderHook(() => useFileImport())
-
-            const errorMessage = 'Invalid file format'
-            mockParseFile.mockRejectedValue(new Error(errorMessage))
-
-            const mockFile = new File(['invalid'], 'test.txt', { type: 'text/plain' })
-            const mockEvent = {
-                target: {
-                    files: [mockFile],
-                },
-            } as any
-
-            await act(async () => {
-                await result.current.handleFileImport(mockEvent)
-            })
-
-            await waitFor(() => {
-                expect(mockToast.error).toHaveBeenCalledWith(`Dosya yüklenirken hata oluştu: ${errorMessage}`)
-                expect(mockAddItems).not.toHaveBeenCalled()
-                expect(result.current.isLoading).toBe(false)
-            })
-        })
-
-        it('should handle no file selected', async () => {
-            const { result } = renderHook(() => useFileImport())
-
-            const mockEvent = {
-                target: {
-                    files: [],
-                },
-            } as any
-
-            await act(async () => {
-                await result.current.handleFileImport(mockEvent)
-            })
-
-            expect(mockParseFile).not.toHaveBeenCalled()
-            expect(result.current.isLoading).toBe(false)
-        })
+      await waitFor(() => {
+        expect(mockAddItems).not.toHaveBeenCalled()
+        expect(mockToast.success).not.toHaveBeenCalled()
+        expect(result.current.isLoading).toBe(false)
+      })
     })
 
-    describe('handleMapperConfirm', () => {
-        it('should transform and add items when mapper is confirmed', async () => {
-            const { result } = renderHook(() => useFileImport())
+    it('should handle parse error', async () => {
+      const { result } = renderHook(() => useFileImport())
 
-            const mockHeaders = ['City', 'Lat', 'Lon']
-            const mockData = [
-                { City: 'Istanbul', Lat: 41.0, Lon: 28.0 },
-                { City: 'Ankara', Lat: 39.9, Lon: 32.8 },
-            ]
+      const errorMessage = 'Invalid file format'
+      mockParseFile.mockRejectedValue(new Error(errorMessage))
 
-            // First, simulate file import that triggers mapper
-            mockParseFile.mockResolvedValue({
-                needsMapping: true,
-                headers: mockHeaders,
-                data: mockData,
-                mapping: { lat: 'Lat', lon: 'Lon', name: 'City' },
-            })
+      const mockFile = new File(['invalid'], 'test.txt', { type: 'text/plain' })
+      const mockEvent = {
+        target: {
+          files: [mockFile],
+        },
+      } as unknown as FileImportChangeEvent
 
-            const mockFile = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-            const mockEvent = {
-                target: {
-                    files: [mockFile],
-                },
-            } as any
+      await act(async () => {
+        await result.current.handleFileImport(mockEvent)
+      })
 
-            // Import file to set mapper data
-            await act(async () => {
-                await result.current.handleFileImport(mockEvent)
-            })
-
-            // Verify mapper is shown
-            await waitFor(() => {
-                expect(result.current.showMapper).toBe(true)
-                expect(result.current.mapperData).not.toBeNull()
-            })
-
-            // Now confirm the mapping
-            const mapping = { lat: 'Lat', lon: 'Lon', name: 'City' }
-
-            await act(async () => {
-                result.current.handleMapperConfirm(mapping)
-            })
-
-            await waitFor(() => {
-                expect(mockAddItems).toHaveBeenCalled()
-                expect(mockToast.success).toHaveBeenCalled()
-                expect(result.current.showMapper).toBe(false)
-                expect(result.current.mapperData).toBeNull()
-            })
-        })
-
-        it('should do nothing if mapperData is null', () => {
-            const { result } = renderHook(() => useFileImport())
-
-            const mapping = { lat: 'Lat', lon: 'Lon', name: 'City' }
-
-            act(() => {
-                result.current.handleMapperConfirm(mapping)
-            })
-
-            expect(mockAddItems).not.toHaveBeenCalled()
-        })
+      await waitFor(() => {
+        expect(mockToast.error).toHaveBeenCalledWith(`Dosya yüklenirken hata oluştu: ${errorMessage}`)
+        expect(mockAddItems).not.toHaveBeenCalled()
+        expect(result.current.isLoading).toBe(false)
+      })
     })
 
-    describe('closeMapper', () => {
-        it('should close mapper and clear data', async () => {
-            const { result } = renderHook(() => useFileImport())
+    it('should handle no file selected', async () => {
+      const { result } = renderHook(() => useFileImport())
 
-            const mockHeaders = ['City', 'Lat', 'Lon']
-            const mockData = [
-                { City: 'Istanbul', Lat: 41.0, Lon: 28.0 },
-            ]
+      const mockEvent = {
+        target: {
+          files: [],
+        },
+      } as unknown as FileImportChangeEvent
 
-            // First, trigger mapper by importing a file that needs mapping
-            mockParseFile.mockResolvedValue({
-                needsMapping: true,
-                headers: mockHeaders,
-                data: mockData,
-                mapping: { lat: 'Lat', lon: 'Lon', name: 'City' },
-            })
+      await act(async () => {
+        await result.current.handleFileImport(mockEvent)
+      })
 
-            const mockFile = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-            const mockEvent = {
-                target: {
-                    files: [mockFile],
-                },
-            } as any
-
-            await act(async () => {
-                await result.current.handleFileImport(mockEvent)
-            })
-
-            // Verify mapper is shown
-            await waitFor(() => {
-                expect(result.current.showMapper).toBe(true)
-                expect(result.current.mapperData).not.toBeNull()
-            })
-
-            // Now close the mapper
-            act(() => {
-                result.current.closeMapper()
-            })
-
-            expect(result.current.showMapper).toBe(false)
-            expect(result.current.mapperData).toBeNull()
-        })
+      expect(mockParseFile).not.toHaveBeenCalled()
+      expect(result.current.isLoading).toBe(false)
     })
+  })
+
+  describe('handleMapperConfirm', () => {
+    it('should transform and add items when mapper is confirmed', async () => {
+      const { result } = renderHook(() => useFileImport())
+
+      const mockHeaders = ['City', 'Lat', 'Lon']
+      const mockData = [
+        { City: 'Istanbul', Lat: 41.0, Lon: 28.0 },
+        { City: 'Ankara', Lat: 39.9, Lon: 32.8 },
+      ]
+
+      // First, simulate file import that triggers mapper
+      mockParseFile.mockResolvedValue({
+        needsMapping: true,
+        headers: mockHeaders,
+        data: mockData,
+        mapping: { lat: 'Lat', lon: 'Lon', name: 'City' },
+      })
+
+      const mockFile = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const mockEvent = {
+        target: {
+          files: [mockFile],
+        },
+      } as unknown as FileImportChangeEvent
+
+      // Import file to set mapper data
+      await act(async () => {
+        await result.current.handleFileImport(mockEvent)
+      })
+
+      // Verify mapper is shown
+      await waitFor(() => {
+        expect(result.current.showMapper).toBe(true)
+        expect(result.current.mapperData).not.toBeNull()
+      })
+
+      // Now confirm the mapping
+      const mapping = { lat: 'Lat', lon: 'Lon', name: 'City' }
+
+      await act(async () => {
+        result.current.handleMapperConfirm(mapping)
+      })
+
+      await waitFor(() => {
+        expect(mockAddItems).toHaveBeenCalled()
+        expect(mockToast.success).toHaveBeenCalled()
+        expect(result.current.showMapper).toBe(false)
+        expect(result.current.mapperData).toBeNull()
+      })
+    })
+
+    it('should do nothing if mapperData is null', () => {
+      const { result } = renderHook(() => useFileImport())
+
+      const mapping = { lat: 'Lat', lon: 'Lon', name: 'City' }
+
+      act(() => {
+        result.current.handleMapperConfirm(mapping)
+      })
+
+      expect(mockAddItems).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('closeMapper', () => {
+    it('should close mapper and clear data', async () => {
+      const { result } = renderHook(() => useFileImport())
+
+      const mockHeaders = ['City', 'Lat', 'Lon']
+      const mockData = [
+        { City: 'Istanbul', Lat: 41.0, Lon: 28.0 },
+      ]
+
+      // First, trigger mapper by importing a file that needs mapping
+      mockParseFile.mockResolvedValue({
+        needsMapping: true,
+        headers: mockHeaders,
+        data: mockData,
+        mapping: { lat: 'Lat', lon: 'Lon', name: 'City' },
+      })
+
+      const mockFile = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const mockEvent = {
+        target: {
+          files: [mockFile],
+        },
+      } as unknown as FileImportChangeEvent
+
+      await act(async () => {
+        await result.current.handleFileImport(mockEvent)
+      })
+
+      // Verify mapper is shown
+      await waitFor(() => {
+        expect(result.current.showMapper).toBe(true)
+        expect(result.current.mapperData).not.toBeNull()
+      })
+
+      // Now close the mapper
+      act(() => {
+        result.current.closeMapper()
+      })
+
+      expect(result.current.showMapper).toBe(false)
+      expect(result.current.mapperData).toBeNull()
+    })
+  })
 })

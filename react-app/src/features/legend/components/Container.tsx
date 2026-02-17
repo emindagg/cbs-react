@@ -7,7 +7,7 @@
 import { useMemo } from 'react'
 
 import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
-import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, calculateSmartDotValue } from '@/features/visualization'
+import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, calculateSmartDotValue } from '@/shared/visualization'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { calculateBreaks } from '@/utils/classification'
 import { calculateSymbolSize } from '@/utils/symbolShapes'

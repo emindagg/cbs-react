@@ -1,21 +1,28 @@
-import { useAstroStore } from '@/features/astronomy'
-import { BasemapSwitcher } from '@/features/basemap'
+﻿import type { ReactNode } from 'react'
+
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 import { ZoomControls } from './ZoomControls'
 
-
 interface MapControlStackProps {
   isSidebarOpen: boolean
   onToggleSidebar: () => void
+  isAstronomyEnabled: boolean
+  onToggleAstronomy: () => void
+  basemapControl?: ReactNode
 }
 
 /**
  * MapControlStack Component
  * Vertical control stack: sidebar toggle, zoom, basemap, astronomy
  */
-export function MapControlStack({ isSidebarOpen, onToggleSidebar }: MapControlStackProps) {
-  const { isEnabled, setIsEnabled } = useAstroStore()
+export function MapControlStack({
+  isSidebarOpen,
+  onToggleSidebar,
+  isAstronomyEnabled,
+  onToggleAstronomy,
+  basemapControl,
+}: MapControlStackProps) {
   const isMobile = !useMediaQuery('(min-width: 768px)')
   const hideControls = isMobile && isSidebarOpen
 
@@ -40,13 +47,13 @@ export function MapControlStack({ isSidebarOpen, onToggleSidebar }: MapControlSt
           <ZoomControls />
 
           {/* Basemap Switcher */}
-          <BasemapSwitcher />
+          {basemapControl}
 
           {/* Astronomy Toggle */}
           <button
             id="toggle-astro-button"
-            onClick={() => setIsEnabled(!isEnabled)}
-            className={`w-9 h-9 bg-[#1c1c1e] rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm hover:bg-black/90 active:scale-95 transition-all cursor-pointer ${isEnabled ? 'ring-2 ring-emerald-400' : ''}`}
+            onClick={onToggleAstronomy}
+            className={`w-9 h-9 bg-[#1c1c1e] rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm hover:bg-black/90 active:scale-95 transition-all cursor-pointer ${isAstronomyEnabled ? 'ring-2 ring-emerald-400' : ''}`}
             title="Astronomi görünümlerini aç/kapat"
           >
             <i className="fa-solid fa-satellite-dish"></i>

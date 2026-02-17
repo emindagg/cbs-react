@@ -1,8 +1,7 @@
-/* eslint-disable no-restricted-imports -- Modal component needs feature types */
 import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 
-import type { ColumnMapping } from '@/features/data-import/types'
+import type { ColumnMapping } from '../types'
 
 interface ColumnMapperModalProps {
   isOpen: boolean

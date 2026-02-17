@@ -4,10 +4,9 @@
  */
 
 import { COLOR_SCHEME_LIST } from '@/constants/colorSchemes'
-import { LegendConfig } from '@/features/legend'
+import { LegendConfig } from '@/shared/legend'
+import { BubbleSettings, DotDensitySettings } from '@/shared/visualization'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
-
-import { BubbleSettings, DotDensitySettings } from '@/features/visualization'
 
 import { MapTitleSection } from './components/MapTitleSection'
 import { StepsSection } from './components/StepsSection'

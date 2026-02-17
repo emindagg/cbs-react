@@ -3,7 +3,7 @@
  * Complete panel integrating color scale, interpolation, custom range, and legend
  */
 
-import { LegendConfig } from '@/features/legend'
+import { LegendConfig } from '@/shared/legend'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
 import { ColorScaleConfig } from './ColorScale'

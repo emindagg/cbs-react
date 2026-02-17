@@ -10,7 +10,7 @@ import type maplibregl from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, buildZoomRadius, VisualizationManager } from '@/features/visualization'
+import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, buildZoomRadius, VisualizationManager } from '@/shared/visualization'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import type { PaintPropertyValue } from '@/types/maplibre-expressions'
 import type { MatchResults, VisualizationSettings } from '@/types/visualization'
