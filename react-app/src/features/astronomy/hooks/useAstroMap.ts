@@ -130,8 +130,16 @@ export function useAstroMap() {
             '<div style="margin-top:6px;border-top:1px solid #e2e8f0;padding-top:6px;font-size:11px;line-height:1.45">' +
             `<div><strong>Güneş Yüksekliği:</strong> ${sunData.altitude}</div>` +
             `<div><strong>Yönü (Azimuth):</strong> ${sunData.azimuth}</div>` +
-            `<div><strong>Gün Doğumu:</strong> ${sunData.sunrise}</div>` +
-            `<div><strong>Gün Batımı:</strong> ${sunData.sunset}</div>` +
+            '<div style="margin-top:4px">' +
+            '<strong>Gün Doğumu:</strong> ' +
+            `<span style="font-size:11px;font-weight:700;margin-left:4px">${sunData.sunriseLocal}</span>` +
+            `<span style="font-size:10px;color:#64748b;margin-left:6px">(${sunData.sunriseUtc})</span>` +
+            '</div>' +
+            '<div style="margin-top:2px">' +
+            '<strong>Gün Batımı:</strong> ' +
+            `<span style="font-size:11px;font-weight:700;margin-left:4px">${sunData.sunsetLocal}</span>` +
+            `<span style="font-size:10px;color:#64748b;margin-left:6px">(${sunData.sunsetUtc})</span>` +
+            '</div>' +
             `<div><strong>Konum:</strong> ${sunData.latText}, ${sunData.lonText}</div>` +
             '</div></div>',
           )

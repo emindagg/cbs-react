@@ -14,8 +14,10 @@ const SUN_ANGLE_DECIMALS = 1
 interface SunObserverData {
   altitude: string
   azimuth: string
-  sunrise: string
-  sunset: string
+  sunriseLocal: string
+  sunriseUtc: string
+  sunsetLocal: string
+  sunsetUtc: string
 }
 
 export interface LocalAstronomyData {
@@ -23,8 +25,10 @@ export interface LocalAstronomyData {
   lonText: string
   altitude: string
   azimuth: string
-  sunrise: string
-  sunset: string
+  sunriseLocal: string
+  sunriseUtc: string
+  sunsetLocal: string
+  sunsetUtc: string
   shadowLength: string
 }
 
@@ -50,9 +54,16 @@ function formatUtcTime(date: Date): string {
   return date.toLocaleTimeString('tr-TR', {
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
     hour12: false,
     timeZone: 'UTC',
+  })
+}
+
+function formatLocalTime(date: Date): string {
+  return date.toLocaleTimeString('tr-TR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
   })
 }
 
@@ -73,6 +84,17 @@ function formatShadowLengthMeters(altitudeDegrees: number): string {
   return `${meters.toFixed(2)} m`
 }
 
+function formatRiseSet(time: Astronomy.AstroTime | null): { local: string, utc: string } {
+  if (!time) {
+    return { local: '-', utc: '-' }
+  }
+
+  return {
+    local: formatLocalTime(time.date),
+    utc: `${formatUtcTime(time.date)} UTC`,
+  }
+}
+
 function getSunObserverData(date: Date, lat: number, lon: number): SunObserverData {
   const observer = new Astronomy.Observer(lat, lon, 0)
   const sunEquator = Astronomy.Equator(Astronomy.Body.Sun, date, observer, true, true)
@@ -80,12 +102,16 @@ function getSunObserverData(date: Date, lat: number, lon: number): SunObserverDa
   const dayStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0))
   const sunrise = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, SUN_RISE_DIRECTION, dayStart, SUN_SEARCH_WINDOW_DAYS)
   const sunset = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, SUN_SET_DIRECTION, dayStart, SUN_SEARCH_WINDOW_DAYS)
+  const sunriseTime = formatRiseSet(sunrise)
+  const sunsetTime = formatRiseSet(sunset)
 
   return {
     altitude: formatAngle(horizon.altitude),
     azimuth: formatAngle(horizon.azimuth),
-    sunrise: sunrise ? `${formatUtcTime(sunrise.date)} UTC` : '-',
-    sunset: sunset ? `${formatUtcTime(sunset.date)} UTC` : '-',
+    sunriseLocal: sunriseTime.local,
+    sunriseUtc: sunriseTime.utc,
+    sunsetLocal: sunsetTime.local,
+    sunsetUtc: sunsetTime.utc,
   }
 }
 
@@ -109,14 +135,18 @@ export function getLocalAstronomyData(date: Date, lat: number, lon: number): Loc
   const horizon = Astronomy.Horizon(date, observer, sunEquator.ra, sunEquator.dec, 'normal')
   const sunrise = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, SUN_RISE_DIRECTION, date, SUN_SEARCH_WINDOW_DAYS)
   const sunset = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, SUN_SET_DIRECTION, date, SUN_SEARCH_WINDOW_DAYS)
+  const sunriseTime = formatRiseSet(sunrise)
+  const sunsetTime = formatRiseSet(sunset)
 
   return {
     latText: formatCoord(lat),
     lonText: formatCoord(lon),
     altitude: formatAngle(horizon.altitude),
     azimuth: formatAngle(horizon.azimuth),
-    sunrise: sunrise ? `${formatUtcTime(sunrise.date)} UTC` : '-',
-    sunset: sunset ? `${formatUtcTime(sunset.date)} UTC` : '-',
+    sunriseLocal: sunriseTime.local,
+    sunriseUtc: sunriseTime.utc,
+    sunsetLocal: sunsetTime.local,
+    sunsetUtc: sunsetTime.utc,
     shadowLength: formatShadowLengthMeters(horizon.altitude),
   }
 }

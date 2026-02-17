@@ -200,8 +200,16 @@ export function useAstroInteraction({ map, isEnabled, isEclipseEnabled, currentD
           `<div><strong>Konum:</strong> ${info.latText}, ${info.lonText}</div>` +
           `<div><strong>Güneş Yüksekliği:</strong> ${info.altitude}</div>` +
           `<div><strong>Yön (Azimuth):</strong> ${info.azimuth}</div>` +
-          `<div><strong>Gün Doğumu:</strong> ${info.sunrise}</div>` +
-          `<div><strong>Gün Batımı:</strong> ${info.sunset}</div>` +
+          '<div style="margin-top:4px">' +
+          '<strong>Gün Doğumu:</strong> ' +
+          `<span style="font-size:11px;font-weight:700;margin-left:4px">${info.sunriseLocal}</span>` +
+          `<span style="font-size:10px;color:#64748b;margin-left:6px">(${info.sunriseUtc})</span>` +
+          '</div>' +
+          '<div style="margin-top:2px">' +
+          '<strong>Gün Batımı:</strong> ' +
+          `<span style="font-size:11px;font-weight:700;margin-left:4px">${info.sunsetLocal}</span>` +
+          `<span style="font-size:10px;color:#64748b;margin-left:6px">(${info.sunsetUtc})</span>` +
+          '</div>' +
           `<div><strong>Gölge Boyu (1m):</strong> ${info.shadowLength}</div>` +
           '</div></div>',
         )
