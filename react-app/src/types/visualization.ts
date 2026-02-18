@@ -134,6 +134,8 @@ export interface CurrentVisualization {
   type: VizType | null;
   data: Record<string, unknown>[] | null;
   column: string | null;
+  locationLevel: 'province' | 'district' | null;
+  renderSettings: VisualizationSettings | null;
 }
 
 export interface ProvinceInfo {

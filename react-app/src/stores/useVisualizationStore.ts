@@ -103,6 +103,8 @@ const defaultCurrentVisualization: CurrentVisualization = {
   type: null,
   data: null,
   column: null,
+  locationLevel: null,
+  renderSettings: null,
 }
 
 const defaultLegendConfig: LegendConfiguration = {

@@ -180,6 +180,8 @@ export function useVizRender({
         type: vizSettings.type,
         data: successfulData,
         column: columnMapping.dataColumn,
+        locationLevel,
+        renderSettings,
       })
 
       setHasRendered(true)

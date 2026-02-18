@@ -9,6 +9,7 @@ import { SearchContainer } from '@/features/geocoder'
 import { GlobeToggleButton } from '@/features/globe-view'
 import { LegendContainer } from '@/features/legend'
 import { MapContainer, MapControlStack } from '@/features/map'
+import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMapStore } from '@/stores/useMapStore'
@@ -31,6 +32,8 @@ export default function AppLayout() {
   useAstroMap()
   // Initialize clustering hook
   useClustering()
+  // Re-add visualization layers after style changes (basemap switch)
+  useVisualizationLayerPersistence()
 
   // Toggle sidebar and resize map
   const toggleSidebar = () => {

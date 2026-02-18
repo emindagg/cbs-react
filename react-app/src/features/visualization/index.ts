@@ -22,3 +22,4 @@ export {
 
 // Shared orchestrator
 export { VisualizationManager } from './shared/VisualizationManager'
+export { useVisualizationLayerPersistence } from './hooks/useVisualizationLayerPersistence'
