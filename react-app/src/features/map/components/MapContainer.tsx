@@ -38,12 +38,14 @@ export default function MapContainer() {
       'CARTO_LIGHT': 'https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
       'CARTO_DARK': 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
       'CARTO_VOYAGER': 'https://basemaps.cartocdn.com/voyager/{z}/{x}/{y}@2x.png',
+      'ESRI_SATELLITE': 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     }
 
     const attributionMap: Record<string, string> = {
       'CARTO_LIGHT': '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
       'CARTO_DARK': '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
       'CARTO_VOYAGER': '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      'ESRI_SATELLITE': 'Tiles &copy; Esri',
     }
 
     return {

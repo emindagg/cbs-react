@@ -25,6 +25,7 @@ export default function BasemapSwitcher() {
 
   const basemaps: { id: BasemapType; label: string; icon: string }[] = [
     { id: 'CARTO_LIGHT', label: 'Carto Açık', icon: 'fa-sun' },
+    { id: 'ESRI_SATELLITE', label: 'Uydu', icon: 'fa-earth-americas' },
     { id: 'TEMEL', label: 'HGM Temel', icon: 'fa-map' },
     { id: 'UYDU', label: 'HGM Uydu', icon: 'fa-satellite' },
     { id: 'GECE', label: 'HGM Gece', icon: 'fa-star' },
@@ -77,3 +78,4 @@ export default function BasemapSwitcher() {
     </div>
   )
 }
+

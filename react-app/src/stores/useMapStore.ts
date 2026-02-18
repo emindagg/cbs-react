@@ -1,7 +1,17 @@
 import type { Map } from 'maplibre-gl'
 import { create } from 'zustand'
 
-export type BasemapType = 'TEMEL' | 'UYDU' | 'GECE' | 'SIYASI' | 'YUKSEKLIK' | 'NONE' | 'CARTO_LIGHT' | 'CARTO_DARK' | 'CARTO_VOYAGER'
+export type BasemapType =
+  | 'TEMEL'
+  | 'UYDU'
+  | 'GECE'
+  | 'SIYASI'
+  | 'YUKSEKLIK'
+  | 'NONE'
+  | 'CARTO_LIGHT'
+  | 'CARTO_DARK'
+  | 'CARTO_VOYAGER'
+  | 'ESRI_SATELLITE'
 
 interface MapState {
   isLoaded: boolean
