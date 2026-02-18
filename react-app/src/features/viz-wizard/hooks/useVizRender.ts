@@ -3,14 +3,20 @@
  * Handles choropleth rendering logic
  *
  * vizKey split: dataVizKey triggers full re-render,
- * paintVizKey triggers paint-only update (dotSize/dotColor) via setPaintProperty.
+ * paintVizKey triggers paint-only update (opacity/color/size) via setPaintProperty.
  */
 
 import type maplibregl from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, buildZoomRadius, VisualizationManager } from '@/shared/visualization'
+import {
+  DEFAULT_DOT_COLOR,
+  DEFAULT_DOT_OPACITY,
+  DEFAULT_DOT_SIZE,
+  buildZoomRadius,
+  VisualizationManager,
+} from '@/shared/visualization'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import type { PaintPropertyValue } from '@/types/maplibre-expressions'
 import type { MatchResults, VisualizationSettings } from '@/types/visualization'
@@ -30,8 +36,17 @@ function updateDotPaintProperties(map: maplibregl.Map, settings: VisualizationSe
   if (!map.getLayer('dot-circles')) return
   const dotSize = settings.dotSize ?? DEFAULT_DOT_SIZE
   const dotColor = settings.dotColor ?? DEFAULT_DOT_COLOR
+  const dotOpacity = settings.dotOpacity ?? DEFAULT_DOT_OPACITY
   map.setPaintProperty('dot-circles', 'circle-radius', buildZoomRadius(dotSize) as PaintPropertyValue<number>)
   map.setPaintProperty('dot-circles', 'circle-color', dotColor)
+  map.setPaintProperty('dot-circles', 'circle-opacity', dotOpacity as PaintPropertyValue<number>)
+}
+
+/** Update choropleth paint properties without full re-render */
+function updateChoroplethPaintProperties(map: maplibregl.Map, settings: VisualizationSettings) {
+  if (!map.getLayer('choropleth-fill')) return
+  const choroplethOpacity = settings.choroplethOpacity ?? 1
+  map.setPaintProperty('choropleth-fill', 'fill-opacity', choroplethOpacity as PaintPropertyValue<number>)
 }
 
 export function useVizRender({
@@ -49,8 +64,14 @@ export function useVizRender({
   // visualization type alone does NOT trigger an automatic re-render.
   // The user must click the "Yeniden Görselleştir" button for the type change to take effect.
   const dataVizKey = `${vizSettings.classificationMethod}-${vizSettings.classCount}-${vizSettings.colorScheme}-${vizSettings.legendType || 'steps'}-${vizSettings.interpolation || 'equidistant'}-${vizSettings.dotValue ?? 'auto'}`
-  // Paint-only settings → setPaintProperty (no dot regeneration)
-  const paintVizKey = `${vizSettings.dotSize ?? 'auto'}-${vizSettings.dotColor ?? 'auto'}`
+  // Paint-only settings → setPaintProperty (no data recomputation)
+  const paintVizKey = [
+    vizSettings.type,
+    vizSettings.dotSize ?? 'auto',
+    vizSettings.dotColor ?? 'auto',
+    vizSettings.dotOpacity ?? 'auto',
+    vizSettings.choroplethOpacity ?? 'auto',
+  ].join('-')
 
   const prevDataVizKeyRef = useRef<string | null>(null)
   const prevPaintVizKeyRef = useRef<string | null>(null)
@@ -70,16 +91,20 @@ export function useVizRender({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataVizKey, hasRendered, map])
 
-  // Paint-only update when dotSize/dotColor change (no full re-render)
+  // Paint-only update when visual-only settings change (no full re-render)
   useEffect(() => {
-    if (!hasRendered || !map || vizSettings.type !== 'dot') return
+    if (!hasRendered || !map) return
     if (prevPaintVizKeyRef.current === null) {
       prevPaintVizKeyRef.current = paintVizKey
       return
     }
     if (prevPaintVizKeyRef.current !== paintVizKey) {
       prevPaintVizKeyRef.current = paintVizKey
-      updateDotPaintProperties(map, vizSettings)
+      if (vizSettings.type === 'dot') {
+        updateDotPaintProperties(map, vizSettings)
+      } else if (vizSettings.type === 'choropleth') {
+        updateChoroplethPaintProperties(map, vizSettings)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paintVizKey, hasRendered, map])

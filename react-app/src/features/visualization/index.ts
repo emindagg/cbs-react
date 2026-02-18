@@ -2,7 +2,7 @@
 export { BubbleRenderer, BubbleSettings, useBubbleTooltip } from './bubble'
 
 // Choropleth visualization
-export { ChoroplethRenderer, useChoroplethTooltip } from './choropleth'
+export { ChoroplethRenderer, useChoroplethTooltip, ChoroplethSettings } from './choropleth'
 
 // Point / Dot-density visualization
 export {
@@ -11,6 +11,7 @@ export {
   DotColorPicker,
   DEFAULT_DOT_SIZE,
   DEFAULT_DOT_COLOR,
+  DEFAULT_DOT_OPACITY,
   TARGET_TOTAL_DOTS,
   MAX_TOTAL_DOTS,
   MIN_DOTS_PER_FEATURE,

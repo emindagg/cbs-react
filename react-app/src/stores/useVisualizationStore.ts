@@ -89,6 +89,8 @@ const defaultVizSettings: VisualizationSettings = {
   colorScheme: 'greenBlue',
   legendType: 'discrete',
   interpolation: 'equidistant',
+  choroplethOpacity: 1,
+  dotOpacity: 0.85,
 }
 
 const defaultMatchResults: MatchResults = {

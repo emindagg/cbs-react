@@ -25,6 +25,7 @@ import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormali
 
 import {
   DEFAULT_DOT_COLOR,
+  DEFAULT_DOT_OPACITY,
   DEFAULT_DOT_SIZE,
   MAX_DOTS_PER_FEATURE,
   MAX_TOTAL_DOTS,
@@ -35,7 +36,6 @@ import { buildZoomRadius, calculateSmartDotValue } from '../utils/dot-density'
 // Dot rendering style constants
 const DOT_STROKE_COLOR = 'rgba(255,255,255,0.6)'
 const DOT_STROKE_WIDTH = 0.5
-const DOT_OPACITY = 0.85
 
 type Coordinate = [number, number]
 type Ring = Coordinate[]
@@ -79,6 +79,7 @@ export class PointRenderer {
     const dotValue = settings.dotValue ?? calculateSmartDotValue(values)
     const dotSize = settings.dotSize ?? DEFAULT_DOT_SIZE
     const dotColor = settings.dotColor ?? DEFAULT_DOT_COLOR
+    const dotOpacity = settings.dotOpacity ?? DEFAULT_DOT_OPACITY
 
     console.debug(`🔵 Dot Density: dotValue=${dotValue}, dotSize=${dotSize}px, color=${dotColor}, features=${values.length}`)
 
@@ -98,7 +99,7 @@ export class PointRenderer {
     )
 
     // 5. Render with single color (no classification needed)
-    this.renderToMap(dotsGeoJSON, dotColor, dotSize)
+    this.renderToMap(dotsGeoJSON, dotColor, dotSize, dotOpacity)
   }
 
   /* ------------------------------------------------------------------ */
@@ -378,7 +379,12 @@ export class PointRenderer {
   /*  MAP RENDERING                                                     */
   /* ------------------------------------------------------------------ */
 
-  private renderToMap(geojson: GeoJSON.FeatureCollection, dotColor: string, dotSize: number): void {
+  private renderToMap(
+    geojson: GeoJSON.FeatureCollection,
+    dotColor: string,
+    dotSize: number,
+    dotOpacity: number,
+  ): void {
     const sourceId = 'dot-source'
     const layerId = 'dot-circles'
     const zoomRadius = buildZoomRadius(dotSize)
@@ -408,7 +414,7 @@ export class PointRenderer {
           'circle-color': dotColor,
           'circle-stroke-color': 'rgba(255,255,255,0.6)',
           'circle-stroke-width': 0.5,
-          'circle-opacity': 0.85,
+          'circle-opacity': dotOpacity,
         },
       })
     } else {
@@ -417,7 +423,7 @@ export class PointRenderer {
       this.map.setPaintProperty(layerId, 'circle-color', dotColor)
       this.map.setPaintProperty(layerId, 'circle-stroke-color', DOT_STROKE_COLOR)
       this.map.setPaintProperty(layerId, 'circle-stroke-width', DOT_STROKE_WIDTH)
-      this.map.setPaintProperty(layerId, 'circle-opacity', DOT_OPACITY)
+      this.map.setPaintProperty(layerId, 'circle-opacity', dotOpacity)
     }
   }
 }

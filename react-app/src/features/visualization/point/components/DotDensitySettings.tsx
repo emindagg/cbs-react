@@ -5,10 +5,16 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { SingleSlider } from '@/components/ui'
 import type { VisualizationSettings } from '@/types/visualization'
 
 import { DotColorPicker } from './DotColorPicker'
-import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, MAX_TOTAL_DOTS } from '../constants/dot-density'
+import {
+  DEFAULT_DOT_COLOR,
+  DEFAULT_DOT_OPACITY,
+  DEFAULT_DOT_SIZE,
+  MAX_TOTAL_DOTS,
+} from '../constants/dot-density'
 import { calculateSmartDotValue } from '../utils/dot-density'
 
 
@@ -37,6 +43,7 @@ export function DotDensitySettings({
   const currentDotSize = vizSettings.dotSize ?? DEFAULT_DOT_SIZE
   const currentDotLabel = vizSettings.dotLabel ?? ''
   const currentDotColor = vizSettings.dotColor ?? DEFAULT_DOT_COLOR
+  const currentDotOpacity = vizSettings.dotOpacity ?? DEFAULT_DOT_OPACITY
 
   const dotCount = useMemo(
     () => effectiveDotValue > 0 ? Math.min(Math.round(totalValue / effectiveDotValue), MAX_TOTAL_DOTS) : 0,
@@ -229,6 +236,17 @@ export function DotDensitySettings({
           className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
         />
       </div>
+
+      {/* Dot Opacity */}
+      <SingleSlider
+        label="Şeffaflık"
+        min={0}
+        max={1}
+        step={0.05}
+        value={currentDotOpacity}
+        formatValue={(v) => `%${Math.round(v * 100)}`}
+        onChange={(v) => setVizSettings({ dotOpacity: v })}
+      />
     </div>
   )
 }

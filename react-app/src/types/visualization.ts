@@ -105,6 +105,8 @@ export interface VisualizationSettings {
   symbolStrokeColor?: string;
   symbolStrokeWidth?: number;
   symbolOpacity?: number;
+  // Choropleth Settings
+  choroplethOpacity?: number;
   // Dot Density Settings
   /** Her noktanın temsil ettiği birim sayısı (ör. 1 nokta = 55868 kişi). undefined = otomatik */
   dotValue?: number;
@@ -114,6 +116,8 @@ export interface VisualizationSettings {
   dotLabel?: string;
   /** Nokta rengi (hex). Varsayılan: #2d6a4f */
   dotColor?: string;
+  /** Nokta opaklığı (0-1). Varsayılan: 0.85 */
+  dotOpacity?: number;
   // Normalization Settings
   /** Normalizasyon türü: none (ham değer), percent-of-total, field (başka sütuna böl) */
   normalization?: NormalizationType;

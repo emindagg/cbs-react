@@ -84,7 +84,7 @@ export class ChoroplethRenderer {
     }
 
     // Render to map
-    this.renderToMap(allFeaturesGeoJSON, colorExpression)
+    this.renderToMap(allFeaturesGeoJSON, colorExpression, settings)
   }
 
   /**
@@ -260,8 +260,13 @@ export class ChoroplethRenderer {
   /**
      * Render processed GeoJSON to map with data-driven color expression
      */
-  private renderToMap(geojson: GeoJSONFeatureCollection, colorExpression: unknown[]): void {
+  private renderToMap(
+    geojson: GeoJSONFeatureCollection,
+    colorExpression: unknown[],
+    settings: VisualizationSettings,
+  ): void {
     const sourceId = 'choropleth-source'
+    const fillOpacity = settings.choroplethOpacity ?? 1
 
     // Convert to MapLibre-compatible GeoJSON
     const safeGeoJSON: GeoJSON.FeatureCollection = {
@@ -303,13 +308,13 @@ export class ChoroplethRenderer {
         filter: ['==', ['get', 'hasData'], true],
         paint: {
           'fill-color': colorExpression as Parameters<Map['setPaintProperty']>[2],
-          'fill-opacity': 1,
+          'fill-opacity': fillOpacity,
         },
       })
     } else {
       this.map.setFilter('choropleth-fill', ['==', ['get', 'hasData'], true])
       this.map.setPaintProperty('choropleth-fill', 'fill-color', colorExpression)
-      this.map.setPaintProperty('choropleth-fill', 'fill-opacity', 1)
+      this.map.setPaintProperty('choropleth-fill', 'fill-opacity', fillOpacity)
     }
 
     // Add outline layer (only features with data)

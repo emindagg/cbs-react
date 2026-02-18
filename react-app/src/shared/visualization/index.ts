@@ -4,10 +4,12 @@ export { VisualizationManager } from '@/features/visualization'
 export {
   DEFAULT_DOT_SIZE,
   DEFAULT_DOT_COLOR,
+  DEFAULT_DOT_OPACITY,
   buildZoomRadius,
   calculateSmartDotValue,
   DotDensitySettings,
   BubbleSettings,
+  ChoroplethSettings,
   useBubbleTooltip,
   useChoroplethTooltip,
 } from '@/features/visualization'

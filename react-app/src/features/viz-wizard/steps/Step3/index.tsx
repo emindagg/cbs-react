@@ -5,7 +5,7 @@
 
 import { COLOR_SCHEME_LIST } from '@/constants/colorSchemes'
 import { LegendConfig } from '@/shared/legend'
-import { BubbleSettings, DotDensitySettings } from '@/shared/visualization'
+import { BubbleSettings, ChoroplethSettings, DotDensitySettings } from '@/shared/visualization'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
 
 import { MapTitleSection } from './components/MapTitleSection'
@@ -148,6 +148,14 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
           setVizSettings={setVizSettings}
           columns={step.columns}
           dataColumn={step.columnMapping.dataColumn ?? undefined}
+        />
+      )}
+
+      {/* Choropleth Settings */}
+      {vizSettings.type === 'choropleth' && (
+        <ChoroplethSettings
+          vizSettings={vizSettings}
+          setVizSettings={setVizSettings}
         />
       )}
 
