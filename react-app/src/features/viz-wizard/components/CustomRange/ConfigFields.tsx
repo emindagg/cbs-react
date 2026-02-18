@@ -15,6 +15,10 @@ interface ConfigFieldsProps {
   autoMax: number
 }
 
+function formatAutoPlaceholder(value: number): string {
+  return value.toLocaleString('tr-TR', { maximumFractionDigits: 2 })
+}
+
 function FieldInput({
   label,
   value,
@@ -35,7 +39,8 @@ function FieldInput({
         <span className="text-[9px] text-zinc-400">Otomatik: {placeholder}</span>
       </div>
       <input
-        type="number"
+        type="text"
+        inputMode="decimal"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
@@ -66,21 +71,21 @@ export function CustomRangeConfigFields({
         label="Minimum"
         value={localMin}
         error={errors.min}
-        placeholder={autoMin.toFixed(2)}
+        placeholder={formatAutoPlaceholder(autoMin)}
         onChange={(v) => onValidateAndUpdate('min', v)}
       />
       <FieldInput
         label="Orta"
         value={localCenter}
         error={errors.center}
-        placeholder={autoCenter.toFixed(2)}
+        placeholder={formatAutoPlaceholder(autoCenter)}
         onChange={(v) => onValidateAndUpdate('center', v)}
       />
       <FieldInput
         label="Maksimum"
         value={localMax}
         error={errors.max}
-        placeholder={autoMax.toFixed(2)}
+        placeholder={formatAutoPlaceholder(autoMax)}
         onChange={(v) => onValidateAndUpdate('max', v)}
       />
       <div className="text-[9px] text-zinc-400 leading-relaxed pt-1 border-t border-zinc-100">

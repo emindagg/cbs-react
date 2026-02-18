@@ -24,6 +24,11 @@ import { hashString, mulberry32 } from '@/utils/prng'
 import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 import {
+  isValueInCustomRange,
+  resolveCustomRange,
+  type ResolvedCustomRange,
+} from '../../shared/customRange'
+import {
   DEFAULT_DOT_COLOR,
   DEFAULT_DOT_OPACITY,
   DEFAULT_DOT_SIZE,
@@ -36,6 +41,7 @@ import { buildZoomRadius, calculateSmartDotValue } from '../utils/dot-density'
 // Dot rendering style constants
 const DOT_STROKE_COLOR = 'rgba(255,255,255,0.6)'
 const DOT_STROKE_WIDTH = 0.5
+const OUT_OF_RANGE_COLOR = '#dddddd'
 
 type Coordinate = [number, number]
 type Ring = Coordinate[]
@@ -80,6 +86,7 @@ export class PointRenderer {
     const dotSize = settings.dotSize ?? DEFAULT_DOT_SIZE
     const dotColor = settings.dotColor ?? DEFAULT_DOT_COLOR
     const dotOpacity = settings.dotOpacity ?? DEFAULT_DOT_OPACITY
+    const resolvedRange = resolveCustomRange(settings.customRange, values)
 
     console.debug(`🔵 Dot Density: dotValue=${dotValue}, dotSize=${dotSize}px, color=${dotColor}, features=${values.length}`)
 
@@ -92,6 +99,7 @@ export class PointRenderer {
       dataMap,
       locationLevel,
       dotValue,
+      resolvedRange,
     )
 
     console.debug(
@@ -99,7 +107,7 @@ export class PointRenderer {
     )
 
     // 5. Render with single color (no classification needed)
-    this.renderToMap(dotsGeoJSON, dotColor, dotSize, dotOpacity)
+    this.renderToMap(dotsGeoJSON, dotColor, dotSize, dotOpacity, resolvedRange)
   }
 
   /* ------------------------------------------------------------------ */
@@ -147,6 +155,7 @@ export class PointRenderer {
     dataMap: Record<string, number>,
     locationLevel: 'province' | 'district',
     dotValue: number,
+    resolvedRange: ResolvedCustomRange | null,
   ): GeoJSON.FeatureCollection {
     const allDots: GeoJSON.Feature[] = []
     let totalPlaced = 0
@@ -165,6 +174,7 @@ export class PointRenderer {
       const dataValue = this.getDataValue(feature, dataMap, normalizedName, locationLevel)
 
       if (dataValue === undefined || dataValue === 0) continue
+      const inCustomRange = isValueInCustomRange(dataValue, resolvedRange)
 
       // How many dots for this feature?
       let dotCount = Math.round(Math.abs(dataValue) / dotValue)
@@ -195,6 +205,7 @@ export class PointRenderer {
         polygonRings,
         featureName,
         dataValue,
+        inCustomRange,
       )
 
       allDots.push(...dots)
@@ -217,6 +228,7 @@ export class PointRenderer {
     polygonRings: PolygonRings[],
     featureName: string,
     dataValue: number,
+    inCustomRange: boolean,
   ): GeoJSON.Feature[] {
     const [minLng, minLat, maxLng, maxLat] = bbox
     const dots: GeoJSON.Feature[] = []
@@ -243,6 +255,7 @@ export class PointRenderer {
             value: dataValue,
             dataValue,
             hasData: true,
+            inCustomRange,
           },
           geometry: {
             type: 'Point',
@@ -384,10 +397,19 @@ export class PointRenderer {
     dotColor: string,
     dotSize: number,
     dotOpacity: number,
+    resolvedRange: ResolvedCustomRange | null,
   ): void {
     const sourceId = 'dot-source'
     const layerId = 'dot-circles'
     const zoomRadius = buildZoomRadius(dotSize)
+    const layerFilter: NonNullable<Parameters<Map['setFilter']>[1]> =
+      resolvedRange?.outOfRangeMode === 'transparent'
+        ? ['all', ['==', ['get', 'hasData'], true], ['==', ['get', 'inCustomRange'], true]]
+        : ['==', ['get', 'hasData'], true]
+    const circleColor: unknown =
+      resolvedRange?.outOfRangeMode === 'gray'
+        ? ['case', ['==', ['get', 'inCustomRange'], false], OUT_OF_RANGE_COLOR, dotColor]
+        : dotColor
 
     // Add or update source
     if (this.map.getSource(sourceId)) {
@@ -408,19 +430,19 @@ export class PointRenderer {
         id: layerId,
         type: 'circle',
         source: sourceId,
-        filter: ['==', ['get', 'hasData'], true],
+        filter: layerFilter,
         paint: {
           'circle-radius': zoomRadius,
-          'circle-color': dotColor,
+          'circle-color': circleColor as Parameters<Map['setPaintProperty']>[2],
           'circle-stroke-color': 'rgba(255,255,255,0.6)',
           'circle-stroke-width': 0.5,
           'circle-opacity': dotOpacity,
         },
       })
     } else {
-      this.map.setFilter(layerId, ['==', ['get', 'hasData'], true])
+      this.map.setFilter(layerId, layerFilter)
       this.map.setPaintProperty(layerId, 'circle-radius', zoomRadius)
-      this.map.setPaintProperty(layerId, 'circle-color', dotColor)
+      this.map.setPaintProperty(layerId, 'circle-color', circleColor as Parameters<Map['setPaintProperty']>[2])
       this.map.setPaintProperty(layerId, 'circle-stroke-color', DOT_STROKE_COLOR)
       this.map.setPaintProperty(layerId, 'circle-stroke-width', DOT_STROKE_WIDTH)
       this.map.setPaintProperty(layerId, 'circle-opacity', dotOpacity)

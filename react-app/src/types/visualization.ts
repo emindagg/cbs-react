@@ -126,6 +126,8 @@ export interface VisualizationSettings {
   // Bivariate Settings
   /** Renk için ayrı sütun (bivariate mod). undefined = boyut sütunuyla aynı */
   colorColumn?: string;
+  /** Render sırasında colorConfig'ten taşınan custom range ayarı */
+  customRange?: CustomRange;
 }
 
 export interface CurrentVisualization {
@@ -177,6 +179,7 @@ export interface CustomRange {
   min: number | null;
   center: number | null;
   max: number | null;
+  outOfRangeMode?: 'gray' | 'transparent';
 }
 
 /**

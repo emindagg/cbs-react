@@ -8,13 +8,48 @@ import type { CustomRange } from '@/types/visualization'
 
 export type CustomRangeErrors = { min?: string; center?: string; max?: string }
 
+function formatNumberForInput(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return ''
+  return value.toLocaleString('tr-TR', { maximumFractionDigits: 6 })
+}
+
+function formatWithThousandSeparators(raw: string): string {
+  const cleaned = raw.replace(/[^\d,.-]/g, '')
+  if (cleaned === '') return ''
+  if (cleaned === '-') return '-'
+
+  const negative = cleaned.startsWith('-')
+  const withoutSign = cleaned.replace(/-/g, '')
+  const normalized = withoutSign.replace(/\./g, '')
+
+  const firstComma = normalized.indexOf(',')
+  const hasComma = firstComma !== -1
+  const intRaw = hasComma ? normalized.slice(0, firstComma) : normalized
+  const fracRaw = hasComma ? normalized.slice(firstComma + 1).replace(/,/g, '') : ''
+
+  const intDigits = intRaw.replace(/\D/g, '')
+  const fracDigits = fracRaw.replace(/\D/g, '')
+  const groupedInt = (intDigits === '' ? '0' : intDigits).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  const signedInt = negative ? `-${groupedInt}` : groupedInt
+
+  return hasComma ? `${signedInt},${fracDigits}` : signedInt
+}
+
+function parseFormattedInput(value: string): number | null {
+  const trimmed = value.trim()
+  if (trimmed === '' || trimmed === '-') return null
+  const normalized = trimmed.replace(/\./g, '').replace(',', '.')
+  const parsed = Number.parseFloat(normalized)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
 export function useCustomRange(
   customRange: CustomRange,
   onChange: (range: CustomRange) => void,
 ) {
-  const [localMin, setLocalMin] = useState<string>(customRange.min?.toString() || '')
-  const [localCenter, setLocalCenter] = useState<string>(customRange.center?.toString() || '')
-  const [localMax, setLocalMax] = useState<string>(customRange.max?.toString() || '')
+  const [localMin, setLocalMin] = useState<string>(formatNumberForInput(customRange.min))
+  const [localCenter, setLocalCenter] = useState<string>(formatNumberForInput(customRange.center))
+  const [localMax, setLocalMax] = useState<string>(formatNumberForInput(customRange.max))
   const [errors, setErrors] = useState<CustomRangeErrors>({})
 
   const [prevRange, setPrevRange] = useState({
@@ -33,23 +68,24 @@ export function useCustomRange(
       center: customRange.center,
       max: customRange.max,
     })
-    setLocalMin(customRange.min?.toString() || '')
-    setLocalCenter(customRange.center?.toString() || '')
-    setLocalMax(customRange.max?.toString() || '')
+    setLocalMin(formatNumberForInput(customRange.min))
+    setLocalCenter(formatNumberForInput(customRange.center))
+    setLocalMax(formatNumberForInput(customRange.max))
   }
 
   const validateAndUpdate = (field: 'min' | 'center' | 'max', value: string) => {
-    const numValue = value === '' ? null : Number.parseFloat(value)
+    const formatted = formatWithThousandSeparators(value)
+    const numValue = parseFormattedInput(formatted)
 
     switch (field) {
       case 'min':
-        setLocalMin(value)
+        setLocalMin(formatted)
         break
       case 'center':
-        setLocalCenter(value)
+        setLocalCenter(formatted)
         break
       case 'max':
-        setLocalMax(value)
+        setLocalMax(formatted)
         break
     }
 
@@ -90,12 +126,18 @@ export function useCustomRange(
 
   const toggleEnabled = () => {
     if (customRange.enabled) {
-      onChange({ enabled: false, min: null, center: null, max: null })
+      onChange({
+        enabled: false,
+        min: null,
+        center: null,
+        max: null,
+        outOfRangeMode: customRange.outOfRangeMode ?? 'gray',
+      })
       setLocalMin('')
       setLocalCenter('')
       setLocalMax('')
     } else {
-      onChange({ ...customRange, enabled: true })
+      onChange({ ...customRange, enabled: true, outOfRangeMode: customRange.outOfRangeMode ?? 'gray' })
     }
   }
 

@@ -18,9 +18,16 @@ import { applyNormalization } from '@/utils/normalization'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
 import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
+import {
+  clampToCustomRange,
+  isValueInCustomRange,
+  resolveCustomRange,
+  type ResolvedCustomRange,
+} from '../../shared/customRange'
 import { ZOOM_LEVEL_EIGHT } from '../constants/renderer'
 
 const NO_DATA_COLOR = 'transparent'
+const OUT_OF_RANGE_COLOR = '#dddddd'
 const CONTINUOUS_STOPS = 16
 
 export class BubbleRenderer {
@@ -69,11 +76,16 @@ export class BubbleRenderer {
       return
     }
 
+    const resolvedRange = resolveCustomRange(settings.customRange, colorValues)
+    const colorValuesForColor = resolvedRange
+      ? colorValues.map((v) => clampToCustomRange(v, resolvedRange))
+      : colorValues
+
     // Calculate breaks for color
     const isCustom = settings.classificationMethod === 'custom' && settings.customBreaks?.length
     const breaks = isCustom
       ? settings.customBreaks!
-      : calculateBreaks(colorValues, settings.classificationMethod, settings.classCount)
+      : calculateBreaks(colorValuesForColor, settings.classificationMethod, settings.classCount)
     const effectiveClassCount = isCustom ? breaks.length - 1 : settings.classCount
     const colorPalette = getColorPalette(settings.colorScheme, effectiveClassCount)
     const isContinuous = settings.legendType === 'continuous'
@@ -105,6 +117,7 @@ export class BubbleRenderer {
       settings,
       isBivariate,
       sizeBreaks,
+      resolvedRange,
     )
 
     console.debug(
@@ -116,13 +129,27 @@ export class BubbleRenderer {
     const colorProperty = isBivariate ? 'colorValue' : 'dataValue'
     let colorExpression: unknown[]
     if (isContinuous) {
-      colorExpression = this.buildContinuousExpression(colorValues, settings, colorProperty)
+      colorExpression = this.buildContinuousExpression(
+        colorValuesForColor,
+        settings,
+        colorProperty,
+        resolvedRange ? { min: resolvedRange.min, max: resolvedRange.max } : undefined,
+      )
     } else {
       colorExpression = buildStepExpression(colorProperty, breaks, colorPalette, NO_DATA_COLOR)
     }
 
+    if (resolvedRange?.outOfRangeMode === 'gray') {
+      colorExpression = [
+        'case',
+        ['==', ['get', 'inCustomRange'], false],
+        OUT_OF_RANGE_COLOR,
+        colorExpression,
+      ]
+    }
+
     // Render to map
-    this.renderToMap(bubblesGeoJSON, settings, colorExpression)
+    this.renderToMap(bubblesGeoJSON, settings, colorExpression, resolvedRange)
   }
 
   /**
@@ -132,10 +159,11 @@ export class BubbleRenderer {
     values: number[],
     settings: VisualizationSettings,
     propertyName: string = 'dataValue',
+    domain?: { min: number; max: number },
   ): unknown[] {
     const sorted = [...values].sort((a, b) => a - b)
-    const min = sorted[0]
-    const max = sorted[sorted.length - 1]
+    const min = domain?.min ?? sorted[0]
+    const max = domain?.max ?? sorted[sorted.length - 1]
     if (max === min) {
       return ['literal', getContinuousColor(0.5, settings.colorScheme, 'lab')]
     }
@@ -204,6 +232,7 @@ export class BubbleRenderer {
     settings: VisualizationSettings,
     isBivariate: boolean = false,
     sizeBreaks?: number[],
+    resolvedRange?: ResolvedCustomRange | null,
   ): GeoJSON.FeatureCollection {
     const bubbleFeatures: GeoJSON.Feature[] = []
 
@@ -221,6 +250,7 @@ export class BubbleRenderer {
       const colorValue = isBivariate
         ? this.getDataValue(feature, colorDataMap, normalizedFeatureName, locationLevel) ?? dataValue
         : dataValue
+      const inCustomRange = isValueInCustomRange(colorValue, resolvedRange ?? null)
 
       // Calculate centroid - only process Polygon/MultiPolygon geometries
       const geometry = feature.geometry
@@ -242,6 +272,7 @@ export class BubbleRenderer {
           value: dataValue,
           dataValue,
           colorValue,
+          inCustomRange,
           radius,
           hasData: true,
         },
@@ -379,9 +410,14 @@ export class BubbleRenderer {
     geojson: GeoJSON.FeatureCollection,
     settings: VisualizationSettings,
     colorExpression: unknown[],
+    resolvedRange: ResolvedCustomRange | null,
   ): void {
     const sourceId = 'bubble-source'
     const layerId = 'bubble-circles'
+    const layerFilter: NonNullable<Parameters<Map['setFilter']>[1]> =
+      resolvedRange?.outOfRangeMode === 'transparent'
+        ? ['all', ['==', ['get', 'hasData'], true], ['==', ['get', 'inCustomRange'], true]]
+        : ['==', ['get', 'hasData'], true]
 
     // Get symbol styling settings with defaults
     const opacity = settings.symbolOpacity !== undefined ? settings.symbolOpacity : 0.6
@@ -418,7 +454,7 @@ export class BubbleRenderer {
         id: layerId,
         type: 'circle',
         source: sourceId,
-        filter: ['==', ['get', 'hasData'], true],
+        filter: layerFilter,
         layout: {
           // Z-order: smaller radius → higher sort key → drawn on top
           'circle-sort-key': ['-', 0, ['get', 'radius']],
@@ -432,7 +468,7 @@ export class BubbleRenderer {
         },
       })
     } else {
-      this.map.setFilter(layerId, ['==', ['get', 'hasData'], true])
+      this.map.setFilter(layerId, layerFilter)
       this.map.setPaintProperty(layerId, 'circle-radius', radiusExpression)
       this.map.setPaintProperty(layerId, 'circle-color', colorExpression)
       this.map.setPaintProperty(layerId, 'circle-opacity', opacity)

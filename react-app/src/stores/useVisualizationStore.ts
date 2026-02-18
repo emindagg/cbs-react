@@ -128,6 +128,7 @@ const defaultCustomRange: CustomRange = {
   min: null,
   center: null,
   max: null,
+  outOfRangeMode: 'gray',
 }
 
 const defaultColorConfig: ColorConfiguration = {

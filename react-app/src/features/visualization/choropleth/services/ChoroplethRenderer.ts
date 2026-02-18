@@ -14,6 +14,13 @@ import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
 import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
+import {
+  clampToCustomRange,
+  isValueInCustomRange,
+  resolveCustomRange,
+  type ResolvedCustomRange,
+} from '../../shared/customRange'
+
 const NO_DATA_COLOR = '#dddddd'
 const CONTINUOUS_STOPS = 16
 
@@ -44,11 +51,16 @@ export class ChoroplethRenderer {
       return
     }
 
+    const resolvedRange = resolveCustomRange(settings.customRange, values)
+    const valuesForColor = resolvedRange
+      ? values.map((v) => clampToCustomRange(v, resolvedRange))
+      : values
+
     // Calculate breaks and palette
     const isCustom = settings.classificationMethod === 'custom' && settings.customBreaks?.length
     const breaks = isCustom
       ? settings.customBreaks!
-      : calculateBreaks(values, settings.classificationMethod, settings.classCount)
+      : calculateBreaks(valuesForColor, settings.classificationMethod, settings.classCount)
     const effectiveClassCount = isCustom ? breaks.length - 1 : settings.classCount
     const colorPalette = getColorPalette(settings.colorScheme, effectiveClassCount)
     const isContinuous = settings.legendType === 'continuous'
@@ -61,6 +73,7 @@ export class ChoroplethRenderer {
       geojson.features,
       dataMap,
       locationLevel,
+      resolvedRange,
     )
 
     const allFeaturesGeoJSON: GeoJSONFeatureCollection = {
@@ -78,13 +91,26 @@ export class ChoroplethRenderer {
     // Build MapLibre color expression
     let colorExpression: unknown[]
     if (isContinuous) {
-      colorExpression = this.buildContinuousExpression(values, settings)
+      colorExpression = this.buildContinuousExpression(
+        valuesForColor,
+        settings,
+        resolvedRange ? { min: resolvedRange.min, max: resolvedRange.max } : undefined,
+      )
     } else {
       colorExpression = buildStepExpression('dataValue', breaks, colorPalette, NO_DATA_COLOR)
     }
 
+    if (resolvedRange?.outOfRangeMode === 'gray') {
+      colorExpression = [
+        'case',
+        ['==', ['get', 'inCustomRange'], false],
+        NO_DATA_COLOR,
+        colorExpression,
+      ]
+    }
+
     // Render to map
-    this.renderToMap(allFeaturesGeoJSON, colorExpression, settings)
+    this.renderToMap(allFeaturesGeoJSON, colorExpression, settings, resolvedRange)
   }
 
   /**
@@ -93,10 +119,11 @@ export class ChoroplethRenderer {
   private buildContinuousExpression(
     values: number[],
     settings: VisualizationSettings,
+    domain?: { min: number; max: number },
   ): unknown[] {
     const sorted = [...values].sort((a, b) => a - b)
-    const min = sorted[0]
-    const max = sorted[sorted.length - 1]
+    const min = domain?.min ?? sorted[0]
+    const max = domain?.max ?? sorted[sorted.length - 1]
     if (max === min) {
       return ['literal', getContinuousColor(0.5, settings.colorScheme, 'lab')]
     }
@@ -161,6 +188,7 @@ export class ChoroplethRenderer {
     features: GeoJSONFeature[],
     dataMap: Record<string, number>,
     locationLevel: 'province' | 'district',
+    resolvedRange: ResolvedCustomRange | null,
   ): { allFeatures: GeoJSONFeature[]; featuresWithData: GeoJSONFeature[] } {
     const allFeatures: GeoJSONFeature[] = []
     const featuresWithData: GeoJSONFeature[] = []
@@ -180,11 +208,13 @@ export class ChoroplethRenderer {
         feature.properties.value = dataValue
         feature.properties.dataValue = dataValue
         feature.properties.hasData = true
+        feature.properties.inCustomRange = isValueInCustomRange(dataValue, resolvedRange)
         featuresWithData.push(feature)
       } else {
         feature.properties.value = 0
         feature.properties.dataValue = 0
         feature.properties.hasData = false
+        feature.properties.inCustomRange = false
       }
 
       allFeatures.push(feature)
@@ -264,9 +294,14 @@ export class ChoroplethRenderer {
     geojson: GeoJSONFeatureCollection,
     colorExpression: unknown[],
     settings: VisualizationSettings,
+    resolvedRange: ResolvedCustomRange | null,
   ): void {
     const sourceId = 'choropleth-source'
     const fillOpacity = settings.choroplethOpacity ?? 1
+    const layerFilter: NonNullable<Parameters<Map['setFilter']>[1]> =
+      resolvedRange?.outOfRangeMode === 'transparent'
+        ? ['all', ['==', ['get', 'hasData'], true], ['==', ['get', 'inCustomRange'], true]]
+        : ['==', ['get', 'hasData'], true]
 
     // Convert to MapLibre-compatible GeoJSON
     const safeGeoJSON: GeoJSON.FeatureCollection = {
@@ -305,14 +340,14 @@ export class ChoroplethRenderer {
         id: 'choropleth-fill',
         type: 'fill',
         source: sourceId,
-        filter: ['==', ['get', 'hasData'], true],
+        filter: layerFilter,
         paint: {
           'fill-color': colorExpression as Parameters<Map['setPaintProperty']>[2],
           'fill-opacity': fillOpacity,
         },
       })
     } else {
-      this.map.setFilter('choropleth-fill', ['==', ['get', 'hasData'], true])
+      this.map.setFilter('choropleth-fill', layerFilter)
       this.map.setPaintProperty('choropleth-fill', 'fill-color', colorExpression)
       this.map.setPaintProperty('choropleth-fill', 'fill-opacity', fillOpacity)
     }
@@ -323,7 +358,7 @@ export class ChoroplethRenderer {
         id: 'choropleth-outline',
         type: 'line',
         source: sourceId,
-        filter: ['==', ['get', 'hasData'], true],
+        filter: layerFilter,
         paint: {
           'line-color': '#6b7280',
           'line-width': 1,
@@ -331,7 +366,7 @@ export class ChoroplethRenderer {
         },
       })
     } else {
-      this.map.setFilter('choropleth-outline', ['==', ['get', 'hasData'], true])
+      this.map.setFilter('choropleth-outline', layerFilter)
       this.map.setPaintProperty('choropleth-outline', 'line-color', '#6b7280')
       this.map.setPaintProperty('choropleth-outline', 'line-width', 1)
       this.map.setPaintProperty('choropleth-outline', 'line-opacity', 0.8)

@@ -57,16 +57,35 @@ export default function CustomRangeConfig({
       </div>
 
       {customRange.enabled && (
-        <CustomRangeConfigFields
-          localMin={localMin}
-          localCenter={localCenter}
-          localMax={localMax}
-          errors={errors}
-          onValidateAndUpdate={validateAndUpdate}
-          autoMin={autoMin}
-          autoCenter={autoCenter}
-          autoMax={autoMax}
-        />
+        <div className="space-y-2.5">
+          <div>
+            <label className="text-[10px] font-medium text-zinc-600 mb-1 block">Aralık Dışı Gösterim</label>
+            <select
+              value={customRange.outOfRangeMode ?? 'gray'}
+              onChange={(e) =>
+                onChange({
+                  ...customRange,
+                  outOfRangeMode: e.target.value as 'gray' | 'transparent',
+                })
+              }
+              className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="gray">Gri boya</option>
+              <option value="transparent">Şeffaf (gizle)</option>
+            </select>
+          </div>
+
+          <CustomRangeConfigFields
+            localMin={localMin}
+            localCenter={localCenter}
+            localMax={localMax}
+            errors={errors}
+            onValidateAndUpdate={validateAndUpdate}
+            autoMin={autoMin}
+            autoCenter={autoCenter}
+            autoMax={autoMax}
+          />
+        </div>
       )}
     </div>
   )

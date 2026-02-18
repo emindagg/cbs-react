@@ -13,6 +13,7 @@
 import type { LegendLabelsProps } from '../types'
 import SmartLabel from './SmartLabel'
 import { useLabelCollision } from '../hooks/useLabelCollision'
+import { collapseConsecutiveLabels } from '../utils/collapseConsecutiveLabels'
 
 const BAR_HEIGHT = 14
 
@@ -55,6 +56,15 @@ export default function LegendLabels({
         text: texts[i],
       }))
     }
+
+    // Custom range clamp can produce repeated labels (e.g. 2M, 2M, 2M).
+    // Collapse consecutive equals into a single "2M+" marker.
+    const collapsed = collapseConsecutiveLabels(effectiveLabels.map((l) => l.text))
+    effectiveLabels = effectiveLabels.map((label, i) => ({
+      ...label,
+      text: collapsed[i]?.text ?? label.text,
+      visible: label.visible && (collapsed[i]?.visible ?? true),
+    }))
 
     const isVertical = layoutMode === 'vertical' || layoutMode === 'thinned'
 

@@ -57,13 +57,25 @@ export function useVizRender({
 }: UseVizRenderProps) {
   const [isRendering, setIsRendering] = useState(false)
   const [hasRendered, setHasRendered] = useState(false)
-  const { setCurrentVisualization } = useVisualizationStore()
+  const { setCurrentVisualization, colorConfig } = useVisualizationStore()
 
   // Data-affecting settings → full re-render
   // NOTE: vizSettings.type is intentionally excluded so that changing the
   // visualization type alone does NOT trigger an automatic re-render.
   // The user must click the "Yeniden Görselleştir" button for the type change to take effect.
-  const dataVizKey = `${vizSettings.classificationMethod}-${vizSettings.classCount}-${vizSettings.colorScheme}-${vizSettings.legendType || 'steps'}-${vizSettings.interpolation || 'equidistant'}-${vizSettings.dotValue ?? 'auto'}`
+  const range = colorConfig.customRange
+  const dataVizKey = [
+    vizSettings.classificationMethod,
+    vizSettings.classCount,
+    vizSettings.colorScheme,
+    vizSettings.legendType || 'steps',
+    vizSettings.interpolation || 'equidistant',
+    vizSettings.dotValue ?? 'auto',
+    range?.enabled ? 'range:on' : 'range:off',
+    range?.min ?? 'range:auto-min',
+    range?.max ?? 'range:auto-max',
+    range?.outOfRangeMode ?? 'range:gray',
+  ].join('-')
   // Paint-only settings → setPaintProperty (no data recomputation)
   const paintVizKey = [
     vizSettings.type,
@@ -140,22 +152,27 @@ export function useVizRender({
       vizManager.clearVisualization()
 
       // Route based on visualization type
+      const renderSettings: VisualizationSettings = {
+        ...vizSettings,
+        customRange: colorConfig.customRange,
+      }
+
       switch (vizSettings.type) {
         case 'choropleth':
-          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn!, vizSettings, locationLevel)
+          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn!, renderSettings, locationLevel)
           break
 
         case 'dot':
-          await vizManager.renderPoint(successfulData, columnMapping.dataColumn!, vizSettings, locationLevel)
+          await vizManager.renderPoint(successfulData, columnMapping.dataColumn!, renderSettings, locationLevel)
           break
 
         case 'bubble':
-          await vizManager.renderBubble(successfulData, columnMapping.dataColumn!, vizSettings, locationLevel)
+          await vizManager.renderBubble(successfulData, columnMapping.dataColumn!, renderSettings, locationLevel)
           break
 
         default:
           // Fallback to choropleth
-          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn!, vizSettings, locationLevel)
+          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn!, renderSettings, locationLevel)
       }
 
       // Update current visualization to trigger legend display

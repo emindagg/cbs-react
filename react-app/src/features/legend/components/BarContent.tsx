@@ -5,6 +5,7 @@
 import type { ColorScaleType, LegendConfiguration } from '@/types/visualization'
 import { formatNumber, type NumberFormat } from '@/utils/numberFormatter'
 
+import { collapseConsecutiveLabels } from '../utils/collapseConsecutiveLabels'
 import { generateContinuousItems, generateSteppedItems, type LegendItem } from '../utils/itemGenerators'
 
 interface BarContentProps {
@@ -43,6 +44,15 @@ export function BarContent({
   const verticalBarHeight = `${config.size}px`
 
   if (scaleType === 'continuous') {
+    const collapsed = collapseConsecutiveLabels(displayItems.map((item) => item.label))
+    const continuousItems = displayItems
+      .map((item, index) => ({
+        ...item,
+        label: collapsed[index]?.text ?? item.label,
+        visible: collapsed[index]?.visible ?? true,
+      }))
+      .filter((item) => item.visible)
+
     return config.orientation === 'horizontal' ? (
       <div className="space-y-2">
         <div
@@ -50,7 +60,7 @@ export function BarContent({
           style={{ background: gradientString, boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.08)' }}
         />
         <div className="flex flex-row justify-between">
-          {displayItems.map((item, index) => (
+          {continuousItems.map((item, index) => (
             <span key={index} className="text-[12px] text-[#333333] font-[450]">
               {item.label}
             </span>
@@ -64,7 +74,7 @@ export function BarContent({
           style={{ background: gradientString, height: verticalBarHeight, boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.08)' }}
         />
         <div className="flex flex-col justify-between" style={{ height: verticalBarHeight }}>
-          {displayItems.map((item, index) => (
+          {continuousItems.map((item, index) => (
             <span key={index} className="text-[12px] text-[#333333] font-[450]">
               {item.label}
             </span>
@@ -87,6 +97,24 @@ export function BarContent({
         formatNumber(b, config.format as NumberFormat),
       )
       : []
+    const collapsedRulerLabels = collapseConsecutiveLabels(rulerLabels)
+    const rulerLabelNodes = rulerLabels.map((label, index) => {
+      const collapsed = collapsedRulerLabels[index]
+      if (!collapsed?.visible) return null
+      return (
+        <span
+          key={index}
+          className="text-[12px] text-[#333333] font-[450] whitespace-nowrap leading-none"
+          style={{
+            position: 'absolute',
+            top: `${index * stepHeight}px`,
+            transform: 'translateY(-50%)',
+          }}
+        >
+          {collapsed?.text ?? label}
+        </span>
+      )
+    })
 
     return (
       <div className="flex flex-row" style={{ position: 'relative' }}>
@@ -112,19 +140,7 @@ export function BarContent({
         </div>
         <div style={{ position: 'relative', height: `${totalHeight}px`, marginLeft: '6px' }}>
           {isRuler
-            ? rulerLabels.map((label, index) => (
-              <span
-                key={index}
-                className="text-[12px] text-[#333333] font-[450] whitespace-nowrap leading-none"
-                style={{
-                  position: 'absolute',
-                  top: `${index * stepHeight}px`,
-                  transform: 'translateY(-50%)',
-                }}
-              >
-                {label}
-              </span>
-            ))
+            ? rulerLabelNodes
             : displayItems.map((item, index) => (
               <span
                 key={index}
