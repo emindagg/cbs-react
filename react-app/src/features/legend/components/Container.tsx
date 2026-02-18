@@ -154,6 +154,9 @@ export default function Container() {
         }}
         circles={isGraduated ? circlesForGraduated : legendCircles}
         bubbleColor={!isGraduated && !vizSettings.colorColumn ? vizSettings.symbolFillColor : undefined}
+        bubbleOpacity={vizSettings.symbolOpacity ?? 0.6}
+        bubbleStrokeColor={vizSettings.symbolStrokeColor || '#ffffff'}
+        bubbleStrokeWidth={vizSettings.symbolStrokeWidth ?? 1.5}
         graduatedClasses={graduatedClasses}
         onTitleChange={handleTitleChange}
       />

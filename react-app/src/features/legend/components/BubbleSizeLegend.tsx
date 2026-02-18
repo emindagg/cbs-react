@@ -28,6 +28,12 @@ interface BubbleSizeLegendProps {
   circles: LegendCircle[]
   /** Dolgu rengi (undefined = fill:none, yalnızca kontur) */
   bubbleColor?: string
+  /** Opaklık — haritadaki circle-opacity ile eşleşmeli */
+  bubbleOpacity?: number
+  /** Kontur rengi — haritadaki circle-stroke-color ile eşleşmeli */
+  bubbleStrokeColor?: string
+  /** Kontur kalınlığı — haritadaki circle-stroke-width ile eşleşmeli */
+  bubbleStrokeWidth?: number
   /** Graduated mod: sınıf bilgileri */
   graduatedClasses?: GraduatedClass[]
   onTitleChange?: (title: string) => void
@@ -37,6 +43,9 @@ export default function BubbleSizeLegend({
   config,
   circles,
   bubbleColor,
+  bubbleOpacity = 0.6,
+  bubbleStrokeColor = '#ffffff',
+  bubbleStrokeWidth = 1.5,
   graduatedClasses,
   onTitleChange,
 }: BubbleSizeLegendProps) {
@@ -115,12 +124,14 @@ export default function BubbleSizeLegend({
     setIsDragging(true)
   }
 
-  // Derive maxRadius from circles (max→min sıralı, ilk eleman en büyük)
-  const maxRadius = circles[0]?.radius
-    ?? (graduatedClasses ? Math.max(...graduatedClasses.map((c) => c.radius)) : 20)
+  // maxRadius: circles sırasından bağımsız, her zaman en büyük yarıçapı al
+  const maxRadius = circles.length > 0
+    ? Math.max(...circles.map((c) => c.radius))
+    : (graduatedClasses ? Math.max(...graduatedClasses.map((c) => c.radius)) : 20)
 
-  // SVG width for rows — circles right-aligned (both graduated and proportional)
+  // SVG width for rows — circles centered (cx = svgW/2 = maxRadius + 2)
   const svgW = maxRadius * 2 + 4
+  const cx = svgW / 2
 
   return (
     <div
@@ -168,7 +179,7 @@ export default function BubbleSizeLegend({
       {/* Graduated: rows of right-aligned circles with range labels */}
       {graduatedClasses ? (
         <div className="flex flex-col gap-1">
-          {graduatedClasses.map((cls, i) => (
+          {[...graduatedClasses].reverse().map((cls, i) => (
             <div key={i} className="flex items-center gap-2">
               <svg
                 width={svgW}
@@ -176,7 +187,7 @@ export default function BubbleSizeLegend({
                 style={{ display: 'block', flexShrink: 0 }}
               >
                 <circle
-                  cx={svgW - cls.radius - 2}
+                  cx={cx}
                   cy={cls.radius + 2}
                   r={cls.radius}
                   fill="none"
@@ -204,14 +215,13 @@ export default function BubbleSizeLegend({
                 style={{ display: 'block', flexShrink: 0 }}
               >
                 <circle
-                  cx={svgW - c.radius - 2}
+                  cx={cx}
                   cy={c.radius + 2}
                   r={c.radius}
                   fill={bubbleColor || 'none'}
-                  fillOpacity={bubbleColor ? 0.65 : 0}
-                  stroke={bubbleColor ? 'rgba(0,0,0,0.25)' : '#666'}
-                  strokeWidth={1}
-                  opacity={0.8}
+                  fillOpacity={bubbleColor ? bubbleOpacity : 0}
+                  stroke={bubbleColor ? bubbleStrokeColor : '#666'}
+                  strokeWidth={bubbleStrokeWidth}
                 />
               </svg>
               <span
