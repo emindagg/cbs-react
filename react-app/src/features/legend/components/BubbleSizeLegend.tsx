@@ -1,7 +1,7 @@
 /**
  * BubbleSizeLegend — ArcGIS-style nested circles legend
  *
- * Shows 3 concentric circles (min, mid, max) with value labels
+ * Shows concentric circles (3-7 adet) with value labels
  * to indicate what bubble sizes represent.
  */
 
@@ -17,13 +17,17 @@ interface GraduatedClass {
   radius: number
 }
 
+interface LegendCircle {
+  value: number
+  radius: number
+}
+
 interface BubbleSizeLegendProps {
   config: LegendConfiguration
-  minValue: number
-  maxValue: number
-  minRadius: number
-  maxRadius: number
-  midRadius: number
+  /** Proportional mod: max→min sıralı çemberler (dinamik sayı) */
+  circles: LegendCircle[]
+  /** Dolgu rengi (undefined = fill:none, yalnızca kontur) */
+  bubbleColor?: string
   /** Graduated mod: sınıf bilgileri */
   graduatedClasses?: GraduatedClass[]
   onTitleChange?: (title: string) => void
@@ -31,11 +35,8 @@ interface BubbleSizeLegendProps {
 
 export default function BubbleSizeLegend({
   config,
-  minValue,
-  maxValue,
-  minRadius,
-  maxRadius,
-  midRadius,
+  circles,
+  bubbleColor,
   graduatedClasses,
   onTitleChange,
 }: BubbleSizeLegendProps) {
@@ -114,25 +115,11 @@ export default function BubbleSizeLegend({
     setIsDragging(true)
   }
 
-  // 3 levels: max, mid, min
-  const midValue = (minValue + maxValue) / 2
+  // Derive maxRadius from circles (max→min sıralı, ilk eleman en büyük)
+  const maxRadius = circles[0]?.radius
+    ?? (graduatedClasses ? Math.max(...graduatedClasses.map((c) => c.radius)) : 20)
 
-  // SVG dimensions — based on the largest circle
-  const padding = 4
-  const labelWidth = 70
-  const svgWidth = maxRadius * 2 + labelWidth + padding * 2
-  const svgHeight = maxRadius * 2 + padding * 2
-
-  const circles = [
-    { value: maxValue, radius: maxRadius, label: fmt(maxValue) },
-    { value: midValue, radius: midRadius, label: fmt(midValue) },
-    { value: minValue, radius: minRadius, label: fmt(minValue) },
-  ]
-
-  // All circles bottom-aligned
-  const bottomY = svgHeight - padding
-
-  // Fixed SVG width for graduated rows — all circles right-aligned
+  // SVG width for rows — circles right-aligned (both graduated and proportional)
   const svgW = maxRadius * 2 + 4
 
   return (
@@ -207,54 +194,34 @@ export default function BubbleSizeLegend({
           ))}
         </div>
       ) : (
-        /* Nested circles SVG (proportional) */
-        <svg
-          width={svgWidth}
-          height={svgHeight}
-          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          style={{ display: 'block' }}
-        >
-          {circles.map((c, i) => {
-            const cy = bottomY - c.radius
-            const cx = padding + maxRadius
-
-            return (
-              <g key={i}>
-                {/* Circle */}
+        /* Proportional: ayrı satırlar (max→min), right-aligned, değer etiketi */
+        <div className="flex flex-col gap-1">
+          {circles.map((c, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <svg
+                width={svgW}
+                height={c.radius * 2 + 4}
+                style={{ display: 'block', flexShrink: 0 }}
+              >
                 <circle
-                  cx={cx}
-                  cy={cy}
+                  cx={svgW - c.radius - 2}
+                  cy={c.radius + 2}
                   r={c.radius}
-                  fill="none"
-                  stroke="#666"
+                  fill={bubbleColor || 'none'}
+                  fillOpacity={bubbleColor ? 0.65 : 0}
+                  stroke={bubbleColor ? 'rgba(0,0,0,0.25)' : '#666'}
                   strokeWidth={1}
-                  strokeDasharray={i === 0 ? 'none' : '3,2'}
                   opacity={0.8}
                 />
-                {/* Dashed line from top of circle to label area */}
-                <line
-                  x1={cx}
-                  y1={cy - c.radius}
-                  x2={padding + maxRadius * 2 + 6}
-                  y2={cy - c.radius}
-                  stroke="#999"
-                  strokeWidth={0.8}
-                  strokeDasharray="2,2"
-                />
-                {/* Value label */}
-                <text
-                  x={padding + maxRadius * 2 + 10}
-                  y={cy - c.radius + 4}
-                  fontSize={11}
-                  fill="#444"
-                  fontFamily="system-ui, sans-serif"
-                >
-                  {c.label}
-                </text>
-              </g>
-            )
-          })}
-        </svg>
+              </svg>
+              <span
+                style={{ fontSize: 10, color: '#444', fontFamily: 'system-ui, sans-serif', whiteSpace: 'nowrap' }}
+              >
+                {fmt(c.value)}
+              </span>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )

@@ -27,19 +27,30 @@ export default function Container() {
       .filter((v): v is number => v !== undefined)
   }, [matchResults])
 
+  // Bivariate modda renk lejantı colorColumn'dan hesaplanmalı
+  const colorValues = useMemo(() => {
+    if (vizSettings.colorColumn) {
+      const vals = matchResults.successful
+        .map((result) => parseFloat(String(result.originalData[vizSettings.colorColumn!])))
+        .filter((v) => !isNaN(v) && v !== 0)
+      if (vals.length > 0) return vals
+    }
+    return dataValues
+  }, [matchResults, vizSettings.colorColumn, dataValues])
+
   // Calculate breaks based on classification method
   const breaks = useMemo(() => {
-    if (dataValues.length === 0) return []
+    if (colorValues.length === 0) return []
 
     if (colorConfig.scaleType === 'continuous') {
       // For continuous, use custom range if enabled
       const min = colorConfig.customRange?.enabled && colorConfig.customRange.min !== null
         ? colorConfig.customRange.min
-        : Math.min(...dataValues)
+        : Math.min(...colorValues)
 
       const max = colorConfig.customRange?.enabled && colorConfig.customRange.max !== null
         ? colorConfig.customRange.max
-        : Math.max(...dataValues)
+        : Math.max(...colorValues)
 
       return [min, max]
     } else {
@@ -49,11 +60,11 @@ export default function Container() {
       }
 
       // Apply custom range clamp for steps mode too
-      let values = dataValues
+      let values = colorValues
       if (colorConfig.customRange?.enabled) {
-        const rangeMin = colorConfig.customRange.min ?? Math.min(...dataValues)
-        const rangeMax = colorConfig.customRange.max ?? Math.max(...dataValues)
-        values = dataValues.map((v) => Math.max(rangeMin, Math.min(rangeMax, v)))
+        const rangeMin = colorConfig.customRange.min ?? Math.min(...colorValues)
+        const rangeMax = colorConfig.customRange.max ?? Math.max(...colorValues)
+        values = colorValues.map((v) => Math.max(rangeMin, Math.min(rangeMax, v)))
       }
 
       return calculateBreaks(
@@ -62,7 +73,7 @@ export default function Container() {
         vizSettings.classCount,
       )
     }
-  }, [dataValues, colorConfig, vizSettings])
+  }, [colorValues, colorConfig, vizSettings])
 
   // Get colors based on scale type
   const colors = useMemo(() => {
@@ -100,10 +111,6 @@ export default function Container() {
     const minSize = vizSettings.symbolMinSize || 5
     const maxSize = vizSettings.symbolMaxSize || 40
     const scaling = vizSettings.symbolScaling || 'sqrt'
-    const minR = calculateSymbolSize(minVal, minVal, maxVal, minSize, maxSize, scaling)
-    const maxR = calculateSymbolSize(maxVal, minVal, maxVal, minSize, maxSize, scaling)
-    const midVal = (minVal + maxVal) / 2
-    const midR = calculateSymbolSize(midVal, minVal, maxVal, minSize, maxSize, scaling)
 
     // Graduated mode: compute class info for the legend
     const isGraduated = vizSettings.bubbleSizeMode === 'graduated'
@@ -119,6 +126,22 @@ export default function Container() {
       }))
     })() : undefined
 
+    // Proportional mode: dinamik çember sayısı (3-7), max→min sıralı
+    const count = vizSettings.bubbleLegendCount || 3
+    const legendCircles = Array.from({ length: count }, (_, i) => {
+      const t = count === 1 ? 0.5 : i / (count - 1)  // 0→1
+      const value = maxVal - t * (maxVal - minVal)     // maxVal→minVal
+      const radius = calculateSymbolSize(value, minVal, maxVal, minSize, maxSize, scaling)
+      return { value, radius }
+    })
+
+    // maxRadius graduated için de gerekli (SVG genişliği hesabı)
+    const maxR = calculateSymbolSize(maxVal, minVal, maxVal, minSize, maxSize, scaling)
+    const graduatedMaxR = graduatedClasses
+      ? Math.max(...graduatedClasses.map((c) => c.radius))
+      : maxR
+    const circlesForGraduated = [{ value: maxVal, radius: graduatedMaxR }]
+
     return (
       <BubbleSizeLegend
         config={{
@@ -129,11 +152,8 @@ export default function Container() {
             text: colorConfig.legend.title?.text || (isBubbleBivariate ? 'Boyut' : 'Lejant'),
           },
         }}
-        minValue={minVal}
-        maxValue={maxVal}
-        minRadius={minR}
-        maxRadius={maxR}
-        midRadius={midR}
+        circles={isGraduated ? circlesForGraduated : legendCircles}
+        bubbleColor={!isGraduated && !vizSettings.colorColumn ? vizSettings.symbolFillColor : undefined}
         graduatedClasses={graduatedClasses}
         onTitleChange={handleTitleChange}
       />
@@ -164,6 +184,15 @@ export default function Container() {
         onTitleChange={handleTitleChange}
       />
     )
+  }
+
+  // Proportional + non-bivariate: only show size legend (no color gradient legend)
+  const isProportionalNonBivariate = isBubble
+    && (vizSettings.bubbleSizeMode || 'proportional') === 'proportional'
+    && !vizSettings.colorColumn
+
+  if (isProportionalNonBivariate) {
+    return <>{bubbleSizeLegend}</>
   }
 
   // Graduated + non-bivariate: only show size legend (color legend is redundant)

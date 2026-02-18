@@ -130,6 +130,10 @@ export interface VisualizationSettings {
   colorColumn?: string;
   /** Render sırasında colorConfig'ten taşınan custom range ayarı */
   customRange?: CustomRange;
+  /** Oransal+tek-renk modunda kabarcık dolgu rengi (hex). undefined = renk gradiyanı kullan */
+  symbolFillColor?: string;
+  /** Boyut lejantında gösterilecek çember sayısı (3-7). Varsayılan: 3 */
+  bubbleLegendCount?: number;
 }
 
 export interface CurrentVisualization {

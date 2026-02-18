@@ -49,6 +49,17 @@ function updateChoroplethPaintProperties(map: maplibregl.Map, settings: Visualiz
   map.setPaintProperty('choropleth-fill', 'fill-opacity', choroplethOpacity as PaintPropertyValue<number>)
 }
 
+/** Update bubble paint-only properties (stroke, opacity) without full re-render */
+function updateBubblePaintProperties(map: maplibregl.Map, settings: VisualizationSettings) {
+  if (!map.getLayer('bubble-circles')) return
+  const opacity = settings.symbolOpacity ?? 0.6
+  const strokeColor = settings.symbolStrokeColor || '#ffffff'
+  const strokeWidth = settings.symbolStrokeWidth ?? 1.5
+  map.setPaintProperty('bubble-circles', 'circle-opacity', opacity as PaintPropertyValue<number>)
+  map.setPaintProperty('bubble-circles', 'circle-stroke-color', strokeColor)
+  map.setPaintProperty('bubble-circles', 'circle-stroke-width', strokeWidth as PaintPropertyValue<number>)
+}
+
 export function useVizRender({
   matchResults,
   columnMapping,
@@ -76,6 +87,13 @@ export function useVizRender({
     range?.min ?? 'range:auto-min',
     range?.max ?? 'range:auto-max',
     range?.outOfRangeMode ?? 'range:gray',
+    // Bubble: renk ve boyut hesabını etkileyen ayarlar
+    vizSettings.symbolFillColor ?? 'none',
+    vizSettings.colorColumn ?? 'none',
+    vizSettings.bubbleSizeMode ?? 'proportional',
+    vizSettings.symbolScaling ?? 'sqrt',
+    vizSettings.symbolMinSize ?? 'auto',
+    vizSettings.symbolMaxSize ?? 'auto',
   ].join('-')
   // Paint-only settings → setPaintProperty (no data recomputation)
   const paintVizKey = [
@@ -84,6 +102,10 @@ export function useVizRender({
     vizSettings.dotColor ?? 'auto',
     vizSettings.dotOpacity ?? 'auto',
     vizSettings.choroplethOpacity ?? 'auto',
+    // Bubble paint-only: kontur ve opaklık
+    vizSettings.symbolStrokeColor ?? 'auto',
+    vizSettings.symbolOpacity ?? 'auto',
+    vizSettings.symbolStrokeWidth ?? 'auto',
   ].join('-')
 
   const prevDataVizKeyRef = useRef<string | null>(null)
@@ -113,10 +135,13 @@ export function useVizRender({
     }
     if (prevPaintVizKeyRef.current !== paintVizKey) {
       prevPaintVizKeyRef.current = paintVizKey
-      if (vizSettings.type === 'dot') {
-        updateDotPaintProperties(map, vizSettings)
-      } else if (vizSettings.type === 'choropleth') {
-        updateChoroplethPaintProperties(map, vizSettings)
+      const { vizSettings: s } = useVisualizationStore.getState()
+      if (s.type === 'dot') {
+        updateDotPaintProperties(map, s)
+      } else if (s.type === 'choropleth') {
+        updateChoroplethPaintProperties(map, s)
+      } else if (s.type === 'bubble') {
+        updateBubblePaintProperties(map, s)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,6 +157,10 @@ export function useVizRender({
 
     try {
       const vizManager = new VisualizationManager(map)
+
+      // Closure yerine anlık store değerlerini oku — stale closure sorununu önler
+      const { vizSettings: currentVizSettings, colorConfig: currentColorConfig } =
+        useVisualizationStore.getState()
 
       // Get successful matches only
       const successfulData = matchResults.successful.map((m) => ({
@@ -154,11 +183,11 @@ export function useVizRender({
 
       // Route based on visualization type
       const renderSettings: VisualizationSettings = {
-        ...vizSettings,
-        customRange: colorConfig.customRange,
+        ...currentVizSettings,
+        customRange: currentColorConfig.customRange,
       }
 
-      switch (vizSettings.type) {
+      switch (currentVizSettings.type) {
         case 'choropleth':
           await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn!, renderSettings, locationLevel)
           break
@@ -178,7 +207,7 @@ export function useVizRender({
 
       // Update current visualization to trigger legend display
       setCurrentVisualization({
-        type: vizSettings.type,
+        type: currentVizSettings.type,
         data: successfulData,
         column: columnMapping.dataColumn,
         locationLevel,

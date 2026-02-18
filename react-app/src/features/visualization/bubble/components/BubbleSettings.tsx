@@ -94,6 +94,48 @@ export function BubbleSettings({
         </div>
       )}
 
+      {/* Proportional + non-bivariate: tek renk + lejant çember sayısı */}
+      {(vizSettings.bubbleSizeMode || 'proportional') === 'proportional' && !vizSettings.colorColumn && (
+        <>
+          {/* Dolgu Rengi */}
+          <div>
+            <label className="block text-[10px] font-medium text-zinc-600 mb-1">Dolgu Rengi</label>
+            <div className="flex gap-2">
+              <input
+                type="color"
+                value={vizSettings.symbolFillColor || '#4a90d9'}
+                onChange={(e) => setVizSettings({ symbolFillColor: e.target.value })}
+                className="w-12 h-8 border border-zinc-200 rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={vizSettings.symbolFillColor || '#4a90d9'}
+                onChange={(e) => {
+                  if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value))
+                    setVizSettings({ symbolFillColor: e.target.value })
+                }}
+                placeholder="#4a90d9"
+                className="flex-1 px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+              />
+            </div>
+          </div>
+
+          {/* Lejant Çember Sayısı */}
+          <div>
+            <label className="block text-[10px] font-medium text-zinc-600 mb-1">Lejant Çember Sayısı</label>
+            <select
+              value={vizSettings.bubbleLegendCount || 3}
+              onChange={(e) => setVizSettings({ bubbleLegendCount: Number(e.target.value) })}
+              className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            >
+              {[3, 4, 5, 6, 7].map((n) => (
+                <option key={n} value={n}>{n} çember</option>
+              ))}
+            </select>
+          </div>
+        </>
+      )}
+
       {/* Graduated: class count + classification method */}
       {vizSettings.bubbleSizeMode === 'graduated' && (
         <div className="space-y-2">

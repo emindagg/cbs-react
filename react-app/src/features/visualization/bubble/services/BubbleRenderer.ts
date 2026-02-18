@@ -135,8 +135,12 @@ export class BubbleRenderer {
 
     // Build MapLibre color expression — bivariate ise 'colorValue' property'sini kullan
     const colorProperty = isBivariate ? 'colorValue' : 'dataValue'
-    let colorExpression: unknown[]
-    if (isContinuous) {
+    const isSingleColor = !isBivariate && !!settings.symbolFillColor
+
+    let colorExpression: unknown
+    if (isSingleColor) {
+      colorExpression = settings.symbolFillColor
+    } else if (isContinuous) {
       colorExpression = this.buildContinuousExpression(
         colorValuesForColor,
         settings,
@@ -147,7 +151,7 @@ export class BubbleRenderer {
       colorExpression = buildStepExpression(colorProperty, breaks, colorPalette, NO_DATA_COLOR)
     }
 
-    if (resolvedRange?.outOfRangeMode === 'gray') {
+    if (!isSingleColor && resolvedRange?.outOfRangeMode === 'gray') {
       colorExpression = [
         'case',
         ['==', ['get', 'inCustomRange'], false],
@@ -427,7 +431,7 @@ export class BubbleRenderer {
     geojson: GeoJSON.FeatureCollection,
     backdropGeoJSON: GeoJSON.FeatureCollection,
     settings: VisualizationSettings,
-    colorExpression: unknown[],
+    colorExpression: unknown,
     resolvedRange: ResolvedCustomRange | null,
   ): void {
     const sourceId = 'bubble-source'
