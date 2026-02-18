@@ -541,7 +541,7 @@ export class BubbleRenderer {
     } else {
       this.map.setFilter(layerId, layerFilter)
       this.map.setPaintProperty(layerId, 'circle-radius', radiusExpression)
-      this.map.setPaintProperty(layerId, 'circle-color', colorExpression)
+      this.map.setPaintProperty(layerId, 'circle-color', colorExpression as Parameters<Map['setPaintProperty']>[2])
       this.map.setPaintProperty(layerId, 'circle-opacity', opacity)
       this.map.setPaintProperty(layerId, 'circle-stroke-color', strokeColor)
       this.map.setPaintProperty(layerId, 'circle-stroke-width', strokeWidth)
