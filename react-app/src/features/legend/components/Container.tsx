@@ -4,7 +4,7 @@
  * Dot density maps get a specialized "1 nokta = X" legend (ArcGIS style).
  */
 
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
 import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, calculateSmartDotValue } from '@/shared/visualization'
@@ -78,45 +78,23 @@ export default function Container() {
     }
   }, [colorConfig.scaleType, vizSettings.colorScheme, vizSettings.classCount, vizSettings.classificationMethod, vizSettings.customBreaks])
 
-  // NOW we can do conditional returns after all hooks are called
-  if (!currentVisualization.type || !currentVisualization.data) {
-    return null
-  }
+  // Derived values needed by hooks below
+  const isBubble = vizSettings.type === 'bubble'
+  const isBubbleBivariate = isBubble && !!vizSettings.colorColumn
 
-  if (dataValues.length === 0) {
-    return null
-  }
-
-  const handleTitleChange = (title: string) => {
+  // Hooks must all be declared before any conditional returns
+  const handleTitleChange = useCallback((title: string) => {
     setLegendConfig({
       title: {
         show: colorConfig.legend.title?.show ?? true,
         text: title,
       },
     })
-  }
+  }, [colorConfig.legend.title?.show, setLegendConfig])
 
-  // Dot density → ArcGIS-style "1 nokta = X" legend
-  if (vizSettings.type === 'dot') {
-    const dotValue = vizSettings.dotValue ?? calculateSmartDotValue(dataValues)
-    const dotColor = vizSettings.dotColor ?? DEFAULT_DOT_COLOR
-    const dotSize = vizSettings.dotSize ?? DEFAULT_DOT_SIZE
+  const bubbleSizeLegend = useMemo(() => {
+    if (!isBubble || dataValues.length === 0) return null
 
-    return (
-      <DotDensityLegend
-        config={colorConfig.legend}
-        dotColor={dotColor}
-        dotSize={dotSize}
-        dotValue={dotValue}
-        onTitleChange={handleTitleChange}
-      />
-    )
-  }
-
-  // Bubble map → show color legend + size legend
-  const isBubble = vizSettings.type === 'bubble'
-  const isBubbleBivariate = isBubble && !!vizSettings.colorColumn
-  const bubbleSizeLegend = isBubble ? (() => {
     const minVal = Math.min(...dataValues)
     const maxVal = Math.max(...dataValues)
     const minSize = vizSettings.symbolMinSize || 5
@@ -124,6 +102,8 @@ export default function Container() {
     const scaling = vizSettings.symbolScaling || 'sqrt'
     const minR = calculateSymbolSize(minVal, minVal, maxVal, minSize, maxSize, scaling)
     const maxR = calculateSymbolSize(maxVal, minVal, maxVal, minSize, maxSize, scaling)
+    const midVal = (minVal + maxVal) / 2
+    const midR = calculateSymbolSize(midVal, minVal, maxVal, minSize, maxSize, scaling)
 
     // Graduated mode: compute class info for the legend
     const isGraduated = vizSettings.bubbleSizeMode === 'graduated'
@@ -143,22 +123,48 @@ export default function Container() {
       <BubbleSizeLegend
         config={{
           ...colorConfig.legend,
-          position: 'inside-right-bottom',
           title: {
             ...colorConfig.legend.title,
             show: colorConfig.legend.title?.show ?? true,
-            text: isBubbleBivariate ? 'Boyut' : (colorConfig.legend.title?.text || 'Lejant'),
+            text: colorConfig.legend.title?.text || (isBubbleBivariate ? 'Boyut' : 'Lejant'),
           },
         }}
         minValue={minVal}
         maxValue={maxVal}
         minRadius={minR}
         maxRadius={maxR}
+        midRadius={midR}
         graduatedClasses={graduatedClasses}
         onTitleChange={handleTitleChange}
       />
     )
-  })() : null
+  }, [isBubble, isBubbleBivariate, dataValues, vizSettings, colorConfig.legend, handleTitleChange])
+
+  // NOW we can do conditional returns after all hooks are called
+  if (!currentVisualization.type || !currentVisualization.data) {
+    return null
+  }
+
+  if (dataValues.length === 0) {
+    return null
+  }
+
+  // Dot density → ArcGIS-style "1 nokta = X" legend
+  if (vizSettings.type === 'dot') {
+    const dotValue = vizSettings.dotValue ?? calculateSmartDotValue(dataValues)
+    const dotColor = vizSettings.dotColor ?? DEFAULT_DOT_COLOR
+    const dotSize = vizSettings.dotSize ?? DEFAULT_DOT_SIZE
+
+    return (
+      <DotDensityLegend
+        config={colorConfig.legend}
+        dotColor={dotColor}
+        dotSize={dotSize}
+        dotValue={dotValue}
+        onTitleChange={handleTitleChange}
+      />
+    )
+  }
 
   // Graduated + non-bivariate: only show size legend (color legend is redundant)
   const isGraduatedNonBivariate = isBubble

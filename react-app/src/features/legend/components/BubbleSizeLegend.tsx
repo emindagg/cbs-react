@@ -23,6 +23,7 @@ interface BubbleSizeLegendProps {
   maxValue: number
   minRadius: number
   maxRadius: number
+  midRadius: number
   /** Graduated mod: sınıf bilgileri */
   graduatedClasses?: GraduatedClass[]
   onTitleChange?: (title: string) => void
@@ -34,6 +35,7 @@ export default function BubbleSizeLegend({
   maxValue,
   minRadius,
   maxRadius,
+  midRadius,
   graduatedClasses,
   onTitleChange,
 }: BubbleSizeLegendProps) {
@@ -114,7 +116,6 @@ export default function BubbleSizeLegend({
 
   // 3 levels: max, mid, min
   const midValue = (minValue + maxValue) / 2
-  const midRadius = (minRadius + maxRadius) / 2
 
   // SVG dimensions — based on the largest circle
   const padding = 4
@@ -130,6 +131,9 @@ export default function BubbleSizeLegend({
 
   // All circles bottom-aligned
   const bottomY = svgHeight - padding
+
+  // Fixed SVG width for graduated rows — all circles right-aligned
+  const svgW = maxRadius * 2 + 4
 
   return (
     <div
@@ -174,18 +178,18 @@ export default function BubbleSizeLegend({
         </div>
       )}
 
-      {/* Graduated: horizontal row of circles with range labels */}
+      {/* Graduated: rows of right-aligned circles with range labels */}
       {graduatedClasses ? (
         <div className="flex flex-col gap-1">
           {graduatedClasses.map((cls, i) => (
             <div key={i} className="flex items-center gap-2">
               <svg
-                width={cls.radius * 2 + 4}
+                width={svgW}
                 height={cls.radius * 2 + 4}
                 style={{ display: 'block', flexShrink: 0 }}
               >
                 <circle
-                  cx={cls.radius + 2}
+                  cx={svgW - cls.radius - 2}
                   cy={cls.radius + 2}
                   r={cls.radius}
                   fill="none"
