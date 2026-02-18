@@ -197,7 +197,7 @@ export default function BubbleSizeLegend({
                 />
               </svg>
               <span
-                style={{ fontSize: 10, color: '#444', fontFamily: 'system-ui, sans-serif', whiteSpace: 'nowrap' }}
+                style={{ fontSize: 12, fontWeight: 600, color: '#0d0c0c', fontFamily: 'system-ui, sans-serif', whiteSpace: 'nowrap' }}
               >
                 {fmt(cls.minVal)} – {fmt(cls.maxVal)}
               </span>
@@ -225,7 +225,7 @@ export default function BubbleSizeLegend({
                 />
               </svg>
               <span
-                style={{ fontSize: 10, color: '#444', fontFamily: 'system-ui, sans-serif', whiteSpace: 'nowrap' }}
+                style={{ fontSize: 12, fontWeight: 600, color: '#0d0c0c', fontFamily: 'system-ui, sans-serif', whiteSpace: 'nowrap' }}
               >
                 {fmt(c.value)}
               </span>
