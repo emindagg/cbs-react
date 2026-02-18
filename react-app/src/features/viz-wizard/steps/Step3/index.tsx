@@ -4,6 +4,7 @@
  */
 
 import { COLOR_SCHEME_LIST } from '@/constants/colorSchemes'
+import { SingleSlider } from '@/components/ui'
 import { LegendConfig } from '@/shared/legend'
 import { BubbleSettings, ChoroplethSettings, DotDensitySettings } from '@/shared/visualization'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
@@ -166,6 +167,20 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
           setVizSettings={(s) => setVizSettings(s)}
           dataValues={dataValues}
         />
+      )}
+
+      {(vizSettings.type === 'dot' || vizSettings.type === 'bubble') && (
+        <div className="bg-white border border-zinc-200 rounded-lg p-3">
+          <SingleSlider
+            label="İl/İlçe Dolgu Şeffaflığı"
+            min={0}
+            max={1}
+            step={0.05}
+            value={vizSettings.backdropFillOpacity ?? 0.22}
+            formatValue={(v) => `%${Math.round(v * 100)}`}
+            onChange={(v) => setVizSettings({ backdropFillOpacity: v })}
+          />
+        </div>
       )}
 
       {/* Steps section - only for stepped scales, NOT for dot density or bubble non-bivariate */}

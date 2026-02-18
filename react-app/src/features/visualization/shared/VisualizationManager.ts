@@ -365,6 +365,12 @@ export class VisualizationManager {
     if (this.map.getLayer('dot-circles')) {
       this.map.removeLayer('dot-circles')
     }
+    if (this.map.getLayer('viz-backdrop-outline')) {
+      this.map.removeLayer('viz-backdrop-outline')
+    }
+    if (this.map.getLayer('viz-backdrop-fill')) {
+      this.map.removeLayer('viz-backdrop-fill')
+    }
 
     // Remove sources
     if (this.map.getSource('choropleth-source')) {
@@ -375,6 +381,9 @@ export class VisualizationManager {
     }
     if (this.map.getSource('dot-source')) {
       this.map.removeSource('dot-source')
+    }
+    if (this.map.getSource('viz-backdrop-source')) {
+      this.map.removeSource('viz-backdrop-source')
     }
   }
 

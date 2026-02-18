@@ -118,6 +118,8 @@ export interface VisualizationSettings {
   dotColor?: string;
   /** Nokta opaklığı (0-1). Varsayılan: 0.85 */
   dotOpacity?: number;
+  /** Dot/Bubble modunda il/ilçe arka plan dolgu şeffaflığı (0-1). Varsayılan: 0.22 */
+  backdropFillOpacity?: number;
   // Normalization Settings
   /** Normalizasyon türü: none (ham değer), percent-of-total, field (başka sütuna böl) */
   normalization?: NormalizationType;

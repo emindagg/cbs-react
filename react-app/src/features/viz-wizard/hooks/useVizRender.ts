@@ -71,6 +71,7 @@ export function useVizRender({
     vizSettings.legendType || 'steps',
     vizSettings.interpolation || 'equidistant',
     vizSettings.dotValue ?? 'auto',
+    vizSettings.backdropFillOpacity ?? 0.22,
     range?.enabled ? 'range:on' : 'range:off',
     range?.min ?? 'range:auto-min',
     range?.max ?? 'range:auto-max',

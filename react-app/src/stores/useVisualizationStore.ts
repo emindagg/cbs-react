@@ -91,6 +91,7 @@ const defaultVizSettings: VisualizationSettings = {
   interpolation: 'equidistant',
   choroplethOpacity: 1,
   dotOpacity: 0.85,
+  backdropFillOpacity: 0.22,
 }
 
 const defaultMatchResults: MatchResults = {

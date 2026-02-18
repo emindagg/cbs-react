@@ -21,7 +21,7 @@ import {
   type ResolvedCustomRange,
 } from '../../shared/customRange'
 
-const NO_DATA_COLOR = '#dddddd'
+const NO_DATA_COLOR = '#e4e4e4'
 const CONTINUOUS_STOPS = 16
 
 export class ChoroplethRenderer {
@@ -108,6 +108,13 @@ export class ChoroplethRenderer {
         colorExpression,
       ]
     }
+
+    colorExpression = [
+      'case',
+      ['==', ['get', 'hasData'], false],
+      NO_DATA_COLOR,
+      colorExpression,
+    ]
 
     // Render to map
     this.renderToMap(allFeaturesGeoJSON, colorExpression, settings, resolvedRange)
@@ -300,8 +307,8 @@ export class ChoroplethRenderer {
     const fillOpacity = settings.choroplethOpacity ?? 1
     const layerFilter: NonNullable<Parameters<Map['setFilter']>[1]> =
       resolvedRange?.outOfRangeMode === 'transparent'
-        ? ['all', ['==', ['get', 'hasData'], true], ['==', ['get', 'inCustomRange'], true]]
-        : ['==', ['get', 'hasData'], true]
+        ? ['any', ['==', 'hasData', false], ['==', 'inCustomRange', true]]
+        : ['any', ['==', 'hasData', true], ['==', 'hasData', false]]
 
     // Convert to MapLibre-compatible GeoJSON
     const safeGeoJSON: GeoJSON.FeatureCollection = {

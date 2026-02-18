@@ -42,6 +42,14 @@ import { buildZoomRadius, calculateSmartDotValue } from '../utils/dot-density'
 const DOT_STROKE_COLOR = 'rgba(255,255,255,0.6)'
 const DOT_STROKE_WIDTH = 0.5
 const OUT_OF_RANGE_COLOR = '#dddddd'
+const BACKDROP_SOURCE_ID = 'viz-backdrop-source'
+const BACKDROP_FILL_LAYER_ID = 'viz-backdrop-fill'
+const BACKDROP_OUTLINE_LAYER_ID = 'viz-backdrop-outline'
+const BACKDROP_FILL_COLOR = '#e4e4e4'
+const DEFAULT_BACKDROP_FILL_OPACITY = 0.22
+const BACKDROP_LINE_COLOR = '#94a3b8'
+const BACKDROP_LINE_OPACITY = 0.85
+const BACKDROP_LINE_WIDTH = 0.8
 
 type Coordinate = [number, number]
 type Ring = Coordinate[]
@@ -107,7 +115,18 @@ export class PointRenderer {
     )
 
     // 5. Render with single color (no classification needed)
-    this.renderToMap(dotsGeoJSON, dotColor, dotSize, dotOpacity, resolvedRange)
+    this.renderToMap(
+      dotsGeoJSON,
+      {
+        type: 'FeatureCollection',
+        features: geojson.features as GeoJSON.Feature[],
+      },
+      settings,
+      dotColor,
+      dotSize,
+      dotOpacity,
+      resolvedRange,
+    )
   }
 
   /* ------------------------------------------------------------------ */
@@ -394,6 +413,8 @@ export class PointRenderer {
 
   private renderToMap(
     geojson: GeoJSON.FeatureCollection,
+    backdropGeoJSON: GeoJSON.FeatureCollection,
+    settings: VisualizationSettings,
     dotColor: string,
     dotSize: number,
     dotOpacity: number,
@@ -410,6 +431,55 @@ export class PointRenderer {
       resolvedRange?.outOfRangeMode === 'gray'
         ? ['case', ['==', ['get', 'inCustomRange'], false], OUT_OF_RANGE_COLOR, dotColor]
         : dotColor
+    const backdropFillOpacity = settings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY
+    const circleLayerExists = Boolean(this.map.getLayer(layerId))
+
+    // Add or update backdrop source
+    if (this.map.getSource(BACKDROP_SOURCE_ID)) {
+      const source = this.map.getSource(BACKDROP_SOURCE_ID) as GeoJSONSource
+      if (source && source.type === 'geojson') {
+        source.setData(backdropGeoJSON)
+      }
+    } else {
+      this.map.addSource(BACKDROP_SOURCE_ID, {
+        type: 'geojson',
+        data: backdropGeoJSON,
+      })
+    }
+
+    // Add backdrop fill layer (always under circles)
+    if (!this.map.getLayer(BACKDROP_FILL_LAYER_ID)) {
+      this.map.addLayer({
+        id: BACKDROP_FILL_LAYER_ID,
+        type: 'fill',
+        source: BACKDROP_SOURCE_ID,
+        paint: {
+          'fill-color': BACKDROP_FILL_COLOR,
+          'fill-opacity': backdropFillOpacity,
+        },
+      }, circleLayerExists ? layerId : undefined)
+    } else {
+      this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-color', BACKDROP_FILL_COLOR)
+      this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-opacity', backdropFillOpacity)
+    }
+
+    // Add backdrop outline layer (always under circles)
+    if (!this.map.getLayer(BACKDROP_OUTLINE_LAYER_ID)) {
+      this.map.addLayer({
+        id: BACKDROP_OUTLINE_LAYER_ID,
+        type: 'line',
+        source: BACKDROP_SOURCE_ID,
+        paint: {
+          'line-color': BACKDROP_LINE_COLOR,
+          'line-opacity': BACKDROP_LINE_OPACITY,
+          'line-width': BACKDROP_LINE_WIDTH,
+        },
+      }, circleLayerExists ? layerId : undefined)
+    } else {
+      this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-color', BACKDROP_LINE_COLOR)
+      this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-opacity', BACKDROP_LINE_OPACITY)
+      this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-width', BACKDROP_LINE_WIDTH)
+    }
 
     // Add or update source
     if (this.map.getSource(sourceId)) {
