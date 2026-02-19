@@ -5,7 +5,7 @@
  * refreshCells() always picks up the latest column selection.
  */
 
-import type { ColDef, CellClassParams } from 'ag-grid-community'
+import type { ColDef, CellClassParams, ValueGetterParams } from 'ag-grid-community'
 import { useMemo } from 'react'
 
 import { StatusCellRenderer } from '../components/StatusCell'
@@ -30,6 +30,20 @@ export function useColumns(
       cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
     }
 
+    const rowNumberCol: ColDef = {
+      headerName: 'Sıra No',
+      colId: '__rowNumber',
+      width: 56,
+      minWidth: 56,
+      maxWidth: 64,
+      pinned: 'left',
+      editable: false,
+      sortable: false,
+      suppressMovable: true,
+      valueGetter: (params: ValueGetterParams) => Number(params.data?.__rowIndex ?? 0) + 1,
+      cellStyle: { textAlign: 'center', fontWeight: 500 },
+    }
+
     const dataCols: ColDef[] = columns.map((col) => ({
       headerName: col,
       field: col,
@@ -51,7 +65,7 @@ export function useColumns(
       },
     }))
 
-    return [statusCol, ...dataCols]
+    return [statusCol, rowNumberCol, ...dataCols]
   }, [columns])
 
   const defaultColDef = useMemo((): ColDef => ({
