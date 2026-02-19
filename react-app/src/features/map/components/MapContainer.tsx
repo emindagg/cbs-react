@@ -2,13 +2,13 @@ import maplibregl from 'maplibre-gl'
 import { useMemo } from 'react'
 import Map, { ScaleControl, Source, Layer } from 'react-map-gl/maplibre'
 
+import { DataManagementDrawTool } from '@/features/data-management'
 import { useBubbleTooltip, useChoroplethTooltip } from '@/shared/visualization'
 import { useMapStore } from '@/stores/useMapStore'
 
 import GISToolsControl from '../controls/GISToolsControl'
 import DataLayer from '../layers/DataLayer'
 import DistanceTool from '../tools/DistanceTool'
-import DrawTool from '../tools/DrawTool'
 
 
 
@@ -100,7 +100,7 @@ export default function MapContainer() {
 
       <ScaleControl position="bottom-right" />
       <DistanceTool />
-      <DrawTool />
+      <DataManagementDrawTool />
       <DataLayer />
       <GISToolsControl />
     </Map>

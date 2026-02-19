@@ -3,12 +3,12 @@ import type { FeatureCollection, Feature } from 'geojson'
 import { useMemo, useCallback } from 'react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 
+import { useDataManagementStore } from '@/features/data-management'
 import { useClusteringStore } from '@/stores/useClusteringStore'
-import { useDataStore } from '@/stores/useDataStore'
 import { type StyleProperties, isStyleProperties } from '@/types/style'
 
 export default function DataLayer() {
-  const { items, activeItemId } = useDataStore()
+  const { items, activeItemId } = useDataManagementStore()
   const { isEnabled: isClusteringEnabled } = useClusteringStore()
 
   // Helper to flatten properties and inject consistent style defaults

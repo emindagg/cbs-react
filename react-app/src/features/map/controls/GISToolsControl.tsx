@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
+import { useDataManagementStore } from '@/features/data-management'
 import { useClusteringStore } from '@/stores/useClusteringStore'
-import { useDataStore } from '@/stores/useDataStore'
 import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
 import { BufferModal } from './GISToolsControl.buffer'
@@ -56,10 +56,10 @@ export default function GISToolsControl() {
     setActiveTool,
     activeTool,
     resetDistance,
-    resetDraw,
   } = useToolStore()
 
-  const { clearAll } = useDataStore()
+  const clearAll = useDataManagementStore(state => state.clearAll)
+  const resetDraw = useDataManagementStore(state => state.resetDraw)
 
   const isOpen = toolsMenuMode !== 'closed'
 

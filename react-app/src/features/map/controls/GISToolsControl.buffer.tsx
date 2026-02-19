@@ -7,7 +7,7 @@ import * as turf from '@turf/turf'
 import type { Geometry, GeometryCollection } from 'geojson'
 import { useState } from 'react'
 
-import { useDataStore } from '@/stores/useDataStore'
+import { useDataManagementStore } from '@/features/data-management'
 
 interface BufferModalProps {
   isOpen: boolean
@@ -18,7 +18,7 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
   const [selectedLayerId, setSelectedLayerId] = useState('')
   const [bufferRadius, setBufferRadius] = useState(500)
   const [bufferUnit, setBufferUnit] = useState<turf.Units>('meters')
-  const { items, addItem } = useDataStore()
+  const { items, addItem } = useDataManagementStore()
 
   if (!isOpen) return null
 

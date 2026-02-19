@@ -1,8 +1,8 @@
 import type { GeoJSONSource, MapMouseEvent } from 'maplibre-gl'
 import { useEffect } from 'react'
 
+import { useDataManagementStore } from '@/features/data-management'
 import { useClusteringStore } from '@/stores/useClusteringStore'
-import { useDataStore } from '@/stores/useDataStore'
 import { useMapStore } from '@/stores/useMapStore'
 
 
@@ -10,7 +10,7 @@ export function useClustering() {
   const map = useMapStore((state) => state.mapInstance)
   // items değişince tüm hook çalışır. İçerik referansı değişse de useEffect performansı için 
   // içeride veri hazırlığı optimize edildi.
-  const { items } = useDataStore()
+  const { items } = useDataManagementStore()
   const { isEnabled } = useClusteringStore()
 
   useEffect(() => {
