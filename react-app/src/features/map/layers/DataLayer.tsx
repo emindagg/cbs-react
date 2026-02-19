@@ -1,14 +1,14 @@
- 
 import type { FeatureCollection, Feature } from 'geojson'
 import { useMemo, useCallback } from 'react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 
-import { useDataManagementStore } from '@/features/data-management'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { type StyleProperties, isStyleProperties } from '@/types/style'
 
+import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
+
 export default function DataLayer() {
-  const { items, activeItemId } = useDataManagementStore()
+  const { items, activeItemId, layerStyles } = useDataManagementStore()
   const { isEnabled: isClusteringEnabled } = useClusteringStore()
 
   // Helper to flatten properties and inject consistent style defaults
@@ -18,6 +18,28 @@ export default function DataLayer() {
       .map(i => {
         const rawStyle = i.properties.style
         const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
+        const isImported = i.source === 'imported'
+        const opacity = isImported
+          ? layerStyles.opacity
+          : (style.opacity !== undefined ? style.opacity : 0.9)
+        const fillColor = isImported
+          ? layerStyles.fillColor
+          : (style.fillColor || '#3b82f6')
+        const strokeColor = isImported
+          ? layerStyles.strokeColor
+          : (style.strokeColor || '#000000')
+        const strokeWidth = isImported
+          ? layerStyles.strokeWidth
+          : (style.strokeWidth || 1)
+        const radius = isImported
+          ? layerStyles.width
+          : (style.radius || 4)
+        const lineWidth = isImported
+          ? layerStyles.width
+          : 2
+        const labelValue = isImported && layerStyles.labelField
+          ? i.properties[layerStyles.labelField]
+          : undefined
 
         // LEGACY DEFAULTS (Exact match from LayerStylePanel.js)
         // Default Color: #3b82f6 (Blue-500)
@@ -33,18 +55,22 @@ export default function DataLayer() {
             id: i.id,
             selected: i.id === activeItemId,
             // Legacy Style Mapping
-            fillColor: style.fillColor || '#3b82f6',
-            strokeColor: style.strokeColor || '#000000',
-            strokeWidth: style.strokeWidth || 1, // Legacy default is 1
-            opacity: style.opacity !== undefined ? style.opacity : 0.9, // Legacy default opacity is 0.9 (lines/strokes)
-            radius: style.radius || 4, // Legacy default is small (2-4ish)
+            fillColor,
+            strokeColor,
+            strokeWidth,
+            opacity,
+            radius,
+            lineWidth,
+            labelText: labelValue !== undefined && labelValue !== null ? String(labelValue) : '',
+            textColor: layerStyles.textColor,
+            textSize: layerStyles.textSize,
 
             // Calculated Fill Opacity for Polygons (Legacy logic: opacity * 0.3)
-            fillOpacity: (style.opacity !== undefined ? style.opacity : 0.9) * 0.3,
+            fillOpacity: opacity * 0.3,
           },
         }
       }) as unknown as Feature[]
-  }, [items, activeItemId])
+  }, [items, activeItemId, layerStyles])
 
   const pointData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
@@ -94,6 +120,19 @@ export default function DataLayer() {
             'line-opacity': ['get', 'opacity'], // Full opacity for outlines
           }}
         />
+        <Layer
+          id="data-layer-polygon-labels"
+          type="symbol"
+          layout={{
+            'text-field': ['coalesce', ['get', 'labelText'], ''],
+            'text-size': ['get', 'textSize'],
+          }}
+          paint={{
+            'text-color': ['get', 'textColor'],
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 1,
+          }}
+        />
       </Source>
 
       {/* --- LINES --- */}
@@ -114,9 +153,23 @@ export default function DataLayer() {
             'line-width': ['case',
               ['boolean', ['get', 'selected'], false],
               4,
-              2, // Legacy default width for lines
+              ['get', 'lineWidth'],
             ],
             'line-opacity': ['get', 'opacity'],
+          }}
+        />
+        <Layer
+          id="data-layer-line-labels"
+          type="symbol"
+          layout={{
+            'text-field': ['coalesce', ['get', 'labelText'], ''],
+            'text-size': ['get', 'textSize'],
+            'symbol-placement': 'line-center',
+          }}
+          paint={{
+            'text-color': ['get', 'textColor'],
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 1,
           }}
         />
       </Source>
@@ -138,6 +191,21 @@ export default function DataLayer() {
               'circle-stroke-width': ['get', 'strokeWidth'],
               'circle-stroke-color': ['get', 'strokeColor'],
               'circle-opacity': ['get', 'opacity'],
+            }}
+          />
+          <Layer
+            id="data-layer-point-labels"
+            type="symbol"
+            layout={{
+              'text-field': ['coalesce', ['get', 'labelText'], ''],
+              'text-size': ['get', 'textSize'],
+              'text-offset': [0, 1.2],
+              'text-anchor': 'top',
+            }}
+            paint={{
+              'text-color': ['get', 'textColor'],
+              'text-halo-color': '#ffffff',
+              'text-halo-width': 1,
             }}
           />
 

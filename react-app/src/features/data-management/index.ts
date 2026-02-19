@@ -4,6 +4,8 @@ export {
   DataCatalogSection,
   DataCreationSection,
   DataImportExportSection,
+  ImportedDataManagerFab,
+  ImportedDataTableModal,
   DataManagementDrawTool,
   DataManagementSection,
   ColumnMapperModal,
@@ -25,4 +27,3 @@ export type {
   NewDataItem,
   ParseResult,
 } from './types'
-

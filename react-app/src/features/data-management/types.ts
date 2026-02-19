@@ -3,6 +3,24 @@ import type { Geometry } from 'geojson'
 export type DrawMode = 'none' | 'point' | 'polygon' | 'line' | 'circle'
 export type DataItemType = 'point' | 'polygon' | 'line' | 'circle'
 export type ExportFormat = 'geojson' | 'kml' | 'shp' | 'xlsx'
+export type DataItemSource = 'drawn' | 'imported'
+
+export interface LayerStyles {
+  clusterEnabled: boolean
+  opacity: number
+  width: number
+  fillColor: string
+  strokeWidth: number
+  strokeColor: string
+  labelField: string
+  textSize: number
+  textColor: string
+}
+
+export interface FabPosition {
+  x: number
+  y: number
+}
 
 export interface DataItem {
   id: string
@@ -12,9 +30,10 @@ export interface DataItem {
   geometry: Geometry
   properties: Record<string, unknown>
   visible: boolean
+  source: DataItemSource
 }
 
-export type NewDataItem = Omit<DataItem, 'id' | 'visible'>
+export type NewDataItem = Omit<DataItem, 'id' | 'visible' | 'source'>
 
 export interface ColumnMapping {
   lat?: string
@@ -42,6 +61,10 @@ export interface MapperData {
 export interface DataManagementStore {
   items: DataItem[]
   activeItemId: string | null
+  hasImportedData: boolean
+  importedLayerName: string | null
+  layerStyles: LayerStyles
+  fabPosition: FabPosition | null
 
   drawMode: DrawMode
   drawPoints: [number, number][]
@@ -53,8 +76,12 @@ export interface DataManagementStore {
   addItem: (item: NewDataItem) => void
   addItems: (items: NewDataItem[]) => void
   removeItem: (id: string) => void
+  removeImportedLayer: () => void
   toggleVisibility: (id: string) => void
+  toggleImportedLayerVisibility: () => void
   setActiveItem: (id: string | null) => void
+  updateLayerStyle: (styles: Partial<LayerStyles>) => void
+  setFabPosition: (position: FabPosition) => void
   clearAll: () => void
 
   setDrawMode: (mode: DrawMode) => void

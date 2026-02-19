@@ -5,6 +5,7 @@ import { LAYOUT } from '@/constants/layout'
 import { useAstroMap, AstroPanel, useAstroStore } from '@/features/astronomy'
 import { BasemapSwitcher } from '@/features/basemap'
 import { useClustering } from '@/features/clustering'
+import { ImportedDataManagerFab } from '@/features/data-management'
 import { SearchContainer } from '@/features/geocoder'
 import { GlobeToggleButton } from '@/features/globe-view'
 import { LegendContainer } from '@/features/legend'
@@ -118,6 +119,7 @@ export default function AppLayout() {
 
       {/* Visualization Legend */}
       <LegendContainer />
+      <ImportedDataManagerFab />
 
     </div>
   )
