@@ -3,6 +3,8 @@
  * Type definitions for visualization wizard and rendering
  */
 
+import type { NumberFormat } from '@/utils/numberFormatter'
+
 export type VizType = 'choropleth' | 'bubble' | 'dot'
 
 export type SymbolShape = 'circle' | 'square' | 'triangle' | 'star' | 'diamond' | 'pin'
@@ -215,7 +217,7 @@ export interface LegendConfiguration {
     type: LegendLabelType;
     customLabels?: string[];
   };
-  format: string; // numeral.js format string
+  format: NumberFormat;
   title?: {
     show: boolean;
     text: string;

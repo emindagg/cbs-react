@@ -11,6 +11,7 @@ import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visuali
 
 import { MapTitleSection } from './components/MapTitleSection'
 import { StepsSection } from './components/StepsSection'
+import { clampLegendClassCount } from './constants'
 import { useVizWizardStep3 } from './useVizWizardStep3'
 import {
   ColorScaleConfig,
@@ -189,9 +190,13 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
           classCount={vizSettings.classCount}
           classificationMethod={vizSettings.classificationMethod}
           customBreaks={vizSettings.customBreaks}
-          setClassCount={(n) => setVizSettings({ classCount: n })}
+          setClassCount={(n) => setVizSettings({ classCount: clampLegendClassCount(n) })}
           setClassificationMethod={(m) => setVizSettings({ classificationMethod: m })}
-          setCustomBreaks={(breaks) => setVizSettings({ customBreaks: breaks, classCount: breaks.length - 1 })}
+          setCustomBreaks={(breaks) =>
+            setVizSettings({
+              customBreaks: breaks,
+              classCount: clampLegendClassCount(breaks.length - 1),
+            })}
         />
       )}
 

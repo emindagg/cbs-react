@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { formatNumber, type NumberFormat } from '@/utils/numberFormatter'
+import { coerceNumberFormat, formatNumber } from '@/utils/numberFormatter'
 
 import type { LegendConfiguration } from '../types'
 
@@ -57,7 +57,7 @@ export default function BubbleSizeLegend({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
 
   const fmt = useCallback(
-    (v: number) => formatNumber(v, config.format as NumberFormat),
+    (v: number) => formatNumber(v, coerceNumberFormat(config.format)),
     [config.format],
   )
 

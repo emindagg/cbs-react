@@ -3,7 +3,13 @@
  * Allows users to enter custom break values for classification
  */
 
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
+
+import {
+  MAX_CUSTOM_BREAK_VALUES,
+  MIN_CUSTOM_BREAK_VALUES,
+  isValidCustomBreaksLength,
+} from '../constants'
 
 interface CustomBreaksInputProps {
   customBreaks: number[] | undefined
@@ -16,14 +22,24 @@ function parseBreaks(input: string): { breaks: number[]; error: string | null } 
     .map((s) => s.trim())
     .filter((s) => s.length > 0)
 
-  if (parts.length < 2) {
-    return { breaks: [], error: 'En az 2 sınır değeri gerekli' }
+  if (parts.length < MIN_CUSTOM_BREAK_VALUES) {
+    return {
+      breaks: [],
+      error: `En az ${MIN_CUSTOM_BREAK_VALUES} sınır değeri gerekli (3 sınıf)`,
+    }
+  }
+
+  if (parts.length > MAX_CUSTOM_BREAK_VALUES) {
+    return {
+      breaks: [],
+      error: `En fazla ${MAX_CUSTOM_BREAK_VALUES} sınır değeri girilebilir (7 sınıf)`,
+    }
   }
 
   const nums: number[] = []
   for (const part of parts) {
     const n = Number(part)
-    if (isNaN(n)) {
+    if (Number.isNaN(n)) {
       return { breaks: [], error: `"${part}" geçerli bir sayı değil` }
     }
     nums.push(n)
@@ -50,7 +66,7 @@ export function CustomBreaksInput({ customBreaks, onChange }: CustomBreaksInputP
       setInput(value)
       const { breaks, error: parseError } = parseBreaks(value)
       setError(parseError)
-      if (!parseError && breaks.length >= 2) {
+      if (!parseError && isValidCustomBreaksLength(breaks.length)) {
         onChange(breaks)
       }
     },
@@ -63,7 +79,7 @@ export function CustomBreaksInput({ customBreaks, onChange }: CustomBreaksInputP
     <div className="space-y-1.5">
       <label className="text-[10px] font-medium text-zinc-500">
         Sınır Değerleri
-        <span className="text-zinc-400 ml-1">(virgülle ayırın)</span>
+        <span className="text-zinc-400 ml-1">(4-8 değer, virgülle ayırın)</span>
       </label>
       <input
         type="text"
@@ -85,3 +101,4 @@ export function CustomBreaksInput({ customBreaks, onChange }: CustomBreaksInputP
     </div>
   )
 }
+

@@ -1,4 +1,22 @@
-const CLASS_COUNT_TEN = 10
-const CLASS_COUNT_TWO = 2
+import {
+  clampLegendClassCount,
+  MAX_CUSTOM_BREAK_VALUES,
+  MAX_LEGEND_CLASSES,
+  MIN_CUSTOM_BREAK_VALUES,
+  MIN_LEGEND_CLASSES,
+  isValidCustomBreaksLength,
+} from '@/utils/legendClassCount'
 
-export const CLASS_COUNT_EIGHT = CLASS_COUNT_TEN - CLASS_COUNT_TWO
+export {
+  clampLegendClassCount,
+  MAX_CUSTOM_BREAK_VALUES,
+  MAX_LEGEND_CLASSES,
+  MIN_CUSTOM_BREAK_VALUES,
+  MIN_LEGEND_CLASSES,
+  isValidCustomBreaksLength,
+}
+
+export const CLASS_COUNT_OPTIONS = Array.from(
+  { length: MAX_LEGEND_CLASSES - MIN_LEGEND_CLASSES + 1 },
+  (_, index) => MIN_LEGEND_CLASSES + index,
+)

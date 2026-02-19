@@ -215,6 +215,7 @@ export default function Container() {
           breaks={breaks}
           colors={colors}
           scaleType={colorConfig.scaleType}
+          classificationMethod={vizSettings.classificationMethod}
           onTitleChange={handleTitleChange}
         />
         {bubbleSizeLegend}
@@ -229,6 +230,7 @@ export default function Container() {
         breaks={breaks}
         colors={colors}
         scaleType={colorConfig.scaleType}
+        classificationMethod={vizSettings.classificationMethod}
         onTitleChange={handleTitleChange}
       />
       {bubbleSizeLegend}

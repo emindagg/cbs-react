@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import type { LegendConfiguration, ColorScaleType } from '@/types/visualization'
+import type { LegendConfiguration, ColorScaleType, ClassificationMethod } from '@/types/visualization'
 
 import { BarContent } from './BarContent'
 
@@ -14,6 +14,7 @@ interface LegendProps {
   breaks: number[];
   colors: string[];
   scaleType: ColorScaleType;
+  classificationMethod?: ClassificationMethod;
   onHover?: (index: number | null) => void;
   onTitleChange?: (title: string) => void;
 }
@@ -23,6 +24,7 @@ export default function Legend({
   breaks,
   colors,
   scaleType,
+  classificationMethod,
   onHover,
   onTitleChange,
 }: LegendProps) {
@@ -171,6 +173,7 @@ export default function Legend({
         breaks={breaks}
         colors={colors}
         scaleType={scaleType}
+        classificationMethod={classificationMethod}
         onItemHover={handleItemHover}
         hoveredIndex={hoveredIndex}
       />

@@ -4,7 +4,7 @@
  */
 
 import type { LegendConfiguration } from '@/types/visualization'
-import { FORMAT_OPTIONS } from '@/utils/numberFormatter'
+import { coerceNumberFormat, FORMAT_OPTIONS } from '@/utils/numberFormatter'
 
 import { ConfigLabelsSection } from './ConfigLabelsSection'
 import { ConfigSizeSection } from './ConfigSizeSection'
@@ -68,7 +68,7 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
             </label>
             <select
               value={config.format}
-              onChange={(e) => onChange({ format: e.target.value })}
+              onChange={(e) => onChange({ format: coerceNumberFormat(e.target.value) })}
               className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded bg-white hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               {FORMAT_OPTIONS.map((option) => (

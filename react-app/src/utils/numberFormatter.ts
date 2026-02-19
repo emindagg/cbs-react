@@ -23,6 +23,40 @@ export type NumberFormat =
   | '0.[0]a'      // 1k, 123.4k, 1.2m
   | 'custom'      // Custom format
 
+const NUMBER_FORMAT_VALUES: NumberFormat[] = [
+  '1,000',
+  '1,000.0',
+  '1,000.00',
+  '1,000.000',
+  '0',
+  '0.0',
+  '0.00',
+  '0.000',
+  '0.[0]',
+  '0.[00]',
+  '0%',
+  '0.0%',
+  '0.00%',
+  '0,0',
+  '0o',
+  '0a',
+  '0.[0]a',
+  'custom',
+]
+
+const NUMBER_FORMAT_SET = new Set<NumberFormat>(NUMBER_FORMAT_VALUES)
+
+export function isNumberFormat(format: string): format is NumberFormat {
+  return NUMBER_FORMAT_SET.has(format as NumberFormat)
+}
+
+export function coerceNumberFormat(format: string | null | undefined, fallback: NumberFormat = '0a'): NumberFormat {
+  if (format && isNumberFormat(format)) {
+    return format
+  }
+  return fallback
+}
+
 /**
  * Format a number according to specified format
  */
@@ -169,8 +203,35 @@ export const FORMAT_OPTIONS: Array<{
 export function parseFormattedNumber(str: string): number | null {
   if (!str || str === '-') return null
 
+  // Handle abbreviated numbers
+  const trimmed = str.trim()
+  const abbrevMatch = trimmed.match(/^([\d.,]+)([kmbt])$/i)
+  if (abbrevMatch) {
+    let numericPart = abbrevMatch[1]
+    if (numericPart.includes(',') && numericPart.includes('.')) {
+      numericPart = numericPart.replace(/\./g, '').replace(',', '.')
+    } else if (numericPart.includes(',')) {
+      numericPart = numericPart.replace(',', '.')
+    } else {
+      const dotParts = numericPart.split('.')
+      if (dotParts.length > 2 || (dotParts.length === 2 && dotParts[1].length === 3)) {
+        numericPart = numericPart.replace(/\./g, '')
+      }
+    }
+
+    const num = parseFloat(numericPart)
+    const suffix = abbrevMatch[2].toLowerCase()
+    const multipliers: Record<string, number> = {
+      k: 1e3,
+      m: 1e6,
+      b: 1e9,
+      t: 1e12,
+    }
+    return num * (multipliers[suffix] || 1)
+  }
+
   // Remove Turkish thousand separators
-  let cleaned = str.replace(/\./g, '')
+  let cleaned = trimmed.replace(/\./g, '')
 
   // Replace Turkish decimal separator with English
   cleaned = cleaned.replace(/,/g, '.')
@@ -180,20 +241,6 @@ export function parseFormattedNumber(str: string): number | null {
     cleaned = cleaned.slice(0, -1)
     const num = parseFloat(cleaned)
     return isNaN(num) ? null : num / 100
-  }
-
-  // Handle abbreviated numbers
-  const abbrevMatch = cleaned.match(/^([\d.]+)([kmbt])$/i)
-  if (abbrevMatch) {
-    const num = parseFloat(abbrevMatch[1])
-    const suffix = abbrevMatch[2].toLowerCase()
-    const multipliers: Record<string, number> = {
-      k: 1e3,
-      m: 1e6,
-      b: 1e9,
-      t: 1e12,
-    }
-    return num * (multipliers[suffix] || 1)
   }
 
   const num = parseFloat(cleaned)

@@ -6,6 +6,7 @@
  */
 
 import type {
+  ClassificationMethod,
   ColorScaleType,
   LegendConfiguration,
 } from '../../types/visualization'
@@ -38,6 +39,7 @@ export interface DynamicLegendProps {
   breaks: number[]
   colors: string[]
   scaleType: ColorScaleType
+  classificationMethod?: ClassificationMethod
   onHover?: (index: number | null) => void
   onTitleChange?: (title: string) => void
 }
@@ -58,6 +60,7 @@ export interface LegendLabelsProps {
   width: number
   formatLabel: (value: number) => string
   mode: ColorScaleType
+  classificationMethod?: ClassificationMethod
   labelType: 'ruler' | 'ranges' | 'custom'
   customLabels?: string[]
   reverseOrder?: boolean

@@ -2,10 +2,10 @@
  * Legend bar content: continuous/stepped, horizontal/vertical (Datawrapper-style)
  */
 
-import type { ColorScaleType, LegendConfiguration } from '@/types/visualization'
-import { formatNumber, type NumberFormat } from '@/utils/numberFormatter'
+import type { ClassificationMethod, ColorScaleType, LegendConfiguration } from '@/types/visualization'
+import { coerceNumberFormat, formatNumber, type NumberFormat } from '@/utils/numberFormatter'
 
-import { collapseConsecutiveLabels } from '../utils/collapseConsecutiveLabels'
+import { disambiguateBoundaryLabels } from '../utils/disambiguateBoundaryLabels'
 import { generateContinuousItems, generateSteppedItems, type LegendItem } from '../utils/itemGenerators'
 
 interface BarContentProps {
@@ -13,6 +13,7 @@ interface BarContentProps {
   breaks: number[]
   colors: string[]
   scaleType: ColorScaleType
+  classificationMethod?: ClassificationMethod
   onItemHover: (index: number | null) => void
   hoveredIndex: number | null
 }
@@ -22,11 +23,14 @@ export function BarContent({
   breaks,
   colors,
   scaleType,
+  classificationMethod,
   onItemHover,
   hoveredIndex,
 }: BarContentProps) {
+  const configuredFormat = coerceNumberFormat(config.format)
+
   const formatNumberFn = (value: number, format?: NumberFormat) =>
-    formatNumber(value, format ?? ('auto' as NumberFormat))
+    formatNumber(value, format ?? configuredFormat)
 
   const items: LegendItem[] =
     scaleType === 'steps'
@@ -44,14 +48,16 @@ export function BarContent({
   const verticalBarHeight = `${config.size}px`
 
   if (scaleType === 'continuous') {
-    const collapsed = collapseConsecutiveLabels(displayItems.map((item) => item.label))
-    const continuousItems = displayItems
-      .map((item, index) => ({
-        ...item,
-        label: collapsed[index]?.text ?? item.label,
-        visible: collapsed[index]?.visible ?? true,
-      }))
-      .filter((item) => item.visible)
+    const continuousValues = config.reverseOrder ? [...breaks].reverse() : breaks
+    const continuousLabels = disambiguateBoundaryLabels(
+      continuousValues,
+      (value) => formatNumber(value, configuredFormat),
+      { classificationMethod },
+    )
+    const continuousItems = displayItems.map((item, index) => ({
+      ...item,
+      label: continuousLabels[index] ?? item.label,
+    }))
 
     return config.orientation === 'horizontal' ? (
       <div className="space-y-2">
@@ -92,15 +98,16 @@ export function BarContent({
       : displayItems.map((item) => item.color)
     const stepHeight = Math.max(16, Math.floor(config.size / verticalColors.length))
     const totalHeight = stepHeight * verticalColors.length
+    const rawRulerValues = config.reverseOrder ? [...breaks].reverse() : breaks
+    const rulerValues = rawRulerValues
     const rulerLabels = isRuler
-      ? (config.reverseOrder ? [...breaks].reverse() : breaks).map((b) =>
-        formatNumber(b, config.format as NumberFormat),
+      ? disambiguateBoundaryLabels(
+        rulerValues,
+        (value) => formatNumber(value, configuredFormat),
+        { classificationMethod },
       )
       : []
-    const collapsedRulerLabels = collapseConsecutiveLabels(rulerLabels)
     const rulerLabelNodes = rulerLabels.map((label, index) => {
-      const collapsed = collapsedRulerLabels[index]
-      if (!collapsed?.visible) return null
       return (
         <span
           key={index}
@@ -111,7 +118,7 @@ export function BarContent({
             transform: 'translateY(-50%)',
           }}
         >
-          {collapsed?.text ?? label}
+          {label}
         </span>
       )
     })

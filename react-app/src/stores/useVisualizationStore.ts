@@ -4,6 +4,10 @@
  */
 
 import { create } from 'zustand'
+import {
+  clampLegendClassCount,
+  isValidCustomBreaksLength,
+} from '@/utils/legendClassCount'
 
 import type {
   ColumnMapping,
@@ -155,6 +159,38 @@ const defaultMapTitle: MapTitleConfiguration = {
   fontSize: 24,
 }
 
+function sanitizeVizSettings(
+  currentSettings: VisualizationSettings,
+  incomingSettings: Partial<VisualizationSettings>,
+): VisualizationSettings {
+  const mergedSettings: VisualizationSettings = {
+    ...currentSettings,
+    ...incomingSettings,
+  }
+
+  if (incomingSettings.classCount !== undefined) {
+    mergedSettings.classCount = clampLegendClassCount(incomingSettings.classCount)
+  }
+
+  if (incomingSettings.bubbleLegendCount !== undefined) {
+    mergedSettings.bubbleLegendCount = clampLegendClassCount(incomingSettings.bubbleLegendCount)
+  }
+
+  if ('customBreaks' in incomingSettings) {
+    const nextCustomBreaks = incomingSettings.customBreaks
+    if (nextCustomBreaks === undefined) {
+      mergedSettings.customBreaks = undefined
+    } else if (isValidCustomBreaksLength(nextCustomBreaks.length)) {
+      mergedSettings.customBreaks = nextCustomBreaks
+      mergedSettings.classCount = clampLegendClassCount(nextCustomBreaks.length - 1)
+    } else {
+      mergedSettings.customBreaks = currentSettings.customBreaks
+    }
+  }
+
+  return mergedSettings
+}
+
 export const useVisualizationStore = create<VisualizationStore>((set) => ({
   // Wizard state
   currentStep: 1,
@@ -185,7 +221,7 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
   vizSettings: defaultVizSettings,
   setVizSettings: (settings) =>
     set((state) => ({
-      vizSettings: { ...state.vizSettings, ...settings },
+      vizSettings: sanitizeVizSettings(state.vizSettings, settings),
     })),
   resetVizSettings: () => set({ vizSettings: defaultVizSettings }),
 

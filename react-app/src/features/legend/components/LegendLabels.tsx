@@ -13,7 +13,7 @@
 import type { LegendLabelsProps } from '../types'
 import SmartLabel from './SmartLabel'
 import { useLabelCollision } from '../hooks/useLabelCollision'
-import { collapseConsecutiveLabels } from '../utils/collapseConsecutiveLabels'
+import { disambiguateBoundaryLabels } from '../utils/disambiguateBoundaryLabels'
 
 const BAR_HEIGHT = 14
 
@@ -23,6 +23,7 @@ export default function LegendLabels({
   width,
   formatLabel,
   mode,
+  classificationMethod,
   labelType,
   customLabels,
   reverseOrder,
@@ -48,22 +49,18 @@ export default function LegendLabels({
       ? boundaryLabels.filter((_, i) => i === 0 || i === boundaryLabels.length - 1)
       : boundaryLabels
 
-    // If reverseOrder, keep positions but reverse the text values
-    if (reverseOrder) {
-      const texts = effectiveLabels.map(l => l.text).reverse()
-      effectiveLabels = effectiveLabels.map((label, i) => ({
-        ...label,
-        text: texts[i],
-      }))
-    }
+    const displayValues = reverseOrder
+      ? [...effectiveLabels.map((label) => label.value)].reverse()
+      : effectiveLabels.map((label) => label.value)
+    const disambiguatedTexts = disambiguateBoundaryLabels(
+      displayValues,
+      formatLabel,
+      { classificationMethod },
+    )
 
-    // Custom range clamp can produce repeated labels (e.g. 2M, 2M, 2M).
-    // Collapse consecutive equals into a single "2M+" marker.
-    const collapsed = collapseConsecutiveLabels(effectiveLabels.map((l) => l.text))
     effectiveLabels = effectiveLabels.map((label, i) => ({
       ...label,
-      text: collapsed[i]?.text ?? label.text,
-      visible: label.visible && (collapsed[i]?.visible ?? true),
+      text: disambiguatedTexts[i] ?? label.text,
     }))
 
     const isVertical = layoutMode === 'vertical' || layoutMode === 'thinned'

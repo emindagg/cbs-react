@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { formatNumber, type NumberFormat } from '@/utils/numberFormatter'
+import { coerceNumberFormat, formatNumber } from '@/utils/numberFormatter'
 
 import './DynamicLegend.css'
 import type { DynamicLegendProps } from '../types'
@@ -24,6 +24,7 @@ export default function DynamicLegend({
   breaks: rawBreaks,
   colors,
   scaleType,
+  classificationMethod,
   onHover: _onHover,
   onTitleChange,
 }: DynamicLegendProps) {
@@ -47,7 +48,7 @@ export default function DynamicLegend({
 
   // Label formatter using the config's number format
   const fmt = useCallback(
-    (v: number) => formatNumber(v, config.format as NumberFormat),
+    (v: number) => formatNumber(v, coerceNumberFormat(config.format)),
     [config.format],
   )
 
@@ -186,6 +187,7 @@ export default function DynamicLegend({
         width={width}
         formatLabel={fmt}
         mode={scaleType}
+        classificationMethod={classificationMethod}
         labelType={config.labels.type}
         customLabels={config.labels.customLabels}
         reverseOrder={config.reverseOrder}
