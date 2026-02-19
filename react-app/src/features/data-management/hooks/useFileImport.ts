@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
+import { parseFile } from '../services/import/fileParser'
 import { useDataManagementStore } from '../store/useDataManagementStore'
 import type { ColumnMapping, MapperData } from '../types'
-import { parseFile } from '../services/import/fileParser'
 import { transformToGeoItems } from '../utils/dataMapper'
 
 export function useFileImport() {
@@ -31,7 +31,7 @@ export function useFileImport() {
         })
         setShowMapper(true)
       } else if (result.items && result.items.length > 0) {
-        addItems(result.items)
+        addItems(result.items.map(item => ({ ...item, sourceLabel: file.name })))
         toast.success(`${result.items.length} veri yuklendi.`)
       } else {
         toast.error('Dosyada aktarilabilir veri bulunamadi.')
@@ -53,7 +53,7 @@ export function useFileImport() {
     const items = transformToGeoItems(mapperData.jsonData, mapping)
 
     if (items.length > 0) {
-      addItems(items)
+      addItems(items.map(item => ({ ...item, sourceLabel: fileInputRef.current?.files?.[0]?.name ?? 'Excel Import' })))
       toast.success(`${items.length} veri yuklendi.`)
     } else {
       toast.error('Secilen eslestirmeden veri uretilemedi.')
@@ -80,4 +80,3 @@ export function useFileImport() {
     closeMapper,
   }
 }
-

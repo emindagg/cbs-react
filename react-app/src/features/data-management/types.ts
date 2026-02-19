@@ -31,6 +31,7 @@ export interface DataItem {
   properties: Record<string, unknown>
   visible: boolean
   source: DataItemSource
+  sourceLabel?: string
 }
 
 export type NewDataItem = Omit<DataItem, 'id' | 'visible' | 'source'>
@@ -79,6 +80,7 @@ export interface DataManagementStore {
   removeImportedLayer: () => void
   toggleVisibility: (id: string) => void
   toggleImportedLayerVisibility: () => void
+  toggleImportedSourceVisibility: (sourceLabel: string) => void
   setActiveItem: (id: string | null) => void
   updateLayerStyle: (styles: Partial<LayerStyles>) => void
   setFabPosition: (position: FabPosition) => void

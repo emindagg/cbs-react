@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { useDataManagementStore } from '../store/useDataManagementStore'
-import type { NewDataItem } from '../types'
 import { parseGeoJSON } from '../services/import/geoJsonProcessor'
 import { parseKML } from '../services/import/kmlProcessor'
 import { parseShapefile } from '../services/import/shapefileProcessor'
+import { useDataManagementStore } from '../store/useDataManagementStore'
+import type { NewDataItem } from '../types'
 
 export function useUrlImport() {
   const addItems = useDataManagementStore(state => state.addItems)
@@ -21,6 +21,7 @@ export function useUrlImport() {
 
       let items: NewDataItem[] = []
       const lowerUrl = urlInput.toLowerCase()
+      const sourceLabel = urlInput.split('/').pop()?.split('?')[0] || 'URL Import'
 
       if (lowerUrl.endsWith('.zip')) {
         const buffer = await response.arrayBuffer()
@@ -34,7 +35,7 @@ export function useUrlImport() {
       }
 
       if (items.length > 0) {
-        addItems(items)
+        addItems(items.map(item => ({ ...item, sourceLabel })))
         toast.success(`${items.length} veri URL uzerinden yuklendi.`)
       } else {
         toast.error('URL iceriginde aktarilabilir veri bulunamadi.')
@@ -54,4 +55,3 @@ export function useUrlImport() {
     handleUrlImport,
   }
 }
-

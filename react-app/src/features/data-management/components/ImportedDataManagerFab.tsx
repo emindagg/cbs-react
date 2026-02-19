@@ -53,6 +53,7 @@ export function ImportedDataManagerFab() {
     setFabPosition,
     updateLayerStyle,
     toggleImportedLayerVisibility,
+    toggleImportedSourceVisibility,
     removeImportedLayer,
   } = useDataManagementStore()
 
@@ -79,6 +80,27 @@ export function ImportedDataManagerFab() {
       Object.keys(item.properties).forEach(key => keys.add(key))
     })
     return Array.from(keys)
+  }, [importedItems])
+
+  const importedSources = useMemo(() => {
+    const grouped = new Map<string, { count: number; visible: boolean }>()
+    importedItems.forEach((item) => {
+      const key = item.sourceLabel || item.name || 'Import edilen veri'
+      const current = grouped.get(key)
+      if (!current) {
+        grouped.set(key, { count: 1, visible: item.visible })
+        return
+      }
+      grouped.set(key, {
+        count: current.count + 1,
+        visible: current.visible || item.visible,
+      })
+    })
+    return Array.from(grouped.entries()).map(([name, data]) => ({
+      name,
+      count: data.count,
+      visible: data.visible,
+    }))
   }, [importedItems])
 
   useEffect(() => {
@@ -175,7 +197,11 @@ export function ImportedDataManagerFab() {
                     <Boxes className="w-3.5 h-3.5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] font-semibold text-slate-900 truncate">{importedLayerName || importedItems[0]?.name || 'Import edilen veri'}</p>
+                    <p className="text-[11px] font-semibold text-slate-900 truncate">
+                      {importedSources.length > 1
+                        ? `${importedSources.length} dosya yuklu`
+                        : (importedLayerName || importedItems[0]?.sourceLabel || importedItems[0]?.name || 'Import edilen veri')}
+                    </p>
                     <p className="text-[9px] font-semibold tracking-wide uppercase text-slate-500">Gecerli Katman</p>
                   </div>
                 </div>
@@ -214,6 +240,28 @@ export function ImportedDataManagerFab() {
                 <FileSpreadsheet className="w-3.5 h-3.5" />
                 Oznitelik Tablosunu Ac
               </button>
+
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-2">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Yuklu Veriler</p>
+                  <span className="text-[10px] font-semibold text-slate-600">{importedSources.length}</span>
+                </div>
+                <div className="space-y-1 max-h-24 overflow-y-auto">
+                  {importedSources.map((source) => (
+                    <div key={source.name} className="h-6 px-2 rounded-md bg-white border border-slate-200 text-[10px] text-slate-700 flex items-center justify-between gap-1">
+                      <span className="truncate">{source.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => toggleImportedSourceVisibility(source.name)}
+                        className="w-5 h-5 rounded text-slate-600 hover:bg-slate-100 inline-flex items-center justify-center shrink-0"
+                        title={source.visible ? 'Bu dosyayi gizle' : 'Bu dosyayi goster'}
+                      >
+                        {source.visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               <div className="space-y-2">
                 <button

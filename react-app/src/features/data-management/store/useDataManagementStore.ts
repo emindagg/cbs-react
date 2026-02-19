@@ -93,6 +93,17 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
       ),
     }
   }),
+  toggleImportedSourceVisibility: (sourceLabel) => set((state) => {
+    const sourceItems = state.items.filter(item => item.source === 'imported' && item.sourceLabel === sourceLabel)
+    const nextVisible = sourceItems.some(item => !item.visible)
+    return {
+      items: state.items.map(item =>
+        item.source === 'imported' && item.sourceLabel === sourceLabel
+          ? { ...item, visible: nextVisible }
+          : item,
+      ),
+    }
+  }),
 
   setActiveItem: (id) => set({ activeItemId: id }),
   updateLayerStyle: (styles) => {
