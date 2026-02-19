@@ -61,6 +61,10 @@ interface VisualizationStore {
   setCurrentVisualization: (viz: Partial<CurrentVisualization>) => void
   clearCurrentVisualization: () => void
 
+  // Visualization render transaction state
+  isVisualizationRenderInProgress: boolean
+  setVisualizationRenderInProgress: (inProgress: boolean) => void
+
   // Color configuration (Datawrapper-style)
   colorConfig: ColorConfiguration
   setColorConfig: (config: Partial<ColorConfiguration>) => void
@@ -206,6 +210,10 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
   clearCurrentVisualization: () =>
     set({ currentVisualization: defaultCurrentVisualization }),
 
+  // Visualization render transaction state
+  isVisualizationRenderInProgress: false,
+  setVisualizationRenderInProgress: (inProgress) => set({ isVisualizationRenderInProgress: inProgress }),
+
   // Color configuration (Datawrapper-style)
   colorConfig: defaultColorConfig,
   setColorConfig: (config) =>
@@ -244,6 +252,7 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
       matchResults: defaultMatchResults,
       vizSettings: defaultVizSettings,
       currentVisualization: defaultCurrentVisualization,
+      isVisualizationRenderInProgress: false,
       colorConfig: defaultColorConfig,
       mapTitle: defaultMapTitle,
     }),

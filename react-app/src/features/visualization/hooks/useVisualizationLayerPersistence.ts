@@ -54,6 +54,7 @@ export function useVisualizationLayerPersistence() {
     const onStyleData = () => {
       if (!map.isStyleLoaded()) return
       if (isRehydratingRef.current) return
+      if (useVisualizationStore.getState().isVisualizationRenderInProgress) return
 
       isRehydratingRef.current = true
 

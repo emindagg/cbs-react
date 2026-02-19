@@ -68,7 +68,7 @@ export function useVizRender({
 }: UseVizRenderProps) {
   const [isRendering, setIsRendering] = useState(false)
   const [hasRendered, setHasRendered] = useState(false)
-  const { setCurrentVisualization, colorConfig } = useVisualizationStore()
+  const { setCurrentVisualization, setVisualizationRenderInProgress, colorConfig } = useVisualizationStore()
 
   // Data-affecting settings → full re-render
   // NOTE: vizSettings.type is intentionally excluded so that changing the
@@ -154,6 +154,7 @@ export function useVizRender({
     }
 
     setIsRendering(true)
+    setVisualizationRenderInProgress(true)
 
     try {
       const vizManager = new VisualizationManager(map)
@@ -219,6 +220,7 @@ export function useVizRender({
       const message = error instanceof Error ? error.message : String(error)
       toast.error('Görselleştirme hatası: ' + message)
     } finally {
+      setVisualizationRenderInProgress(false)
       setIsRendering(false)
     }
   }

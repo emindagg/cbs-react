@@ -70,6 +70,7 @@ describe('useVisualizationLayerPersistence', () => {
         locationLevel: null,
         renderSettings: null,
       },
+      isVisualizationRenderInProgress: false,
     })
   })
 
@@ -130,6 +131,33 @@ describe('useVisualizationLayerPersistence', () => {
         validSettings,
         'province',
       )
+    })
+  })
+
+  it('skips rehydrate during render transaction and resumes after it ends', async () => {
+    const map = createMapMock()
+    useMapStore.setState({ mapInstance: map as unknown as maplibregl.Map })
+    useVisualizationStore.setState({
+      currentVisualization: {
+        type: 'choropleth',
+        data: [{ location: 'Ankara', value: 10 }],
+        column: 'value',
+        locationLevel: 'province',
+        renderSettings: validSettings,
+      },
+      isVisualizationRenderInProgress: true,
+    })
+
+    renderHook(() => useVisualizationLayerPersistence())
+
+    map.triggerStyleData()
+    expect(renderChoroplethMock).not.toHaveBeenCalled()
+
+    useVisualizationStore.setState({ isVisualizationRenderInProgress: false })
+    map.triggerStyleData()
+
+    await waitFor(() => {
+      expect(renderChoroplethMock).toHaveBeenCalledTimes(1)
     })
   })
 
