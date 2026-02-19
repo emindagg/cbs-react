@@ -1,4 +1,4 @@
-import * as turf from '@turf/turf'
+﻿import * as turf from '@turf/turf'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -27,7 +27,7 @@ export function DataCreationSection() {
 
   const handleAddData = () => {
     if (!name.trim()) {
-      toast.error('Lutfen bir isim girin.')
+      toast.error('Lütfen bir isim girin.')
       return
     }
 
@@ -46,7 +46,7 @@ export function DataCreationSection() {
       }
 
       if (!geometry) {
-        toast.error('Lutfen harita uzerinde cizim yapin.')
+        toast.error('Lütfen harita üzerinde çizim yapın.')
         return
       }
 
@@ -69,7 +69,7 @@ export function DataCreationSection() {
       setDate('')
       toast.success('Veri eklendi.')
     } catch {
-      toast.error('Geometri olusturulamadi.')
+      toast.error('Geometri oluşturulamadı.')
     }
   }
 
@@ -77,7 +77,7 @@ export function DataCreationSection() {
     <section className="hover:bg-zinc-50 rounded-lg px-2.5 py-1.5 transition-colors group">
       <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 mb-2 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
         <i className="fa-solid fa-pen-ruler text-emerald-600 text-[10px]"></i>
-        Veri Olusturma
+        Veri Oluşturma
       </h3>
 
       <div className="space-y-3">
@@ -87,30 +87,30 @@ export function DataCreationSection() {
             onChange={handleModeChange}
             className="w-full px-2.5 py-2 border-2 border-zinc-200 bg-white rounded-lg text-sm text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium hover:border-zinc-300"
           >
-            <option value="none">Secim Yapin</option>
+            <option value="none">Seçim Yapın</option>
             <option value="point">Nokta Verisi Ekle</option>
             <option value="polygon">Alan Verisi Ekle</option>
-            <option value="line">Cizgi Verisi Ekle</option>
-            <option value="circle">Cember Verisi Ekle</option>
+            <option value="line">Çizgi Verisi Ekle</option>
+            <option value="circle">Çember Verisi Ekle</option>
           </select>
         </div>
 
         {drawMode !== 'none' && (
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="bg-blue-50 text-blue-800 p-2 rounded-sm text-xs border border-blue-100">
-              {drawMode === 'point' && 'Haritaya tiklayarak nokta ekleyin.'}
-              {drawMode === 'polygon' && 'Haritaya tiklayarak alan cizin. Cift tiklayarak bitirin.'}
-              {drawMode === 'line' && 'Haritaya tiklayarak cizgi cizin. Cift tiklayarak bitirin.'}
-              {drawMode === 'circle' && 'Once merkeze tiklayin, sonra yaricapi belirleyip tekrar tiklayin.'}
+              {drawMode === 'point' && 'Haritaya tıklayarak nokta ekleyin.'}
+              {drawMode === 'polygon' && 'Haritaya tıklayarak alan çizin. Çift tıklayarak bitirin.'}
+              {drawMode === 'line' && 'Haritaya tıklayarak çizgi çizin. Çift tıklayarak bitirin.'}
+              {drawMode === 'circle' && 'Önce merkeze tıklayın, sonra yarıçapı belirleyip tekrar tıklayın.'}
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">Veri Adi</label>
+              <label className="block text-xs font-medium text-zinc-700 mb-1">Veri Adı</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Orn: Tarihi Muze, Hastane, Park..."
+                placeholder="Örn: Tarihi Müze, Hastane, Park..."
                 className="w-full px-2.5 py-1.5 border border-zinc-300 bg-zinc-50 rounded-lg text-xs text-zinc-900 placeholder-zinc-500 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
               />
             </div>

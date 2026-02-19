@@ -1,4 +1,4 @@
-import { useToolStore } from '@/stores/useToolStore'
+﻿import { useToolStore } from '@/stores/useToolStore'
 import type { ToolType } from '@/stores/useToolStore'
 
 export default function SidebarTools() {
@@ -66,3 +66,4 @@ export default function SidebarTools() {
     </section>
   )
 }
+

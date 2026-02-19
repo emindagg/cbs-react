@@ -1,4 +1,4 @@
-import versionInfo from '../../../version.json'
+﻿import versionInfo from '../../../version.json'
 
 export default function SidebarFooter() {
   return (
@@ -24,3 +24,4 @@ export default function SidebarFooter() {
     </div>
   )
 }
+

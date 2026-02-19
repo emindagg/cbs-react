@@ -15,7 +15,7 @@ export function useDataExport() {
 
   const handleExport = () => {
     if (items.length === 0) {
-      toast.error('Disa aktarilacak veri bulunamadi.')
+      toast.error('Dışa aktarılacak veri bulunamadı.')
       return
     }
 
@@ -40,7 +40,7 @@ export function useDataExport() {
       toast.success(`Veri ${exportFormat.toUpperCase()} olarak indirildi.`)
     } catch (error) {
       console.error('Export error:', error)
-      toast.error('Disa aktarma sirasinda hata olustu.')
+      toast.error('Dışa aktarma sırasında hata oluştu.')
     }
   }
 
@@ -50,4 +50,3 @@ export function useDataExport() {
     handleExport,
   }
 }
-

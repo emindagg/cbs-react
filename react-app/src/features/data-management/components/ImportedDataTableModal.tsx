@@ -73,8 +73,8 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
       <div className="w-full max-w-6xl h-[84vh] bg-white border border-slate-200 rounded-xl shadow-xl flex flex-col overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">Oznitelik Tablosu</h2>
-            <p className="text-xs text-slate-600">{rowData.length} satir</p>
+            <h2 className="text-sm font-semibold text-slate-900">Öznitelik Tablosu</h2>
+            <p className="text-xs text-slate-600">{rowData.length} satır</p>
           </div>
           <button
             type="button"

@@ -12,7 +12,7 @@ export function ExportControls({ exportFormat, onFormatChange, onExport }: Expor
     <>
       <div className="mb-3">
         <label className="block text-xs font-medium text-zinc-700 mb-1">
-          Disa Aktarma Formati
+          Dışa Aktarma Formatı
         </label>
         <div className="relative">
           <select
@@ -34,11 +34,10 @@ export function ExportControls({ exportFormat, onFormatChange, onExport }: Expor
 
       <button
         onClick={onExport}
-        className="w-full bg-zinc-900 hover:bg-black text-white font-medium py-2 px-3 rounded-lg transition-all flex items-center justify-center hover:scale-[1.02] active:scale-95 shadow-xs mb-2"
+        className="w-full h-8 bg-zinc-900 hover:bg-black text-white text-xs font-medium px-3 rounded-lg transition-colors flex items-center justify-center active:scale-95 mb-2"
       >
-        <i className="fa-solid fa-download mr-2"></i>Veriyi Indir
+        <i className="fa-solid fa-download mr-1.5 text-[10px]"></i>Veriyi İndir
       </button>
     </>
   )
 }
-
