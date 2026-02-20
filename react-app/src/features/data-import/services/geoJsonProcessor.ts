@@ -37,7 +37,7 @@ export function parseGeoJSON(geojson: GeoJSONInput, fileName: string): GeoItem[]
 
   features.forEach((feature, index) => {
     if (feature.geometry) {
-      let type: 'point' | 'line' | 'polygon' | 'circle' = 'point'
+      let type: 'point' | 'line' | 'polygon' = 'point'
       const gType = feature.geometry.type
 
       if (gType === 'Point' || gType === 'MultiPoint') type = 'point'

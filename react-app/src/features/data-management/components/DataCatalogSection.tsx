@@ -132,7 +132,6 @@ export function DataCatalogSection() {
             const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
             const currentFillColor = style.fillColor || '#3b82f6'
             const iconColor = currentFillColor || '#94a3b8' // Fallback: gri renk
-            const isColorPickerOpen = colorPickerItemId === item.id
 
             return (
               <div

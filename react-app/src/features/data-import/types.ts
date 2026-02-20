@@ -4,7 +4,7 @@
 
 export interface GeoItem {
   name: string;
-  type: 'point' | 'line' | 'polygon' | 'circle';
+  type: 'point' | 'line' | 'polygon';
   geometry: GeoJSON.Geometry;
   properties: Record<string, unknown>;
   date: string;

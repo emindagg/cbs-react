@@ -1,4 +1,3 @@
-import * as turf from '@turf/turf'
 import type { FeatureCollection, LineString, Point, Polygon } from 'geojson'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Layer, Source, useMap } from 'react-map-gl/maplibre'
