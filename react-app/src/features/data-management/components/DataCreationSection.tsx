@@ -1,4 +1,4 @@
-﻿import * as turf from '@turf/turf'
+import * as turf from '@turf/turf'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -73,6 +73,13 @@ export function DataCreationSection() {
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleAddData()
+    }
+  }
+
   return (
     <section className="hover:bg-zinc-50 rounded-lg px-2.5 py-1.5 transition-colors group">
       <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 mb-2 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
@@ -110,6 +117,7 @@ export function DataCreationSection() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder="Örn: Tarihi Müze, Hastane, Park..."
                 className="w-full px-2.5 py-1.5 border border-zinc-300 bg-zinc-50 rounded-lg text-xs text-zinc-900 placeholder-zinc-500 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
               />
@@ -120,6 +128,7 @@ export function DataCreationSection() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                onKeyDown={handleKeyDown}
                 className="w-full px-2.5 py-1.5 border border-zinc-300 bg-zinc-50 rounded-lg text-xs text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
               />
             </div>
