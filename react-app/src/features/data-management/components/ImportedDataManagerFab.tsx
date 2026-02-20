@@ -2,7 +2,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import {
   Boxes,
   ChevronDown,
-  ChevronRight,
   Eye,
   EyeOff,
   FileSpreadsheet,

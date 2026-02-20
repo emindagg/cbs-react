@@ -20,7 +20,7 @@ import {
 export const baseGridModules = [
   ClientSideRowModelModule,
   LocaleModule,
-] as const
+]
 
 /**
  * Filtre modülleri (filtre kullanılan grid'lerde)
@@ -30,14 +30,14 @@ export const filterModules = [
   NumberFilterModule,
   DateFilterModule,
   CustomFilterModule,
-] as const
+]
 
 /**
  * Geliştirme modülleri (sadece development'ta)
  */
 export const devModules = [
   ...(process.env.NODE_ENV !== 'production' ? [ValidationModule] : []),
-] as const
+]
 
 /**
  * Tam modül seti (filtre + temel)
@@ -46,4 +46,4 @@ export const fullGridModules = [
   ...baseGridModules,
   ...filterModules,
   ...devModules,
-] as const
+]

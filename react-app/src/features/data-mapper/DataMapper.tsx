@@ -19,7 +19,6 @@ import type { AgGridReact } from 'ag-grid-react'
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 
-import { agGridTurkishLocaleText } from '@/shared/ag-grid'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
