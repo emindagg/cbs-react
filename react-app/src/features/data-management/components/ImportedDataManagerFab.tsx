@@ -17,7 +17,7 @@ import { useDataManagementStore } from '../store/useDataManagementStore'
 
 const FAB_SIZE = 30
 const FAB_MARGIN = 16
-const PANEL_WIDTH = 245
+const PANEL_WIDTH = 260
 const PANEL_HEIGHT = 535
 
 function clamp(value: number, min: number, max: number) {
@@ -187,32 +187,32 @@ export function ImportedDataManagerFab() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="fixed z-[1690] w-[245px] bg-white border border-slate-200 rounded-xl shadow-[0_8px_20px_rgba(15,23,42,0.14)]"
+            className="fixed z-[1690] w-[260px] bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-[0_12px_32px_rgba(15,23,42,0.18)] ring-1 ring-slate-100/50"
             style={{ left: panelPosition.left, top: panelPosition.top }}
           >
-            <div className="px-3 py-2.5 border-b border-slate-200 bg-slate-50 rounded-t-xl">
+            <div className="px-4 py-3.5 border-b border-slate-200/80 bg-gradient-to-br from-slate-50 to-white rounded-t-xl backdrop-blur-sm">
               <div className="flex items-center gap-3 justify-between">
                 <div className="min-w-0 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg border border-slate-200 bg-white inline-flex items-center justify-center text-slate-600">
-                    <Boxes className="w-3.5 h-3.5" />
+                  <div className="w-9 h-9 rounded-xl border border-slate-200/60 bg-white shadow-sm inline-flex items-center justify-center text-slate-700 ring-1 ring-slate-100">
+                    <Boxes className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] font-semibold text-slate-900 truncate">
+                    <p className="text-xs font-semibold text-slate-900 truncate leading-tight">
                       {importedSources.length > 1
                         ? `${importedSources.length} dosya yüklü`
                         : (importedLayerName || importedItems[0]?.sourceLabel || importedItems[0]?.name || 'Import edilen veri')}
                     </p>
-                    <p className="text-[9px] font-semibold tracking-wide uppercase text-slate-500">Geçerli Katman</p>
+                    <p className="text-[10px] font-medium tracking-wide uppercase text-slate-500 mt-0.5">Geçerli Katman</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={toggleImportedLayerVisibility}
-                    className="w-6 h-6 rounded-md text-slate-600 hover:bg-slate-200 inline-flex items-center justify-center"
+                    className="w-7 h-7 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 inline-flex items-center justify-center transition-all duration-200 active:scale-95"
                     title={importedVisible ? 'Katmanı gizle' : 'Katmanı göster'}
                   >
-                    {importedVisible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    {importedVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
                   <button
                     type="button"
@@ -222,69 +222,76 @@ export function ImportedDataManagerFab() {
                         setIsOpen(false)
                       }
                     }}
-                    className="w-6 h-6 rounded-md text-slate-500 hover:bg-slate-200 inline-flex items-center justify-center"
+                    className="w-7 h-7 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 inline-flex items-center justify-center transition-all duration-200 active:scale-95"
                     title="Katmanı sil"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="max-h-[476px] overflow-y-auto px-2.5 py-2.5 space-y-2.5 bg-white">
+            <div className="max-h-[476px] overflow-y-auto px-3 py-3 space-y-3 bg-white scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
               <button
                 type="button"
                 onClick={() => setShowTable(true)}
-                className="w-full h-9 rounded-lg bg-black hover:bg-slate-900 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 transition-colors"
+                className="w-full h-10 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white text-xs font-semibold inline-flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.98]"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <FileSpreadsheet className="w-4 h-4" />
                 Öznitelik Tablosunu Aç
               </button>
 
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-2">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Yuklu Veriler</p>
-                  <span className="text-[10px] font-semibold text-slate-600">{importedSources.length}</span>
+              <div className="rounded-xl border border-slate-200/80 bg-gradient-to-br from-slate-50/50 to-white p-3 shadow-sm">
+                <div className="flex items-center justify-between mb-2.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Yüklü Veriler</p>
+                  <span className="text-xs font-bold text-slate-700 bg-slate-200/60 px-2 py-0.5 rounded-md">{importedSources.length}</span>
                 </div>
-                <div className="space-y-1 max-h-24 overflow-y-auto">
+                <div className="space-y-1.5 max-h-28 overflow-y-auto">
                   {importedSources.map((source) => (
-                    <div key={source.name} className="h-6 px-2 rounded-md bg-white border border-slate-200 text-[10px] text-slate-700 flex items-center justify-between gap-1">
-                      <span className="truncate">{source.name}</span>
+                    <div key={source.name} className="h-7 px-2.5 rounded-lg bg-white border border-slate-200/60 text-[11px] text-slate-700 flex items-center justify-between gap-2 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-150">
+                      <span className="truncate font-medium">{source.name}</span>
                       <button
                         type="button"
                         onClick={() => toggleImportedSourceVisibility(source.name)}
-                        className="w-5 h-5 rounded text-slate-600 hover:bg-slate-100 inline-flex items-center justify-center shrink-0"
+                        className="w-6 h-6 rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700 inline-flex items-center justify-center shrink-0 transition-all duration-150 active:scale-95"
                         title={source.visible ? 'Bu dosyayı gizle' : 'Bu dosyayı göster'}
                       >
-                        {source.visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                        {source.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                       </button>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <button
                   type="button"
                   onClick={() => setThemeOpen(prev => !prev)}
-                  className="w-full h-8 bg-transparent flex items-center justify-between text-xs font-semibold text-slate-800"
+                  className="w-full h-9 bg-gradient-to-r from-slate-50 to-white hover:from-slate-100 hover:to-slate-50 rounded-xl flex items-center justify-between px-3 text-xs font-semibold text-slate-800 transition-all duration-200 border border-slate-200/60 shadow-sm hover:shadow-md active:scale-[0.98]"
                 >
-                  <span className="inline-flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-md bg-black text-white inline-flex items-center justify-center">
-                      <Palette className="w-3 h-3" />
+                  <span className="inline-flex items-center gap-2.5">
+                    <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-slate-900 to-slate-800 text-white inline-flex items-center justify-center shadow-sm">
+                      <Palette className="w-3.5 h-3.5" />
                     </span>
-                    Tema Stilleri
+                    <span>Tema Stilleri</span>
                   </span>
-                  {themeOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  <span className={`transition-transform duration-200 ${themeOpen ? 'rotate-180' : ''}`}>
+                    <ChevronDown className="w-4 h-4 text-slate-500" />
+                  </span>
                 </button>
 
                 {themeOpen && (
-                  <div className="space-y-3">
-                    <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-3.5 pl-1"
+                  >
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-slate-50/80 to-white border border-slate-200/60 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs font-semibold text-slate-800">Küme Gösterimi</p>
-                          <p className="text-[10px] text-slate-500">Noktalar yaklaştıkça birleştir</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-slate-800 mb-0.5">Küme Gösterimi</p>
                         </div>
                         <button
                           id="dm-cluster"
@@ -292,15 +299,15 @@ export function ImportedDataManagerFab() {
                           role="switch"
                           aria-checked={layerStyles.clusterEnabled}
                           onClick={() => updateLayerStyle({ clusterEnabled: !layerStyles.clusterEnabled })}
-                          className={`w-10 h-6 rounded-full transition-colors ${layerStyles.clusterEnabled ? 'bg-black' : 'bg-slate-300'}`}
+                          className={`relative w-11 h-6 rounded-full transition-all duration-300 shadow-inner ${layerStyles.clusterEnabled ? 'bg-slate-900' : 'bg-slate-300'}`}
                         >
-                          <span className={`block w-5 h-5 mt-[2px] rounded-full bg-white transition-transform ${layerStyles.clusterEnabled ? 'translate-x-[18px]' : 'translate-x-[2px]'}`}></span>
+                          <span className={`absolute top-0.5 left-0.5 block w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${layerStyles.clusterEnabled ? 'translate-x-5' : 'translate-x-0'}`}></span>
                         </button>
                       </div>
                     </div>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
                         <label htmlFor="dm-opacity" className="text-xs font-semibold text-slate-800">Katman Şeffaflığı</label>
                         <input
                           type="number"
@@ -309,7 +316,7 @@ export function ImportedDataManagerFab() {
                           step={0.01}
                           value={layerStyles.opacity}
                           onChange={(event) => updateLayerStyle({ opacity: Number(event.target.value) })}
-                          className="w-12 h-7 border border-slate-300 rounded-md bg-white text-[10px] text-slate-800 text-center"
+                          className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
                         />
                       </div>
                       <input
@@ -320,13 +327,16 @@ export function ImportedDataManagerFab() {
                         step={0.01}
                         value={layerStyles.opacity}
                         onChange={(event) => updateLayerStyle({ opacity: Number(event.target.value) })}
-                        className="w-full accent-black"
+                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
+                        style={{
+                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${layerStyles.opacity * 100}%, #e2e8f0 ${layerStyles.opacity * 100}%, #e2e8f0 100%)`
+                        }}
                       />
                     </div>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label htmlFor="dm-width" className="text-xs font-semibold text-slate-800">Sembol Genisligi</label>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="dm-width" className="text-xs font-semibold text-slate-800">Sembol Genişliği</label>
                         <input
                           type="number"
                           min={1}
@@ -334,7 +344,7 @@ export function ImportedDataManagerFab() {
                           step={1}
                           value={layerStyles.width}
                           onChange={(event) => updateLayerStyle({ width: Number(event.target.value) })}
-                          className="w-12 h-7 border border-slate-300 rounded-md bg-white text-[10px] text-slate-800 text-center"
+                          className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
                         />
                       </div>
                       <input
@@ -345,25 +355,28 @@ export function ImportedDataManagerFab() {
                         step={1}
                         value={layerStyles.width}
                         onChange={(event) => updateLayerStyle({ width: Number(event.target.value) })}
-                        className="w-full accent-black"
+                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
+                        style={{
+                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${(layerStyles.width / 50) * 100}%, #e2e8f0 ${(layerStyles.width / 50) * 100}%, #e2e8f0 100%)`
+                        }}
                       />
                     </div>
 
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-slate-50/50 border border-slate-200/60">
                       <label className="text-xs font-semibold text-slate-800">Dolgu Rengi</label>
-                      <div className="h-8 px-2 border border-slate-300 rounded-md bg-white flex items-center gap-1.5">
+                      <div className="h-9 px-2.5 border border-slate-300 rounded-lg bg-white flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow">
                         <input
                           type="color"
                           value={layerStyles.fillColor}
                           onChange={(event) => updateLayerStyle({ fillColor: event.target.value })}
-                          className="w-5 h-5 border border-slate-300 rounded cursor-pointer"
+                          className="w-6 h-6 border border-slate-300 rounded-md cursor-pointer"
                         />
-                        <span className="text-[10px] font-medium text-slate-700 uppercase">{layerStyles.fillColor}</span>
+                        <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wide">{layerStyles.fillColor}</span>
                       </div>
                     </div>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
                         <label htmlFor="dm-stroke-width" className="text-xs font-semibold text-slate-800">Çerçeve Kalınlığı</label>
                         <input
                           type="number"
@@ -372,7 +385,7 @@ export function ImportedDataManagerFab() {
                           step={1}
                           value={layerStyles.strokeWidth}
                           onChange={(event) => updateLayerStyle({ strokeWidth: Number(event.target.value) })}
-                          className="w-12 h-7 border border-slate-300 rounded-md bg-white text-[10px] text-slate-800 text-center"
+                          className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
                         />
                       </div>
                       <input
@@ -383,45 +396,61 @@ export function ImportedDataManagerFab() {
                         step={1}
                         value={layerStyles.strokeWidth}
                         onChange={(event) => updateLayerStyle({ strokeWidth: Number(event.target.value) })}
-                        className="w-full accent-black"
+                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
+                        style={{
+                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${(layerStyles.strokeWidth / 10) * 100}%, #e2e8f0 ${(layerStyles.strokeWidth / 10) * 100}%, #e2e8f0 100%)`
+                        }}
                       />
                     </div>
 
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-slate-50/50 border border-slate-200/60">
                       <label className="text-xs font-semibold text-slate-800">Çerçeve Rengi</label>
-                      <div className="h-8 px-2 border border-slate-300 rounded-md bg-white flex items-center gap-1.5">
+                      <div className="h-9 px-2.5 border border-slate-300 rounded-lg bg-white flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow">
                         <input
                           type="color"
                           value={layerStyles.strokeColor}
                           onChange={(event) => updateLayerStyle({ strokeColor: event.target.value })}
-                          className="w-5 h-5 border border-slate-300 rounded cursor-pointer"
+                          className="w-6 h-6 border border-slate-300 rounded-md cursor-pointer"
                         />
-                        <span className="text-[10px] font-medium text-slate-700 uppercase">{layerStyles.strokeColor}</span>
+                        <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wide">{layerStyles.strokeColor}</span>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <button
                   type="button"
                   onClick={() => setLabelOpen(prev => !prev)}
-                  className="w-full h-8 bg-transparent flex items-center justify-between text-xs font-semibold text-slate-800"
+                  className="w-full h-9 bg-gradient-to-r from-slate-50 to-white hover:from-slate-100 hover:to-slate-50 rounded-xl flex items-center justify-between px-3 text-xs font-semibold text-slate-800 transition-all duration-200 border border-slate-200/60 shadow-sm hover:shadow-md active:scale-[0.98]"
                 >
-                  <span>Etiket ve Yazı</span>
-                  {labelOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  <span className="inline-flex items-center gap-2.5">
+                    <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white inline-flex items-center justify-center shadow-sm">
+                      <Settings2 className="w-3.5 h-3.5" />
+                    </span>
+                    <span>Etiket ve Yazı</span>
+                  </span>
+                  <span className={`transition-transform duration-200 ${labelOpen ? 'rotate-180' : ''}`}>
+                    <ChevronDown className="w-4 h-4 text-slate-500" />
+                  </span>
                 </button>
 
                 {labelOpen && (
-                  <div className="space-y-3">
-                    <div>
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-3.5 pl-1"
+                  >
+                    <div className="space-y-1.5">
                       <label htmlFor="dm-label-field" className="text-xs font-semibold text-slate-800">Görüntülenecek Alan</label>
                       <select
                         id="dm-label-field"
                         value={layerStyles.labelField}
                         onChange={(event) => updateLayerStyle({ labelField: event.target.value })}
-                        className="mt-1 w-full h-8 px-2 border border-slate-300 bg-white rounded-md text-[10px] text-slate-800"
+                        className="w-full h-9 px-3 border border-slate-300 bg-white rounded-lg text-[11px] text-slate-800 font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-all"
                       >
                         <option value="">Seçiniz</option>
                         {labelOptions.map(option => (
@@ -430,8 +459,8 @@ export function ImportedDataManagerFab() {
                       </select>
                     </div>
 
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
                         <label htmlFor="dm-text-size" className="text-xs font-semibold text-slate-800">Punto Büyüklüğü</label>
                         <input
                           type="number"
@@ -440,7 +469,7 @@ export function ImportedDataManagerFab() {
                           step={1}
                           value={layerStyles.textSize}
                           onChange={(event) => updateLayerStyle({ textSize: Number(event.target.value) })}
-                          className="w-12 h-7 border border-slate-300 rounded-md bg-white text-[10px] text-slate-800 text-center"
+                          className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
                         />
                       </div>
                       <input
@@ -451,23 +480,26 @@ export function ImportedDataManagerFab() {
                         step={1}
                         value={layerStyles.textSize}
                         onChange={(event) => updateLayerStyle({ textSize: Number(event.target.value) })}
-                        className="w-full accent-black"
+                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
+                        style={{
+                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${((layerStyles.textSize - 8) / 40) * 100}%, #e2e8f0 ${((layerStyles.textSize - 8) / 40) * 100}%, #e2e8f0 100%)`
+                        }}
                       />
                     </div>
 
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-slate-50/50 border border-slate-200/60">
                       <label className="text-xs font-semibold text-slate-800">Metin Rengi</label>
-                      <div className="h-8 px-2 border border-slate-300 rounded-md bg-white flex items-center gap-1.5">
+                      <div className="h-9 px-2.5 border border-slate-300 rounded-lg bg-white flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow">
                         <input
                           type="color"
                           value={layerStyles.textColor}
                           onChange={(event) => updateLayerStyle({ textColor: event.target.value })}
-                          className="w-5 h-5 border border-slate-300 rounded cursor-pointer"
+                          className="w-6 h-6 border border-slate-300 rounded-md cursor-pointer"
                         />
-                        <span className="text-[10px] font-medium text-slate-700 uppercase">{layerStyles.textColor}</span>
+                        <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wide">{layerStyles.textColor}</span>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             </div>
