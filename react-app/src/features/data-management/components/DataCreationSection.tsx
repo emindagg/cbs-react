@@ -113,7 +113,7 @@ export function DataCreationSection() {
 
       <div className="space-y-3">
         {/* Segmentli Buton Grubu */}
-        <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200/60">
+        <div className="flex bg-zinc-100/80 p-1 rounded-lg border border-slate-200/60">
           {toolOptions.map((tool) => {
             const isActive = drawMode === tool.id
             return (
@@ -137,9 +137,21 @@ export function DataCreationSection() {
           <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="bg-zinc-50 text-zinc-700 p-2 rounded-sm border border-zinc-200">
               <p className="text-[11.5px] text-zinc-700 font-medium leading-relaxed">
-                {drawMode === 'point' && 'Haritaya tıklayarak nokta ekleyin.'}
-                {drawMode === 'polygon' && 'Haritaya tıklayarak alan çizin. Çift tıklayarak bitirin.'}
-                {drawMode === 'line' && 'Haritaya tıklayarak çizgi çizin. Çift tıklayarak bitirin.'}
+                {drawMode === 'point' && (
+                  <span className="text-[9.75px]">
+                    Haritaya tıklayarak nokta ekleyin.
+                  </span>
+                )}
+                {drawMode === 'polygon' && (
+                  <span className="text-[9.75px]">
+                    Haritaya tıklayarak alan çizin. Çift tıklayarak bitirin.
+                  </span>
+                )}
+                {drawMode === 'line' && (
+                  <span className="text-[9.75px]">
+                    Haritaya tıklayarak çizgi çizin. Çift tıklayarak bitirin.
+                  </span>
+                )}
               </p>
             </div>
 
