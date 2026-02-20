@@ -1,7 +1,7 @@
 import type { Geometry } from 'geojson'
 
-export type DrawMode = 'none' | 'point' | 'polygon' | 'line' | 'circle'
-export type DataItemType = 'point' | 'polygon' | 'line' | 'circle'
+export type DrawMode = 'none' | 'point' | 'polygon' | 'line'
+export type DataItemType = 'point' | 'polygon' | 'line'
 export type ExportFormat = 'geojson' | 'kml' | 'shp' | 'xlsx'
 export type DataItemSource = 'drawn' | 'imported'
 
@@ -70,8 +70,6 @@ export interface DataManagementStore {
   drawMode: DrawMode
   drawPoints: [number, number][]
   drawGhostPoint: [number, number] | null
-  drawCenter: [number, number] | null
-  drawRadius: number | null
   isDrawing: boolean
 
   addItem: (item: NewDataItem) => void
@@ -83,14 +81,13 @@ export interface DataManagementStore {
   toggleImportedSourceVisibility: (sourceLabel: string) => void
   setActiveItem: (id: string | null) => void
   updateLayerStyle: (styles: Partial<LayerStyles>) => void
+  updateItemFillColor: (id: string, fillColor: string) => void
   setFabPosition: (position: FabPosition) => void
   clearAll: () => void
 
   setDrawMode: (mode: DrawMode) => void
   setDrawPoints: (points: [number, number][]) => void
   setDrawGhostPoint: (point: [number, number] | null) => void
-  setDrawCenter: (center: [number, number] | null) => void
-  setDrawRadius: (radius: number | null) => void
   setIsDrawing: (isDrawing: boolean) => void
   resetDraw: () => void
 }

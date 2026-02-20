@@ -37,8 +37,6 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
   drawMode: 'none',
   drawPoints: [],
   drawGhostPoint: null,
-  drawCenter: null,
-  drawRadius: null,
   isDrawing: false,
 
   addItem: (item) => set((state) => ({
@@ -117,6 +115,22 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
       }
     }
   },
+  updateItemFillColor: (id, fillColor) => set((state) => ({
+    items: state.items.map(item =>
+      item.id === id
+        ? {
+            ...item,
+            properties: {
+              ...item.properties,
+              style: {
+                ...(item.properties.style && typeof item.properties.style === 'object' ? item.properties.style : {}),
+                fillColor,
+              },
+            },
+          }
+        : item,
+    ),
+  })),
   setFabPosition: (position) => set({ fabPosition: position }),
 
   clearAll: () => set({
@@ -133,8 +147,6 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
         drawMode: mode,
         drawPoints: [],
         drawGhostPoint: null,
-        drawCenter: null,
-        drawRadius: null,
         isDrawing: mode !== 'none',
       }
     }
@@ -142,14 +154,10 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
   }),
   setDrawPoints: (points) => set({ drawPoints: points }),
   setDrawGhostPoint: (point) => set({ drawGhostPoint: point }),
-  setDrawCenter: (center) => set({ drawCenter: center }),
-  setDrawRadius: (radius) => set({ drawRadius: radius }),
   setIsDrawing: (isDrawing) => set({ isDrawing }),
   resetDraw: () => set({
     drawPoints: [],
     drawGhostPoint: null,
-    drawCenter: null,
-    drawRadius: null,
     isDrawing: false,
     drawMode: 'none',
   }),

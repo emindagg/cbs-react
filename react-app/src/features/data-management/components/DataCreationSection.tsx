@@ -10,8 +10,6 @@ export function DataCreationSection() {
     drawMode,
     setDrawMode,
     drawPoints,
-    drawCenter,
-    drawRadius,
     resetDraw,
     addItem,
   } = useDataManagementStore()
@@ -40,9 +38,6 @@ export function DataCreationSection() {
         geometry = { type: 'LineString', coordinates: drawPoints }
       } else if (drawMode === 'polygon' && drawPoints.length > 2) {
         geometry = { type: 'Polygon', coordinates: [[...drawPoints, drawPoints[0]]] }
-      } else if (drawMode === 'circle' && drawCenter && drawRadius) {
-        const circle = turf.circle(drawCenter, drawRadius, { steps: 64, units: 'kilometers' })
-        geometry = circle.geometry
       }
 
       if (!geometry) {
@@ -50,11 +45,9 @@ export function DataCreationSection() {
         return
       }
 
-      const dataType: DataItemType = drawMode === 'circle'
-        ? 'polygon'
-        : drawMode === 'line' || drawMode === 'polygon' || drawMode === 'point'
-          ? drawMode
-          : 'point'
+      const dataType: DataItemType = drawMode === 'line' || drawMode === 'polygon' || drawMode === 'point'
+        ? drawMode
+        : 'point'
 
       addItem({
         name: name.trim(),
@@ -98,7 +91,6 @@ export function DataCreationSection() {
             <option value="point">Nokta Verisi Ekle</option>
             <option value="polygon">Alan Verisi Ekle</option>
             <option value="line">Çizgi Verisi Ekle</option>
-            <option value="circle">Çember Verisi Ekle</option>
           </select>
         </div>
 
@@ -108,7 +100,6 @@ export function DataCreationSection() {
               {drawMode === 'point' && 'Haritaya tıklayarak nokta ekleyin.'}
               {drawMode === 'polygon' && 'Haritaya tıklayarak alan çizin. Çift tıklayarak bitirin.'}
               {drawMode === 'line' && 'Haritaya tıklayarak çizgi çizin. Çift tıklayarak bitirin.'}
-              {drawMode === 'circle' && 'Önce merkeze tıklayın, sonra yarıçapı belirleyip tekrar tıklayın.'}
             </div>
 
             <div>

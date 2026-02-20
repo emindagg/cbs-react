@@ -12,12 +12,8 @@ export function DataManagementDrawTool() {
     isDrawing,
     drawPoints,
     drawGhostPoint,
-    drawCenter,
-    drawRadius,
     setDrawPoints,
     setDrawGhostPoint,
-    setDrawCenter,
-    setDrawRadius,
     setIsDrawing,
     resetDraw,
   } = useDataManagementStore()
@@ -28,15 +24,8 @@ export function DataManagementDrawTool() {
     const lngLat: [number, number] = [e.lngLat.lng, e.lngLat.lat]
     setDrawGhostPoint(lngLat)
 
-    if (drawMode === 'circle' && drawCenter) {
-      const from = turf.point(drawCenter)
-      const to = turf.point(lngLat)
-      const distance = turf.distance(from, to, { units: 'kilometers' })
-      setDrawRadius(distance)
-    }
-
     if (map) map.getCanvas().style.cursor = 'crosshair'
-  }, [isDrawing, drawMode, drawCenter, map, setDrawGhostPoint, setDrawRadius])
+  }, [isDrawing, map, setDrawGhostPoint])
 
   const handleClick = useCallback((e: maplibregl.MapMouseEvent) => {
     if (!isDrawing) return
@@ -50,16 +39,8 @@ export function DataManagementDrawTool() {
       if (map) map.getCanvas().style.cursor = 'grab'
     } else if (drawMode === 'line' || drawMode === 'polygon') {
       setDrawPoints([...drawPoints, lngLat])
-    } else if (drawMode === 'circle') {
-      if (!drawCenter) {
-        setDrawCenter(lngLat)
-      } else {
-        setIsDrawing(false)
-        setDrawGhostPoint(null)
-        if (map) map.getCanvas().style.cursor = 'grab'
-      }
     }
-  }, [isDrawing, drawMode, drawPoints, drawCenter, setDrawPoints, setIsDrawing, setDrawGhostPoint, setDrawCenter, map])
+  }, [isDrawing, drawMode, drawPoints, setDrawPoints, setIsDrawing, setDrawGhostPoint, map])
 
   const handleDblClick = useCallback((e: maplibregl.MapMouseEvent) => {
     if (!isDrawing) return
@@ -147,29 +128,10 @@ export function DataManagementDrawTool() {
         geometry: { type: 'Point', coordinates: drawPoints[0] },
         properties: { type: 'point' },
       })
-    } else if (drawMode === 'circle' && drawCenter) {
-      features.push({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: drawCenter },
-        properties: { type: 'center' },
-      })
-
-      if (drawRadius) {
-        const circle = turf.circle(drawCenter, drawRadius, { steps: 64, units: 'kilometers' })
-        features.push(circle)
-
-        if (isDrawing && drawGhostPoint) {
-          features.push({
-            type: 'Feature',
-            geometry: { type: 'LineString', coordinates: [drawCenter, drawGhostPoint] },
-            properties: { type: 'guide' },
-          })
-        }
-      }
     }
 
     return { type: 'FeatureCollection', features }
-  }, [drawMode, drawPoints, drawGhostPoint, drawCenter, drawRadius, isDrawing])
+  }, [drawMode, drawPoints, drawGhostPoint, isDrawing])
 
   if (drawMode === 'none') return null
 

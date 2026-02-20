@@ -22,9 +22,8 @@ export default function DataLayer() {
         const opacity = isImported
           ? layerStyles.opacity
           : (style.opacity !== undefined ? style.opacity : 0.9)
-        const fillColor = isImported
-          ? layerStyles.fillColor
-          : (style.fillColor || '#3b82f6')
+        // Önce item'ın kendi fillColor'unu kontrol et, yoksa fallback kullan
+        const fillColor = style.fillColor || (isImported ? layerStyles.fillColor : '#3b82f6')
         const strokeColor = isImported
           ? layerStyles.strokeColor
           : (style.strokeColor || '#000000')

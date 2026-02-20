@@ -1,9 +1,76 @@
-﻿import { useDataManagementStore } from '../store/useDataManagementStore'
+import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { useDataManagementStore } from '../store/useDataManagementStore'
+import { isStyleProperties } from '@/types/style'
+import type { StyleProperties } from '@/types/style'
 
 const CATALOG_IMPORT_RENDER_LIMIT = 200
 
 export function DataCatalogSection() {
   const items = useDataManagementStore(state => state.items)
+  const updateItemFillColor = useDataManagementStore(state => state.updateItemFillColor)
+  const [colorPickerItemId, setColorPickerItemId] = useState<string | null>(null)
+  const [colorPickerPosition, setColorPickerPosition] = useState<{ top: number; left: number } | null>(null)
+  const colorPickerRef = useRef<HTMLDivElement>(null)
+  const itemRefsRef = useRef<Record<string, HTMLDivElement>>({})
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastClickItemIdRef = useRef<string | null>(null)
+
+  // Color picker pozisyonunu hesapla
+  const updateColorPickerPosition = (itemId: string) => {
+    const itemElement = itemRefsRef.current[itemId]
+    if (itemElement) {
+      const rect = itemElement.getBoundingClientRect()
+      setColorPickerPosition({
+        top: rect.bottom + 4,
+        left: rect.left,
+      })
+    }
+  }
+
+  // Dışarı tıklayınca color picker'ı kapat
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+        const clickedItem = Object.values(itemRefsRef.current).find(el => el.contains(event.target as Node))
+        if (!clickedItem) {
+          setColorPickerItemId(null)
+          setColorPickerPosition(null)
+        }
+      }
+    }
+
+    if (colorPickerItemId) {
+      updateColorPickerPosition(colorPickerItemId)
+      document.addEventListener('mousedown', handleClickOutside)
+      const handleResize = () => {
+        if (colorPickerItemId) {
+          updateColorPickerPosition(colorPickerItemId)
+        }
+      }
+      window.addEventListener('resize', handleResize)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+        window.removeEventListener('resize', handleResize)
+      }
+    } else {
+      setColorPickerPosition(null)
+    }
+  }, [colorPickerItemId])
+
+  // ESC tuşu ile kapat
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && colorPickerItemId) {
+        setColorPickerItemId(null)
+      }
+    }
+
+    if (colorPickerItemId) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [colorPickerItemId])
   const drawnItems = items.filter(item => item.source === 'drawn')
   const importedItems = items.filter(item => item.source === 'imported')
 
@@ -60,15 +127,135 @@ export function DataCatalogSection() {
             </div>
           </div>
         ) : (
-          visibleItems.map(item => (
-            <div key={item.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-zinc-100 bg-white hover:bg-zinc-50 transition-colors">
-              <i className={`fa-solid text-[10px] ${item.type === 'point' ? 'fa-location-dot text-blue-500' : item.type === 'line' ? 'fa-route text-orange-500' : 'fa-draw-polygon text-emerald-500'}`}></i>
-              <span className="text-xs text-zinc-700 font-medium truncate">{item.name}</span>
-              {item.visible && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400"></div>}
-            </div>
-          ))
+          visibleItems.map(item => {
+            const rawStyle = item.properties.style
+            const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
+            const currentFillColor = style.fillColor || '#3b82f6'
+            const iconColor = currentFillColor || '#94a3b8' // Fallback: gri renk
+            const isColorPickerOpen = colorPickerItemId === item.id
+
+            return (
+              <div
+                key={item.id}
+                ref={(el) => {
+                  if (el) itemRefsRef.current[item.id] = el
+                  else delete itemRefsRef.current[item.id]
+                }}
+                className="relative"
+              >
+                <div
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-zinc-100 bg-white hover:bg-zinc-50 transition-colors cursor-pointer select-none"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (lastClickItemIdRef.current === item.id && clickTimeoutRef.current) {
+                      // Çift tıklama algılandı
+                      clearTimeout(clickTimeoutRef.current)
+                      clickTimeoutRef.current = null
+                      lastClickItemIdRef.current = null
+                      setColorPickerItemId(item.id)
+                    } else {
+                      // İlk tıklama
+                      lastClickItemIdRef.current = item.id
+                      clickTimeoutRef.current = setTimeout(() => {
+                        lastClickItemIdRef.current = null
+                        clickTimeoutRef.current = null
+                      }, 300) // 300ms içinde ikinci tıklama gelmezse reset
+                    }
+                  }}
+                  onDoubleClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (clickTimeoutRef.current) {
+                      clearTimeout(clickTimeoutRef.current)
+                      clickTimeoutRef.current = null
+                    }
+                    lastClickItemIdRef.current = null
+                    setColorPickerItemId(item.id)
+                  }}
+                  title="Çift tıklayarak renk değiştir"
+                >
+                  <i
+                    className={`text-[10px] ${
+                      item.type === 'point'
+                        ? 'fa-solid fa-location-dot'
+                        : item.type === 'line'
+                          ? 'fa-solid fa-route'
+                          : 'fa-solid fa-draw-polygon' // polygon ve circle (artık desteklenmiyor) için
+                    }`}
+                    style={{ color: iconColor }}
+                    title={`Renk: ${currentFillColor || 'Varsayılan'}`}
+                  ></i>
+                  <span className="text-xs text-zinc-700 font-medium truncate flex-1">{item.name}</span>
+                  {item.visible && <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>}
+                </div>
+              </div>
+            )
+          })
         )}
       </div>
+
+      {/* Color Picker Portal */}
+      {colorPickerItemId && colorPickerPosition && (() => {
+        const item = visibleItems.find(i => i.id === colorPickerItemId)
+        if (!item) return null
+        const rawStyle = item.properties.style
+        const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
+        const currentFillColor = style.fillColor || '#3b82f6'
+
+        return createPortal(
+          <div
+            ref={colorPickerRef}
+            className="fixed z-[99999] bg-white border border-zinc-200 rounded-lg shadow-xl p-3 min-w-[200px]"
+            style={{
+              top: `${colorPickerPosition.top}px`,
+              left: `${colorPickerPosition.left}px`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-semibold text-zinc-700 uppercase tracking-wide">
+                        Dolgu Rengi
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setColorPickerItemId(null)
+                        }}
+                        className="text-zinc-400 hover:text-zinc-600 text-xs"
+                        title="Kapat"
+                      >
+                        <i className="fa-solid fa-times"></i>
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={currentFillColor}
+                        onChange={(e) => {
+                          updateItemFillColor(item.id, e.target.value)
+                        }}
+                        className="w-10 h-10 border border-zinc-300 rounded-md cursor-pointer"
+                      />
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={currentFillColor}
+                          onChange={(e) => {
+                            const color = e.target.value
+                            if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+                              updateItemFillColor(item.id, color)
+                            }
+                          }}
+                          className="w-full px-2 py-1 text-xs border border-zinc-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          placeholder="#3b82f6"
+                        />
+                      </div>
+                    </div>
+                  </div>,
+          document.body,
+        )
+      })()}
     </section>
   )
 }

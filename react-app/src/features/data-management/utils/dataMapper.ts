@@ -45,7 +45,7 @@ export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping
       .replace('alan', 'polygon')
 
     const normalizedType: NewDataItem['type'] =
-      rawType === 'polygon' || rawType === 'line' || rawType === 'circle' ? rawType : 'point'
+      rawType === 'polygon' || rawType === 'line' ? rawType : 'point' // circle artık desteklenmiyor, fallback: point
 
     return {
       name: mapping.name ? String(row[mapping.name] ?? '') : `Item ${index + 1}`,
