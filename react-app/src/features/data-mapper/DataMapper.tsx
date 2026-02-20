@@ -11,6 +11,7 @@ import {
   NumberEditorModule,
   CellStyleModule,
   RenderApiModule,
+  LocaleModule,
   ValidationModule,
 } from 'ag-grid-community'
 import type { CellValueChangedEvent } from 'ag-grid-community'
@@ -18,6 +19,7 @@ import type { AgGridReact } from 'ag-grid-react'
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 
+import { agGridTurkishLocaleText } from '@/shared/ag-grid'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
@@ -28,6 +30,7 @@ import { useColumns } from './hooks/useColumns'
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
+  LocaleModule,
   TextEditorModule,
   NumberEditorModule,
   CellStyleModule,

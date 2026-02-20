@@ -7,6 +7,8 @@ import { AgGridReact } from 'ag-grid-react'
 import type { RefObject } from 'react'
 import { useMemo } from 'react'
 
+import { agGridTurkishLocaleText } from '@/shared/ag-grid'
+
 interface RowWithStatus {
   __rowIndex: number
   __status: 'matched' | 'unmatched'
@@ -71,6 +73,7 @@ export function Grid({
           context={context}
           suppressMovableColumns
           animateRows={false}
+          localeText={agGridTurkishLocaleText}
         />
       )}
     </div>
