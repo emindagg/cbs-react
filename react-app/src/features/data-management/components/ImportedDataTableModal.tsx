@@ -2,6 +2,11 @@ import {
   ClientSideRowModelModule,
   ModuleRegistry,
   ValidationModule,
+  TextFilterModule,
+  NumberFilterModule,
+  DateFilterModule,
+  CustomFilterModule,
+  LocaleModule,
   type ColDef,
 } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
@@ -16,6 +21,11 @@ import 'ag-grid-community/styles/ag-theme-alpine.css'
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
+  TextFilterModule,
+  NumberFilterModule,
+  DateFilterModule,
+  CustomFilterModule,
+  LocaleModule,
   ...(process.env.NODE_ENV !== 'production' ? [ValidationModule] : []),
 ])
 
@@ -66,6 +76,68 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
     resizable: true,
   }), [])
 
+  const localeText = useMemo(() => ({
+    // Text Filter (v35 format)
+    filterOoo: 'Filtrele...',
+    textFilterContains: 'İçerir',
+    textFilterNotContains: 'İçermez',
+    textFilterEquals: 'Eşittir',
+    textFilterNotEqual: 'Eşit Değildir',
+    textFilterStartsWith: 'İle Başlar',
+    textFilterEndsWith: 'İle Biter',
+    textFilterBlank: 'Boş',
+    textFilterNotBlank: 'Boş Değil',
+    // Legacy format (fallback)
+    contains: 'İçerir',
+    notContains: 'İçermez',
+    equals: 'Eşittir',
+    notEqual: 'Eşit Değildir',
+    startsWith: 'İle Başlar',
+    endsWith: 'İle Biter',
+    blank: 'Boş',
+    notBlank: 'Boş Değil',
+    // Number Filter (v35 format)
+    numberFilterEquals: 'Eşittir',
+    numberFilterNotEqual: 'Eşit Değildir',
+    numberFilterLessThan: 'Küçüktür',
+    numberFilterGreaterThan: 'Büyüktür',
+    numberFilterLessThanOrEqual: 'Küçük Eşittir',
+    numberFilterGreaterThanOrEqual: 'Büyük Eşittir',
+    numberFilterInRange: 'Aralıkta',
+    numberFilterInRangeStart: 'Başlangıç',
+    numberFilterInRangeEnd: 'Bitiş',
+    // Legacy format (fallback)
+    lessThan: 'Küçüktür',
+    greaterThan: 'Büyüktür',
+    lessThanOrEqual: 'Küçük Eşittir',
+    greaterThanOrEqual: 'Büyük Eşittir',
+    inRange: 'Aralıkta',
+    // Date Filter (v35 format)
+    dateFormatOoo: 'gg.aa.yyyy',
+    dateFilterBefore: 'Önce',
+    dateFilterAfter: 'Sonra',
+    dateFilterEquals: 'Eşittir',
+    dateFilterNotEqual: 'Eşit Değildir',
+    // Legacy format (fallback)
+    before: 'Önce',
+    after: 'Sonra',
+    // Common Filter Buttons
+    applyFilter: 'Uygula',
+    resetFilter: 'Sıfırla',
+    clearFilter: 'Temizle',
+    // Pagination
+    page: 'Sayfa',
+    to: '-',
+    of: '/',
+    nextPage: 'Sonraki Sayfa',
+    lastPage: 'Son Sayfa',
+    firstPage: 'İlk Sayfa',
+    previousPage: 'Önceki Sayfa',
+    // Other
+    noRowsToShow: 'Gösterilecek satır yok',
+    loadingOoo: 'Yükleniyor...',
+  }), [])
+
   if (!isOpen) return null
 
   return createPortal(
@@ -94,6 +166,8 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
               defaultColDef={defaultColDef}
               suppressMovableColumns
               animateRows={false}
+              theme="legacy"
+              localeText={localeText}
             />
           </div>
         </div>
