@@ -33,7 +33,7 @@ export function LayersPanel({
   return (
     <div
       id="layers-panel"
-      className="fixed z-10000 w-[256px] max-w-[84vw] bg-white rounded-md shadow-md border border-slate-300 overflow-hidden"
+      className="fixed z-10000 w-[256px] max-w-[84vw] bg-white rounded-xl shadow-md border border-slate-300 overflow-hidden"
       style={{ left: `calc(${leftPosition} + 46px)`, top: '54px' }}
     >
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-300 bg-slate-50">
@@ -91,7 +91,7 @@ export function LayersPanel({
                 type="button"
                 onClick={() => onToggleLayer(layer.id, !layer.enabled)}
                 disabled={layer.loading}
-                className={`relative inline-flex h-[16px] w-[30px] shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-1 ${layer.enabled ? 'bg-blue-600' : 'bg-slate-300'}`}
+                className={`relative inline-flex h-[16px] w-[30px] shrink-0 items-center rounded-[10px] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-700 focus:ring-offset-1 ${layer.enabled ? 'bg-zinc-800' : 'bg-slate-300'}`}
                 title={layer.enabled ? 'Gizle' : 'Göster'}
               >
                 <span className={`inline-block h-[12px] w-[12px] transform rounded-full bg-white shadow-sm transition-transform duration-200 ${layer.enabled ? 'translate-x-[16px]' : 'translate-x-[2px]'}`} />
