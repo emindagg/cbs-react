@@ -64,6 +64,7 @@ export function ImportedDataManagerFab() {
 
   const dragStartRef = useRef<{ pointerX: number; pointerY: number; startX: number; startY: number } | null>(null)
   const hasMovedRef = useRef(false)
+  const rafRef = useRef<number | null>(null)
 
   const importedItems = useMemo(
     () => items.filter(item => item.source === 'imported'),
@@ -123,7 +124,14 @@ export function ImportedDataManagerFab() {
     }
 
     window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      // Cleanup pending RAF on unmount
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+    }
   }, [fabPosition, clampFabPosition, setFabPosition])
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -144,16 +152,33 @@ export function ImportedDataManagerFab() {
 
     const deltaX = event.clientX - start.pointerX
     const deltaY = event.clientY - start.pointerY
+    
     if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
       hasMovedRef.current = true
     }
 
-    const next = clampFabPosition(start.startX + deltaX, start.startY + deltaY)
-    setFabPosition(next)
+    // Cancel pending RAF if exists
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current)
+    }
+
+    // Use requestAnimationFrame for smooth updates
+    rafRef.current = requestAnimationFrame(() => {
+      const next = clampFabPosition(start.startX + deltaX, start.startY + deltaY)
+      setFabPosition(next)
+      rafRef.current = null
+    })
   }
 
   const handlePointerUp = () => {
+    // Cancel any pending RAF
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = null
+    }
+    
     dragStartRef.current = null
+    
     if (!hasMovedRef.current) {
       setIsOpen(prev => !prev)
     }
@@ -166,13 +191,20 @@ export function ImportedDataManagerFab() {
 
   return (
     <>
-      <div className="fixed z-[1700]" style={{ left: fabPosition.x, top: fabPosition.y }}>
+      <div
+        className="fixed z-[1700]"
+        style={{
+          left: fabPosition.x,
+          top: fabPosition.y,
+          transform: 'translateZ(0)',
+        }}
+      >
         <button
           type="button"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          className="w-[30px] h-[30px] rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-700 shadow-lg text-white flex items-center justify-center touch-none select-none transition-colors"
+          className="w-[30px] h-[30px] rounded-full bg-slate-900 border border-slate-700 shadow-lg text-white flex items-center justify-center touch-none select-none"
           aria-label="İçerik yönetim paneli"
           title="İçerik yönetim paneli"
         >
