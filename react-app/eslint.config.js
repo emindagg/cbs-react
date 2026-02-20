@@ -1,4 +1,4 @@
-﻿import js from '@eslint/js'
+import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
@@ -35,17 +35,17 @@ export default [
     },
     rules: {
       // ========================================
-      // FEATURE-FIRST / PRAGMATIK LÄ°MÄ°TLER (KURAL 3)
+      // FEATURE-FIRST / PRAGMATİK LİMİTLER (KURAL 3)
       // ========================================
 
-      // Dosya: 600 satÄ±r (Rule dosyasÄ± ile uyumlu)
+      // Dosya: 600 satır (Rule dosyası ile uyumlu)
       'max-lines': ['warn', {
         max: 600,
         skipBlankLines: true,
         skipComments: true,
       }],
 
-      // Fonksiyon: 300 satÄ±r (wizard/modallar iÃ§in pragmatik)
+      // Fonksiyon: 300 satır (wizard/modallar için pragmatik)
       'max-lines-per-function': ['warn', {
         max: 300,
         skipBlankLines: true,
@@ -56,7 +56,7 @@ export default [
       // IMPORT RULES
       // ========================================
 
-      // Import sÄ±ralama (alfabetik + category)
+      // Import sıralama (alfabetik + kategori)
       'import/order': ['error', {
         groups: [
           'builtin',   // Node.js built-in modules
@@ -75,23 +75,23 @@ export default [
       // Duplicate imports yasak
       'import/no-duplicates': 'error',
 
-      // Default export var mÄ± kontrol et
+      // Default export var mı kontrol et
       'import/default': 'error',
 
-      // Named export var mÄ± kontrol et
+      // Named export var mı kontrol et
       'import/named': 'error',
 
-      // Feature-First: domain kodu src/features altÄ±nda; components/visualization yasak
-      // KURAL 2: Derin feature import yasak â€” sadece barrel (index) kullan: @/features/name
+      // Feature-First: domain kodu src/features altında; components/visualization yasak
+      // KURAL 2: Derin feature import yasak — sadece barrel (index) kullan: @/features/name
       'no-restricted-imports': ['error', {
         paths: [{
           name: '@/components/visualization',
-          message: 'Feature-First: domain kodu src/features altÄ±ndadÄ±r. @/features/viz-wizard, @/features/legend-dw veya @/features/data-mapper kullanÄ±n.',
+          message: 'Feature-First: domain kodu src/features altındadır. @/features/viz-wizard, @/features/legend-dw veya @/features/data-mapper kullanın.',
         }],
         patterns: [
           {
             group: ['**/components/visualization', '**/components/visualization/*'],
-            message: 'Feature-First: domain kodu src/features altÄ±ndadÄ±r. @/features/viz-wizard, @/features/legend-dw veya @/features/data-mapper kullanÄ±n.',
+            message: 'Feature-First: domain kodu src/features altındadır. @/features/viz-wizard, @/features/legend-dw veya @/features/data-mapper kullanın.',
           },
           {
             group: ['@/features/*/*', '@/features/*/*/*'],
@@ -104,10 +104,10 @@ export default [
       // TYPESCRIPT STRICT RULES
       // ========================================
 
-      // any kullanÄ±mÄ± (geliÅŸtirme aÅŸamasÄ±nda warning, production'da error olmalÄ±)
+      // any kullanımı (geliştirme aşamasında warning, production'da error olmalı)
       '@typescript-eslint/no-explicit-any': 'error',
 
-      // KullanÄ±lmayan deÄŸiÅŸkenler
+      // Kullanılmayan değişkenler
       '@typescript-eslint/no-unused-vars': ['error', {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
@@ -120,17 +120,17 @@ export default [
         fixStyle: 'separate-type-imports',
       }],
 
-      // Explicit function return types (sadece export edilenler iÃ§in)
+      // Explicit function return types (sadece export edilenler için)
       '@typescript-eslint/explicit-module-boundary-types': 'off',
 
       // ========================================
       // REACT RULES
       // ========================================
 
-      // React hooks kurallarÄ±
+      // React hooks kuralları
       ...reactHooks.configs.recommended.rules,
 
-      // React refresh iÃ§in fast refresh uyumluluÄŸu
+      // React refresh için fast refresh uyumluluğu
       'react-refresh/only-export-components': ['warn', {
         allowConstantExport: true,
       }],
@@ -139,7 +139,7 @@ export default [
       // CODE QUALITY RULES
       // ========================================
 
-      // console.log development iÃ§in OK ama production'da kaldÄ±rÄ±lmalÄ±
+      // console.log development için OK ama production'da kaldırılmalı
       'no-console': ['warn', {
         allow: ['warn', 'error', 'info', 'debug'],
       }],
@@ -157,16 +157,16 @@ export default [
       // === zorunlu
       'eqeqeq': ['error', 'always'],
 
-      // Magic numbers (matematiksel sabitler, UI deÄŸerleri ve koordinatlar iÃ§in esnek)
+      // Magic numbers (matematiksel sabitler, UI değerleri ve koordinatlar için esnek)
       'no-magic-numbers': ['warn', {
         ignore: [
-          // Temel sayÄ±lar
+          // Temel sayılar
           0, 1, -1, 2, 3, 4, 5, 6, 7, 9, 10, 12, 15, 16, 19, 20, 24, 26, 28, 30, 32, 39, 40, 50, 60, 80, 81, 90, -90, 100, 116, 150, 180, -180, 200, 255, 360, 365, 500, 750, 1000, 3600, 1000000,
-          // Negatif sayÄ±lar
+          // Negatif sayılar
           -20, -42,
           // Matematiksel sabitler
           23.44, 3.14159,
-          // UI deÄŸerleri (opacity, font-size, grid row height)
+          // UI değerleri (opacity, font-size, grid row height)
           0.0001, 0.05, 0.1, 0.2, 0.25, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7, 0.75, 0.8, 0.9, 0.95,
           1.5, 2.5,
           // Renk / sRGB sabitleri
@@ -175,7 +175,7 @@ export default [
           1.8760108,
           0.0031308, -1.5371385, -0.4985314, -0.969266, 0.041556, 0.0556434, -0.2040259, 1.0572252,
           3.2404542,
-          // Koordinat deÄŸerleri
+          // Koordinat değerleri
           33.41, 35.2433, 38.9637,
         ],
         ignoreArrayIndexes: true,
@@ -209,24 +209,24 @@ export default [
     },
   },
 
-  // Test dosyalarÄ± iÃ§in Ã¶zel kurallar
+  // Test dosyaları için özel kurallar
   {
     files: ['**/*.test.{ts,tsx}', '**/test/**/*.{ts,tsx}'],
     rules: {
-      'no-magic-numbers': 'off', // Test dosyalarÄ±nda magic number serbest
+      'no-magic-numbers': 'off', // Test dosyalarında magic number serbest
       '@typescript-eslint/no-explicit-any': 'warn', // Test'lerde any daha esnek
-      'max-lines-per-function': 'off', // Test fonksiyonlarÄ± uzun olabilir
+      'max-lines-per-function': 'off', // Test fonksiyonları uzun olabilir
     },
   },
 
-  // Feature-First KURAL 1: src/components (global) feature'lardan import edemez (warn = hedef mimari, mevcut kod geÃ§iÅŸ sonrasÄ± error yapÄ±labilir)
+  // Feature-First KURAL 1: src/components (global) feature'lardan import edemez (warn = hedef mimari, mevcut kod geçiş sonrası error yapılabilir)
   {
     files: ['src/components/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': ['warn', {
         paths: [{
-          name: '@/components/visualization',
-          message: 'Feature-First: domain kodu src/features altÄ±ndadÄ±r.',
+        name: '@/components/visualization',
+        message: 'Feature-First: domain kodu src/features altındadır.',
         }],
         patterns: [
           {

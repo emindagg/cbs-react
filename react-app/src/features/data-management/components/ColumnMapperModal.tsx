@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { ColumnMapping } from '../types'
@@ -39,7 +39,7 @@ export default function ColumnMapperModal({
         <div className="bg-zinc-900 text-white px-5 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-map-location-dot text-emerald-400 text-lg"></i>
-            <h2 className="text-base font-semibold">Koordinat E\u015fle\u015ftirme</h2>
+            <h2 className="text-base font-semibold">Koordinat Eşleştirme</h2>
           </div>
           <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
             <i className="fa-solid fa-xmark text-lg"></i>
@@ -52,7 +52,7 @@ export default function ColumnMapperModal({
             <div>
               <h4 className="text-xs font-semibold text-emerald-800">Dosya Okundu</h4>
               <p className="text-[10px] text-emerald-700 mt-0.5">
-                Enlem ve boylam s\u00fctunlar\u0131n\u0131 se\u00e7erek e\u015fle\u015ftirin.
+                Enlem ve boylam sütunlarını seçerek eşleştirin.
               </p>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function ColumnMapperModal({
                 onChange={(e) => setMapping({ ...mapping, lat: e.target.value })}
                 className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-hidden text-sm"
               >
-                <option value="">Se\u00e7in...</option>
+                <option value="">Seçin...</option>
                 {headers.map(header => (
                   <option key={header} value={header}>{header}</option>
                 ))}
@@ -82,7 +82,7 @@ export default function ColumnMapperModal({
                 onChange={(e) => setMapping({ ...mapping, lon: e.target.value })}
                 className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-hidden text-sm"
               >
-                <option value="">Se\u00e7in...</option>
+                <option value="">Seçin...</option>
                 {headers.map(header => (
                   <option key={header} value={header}>{header}</option>
                 ))}
@@ -90,14 +90,14 @@ export default function ColumnMapperModal({
             </div>
             <div>
               <label className="block text-xs font-medium text-zinc-700 mb-1">
-                \u0130sim (Opsiyonel)
+                İsim (Opsiyonel)
               </label>
               <select
                 value={mapping.name}
                 onChange={(e) => setMapping({ ...mapping, name: e.target.value })}
                 className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-hidden text-sm"
               >
-                <option value="">Otomatik (S\u0131ra No)</option>
+                <option value="">Otomatik (Sıra No)</option>
                 {headers.map(header => (
                   <option key={header} value={header}>{header}</option>
                 ))}
@@ -105,14 +105,14 @@ export default function ColumnMapperModal({
             </div>
             <div>
               <label className="block text-xs font-medium text-zinc-700 mb-1">
-                T\u00fcr (Opsiyonel)
+                Tür (Opsiyonel)
               </label>
               <select
                 value={mapping.type}
                 onChange={(e) => setMapping({ ...mapping, type: e.target.value })}
                 className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-hidden text-sm"
               >
-                <option value="">Varsay\u0131lan (Point)</option>
+                <option value="">Varsayılan (Point)</option>
                 {headers.map(header => (
                   <option key={header} value={header}>{header}</option>
                 ))}
@@ -122,7 +122,7 @@ export default function ColumnMapperModal({
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Veri \u00d6nizleme (\u0130lk 5 Sat\u0131r)</h4>
+              <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Veri Önizleme (İlk 5 Satır)</h4>
             </div>
             <div className="border border-zinc-200 rounded-lg overflow-hidden overflow-x-auto">
               <table className="w-full text-xs text-left">
@@ -158,7 +158,7 @@ export default function ColumnMapperModal({
             onClick={onClose}
             className="px-3 py-1.5 text-xs text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg font-medium transition-colors"
           >
-            \u0130ptal
+            İptal
           </button>
           <button
             onClick={() => onConfirm(mapping)}

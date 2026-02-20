@@ -1,4 +1,4 @@
-﻿import { Loader2, Upload } from 'lucide-react'
+import { Loader2, Upload } from 'lucide-react'
 
 import ColumnMapperModal from './ColumnMapperModal'
 import { ExportControls } from './ExportControls'
@@ -31,7 +31,7 @@ export function DataImportExportSection() {
     <>
       <section className="hover:bg-zinc-50 rounded-lg px-2.5 py-1.5 transition-colors group pb-4">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-900 mb-2 group-hover:text-emerald-700 transition-colors">
-          Veri Y\u00f6netimi
+          Veri Yönetimi
         </h3>
 
         <ExportControls
@@ -48,7 +48,7 @@ export function DataImportExportSection() {
           {isLoading
             ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
             : <Upload className="w-3.5 h-3.5" aria-hidden="true" />}
-          <span>{isLoading ? 'Y\u00fckleniyor...' : 'Dosya Y\u00fckle'}</span>
+          <span>{isLoading ? 'Yükleniyor...' : 'Dosya Yükle'}</span>
           <input
             ref={fileInputRef}
             id="dm-file-upload"

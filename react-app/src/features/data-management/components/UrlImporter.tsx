@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 
 interface UrlImporterProps {
   onImport: (url: string, onSuccess: () => void) => void
@@ -15,7 +15,7 @@ export function UrlImporter({ onImport, isLoading }: UrlImporterProps) {
   return (
     <div className="border-t border-zinc-200 pt-3 mt-3">
       <label className="block text-xs font-medium text-zinc-700 mb-1">
-        URL'den Veri Y\u00fckle
+        URL'den Veri Yükle
       </label>
       <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
         <input
@@ -29,10 +29,10 @@ export function UrlImporter({ onImport, isLoading }: UrlImporterProps) {
           onClick={handleImport}
           disabled={isLoading}
           className={`w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 sm:py-1.5 px-3 rounded-lg text-xs transition-all flex items-center justify-center hover:scale-105 active:scale-95 shadow-xs ${isLoading ? 'opacity-70' : ''}`}
-          title="URL'den y\u00fckle"
+          title="URL'den yükle"
         >
           <i className={`fa-solid ${isLoading ? 'fa-spinner fa-spin' : 'fa-cloud-arrow-up'} mr-2 sm:mr-0`}></i>
-          <span className="sm:hidden">Y\u00fckle</span>
+          <span className="sm:hidden">Yükle</span>
         </button>
       </div>
       <p className="text-[10px] text-zinc-400 mt-1.5 flex items-center">
