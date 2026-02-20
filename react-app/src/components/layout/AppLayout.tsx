@@ -9,6 +9,7 @@ import { ImportedDataManagerFab } from '@/features/data-management'
 import { SearchContainer } from '@/features/geocoder'
 import { GlobeToggleButton } from '@/features/globe-view'
 import { LegendContainer } from '@/features/legend'
+import { LayersPanel, useOverlayLayers } from '@/features/layers'
 import { MapContainer, MapControlStack } from '@/features/map'
 import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
@@ -28,6 +29,15 @@ export default function AppLayout() {
   const { isEnabled: isAstronomyEnabled, setIsEnabled: setAstronomyEnabled } = useAstroStore()
   const isMdUp = useMediaQuery('(min-width: 768px)')
   const { mapTitle, setMapTitle } = useVisualizationStore()
+  const {
+    isPanelOpen: isLayersPanelOpen,
+    togglePanel: toggleLayersPanel,
+    closePanel: closeLayersPanel,
+    layers: overlayLayers,
+    toggleLayer,
+    setLayerOpacity,
+    setLayerColor,
+  } = useOverlayLayers()
 
   // Initialize astronomy hook
   useAstroMap()
@@ -101,6 +111,17 @@ export default function AppLayout() {
         leftPosition={searchLeft}
         isSidebarOpen={isSidebarOpen}
         globeControl={<GlobeToggleButton />}
+        onLayersClick={toggleLayersPanel}
+        isLayersOpen={isLayersPanelOpen}
+      />
+      <LayersPanel
+        isOpen={isLayersPanelOpen}
+        leftPosition={searchLeft}
+        layers={overlayLayers}
+        onClose={closeLayersPanel}
+        onToggleLayer={toggleLayer}
+        onOpacityChange={setLayerOpacity}
+        onColorChange={setLayerColor}
       />
 
       {/* Astronomy Feature */}

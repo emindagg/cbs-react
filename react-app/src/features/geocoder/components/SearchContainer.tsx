@@ -12,6 +12,8 @@ interface SearchContainerProps {
   leftPosition: string;
   isSidebarOpen?: boolean;
   globeControl?: ReactNode;
+  onLayersClick?: () => void;
+  isLayersOpen?: boolean;
 }
 
 const MIN_QUERY_LENGTH = 3
@@ -21,7 +23,13 @@ const DEBOUNCE_DELAY = 500 // ms
  * SearchContainer Component
  * Horizontal search bar with geocoder, layers, globe, storymap buttons
  */
-export function SearchContainer({ leftPosition, isSidebarOpen = false, globeControl }: SearchContainerProps) {
+export function SearchContainer({
+  leftPosition,
+  isSidebarOpen = false,
+  globeControl,
+  onLayersClick,
+  isLayersOpen = false,
+}: SearchContainerProps) {
   const { isOpen, query, setQuery, open, close, inputRef } = useGeocoder()
   const { mapInstance } = useMapStore()
   const isMobile = !useMediaQuery('(min-width: 768px)')
@@ -122,7 +130,8 @@ export function SearchContainer({ leftPosition, isSidebarOpen = false, globeCont
 
       <button
         id="layers-toggle-btn"
-        className="absolute top-0 w-9 h-9 bg-[#1c1c1e] rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm hover:bg-black/90 active:scale-95 transition-all cursor-pointer"
+        onClick={onLayersClick}
+        className={`absolute top-0 w-9 h-9 rounded-full shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm active:scale-95 transition-all cursor-pointer ${isLayersOpen ? 'bg-black' : 'bg-[#1c1c1e] hover:bg-black/90'}`}
         style={{ left: isOpen ? '355px' : '46px' }}
         title="Katmanlar"
       >
