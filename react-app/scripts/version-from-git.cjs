@@ -10,9 +10,34 @@ const BASELINE = 110;
 
 let count = '0';
 try {
-  count = execSync('git rev-list --count HEAD', { cwd: repoRoot, encoding: 'utf8' }).trim();
+  // CI/CD ortamında (GitHub Actions) remote'dan al
+  // Local development ve pre-push hook'ta local HEAD kullan (push edilecek commit'ler dahil)
+  const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+  
+  if (isCI) {
+    // CI/CD'de her zaman remote'dan al (senkronizasyon için)
+    try {
+      count = execSync('git rev-list --count origin/main', { cwd: repoRoot, encoding: 'utf8' }).trim();
+    } catch {
+      // Fallback: HEAD kullan
+      count = execSync('git rev-list --count HEAD', { cwd: repoRoot, encoding: 'utf8' }).trim();
+    }
+  } else {
+    // Local development ve pre-push hook: Local HEAD kullan
+    // (Push edilecek commit'ler dahil, böylece doğru versiyon oluşur)
+    count = execSync('git rev-list --count HEAD', { cwd: repoRoot, encoding: 'utf8' }).trim();
+  }
 } catch {
-  // not a git repo or git unavailable
+  // Git repo yoksa veya git mevcut değilse
+  // Mevcut version.json'dan versiyonu oku (fallback)
+  try {
+    const existing = JSON.parse(fs.readFileSync(outPath, 'utf8'));
+    console.log('version:', existing.version, '(cached, git unavailable)');
+    process.exit(0);
+  } catch {
+    // Hiçbir şey yoksa varsayılan versiyon
+    count = '0';
+  }
 }
 
 const totalCommits = parseInt(count, 10) || 0;
