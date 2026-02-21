@@ -8,8 +8,7 @@ import { agGridTurkishLocaleText, fullGridModules } from '@/shared/ag-grid'
 
 import type { DataItem } from '../types'
 
-import 'ag-grid-community/styles/ag-grid.css'
-import 'ag-grid-community/styles/ag-theme-alpine.css'
+
 
 ModuleRegistry.registerModules(fullGridModules)
 
@@ -82,14 +81,13 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
         </div>
 
         <div className="flex-1 min-h-0 p-3 bg-white">
-          <div className="ag-theme-alpine w-full h-full border border-slate-200 rounded-lg overflow-hidden">
+          <div className="w-full h-full border border-slate-200 rounded-lg overflow-hidden">
             <AgGridReact
               rowData={rowData}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               suppressMovableColumns
               animateRows={false}
-              theme="legacy"
               localeText={agGridTurkishLocaleText}
             />
           </div>

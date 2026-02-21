@@ -711,7 +711,6 @@ body {
    AG GRID — DataMapper Theme Overrides
    ========================================== */
 
-.ag-theme-alpine,
 .ag-root-wrapper {
     --ag-border-color: #d4d8dd;
     --ag-header-foreground-color: #374151;
