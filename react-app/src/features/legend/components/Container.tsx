@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Legend Container
  * Connects DynamicLegend component to visualization store and renders on map.
  * Dot density maps get a specialized "1 nokta = X" legend (ArcGIS style).
@@ -127,9 +127,9 @@ export default function Container() {
     })() : undefined
 
     // Proportional mode: dinamik çember sayısı (3-7), max→min sıralı
-    const count = vizSettings.bubbleLegendCount || 3
+    const count = 5
     const legendCircles = Array.from({ length: count }, (_, i) => {
-      const t = count === 1 ? 0.5 : i / (count - 1)  // 0→1
+      const t = i / (count - 1)  // 0→1
       const value = maxVal - t * (maxVal - minVal)     // maxVal→minVal
       const radius = calculateSymbolSize(value, minVal, maxVal, minSize, maxSize, scaling)
       return { value, radius }
@@ -156,7 +156,7 @@ export default function Container() {
         bubbleColor={!isGraduated && !vizSettings.colorColumn ? vizSettings.symbolFillColor : undefined}
         bubbleOpacity={vizSettings.symbolOpacity ?? 0.6}
         bubbleStrokeColor={vizSettings.symbolStrokeColor || '#ffffff'}
-        bubbleStrokeWidth={vizSettings.symbolStrokeWidth ?? 1.5}
+        bubbleStrokeWidth={vizSettings.symbolStrokeWidth ?? 0.5}
         graduatedClasses={graduatedClasses}
         onTitleChange={handleTitleChange}
       />

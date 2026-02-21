@@ -65,7 +65,7 @@ export function BubbleSettings({
                 className={`flex-1 px-2 py-1 text-[10px] font-medium transition-colors ${active
                   ? 'bg-zinc-800 text-white'
                   : 'bg-white text-zinc-600 hover:bg-zinc-50'
-                }`}
+                  }`}
               >
                 {opt.label}
               </button>
@@ -120,19 +120,6 @@ export function BubbleSettings({
             </div>
           </div>
 
-          {/* Lejant Çember Sayısı */}
-          <div>
-            <label className="block text-[10px] font-medium text-zinc-600 mb-1">Lejant Çember Sayısı</label>
-            <select
-              value={vizSettings.bubbleLegendCount || 3}
-              onChange={(e) => setVizSettings({ bubbleLegendCount: Number(e.target.value) })}
-              className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-            >
-              {[3, 4, 5, 6, 7].map((n) => (
-                <option key={n} value={n}>{n} çember</option>
-              ))}
-            </select>
-          </div>
         </>
       )}
 
@@ -212,7 +199,7 @@ export function BubbleSettings({
         min={0}
         max={5}
         step={0.1}
-        value={vizSettings.symbolStrokeWidth ?? 1.5}
+        value={vizSettings.symbolStrokeWidth ?? 0.5}
         formatValue={(v) => v.toFixed(1)}
         onChange={(v) => setVizSettings({ symbolStrokeWidth: v })}
       />

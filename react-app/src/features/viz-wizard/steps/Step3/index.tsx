@@ -83,8 +83,8 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         </p>
       </div>
 
-      {/* Datawrapper-style Color Scale Configuration — not needed for dot density */}
-      {vizSettings.type !== 'dot' && (
+      {/* Datawrapper-style Color Scale Configuration — not needed for dot density, nor for non-bivariate bubble */}
+      {(vizSettings.type === 'choropleth' || (vizSettings.type === 'bubble' && vizSettings.colorColumn)) && (
         <>
           <ColorScaleConfig
             colorScheme={vizSettings.colorScheme}

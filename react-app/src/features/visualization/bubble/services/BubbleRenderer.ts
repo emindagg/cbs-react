@@ -24,7 +24,6 @@ import {
   resolveCustomRange,
   type ResolvedCustomRange,
 } from '../../shared/customRange'
-import { ZOOM_LEVEL_EIGHT } from '../constants/renderer'
 
 const NO_DATA_COLOR = 'transparent'
 const OUT_OF_RANGE_COLOR = '#dddddd'
@@ -444,7 +443,7 @@ export class BubbleRenderer {
     // Get symbol styling settings with defaults
     const opacity = settings.symbolOpacity !== undefined ? settings.symbolOpacity : 0.6
     const strokeColor = settings.symbolStrokeColor || '#ffffff'
-    const strokeWidth = settings.symbolStrokeWidth !== undefined ? settings.symbolStrokeWidth : 1.5
+    const strokeWidth = settings.symbolStrokeWidth !== undefined ? settings.symbolStrokeWidth : 0.5
     const backdropFillOpacity = settings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY
     const circleLayerExists = Boolean(this.map.getLayer(layerId))
 
@@ -508,16 +507,8 @@ export class BubbleRenderer {
       })
     }
 
-    // Zoom-dependent radius: zoom must be at top-level interpolate
-    // Each stop output is a data expression ['*', ['get','radius'], factor]
-    const radiusExpression: unknown[] = [
-      'interpolate', ['linear'], ['zoom'],
-      4, ['*', ['get', 'radius'], 0.5],
-      6, ['*', ['get', 'radius'], 1],
-      ZOOM_LEVEL_EIGHT, ['*', ['get', 'radius'], 1.5],
-      10, ['*', ['get', 'radius'], 2],
-      12, ['*', ['get', 'radius'], 3],
-    ]
+    // Fixed radius based on user's min/max settings (matches legend exactly at all zoom levels)
+    const radiusExpression: unknown[] = ['get', 'radius']
 
     // Add circle layer with variable size and data-driven color
     if (!this.map.getLayer(layerId)) {

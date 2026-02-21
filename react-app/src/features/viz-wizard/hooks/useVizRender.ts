@@ -54,7 +54,7 @@ function updateBubblePaintProperties(map: maplibregl.Map, settings: Visualizatio
   if (!map.getLayer('bubble-circles')) return
   const opacity = settings.symbolOpacity ?? 0.6
   const strokeColor = settings.symbolStrokeColor || '#ffffff'
-  const strokeWidth = settings.symbolStrokeWidth ?? 1.5
+  const strokeWidth = settings.symbolStrokeWidth ?? 0.5
   map.setPaintProperty('bubble-circles', 'circle-opacity', opacity as PaintPropertyValue<number>)
   map.setPaintProperty('bubble-circles', 'circle-stroke-color', strokeColor)
   map.setPaintProperty('bubble-circles', 'circle-stroke-width', strokeWidth as PaintPropertyValue<number>)
