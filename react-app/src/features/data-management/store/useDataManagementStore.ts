@@ -52,7 +52,7 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
       items: nextItems,
       hasImportedData: nextItems.some(item => item.source === 'imported'),
       importedLayerName: importedName,
-      activeItemId: importedItems[0]?.id ?? state.activeItemId,
+      activeItemId: state.activeItemId,
     }
   }),
 
