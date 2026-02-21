@@ -2,10 +2,10 @@ import maplibregl from 'maplibre-gl'
 import { useMemo } from 'react'
 import Map, { ScaleControl, Source, Layer } from 'react-map-gl/maplibre'
 
-import { DataManagementDrawTool } from '@/features/data-management'
 import { useBubbleTooltip, useChoroplethTooltip } from '@/shared/visualization'
 import { useMapStore } from '@/stores/useMapStore'
 
+import { DataManagementDrawTool } from '../../data-management/components/DataManagementDrawTool'
 import GISToolsControl from '../controls/GISToolsControl'
 import DataLayer from '../layers/DataLayer'
 import DistanceTool from '../tools/DistanceTool'

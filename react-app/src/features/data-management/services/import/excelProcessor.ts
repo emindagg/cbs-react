@@ -1,7 +1,7 @@
+import type { WorkerOutput } from './xlsxWorker'
 import type { ParseResult } from '../../types'
 import { detectColumns } from '../../utils/columnDetector'
 import { transformToGeoItems } from '../../utils/dataMapper'
-import type { WorkerOutput } from './xlsxWorker'
 
 function parseWithWorker(buffer: ArrayBuffer): Promise<WorkerOutput> {
   return new Promise((resolve) => {

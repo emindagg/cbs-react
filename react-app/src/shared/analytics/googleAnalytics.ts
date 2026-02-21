@@ -17,7 +17,7 @@ const GA_MEASUREMENT_ID = 'UA-114103913-1'
  */
 function loadGoogleAnalytics(): void {
   // Script zaten yüklenmişse tekrar yükleme
-  if (document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)) {
+  if (document.querySelector('script[src*="googletagmanager.com/gtag/js"]')) {
     return
   }
 

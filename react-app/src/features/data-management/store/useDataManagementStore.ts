@@ -118,15 +118,15 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
     items: state.items.map(item =>
       item.id === id
         ? {
-            ...item,
-            properties: {
-              ...item.properties,
-              style: {
-                ...(item.properties.style && typeof item.properties.style === 'object' ? item.properties.style : {}),
-                fillColor,
-              },
+          ...item,
+          properties: {
+            ...item.properties,
+            style: {
+              ...(item.properties.style && typeof item.properties.style === 'object' ? item.properties.style : {}),
+              fillColor,
             },
-          }
+          },
+        }
         : item,
     ),
   })),

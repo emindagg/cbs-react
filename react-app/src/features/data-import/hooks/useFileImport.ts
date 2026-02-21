@@ -28,12 +28,16 @@ export function useFileImport() {
       const result = await parseFile(file)
 
       if (result.needsMapping) {
+        if (!result.headers || !result.data || !result.mapping) {
+          throw new Error('Sütun eşleştirme verisi eksik veya bozuk')
+        }
+
         // Show mapper modal
         setMapperData({
-          headers: result.headers!,
-          previewData: result.data!.slice(0, 5),
-          initialMapping: result.mapping!,
-          jsonData: result.data!,
+          headers: result.headers,
+          previewData: result.data.slice(0, 5),
+          initialMapping: result.mapping,
+          jsonData: result.data,
         })
         setShowMapper(true)
       } else if (result.items && result.items.length > 0) {

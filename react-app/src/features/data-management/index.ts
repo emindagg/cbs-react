@@ -15,6 +15,7 @@ export {
 
 export { useDataExport } from './hooks/useDataExport'
 export { useFileImport } from './hooks/useFileImport'
+export { useLayerStyleSync } from './hooks/useLayerStyleSync'
 export { useUrlImport } from './hooks/useUrlImport'
 
 export type {

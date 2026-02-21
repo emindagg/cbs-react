@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
 import type maplibregl from 'maplibre-gl'
+import { useEffect, useRef } from 'react'
 
 import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'

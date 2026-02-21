@@ -1,9 +1,9 @@
-import type { ParseResult } from '../../types'
 
 import { parseExcel } from './excelProcessor'
 import { parseGeoJSON } from './geoJsonProcessor'
 import { parseKML } from './kmlProcessor'
 import { parseShapefile } from './shapefileProcessor'
+import type { ParseResult } from '../../types'
 
 export async function parseFile(file: File): Promise<ParseResult> {
   const fileName = file.name.split('.')[0]

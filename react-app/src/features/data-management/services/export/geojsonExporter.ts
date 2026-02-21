@@ -1,6 +1,6 @@
+import { toFeatureCollection } from './featureCollection'
 import type { DataItem } from '../../types'
 
-import { toFeatureCollection } from './featureCollection'
 
 export function exportAsGeoJSON(items: DataItem[]): Blob {
   const featureCollection = toFeatureCollection(items)

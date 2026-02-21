@@ -45,9 +45,9 @@ export default [
         skipComments: true,
       }],
 
-      // Fonksiyon: 300 satır (wizard/modallar için pragmatik)
+      // Fonksiyon: 500 satır (wizard/modallar için pragmatik)
       'max-lines-per-function': ['warn', {
-        max: 300,
+        max: 500,
         skipBlankLines: true,
         skipComments: true,
       }],

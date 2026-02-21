@@ -2,9 +2,10 @@ import type { GeoJSONSource, MapMouseEvent } from 'maplibre-gl'
 import { useEffect } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 
-import { useDataManagementStore } from '@/features/data-management'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useMapStore } from '@/stores/useMapStore'
+
+import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
 
 
 export function useClustering() {
@@ -19,7 +20,7 @@ export function useClustering() {
         item.visible &&
         (item.type === 'point' ||
           (item.geometry && (item.geometry.type === 'Point' || item.geometry.type === 'MultiPoint'))),
-      )
+      ),
     ),
   )
   const { isEnabled } = useClusteringStore()

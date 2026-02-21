@@ -75,6 +75,7 @@ export function useVizRender({
   // visualization type alone does NOT trigger an automatic re-render.
   // The user must click the "Yeniden Görselleştir" button for the type change to take effect.
   const range = colorConfig.customRange
+  const DEFAULT_BACKDROP_FILL_OPACITY = 0.22
   const dataVizKey = [
     vizSettings.classificationMethod,
     vizSettings.classCount,
@@ -82,7 +83,7 @@ export function useVizRender({
     vizSettings.legendType || 'steps',
     vizSettings.interpolation || 'equidistant',
     vizSettings.dotValue ?? 'auto',
-    vizSettings.backdropFillOpacity ?? 0.22,
+    vizSettings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY,
     range?.enabled ? 'range:on' : 'range:off',
     range?.min ?? 'range:auto-min',
     range?.max ?? 'range:auto-max',
@@ -144,7 +145,6 @@ export function useVizRender({
         updateBubblePaintProperties(map, s)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paintVizKey, hasRendered, map])
 
   const handleRender = async () => {
@@ -176,6 +176,11 @@ export function useVizRender({
         return
       }
 
+      if (!columnMapping.dataColumn) {
+        toast.error('Veri kolonu seçilmedi!')
+        return
+      }
+
       // Determine location level
       const locationLevel = columnMapping.locationLevel === 'province' ? 'province' : 'district'
 
@@ -190,20 +195,20 @@ export function useVizRender({
 
       switch (currentVizSettings.type) {
         case 'choropleth':
-          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn!, renderSettings, locationLevel)
+          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn, renderSettings, locationLevel)
           break
 
         case 'dot':
-          await vizManager.renderPoint(successfulData, columnMapping.dataColumn!, renderSettings, locationLevel)
+          await vizManager.renderPoint(successfulData, columnMapping.dataColumn, renderSettings, locationLevel)
           break
 
         case 'bubble':
-          await vizManager.renderBubble(successfulData, columnMapping.dataColumn!, renderSettings, locationLevel)
+          await vizManager.renderBubble(successfulData, columnMapping.dataColumn, renderSettings, locationLevel)
           break
 
         default:
           // Fallback to choropleth
-          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn!, renderSettings, locationLevel)
+          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn, renderSettings, locationLevel)
       }
 
       // Update current visualization to trigger legend display

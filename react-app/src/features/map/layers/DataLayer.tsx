@@ -5,8 +5,8 @@ import { Source, Layer } from 'react-map-gl/maplibre'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { type StyleProperties, isStyleProperties } from '@/types/style'
 
-import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
 import type { DataItem } from '../../data-management'
+import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
 
 // Pure function - renk/boyut style'ları hariç, sadece geometri + kimlik + etiket
 // Renk/opaklık güncellemeleri useLayerStyleSync hook'u tarafından setPaintProperty ile yapılır
@@ -26,10 +26,12 @@ function buildFeature(i: DataItem, activeItemId: string | null, labelField: stri
       name: i.name,
       selected: i.id === activeItemId,
       customFillColor,
-      labelText: labelValue != null ? String(labelValue) : '',
+      labelText: labelValue !== null && labelValue !== undefined ? String(labelValue) : '',
     },
   } as unknown as Feature
 }
+
+const POINT_LABEL_TEXT_OFFSET_Y = 1.2
 
 export default function DataLayer() {
   const items = useDataManagementStore(state => state.items)
@@ -143,7 +145,7 @@ export default function DataLayer() {
             layout={{
               'text-field': ['coalesce', ['get', 'labelText'], ''],
               'text-size': 12,
-              'text-offset': [0, 1.2],
+              'text-offset': [0, POINT_LABEL_TEXT_OFFSET_Y],
               'text-anchor': 'top',
             }}
             paint={{

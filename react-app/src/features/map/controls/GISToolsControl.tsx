@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
-import { useDataManagementStore } from '@/features/data-management'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
 import { BufferModal } from './GISToolsControl.buffer'
+import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
+
 
 /**
  * GISToolsControl Component

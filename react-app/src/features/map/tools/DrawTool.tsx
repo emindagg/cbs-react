@@ -1,4 +1,4 @@
-import { DataManagementDrawTool } from '@/features/data-management'
+import { DataManagementDrawTool } from '../../data-management/components/DataManagementDrawTool'
 
 export default DataManagementDrawTool
 

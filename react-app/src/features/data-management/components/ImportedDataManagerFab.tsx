@@ -18,6 +18,8 @@ const FAB_SIZE = 30
 const FAB_MARGIN = 16
 const PANEL_WIDTH = 260
 const PANEL_HEIGHT = 535
+const LABEL_SIZE_MIN = 8
+const LABEL_SIZE_RANGE = 40
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max)
@@ -249,10 +251,8 @@ export function ImportedDataManagerFab() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (window.confirm('Import edilen katman tamamen silinsin mi?')) {
-                        removeImportedLayer()
-                        setIsOpen(false)
-                      }
+                      removeImportedLayer()
+                      setIsOpen(false)
                     }}
                     className="w-7 h-7 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 inline-flex items-center justify-center transition-all duration-200 active:scale-95"
                     title="Katmanı sil"
@@ -361,7 +361,7 @@ export function ImportedDataManagerFab() {
                         onChange={(event) => startTransition(() => updateLayerStyle({ opacity: Number(event.target.value) }))}
                         className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
                         style={{
-                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${layerStyles.opacity * 100}%, #e2e8f0 ${layerStyles.opacity * 100}%, #e2e8f0 100%)`
+                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${layerStyles.opacity * 100}%, #e2e8f0 ${layerStyles.opacity * 100}%, #e2e8f0 100%)`,
                         }}
                       />
                     </div>
@@ -389,7 +389,7 @@ export function ImportedDataManagerFab() {
                         onChange={(event) => startTransition(() => updateLayerStyle({ width: Number(event.target.value) }))}
                         className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
                         style={{
-                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${(layerStyles.width / 50) * 100}%, #e2e8f0 ${(layerStyles.width / 50) * 100}%, #e2e8f0 100%)`
+                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${(layerStyles.width / 50) * 100}%, #e2e8f0 ${(layerStyles.width / 50) * 100}%, #e2e8f0 100%)`,
                         }}
                       />
                     </div>
@@ -430,7 +430,7 @@ export function ImportedDataManagerFab() {
                         onChange={(event) => startTransition(() => updateLayerStyle({ strokeWidth: Number(event.target.value) }))}
                         className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
                         style={{
-                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${(layerStyles.strokeWidth / 10) * 100}%, #e2e8f0 ${(layerStyles.strokeWidth / 10) * 100}%, #e2e8f0 100%)`
+                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${(layerStyles.strokeWidth / 10) * 100}%, #e2e8f0 ${(layerStyles.strokeWidth / 10) * 100}%, #e2e8f0 100%)`,
                         }}
                       />
                     </div>
@@ -514,7 +514,7 @@ export function ImportedDataManagerFab() {
                         onChange={(event) => startTransition(() => updateLayerStyle({ textSize: Number(event.target.value) }))}
                         className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
                         style={{
-                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${((layerStyles.textSize - 8) / 40) * 100}%, #e2e8f0 ${((layerStyles.textSize - 8) / 40) * 100}%, #e2e8f0 100%)`
+                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${((layerStyles.textSize - LABEL_SIZE_MIN) / LABEL_SIZE_RANGE) * 100}%, #e2e8f0 ${((layerStyles.textSize - LABEL_SIZE_MIN) / LABEL_SIZE_RANGE) * 100}%, #e2e8f0 100%)`,
                         }}
                       />
                     </div>

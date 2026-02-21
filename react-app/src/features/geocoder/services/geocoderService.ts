@@ -27,6 +27,11 @@ export interface GeocoderResult {
 
 export type AtlasFeature = GeocoderResult
 
+interface GeocoderAPIResponse {
+  type?: string
+  features?: unknown
+}
+
 export interface GeocoderResponse {
   type: 'FeatureCollection';
   features: GeocoderResult[];
@@ -42,6 +47,23 @@ interface ReverseOptions {
   lng: number;
   lat: number;
   type?: number; // 0: ALL, 1: LOCALITY, 2: COUNTY, 3: REGION
+}
+
+function isGeocoderResponse(response: unknown): response is GeocoderResponse {
+  if (!response || typeof response !== 'object') return false
+  const candidate = response as GeocoderAPIResponse
+  return candidate.type === 'FeatureCollection' && Array.isArray(candidate.features)
+}
+
+function toFeatureCollection(results: GeocoderResponse): GeoJSON.FeatureCollection {
+  return {
+    type: 'FeatureCollection',
+    features: results.features.map((feature) => ({
+      type: 'Feature',
+      geometry: feature.geometry as GeoJSON.Geometry,
+      properties: feature.properties,
+    })),
+  }
 }
 
 /**
@@ -82,19 +104,23 @@ class AtlasGeocoder {
         lng,
         lat,
         onload: (response: unknown, error: boolean) => {
-          const geocoderResponse = response as GeocoderResponse
           if (error) {
-            console.error('❌ Geocoder API error:', geocoderResponse)
+            console.error('❌ Geocoder API error:', response)
             reject(new Error('Arama sırasında bir hata oluştu'))
             return
           }
 
-          if (!geocoderResponse.features || geocoderResponse.features.length === 0) {
+          if (!isGeocoderResponse(response)) {
+            reject(new Error('Geocoder yanıtı geçersiz'))
+            return
+          }
+
+          if (response.features.length === 0) {
             reject(new Error(`"${query}" için sonuç bulunamadı`))
             return
           }
 
-          resolve(geocoderResponse)
+          resolve(response)
         },
       })
     })
@@ -112,14 +138,18 @@ class AtlasGeocoder {
         lat,
         type,
         onload: (response: unknown, error: boolean) => {
-          const geocoderResponse = response as GeocoderResponse
           if (error) {
-            console.error('❌ Reverse geocoding error:', geocoderResponse)
+            console.error('❌ Reverse geocoding error:', response)
             reject(new Error('Konum bilgisi alınamadı'))
             return
           }
 
-          resolve(geocoderResponse)
+          if (!isGeocoderResponse(response)) {
+            reject(new Error('Reverse geocoder yanıtı geçersiz'))
+            return
+          }
+
+          resolve(response)
         },
       })
     })
@@ -297,14 +327,16 @@ export class GeocoderManager {
    * Add all results to map
    */
   private addResultsToMap(results: GeocoderResponse): void {
+    const featureCollection = toFeatureCollection(results)
+
     // Update or add source
-    const source = this.map.getSource(this.searchResultsLayer) as maplibregl.GeoJSONSource
-    if (source) {
-      source.setData(results as unknown as GeoJSON.FeatureCollection)
+    const source = this.map.getSource(this.searchResultsLayer)
+    if (source && 'setData' in source) {
+      source.setData(featureCollection)
     } else {
       this.map.addSource(this.searchResultsLayer, {
         type: 'geojson',
-        data: results as unknown as GeoJSON.FeatureCollection,
+        data: featureCollection,
       })
 
       // Add layer

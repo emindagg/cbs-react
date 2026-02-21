@@ -1,9 +1,9 @@
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import shpwrite from 'shp-write/shpwrite.js'
 
+import { toFeatureCollection } from './featureCollection'
 import type { DataItem } from '../../types'
 
-import { toFeatureCollection } from './featureCollection'
 
 function convertUnsupportedGeometries(featureCollection: FeatureCollection): FeatureCollection {
   const features: Feature<Geometry>[] = []

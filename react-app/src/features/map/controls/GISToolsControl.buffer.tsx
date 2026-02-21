@@ -7,7 +7,7 @@ import * as turf from '@turf/turf'
 import type { Geometry, GeometryCollection } from 'geojson'
 import { useState } from 'react'
 
-import { useDataManagementStore } from '@/features/data-management'
+import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
 
 interface BufferModalProps {
   isOpen: boolean

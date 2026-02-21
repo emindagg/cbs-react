@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { useDataManagementStore } from '../store/useDataManagementStore'
+
 import { isStyleProperties } from '@/types/style'
 import type { StyleProperties } from '@/types/style'
 
+import { useDataManagementStore } from '../store/useDataManagementStore'
+
 const CATALOG_IMPORT_RENDER_LIMIT = 200
+const COLOR_PICKER_DOUBLE_CLICK_TIMEOUT_MS = 300
 
 export function DataCatalogSection() {
   const items = useDataManagementStore(state => state.items)
@@ -40,21 +43,19 @@ export function DataCatalogSection() {
       }
     }
 
-    if (colorPickerItemId) {
-      updateColorPickerPosition(colorPickerItemId)
-      document.addEventListener('mousedown', handleClickOutside)
-      const handleResize = () => {
-        if (colorPickerItemId) {
-          updateColorPickerPosition(colorPickerItemId)
-        }
+    if (!colorPickerItemId) return
+
+    updateColorPickerPosition(colorPickerItemId)
+    document.addEventListener('mousedown', handleClickOutside)
+    const handleResize = () => {
+      if (colorPickerItemId) {
+        updateColorPickerPosition(colorPickerItemId)
       }
-      window.addEventListener('resize', handleResize)
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside)
-        window.removeEventListener('resize', handleResize)
-      }
-    } else {
-      setColorPickerPosition(null)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('resize', handleResize)
     }
   }, [colorPickerItemId])
 
@@ -158,7 +159,7 @@ export function DataCatalogSection() {
                       clickTimeoutRef.current = setTimeout(() => {
                         lastClickItemIdRef.current = null
                         clickTimeoutRef.current = null
-                      }, 300) // 300ms içinde ikinci tıklama gelmezse reset
+                      }, COLOR_PICKER_DOUBLE_CLICK_TIMEOUT_MS)
                     }
                   }}
                   onDoubleClick={(e) => {
@@ -212,46 +213,46 @@ export function DataCatalogSection() {
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
           >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-semibold text-zinc-700 uppercase tracking-wide">
-                        Dolgu Rengi
-                      </span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setColorPickerItemId(null)
-                        }}
-                        className="text-zinc-400 hover:text-zinc-600 text-xs"
-                        title="Kapat"
-                      >
-                        <i className="fa-solid fa-times"></i>
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={currentFillColor}
-                        onChange={(e) => {
-                          updateItemFillColor(item.id, e.target.value)
-                        }}
-                        className="w-10 h-10 border border-zinc-300 rounded-md cursor-pointer"
-                      />
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          value={currentFillColor}
-                          onChange={(e) => {
-                            const color = e.target.value
-                            if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
-                              updateItemFillColor(item.id, color)
-                            }
-                          }}
-                          className="w-full px-2 py-1 text-xs border border-zinc-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          placeholder="#3b82f6"
-                        />
-                      </div>
-                    </div>
-                  </div>,
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-semibold text-zinc-700 uppercase tracking-wide">
+                Dolgu Rengi
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setColorPickerItemId(null)
+                }}
+                className="text-zinc-400 hover:text-zinc-600 text-xs"
+                title="Kapat"
+              >
+                <i className="fa-solid fa-times"></i>
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={currentFillColor}
+                onChange={(e) => {
+                  updateItemFillColor(item.id, e.target.value)
+                }}
+                className="w-10 h-10 border border-zinc-300 rounded-md cursor-pointer"
+              />
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={currentFillColor}
+                  onChange={(e) => {
+                    const color = e.target.value
+                    if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
+                      updateItemFillColor(item.id, color)
+                    }
+                  }}
+                  className="w-full px-2 py-1 text-xs border border-zinc-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="#3b82f6"
+                />
+              </div>
+            </div>
+          </div>,
           document.body,
         )
       })()}

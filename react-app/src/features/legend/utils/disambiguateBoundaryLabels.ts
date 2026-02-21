@@ -13,6 +13,9 @@ const ABBREVIATION_THRESHOLD: Record<AbbreviationSuffix, number> = {
   T: 1e12,
 }
 
+const MAX_PRECISION_WITH_SUFFIX = 6
+const MAX_PRECISION_NO_SUFFIX = 8
+
 function findDuplicateRuns(labels: string[]): Array<{ start: number; end: number }> {
   const runs: Array<{ start: number; end: number }> = []
   let i = 0
@@ -99,7 +102,7 @@ export function disambiguateBoundaryLabels(
     let resolved = false
 
     if (suffix) {
-      for (let digits = initialPrecision; digits <= 6; digits++) {
+      for (let digits = initialPrecision; digits <= MAX_PRECISION_WITH_SUFFIX; digits++) {
         const candidate = runValues.map((value) => formatWithAbbreviation(value, suffix, digits))
         if (areAllUnique(candidate)) {
           candidate.forEach((text, offset) => {
@@ -111,7 +114,7 @@ export function disambiguateBoundaryLabels(
       }
     }
 
-    for (let digits = initialPrecision; digits <= 8; digits++) {
+    for (let digits = initialPrecision; digits <= MAX_PRECISION_NO_SUFFIX; digits++) {
       if (resolved) break
       const candidate = runValues.map((value) => formatWithDigits(value, digits))
       if (areAllUnique(candidate)) {

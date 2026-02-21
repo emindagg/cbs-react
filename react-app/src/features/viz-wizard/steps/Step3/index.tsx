@@ -3,8 +3,8 @@
  * Configure visualization settings and render (moved from old Step 4)
  */
 
-import { COLOR_SCHEME_LIST } from '@/constants/colorSchemes'
 import { SingleSlider } from '@/components/ui'
+import { COLOR_SCHEME_LIST } from '@/constants/colorSchemes'
 import { LegendConfig } from '@/shared/legend'
 import { BubbleSettings, ChoroplethSettings, DotDensitySettings } from '@/shared/visualization'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
@@ -177,7 +177,7 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
             min={0}
             max={1}
             step={0.05}
-            value={vizSettings.backdropFillOpacity ?? 0.22}
+            value={vizSettings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY}
             formatValue={(v) => `%${Math.round(v * 100)}`}
             onChange={(v) => setVizSettings({ backdropFillOpacity: v })}
           />

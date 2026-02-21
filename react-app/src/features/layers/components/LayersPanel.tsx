@@ -99,20 +99,20 @@ export function LayersPanel({
             </div>
 
             <div className={`flex items-center gap-3 pl-7 pr-1 transition-all duration-200 ${layer.enabled ? 'opacity-100 h-6 mt-1' : 'opacity-0 h-0 overflow-hidden pointer-events-none mt-0'}`}>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={Math.round(layer.opacity * 100)}
-                  disabled={!layer.enabled}
-                  onChange={(e) => onOpacityChange(layer.id, Number(e.target.value) / 100)}
-                  className="w-full h-[3px] bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
-                  title="Şeffaflık"
-                />
-                <span className="text-[11px] font-mono font-medium text-slate-500 w-8 text-right tabular-nums">
-                  {Math.round(layer.opacity * 100)}%
-                </span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={Math.round(layer.opacity * 100)}
+                disabled={!layer.enabled}
+                onChange={(e) => onOpacityChange(layer.id, Number(e.target.value) / 100)}
+                className="w-full h-[3px] bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
+                title="Şeffaflık"
+              />
+              <span className="text-[11px] font-mono font-medium text-slate-500 w-8 text-right tabular-nums">
+                {Math.round(layer.opacity * 100)}%
+              </span>
             </div>
           </div>
         ))}
