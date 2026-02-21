@@ -4,6 +4,7 @@
  */
 
 import { SingleSlider } from '@/components/ui'
+import { DEFAULT_BACKDROP_FILL_OPACITY } from '@/features/visualization/point/services/PointRenderer'
 import { COLOR_SCHEME_LIST } from '@/constants/colorSchemes'
 import { LegendConfig } from '@/shared/legend'
 import { BubbleSettings, ChoroplethSettings, DotDensitySettings } from '@/shared/visualization'

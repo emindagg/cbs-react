@@ -330,8 +330,8 @@ export class GeocoderManager {
     const featureCollection = toFeatureCollection(results)
 
     // Update or add source
-    const source = this.map.getSource(this.searchResultsLayer)
-    if (source && 'setData' in source) {
+    const source = this.map.getSource(this.searchResultsLayer) as import('maplibre-gl').GeoJSONSource | undefined
+    if (source) {
       source.setData(featureCollection)
     } else {
       this.map.addSource(this.searchResultsLayer, {
