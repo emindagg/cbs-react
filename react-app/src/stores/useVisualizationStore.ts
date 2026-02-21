@@ -95,7 +95,7 @@ const defaultVizSettings: VisualizationSettings = {
   type: 'choropleth',
   classCount: 5,
   classificationMethod: 'jenks',
-  colorScheme: 'greenBlue',
+  colorScheme: 'teal',
   legendType: 'discrete',
   interpolation: 'equidistant',
   choroplethOpacity: 1,
@@ -145,7 +145,7 @@ const defaultCustomRange: CustomRange = {
 
 const defaultColorConfig: ColorConfiguration = {
   column: null,
-  palette: 'greenBlue',
+  palette: 'teal',
   scaleType: 'steps',
   interpolation: 'equidistant',
   customRange: defaultCustomRange,
