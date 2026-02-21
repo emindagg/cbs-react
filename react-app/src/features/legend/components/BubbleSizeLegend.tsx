@@ -15,6 +15,7 @@ interface GraduatedClass {
   minVal: number
   maxVal: number
   radius: number
+  label?: string
 }
 
 interface LegendCircle {
@@ -199,7 +200,7 @@ export default function BubbleSizeLegend({
               <span
                 style={{ fontSize: 12, fontWeight: 600, color: '#0d0c0c', fontFamily: 'system-ui, sans-serif', whiteSpace: 'nowrap' }}
               >
-                {fmt(cls.minVal)} – {fmt(cls.maxVal)}
+                {cls.label || `${fmt(cls.minVal)} – ${fmt(cls.maxVal)}`}
               </span>
             </div>
           ))}

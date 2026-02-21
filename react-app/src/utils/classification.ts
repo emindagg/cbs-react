@@ -64,5 +64,57 @@ export function calculateBreaks(
     return extractBreaksFromCkmeans(sorted, classCount)
   }
 
+  if (method === 'stddev') {
+    const mean = ss.mean(sorted)
+    const stdDev = ss.standardDeviation(sorted)
+
+    if (stdDev === 0) return [sorted[0], sorted[sorted.length - 1]]
+
+    const breaksSet = new Set<number>()
+    const minVal = sorted[0]
+    const maxVal = sorted[sorted.length - 1]
+
+    // Generate Standard Deviation breaks at 1.0 intervals
+    // Capped at k=1.5 to ensure maximum 5 classes (as requested by user / ArcGIS default mimic)
+    for (let k = 0.5; k <= 1.5; k += 1.0) {
+      const b1 = mean + k * stdDev
+      const b2 = mean - k * stdDev
+
+      if (b1 < maxVal) {
+        breaksSet.add(b1)
+      }
+      if (b2 > minVal) {
+        breaksSet.add(b2)
+      }
+    }
+
+    const sortedBreaks = Array.from(breaksSet).sort((a, b) => a - b)
+
+    // Filter out breaks that result in empty classes (ArcGIS Pro behavior)
+    const validBreaks = [minVal]
+    for (const b of sortedBreaks) {
+      const lastBreak = validBreaks[validBreaks.length - 1]
+      // Check if there is data between the last break and the current break
+      const hasData = sorted.some((val) => val > lastBreak && val <= b)
+      if (hasData) {
+        validBreaks.push(b)
+      }
+    }
+
+    // Ensure the maximum value is covered by the final class
+    const lastValid = validBreaks[validBreaks.length - 1]
+    if (lastValid < maxVal) {
+      const hasDataAfter = sorted.some((val) => val > lastValid)
+      if (hasDataAfter) {
+        validBreaks.push(maxVal)
+      } else {
+        // If no data > lastValid but lastValid < maxVal, just set last break to maxVal
+        validBreaks[validBreaks.length - 1] = maxVal
+      }
+    }
+
+    return validBreaks
+  }
+
   return [sorted[0], sorted[sorted.length - 1]]
 }

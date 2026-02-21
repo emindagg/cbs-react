@@ -21,8 +21,9 @@ const SIZE_MODE_OPTIONS: { value: BubbleSizeMode; label: string }[] = [
 
 const CLASSIFICATION_OPTIONS: { value: ClassificationMethod; label: string }[] = [
   { value: 'jenks', label: 'Doğal Kırılımlar (Jenks)' },
-  { value: 'quantile', label: 'Quantile' },
+  { value: 'quantile', label: 'Quantile (Yüzdelik Dilim)' },
   { value: 'equal', label: 'Eşit Aralık' },
+  { value: 'stddev', label: 'Standart Sapma' },
 ]
 
 interface BubbleSettingsProps {
@@ -114,7 +115,7 @@ export function BubbleSettings({
                   if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value))
                     setVizSettings({ symbolFillColor: e.target.value })
                 }}
-                placeholder="#4a90d9"
+                placeholder="#039d92"
                 className="flex-1 px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
               />
             </div>
@@ -126,20 +127,22 @@ export function BubbleSettings({
       {/* Graduated: class count + classification method */}
       {vizSettings.bubbleSizeMode === 'graduated' && (
         <div className="space-y-2">
-          <div>
-            <label className="block text-[10px] font-medium text-zinc-600 mb-1">
-              Sınıf Sayısı
-            </label>
-            <select
-              value={vizSettings.classCount}
-              onChange={(e) => setVizSettings({ classCount: Number(e.target.value) })}
-              className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-            >
-              {[3, 4, 5, 6, 7].map((n) => (
-                <option key={n} value={n}>{n} sınıf</option>
-              ))}
-            </select>
-          </div>
+          {vizSettings.classificationMethod !== 'stddev' && (
+            <div>
+              <label className="block text-[10px] font-medium text-zinc-600 mb-1">
+                Sınıf Sayısı
+              </label>
+              <select
+                value={vizSettings.classCount}
+                onChange={(e) => setVizSettings({ classCount: Number(e.target.value) })}
+                className="w-full px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              >
+                {[3, 4, 5, 6, 7].map((n) => (
+                  <option key={n} value={n}>{n} sınıf</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label className="block text-[10px] font-medium text-zinc-600 mb-1">
               Sınıflandırma Yöntemi
@@ -187,7 +190,7 @@ export function BubbleSettings({
         min={SIZE_MIN}
         max={SIZE_MAX}
         valueMin={vizSettings.symbolMinSize ?? 5}
-        valueMax={vizSettings.symbolMaxSize ?? 40}
+        valueMax={vizSettings.symbolMaxSize ?? 20}
         formatValue={(min, max) => `${min} – ${max} px`}
         onChangeMin={(v) => setVizSettings({ symbolMinSize: v })}
         onChangeMax={(v) => setVizSettings({ symbolMaxSize: v })}

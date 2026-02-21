@@ -21,6 +21,7 @@ export type ClassificationMethod =
   | 'jenks'
   | 'kmeans'
   | 'custom'
+  | 'stddev'
   | 'continuous-linear'
   | 'continuous-quantile'
   | 'continuous-natural'

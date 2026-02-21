@@ -40,7 +40,7 @@ const BACKDROP_LINE_WIDTH = 0.8
 export class BubbleRenderer {
   private map: Map
   private static readonly MIN_RADIUS = 5
-  private static readonly MAX_RADIUS = 40
+  private static readonly MAX_RADIUS = 20
 
   constructor(map: Map) {
     this.map = map
@@ -132,13 +132,14 @@ export class BubbleRenderer {
       (isBivariate ? ` (bivariate: boyut=${dataColumn}, renk=${colorColumn})` : ''),
     )
 
-    // Build MapLibre color expression — bivariate ise 'colorValue' property'sini kullan
+    // Build MapLibre color expression
+    // Single color fallback (if not bivariate)
     const colorProperty = isBivariate ? 'colorValue' : 'dataValue'
-    const isSingleColor = !isBivariate && !!settings.symbolFillColor
+    const isSingleColor = !isBivariate
 
     let colorExpression: unknown
     if (isSingleColor) {
-      colorExpression = settings.symbolFillColor
+      colorExpression = settings.symbolFillColor || '#039d92'
     } else if (isContinuous) {
       colorExpression = this.buildContinuousExpression(
         colorValuesForColor,
@@ -440,7 +441,6 @@ export class BubbleRenderer {
         ? ['all', ['==', ['get', 'hasData'], true], ['==', ['get', 'inCustomRange'], true]]
         : ['==', ['get', 'hasData'], true]
 
-    // Get symbol styling settings with defaults
     const opacity = settings.symbolOpacity !== undefined ? settings.symbolOpacity : 0.6
     const strokeColor = settings.symbolStrokeColor || '#ffffff'
     const strokeWidth = settings.symbolStrokeWidth !== undefined ? settings.symbolStrokeWidth : 0.5

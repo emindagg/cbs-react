@@ -10,6 +10,7 @@ import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
 import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, calculateSmartDotValue } from '@/shared/visualization'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { calculateBreaks } from '@/utils/classification'
+import * as ss from 'simple-statistics'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
 
 import BubbleSizeLegend from './BubbleSizeLegend'
@@ -109,7 +110,7 @@ export default function Container() {
     const minVal = Math.min(...dataValues)
     const maxVal = Math.max(...dataValues)
     const minSize = vizSettings.symbolMinSize || 5
-    const maxSize = vizSettings.symbolMaxSize || 40
+    const maxSize = vizSettings.symbolMaxSize || 20
     const scaling = vizSettings.symbolScaling || 'sqrt'
 
     // Graduated mode: compute class info for the legend
@@ -117,13 +118,56 @@ export default function Container() {
     const graduatedClasses = isGraduated ? (() => {
       const sizeBreaks = calculateBreaks(dataValues, vizSettings.classificationMethod, vizSettings.classCount)
       const classCount = sizeBreaks.length - 1
-      return Array.from({ length: classCount }, (_, i) => ({
-        minVal: sizeBreaks[i],
-        maxVal: sizeBreaks[i + 1],
-        radius: classCount <= 1
-          ? (minSize + maxSize) / 2
-          : minSize + (i / (classCount - 1)) * (maxSize - minSize),
-      }))
+
+      // Standard Deviation labels logic (matches ArcGIS Pro)
+      const isStdDev = vizSettings.classificationMethod === 'stddev'
+      const mean = isStdDev ? ss.mean(dataValues) : 0
+      const stdDev = isStdDev ? ss.standardDeviation(dataValues) : 1
+      const minDataVal = Math.min(...dataValues)
+      const maxDataVal = Math.max(...dataValues)
+
+      return Array.from({ length: classCount }, (_, i) => {
+        const minVal = sizeBreaks[i]
+        const maxVal = sizeBreaks[i + 1]
+
+        let label: string | undefined
+        if (isStdDev && stdDev > 0) {
+          const zMin = ((minVal - mean) / stdDev).toFixed(1)
+          const zMax = ((maxVal - mean) / stdDev).toFixed(1)
+          const isLowest = minVal === minDataVal
+          const isHighest = maxVal === maxDataVal
+
+          const zMinNum = parseFloat(zMin)
+          const zMaxNum = parseFloat(zMax)
+
+          if (isLowest && !isHighest) {
+            label = `< -0.5 Std. S. (Çok Düşük)`
+          } else if (isHighest && !isLowest) {
+            label = `> 1.5 Std. S. (Çok Yüksek)`
+          } else {
+            // Check inner ranges to apply specific labels
+            if (zMinNum >= 0.5 && zMaxNum <= 1.5) {
+              label = `0.5 - 1.5 Std. S. (Yüksek)`
+            } else if (zMinNum >= -0.5 && zMaxNum <= 0.5) {
+              label = `-0.5 - 0.5 Std. S. (Ortalama)`
+            } else if (zMinNum >= -1.5 && zMaxNum <= -0.5) {
+              label = `-1.5 - -0.5 Std. S. (Düşük)`
+            } else {
+              // Fallback if bounds change
+              label = `${zMin} - ${zMax} Std. S.`
+            }
+          }
+        }
+
+        return {
+          minVal,
+          maxVal,
+          label,
+          radius: classCount <= 1
+            ? (minSize + maxSize) / 2
+            : minSize + (i / (classCount - 1)) * (maxSize - minSize),
+        }
+      })
     })() : undefined
 
     // Proportional mode: dinamik çember sayısı (3-7), max→min sıralı
@@ -153,7 +197,7 @@ export default function Container() {
           },
         }}
         circles={isGraduated ? circlesForGraduated : legendCircles}
-        bubbleColor={!vizSettings.colorColumn ? vizSettings.symbolFillColor : undefined}
+        bubbleColor={!vizSettings.colorColumn ? (vizSettings.symbolFillColor || '#039d92') : undefined}
         bubbleOpacity={vizSettings.symbolOpacity ?? 0.6}
         bubbleStrokeColor={vizSettings.symbolStrokeColor || '#ffffff'}
         bubbleStrokeWidth={vizSettings.symbolStrokeWidth ?? 0.5}
