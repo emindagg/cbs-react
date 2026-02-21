@@ -8,13 +8,14 @@ import { type StyleProperties, isStyleProperties } from '@/types/style'
 import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
 import type { DataItem } from '../../data-management'
 
-// Pure function - style bilgisi içermiyor, sadece geometri ve kimlik
-// Style güncellemeleri useLayerStyleSync hook'u tarafından setPaintProperty ile yapılır
-function buildFeature(i: DataItem, activeItemId: string | null): Feature {
+// Pure function - renk/boyut style'ları hariç, sadece geometri + kimlik + etiket
+// Renk/opaklık güncellemeleri useLayerStyleSync hook'u tarafından setPaintProperty ile yapılır
+// labelField değişince rebuild tetiklenir (intentional - nadir bir aksiyon)
+function buildFeature(i: DataItem, activeItemId: string | null, labelField: string): Feature {
   const rawStyle = i.properties.style
   const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
-  // Drawn items'ın kendi per-item renk override'ı varsa sakla
   const customFillColor = (i.source === 'drawn' && style.fillColor) ? style.fillColor : null
+  const labelValue = labelField ? i.properties[labelField] : undefined
 
   return {
     type: 'Feature',
@@ -25,6 +26,7 @@ function buildFeature(i: DataItem, activeItemId: string | null): Feature {
       name: i.name,
       selected: i.id === activeItemId,
       customFillColor,
+      labelText: labelValue != null ? String(labelValue) : '',
     },
   } as unknown as Feature
 }
@@ -32,32 +34,32 @@ function buildFeature(i: DataItem, activeItemId: string | null): Feature {
 export default function DataLayer() {
   const items = useDataManagementStore(state => state.items)
   const activeItemId = useDataManagementStore(state => state.activeItemId)
-  // layerStyles'ı SUBSCRIBE ETME - artık useLayerStyleSync tarafından yönetiliyor
+  // Sadece labelField subscribe et - diğer stiller useLayerStyleSync tarafından yönetiliyor
+  const labelField = useDataManagementStore(state => state.layerStyles.labelField)
   const { isEnabled: isClusteringEnabled } = useClusteringStore()
 
   const visibleItems = useMemo(() => items.filter(i => i.visible), [items])
 
-  // layerStyles bağımlılığı yok - sadece items/activeItemId değişince rebuild
   const pointData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: visibleItems
       .filter(i => i.geometry.type === 'Point' || i.geometry.type === 'MultiPoint')
-      .map(i => buildFeature(i, activeItemId)),
-  }), [visibleItems, activeItemId])
+      .map(i => buildFeature(i, activeItemId, labelField)),
+  }), [visibleItems, activeItemId, labelField])
 
   const lineData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: visibleItems
       .filter(i => i.geometry.type === 'LineString' || i.geometry.type === 'MultiLineString')
-      .map(i => buildFeature(i, activeItemId)),
-  }), [visibleItems, activeItemId])
+      .map(i => buildFeature(i, activeItemId, labelField)),
+  }), [visibleItems, activeItemId, labelField])
 
   const polygonData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: visibleItems
       .filter(i => i.geometry.type === 'Polygon' || i.geometry.type === 'MultiPolygon')
-      .map(i => buildFeature(i, activeItemId)),
-  }), [visibleItems, activeItemId])
+      .map(i => buildFeature(i, activeItemId, labelField)),
+  }), [visibleItems, activeItemId, labelField])
 
   return (
     <>

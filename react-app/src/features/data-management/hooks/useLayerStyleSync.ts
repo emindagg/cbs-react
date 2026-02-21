@@ -25,6 +25,15 @@ export function useLayerStyleSync() {
       }
     }
 
+    const trySetLayout = (layerId: string, prop: string, value: unknown) => {
+      if (!map.getLayer(layerId)) return
+      try {
+        map.setLayoutProperty(layerId, prop, value as Parameters<typeof map.setLayoutProperty>[2])
+      } catch {
+        // Layer henüz hazır değil, sessizce geç
+      }
+    }
+
     const selected = ['boolean', ['get', 'selected'], false]
     const customOrDefault = (fallback: string) =>
       ['case', ['!=', ['get', 'customFillColor'], null], ['get', 'customFillColor'], fallback]
@@ -55,6 +64,13 @@ export function useLayerStyleSync() {
     trySet('data-layer-line', 'line-width',
       ['case', selected, 4, layerStyles.width])
     trySet('data-layer-line', 'line-opacity', layerStyles.opacity)
+
+    // Label layers - textSize (layout) + textColor (paint)
+    const labelLayerIds = ['data-layer-point-labels', 'data-layer-line-labels', 'data-layer-polygon-labels']
+    for (const id of labelLayerIds) {
+      trySetLayout(id, 'text-size', layerStyles.textSize)
+      trySet(id, 'text-color', layerStyles.textColor)
+    }
 
   }, [map, layerStyles])
 }
