@@ -8,54 +8,23 @@ import { type StyleProperties, isStyleProperties } from '@/types/style'
 import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
 import type { DataItem } from '../../data-management'
 
-// Pure function - component dışında tanımla, her render'da yeniden oluşmaz
-function buildFeature(
-  i: DataItem,
-  activeItemId: string | null,
-  layerStyles: ReturnType<typeof useDataManagementStore.getState>['layerStyles'],
-): Feature {
+// Pure function - style bilgisi içermiyor, sadece geometri ve kimlik
+// Style güncellemeleri useLayerStyleSync hook'u tarafından setPaintProperty ile yapılır
+function buildFeature(i: DataItem, activeItemId: string | null): Feature {
   const rawStyle = i.properties.style
   const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
-  const isImported = i.source === 'imported'
-  const opacity = isImported
-    ? layerStyles.opacity
-    : (style.opacity !== undefined ? style.opacity : 0.9)
-  const fillColor = style.fillColor || (isImported ? layerStyles.fillColor : '#3b82f6')
-  const strokeColor = isImported
-    ? layerStyles.strokeColor
-    : (style.strokeColor || '#000000')
-  const strokeWidth = isImported
-    ? layerStyles.strokeWidth
-    : (style.strokeWidth || 1)
-  const radius = isImported
-    ? layerStyles.width
-    : (style.radius || 4)
-  const lineWidth = isImported
-    ? layerStyles.width
-    : 2
-  const labelValue = isImported && layerStyles.labelField
-    ? i.properties[layerStyles.labelField]
-    : undefined
+  // Drawn items'ın kendi per-item renk override'ı varsa sakla
+  const customFillColor = (i.source === 'drawn' && style.fillColor) ? style.fillColor : null
 
   return {
     type: 'Feature',
     id: i.id,
     geometry: i.geometry,
     properties: {
-      ...i.properties,
-      name: i.name,
       id: i.id,
+      name: i.name,
       selected: i.id === activeItemId,
-      fillColor,
-      strokeColor,
-      strokeWidth,
-      opacity,
-      radius,
-      lineWidth,
-      labelText: labelValue !== undefined && labelValue !== null ? String(labelValue) : '',
-      textColor: layerStyles.textColor,
-      textSize: layerStyles.textSize,
-      fillOpacity: opacity * 0.3,
+      customFillColor,
     },
   } as unknown as Feature
 }
@@ -63,64 +32,52 @@ function buildFeature(
 export default function DataLayer() {
   const items = useDataManagementStore(state => state.items)
   const activeItemId = useDataManagementStore(state => state.activeItemId)
-  const layerStyles = useDataManagementStore(state => state.layerStyles)
+  // layerStyles'ı SUBSCRIBE ETME - artık useLayerStyleSync tarafından yönetiliyor
   const { isEnabled: isClusteringEnabled } = useClusteringStore()
 
-  // Visible items - bir kez filtrele
   const visibleItems = useMemo(() => items.filter(i => i.visible), [items])
 
+  // layerStyles bağımlılığı yok - sadece items/activeItemId değişince rebuild
   const pointData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: visibleItems
       .filter(i => i.geometry.type === 'Point' || i.geometry.type === 'MultiPoint')
-      .map(i => buildFeature(i, activeItemId, layerStyles)),
-  }), [visibleItems, activeItemId, layerStyles])
+      .map(i => buildFeature(i, activeItemId)),
+  }), [visibleItems, activeItemId])
 
   const lineData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: visibleItems
       .filter(i => i.geometry.type === 'LineString' || i.geometry.type === 'MultiLineString')
-      .map(i => buildFeature(i, activeItemId, layerStyles)),
-  }), [visibleItems, activeItemId, layerStyles])
+      .map(i => buildFeature(i, activeItemId)),
+  }), [visibleItems, activeItemId])
 
   const polygonData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: visibleItems
       .filter(i => i.geometry.type === 'Polygon' || i.geometry.type === 'MultiPolygon')
-      .map(i => buildFeature(i, activeItemId, layerStyles)),
-  }), [visibleItems, activeItemId, layerStyles])
+      .map(i => buildFeature(i, activeItemId)),
+  }), [visibleItems, activeItemId])
 
   return (
     <>
-      {/* --- POLYGONS --- */}
+      {/* POLYGONS */}
       <Source id="data-polygons" type="geojson" data={polygonData}>
         <Layer
           id="data-layer-polygon-fill"
           type="fill"
           paint={{
-            'fill-color': ['case',
-              ['boolean', ['get', 'selected'], false],
-              '#f59e0b', // Amber if selected
-              ['get', 'fillColor'],
-            ],
-            'fill-opacity': ['get', 'fillOpacity'], // Uses the * 0.3 logic
+            'fill-color': ['case', ['boolean', ['get', 'selected'], false], '#f59e0b', '#3b82f6'],
+            'fill-opacity': 0.27,
           }}
         />
         <Layer
           id="data-layer-polygon-outline"
           type="line"
           paint={{
-            'line-color': ['case',
-              ['boolean', ['get', 'selected'], false],
-              '#d97706',
-              ['get', 'strokeColor'],
-            ],
-            'line-width': ['case',
-              ['boolean', ['get', 'selected'], false],
-              2,
-              ['get', 'strokeWidth'],
-            ],
-            'line-opacity': ['get', 'opacity'], // Full opacity for outlines
+            'line-color': ['case', ['boolean', ['get', 'selected'], false], '#d97706', '#000000'],
+            'line-width': ['case', ['boolean', ['get', 'selected'], false], 2, 0.5],
+            'line-opacity': 0.9,
           }}
         />
         <Layer
@@ -128,37 +85,26 @@ export default function DataLayer() {
           type="symbol"
           layout={{
             'text-field': ['coalesce', ['get', 'labelText'], ''],
-            'text-size': ['get', 'textSize'],
+            'text-size': 12,
           }}
           paint={{
-            'text-color': ['get', 'textColor'],
+            'text-color': '#111827',
             'text-halo-color': '#ffffff',
             'text-halo-width': 1,
           }}
         />
       </Source>
 
-      {/* --- LINES --- */}
+      {/* LINES */}
       <Source id="data-lines" type="geojson" data={lineData}>
         <Layer
           id="data-layer-line"
           type="line"
-          layout={{
-            'line-join': 'round',
-            'line-cap': 'round',
-          }}
+          layout={{ 'line-join': 'round', 'line-cap': 'round' }}
           paint={{
-            'line-color': ['case',
-              ['boolean', ['get', 'selected'], false],
-              '#f59e0b',
-              ['get', 'fillColor'], // Lines usually use 'fillColor' property in this context as main color
-            ],
-            'line-width': ['case',
-              ['boolean', ['get', 'selected'], false],
-              4,
-              ['get', 'lineWidth'],
-            ],
-            'line-opacity': ['get', 'opacity'],
+            'line-color': ['case', ['boolean', ['get', 'selected'], false], '#f59e0b', '#3b82f6'],
+            'line-width': ['case', ['boolean', ['get', 'selected'], false], 4, 3],
+            'line-opacity': 0.9,
           }}
         />
         <Layer
@@ -166,34 +112,29 @@ export default function DataLayer() {
           type="symbol"
           layout={{
             'text-field': ['coalesce', ['get', 'labelText'], ''],
-            'text-size': ['get', 'textSize'],
+            'text-size': 12,
             'symbol-placement': 'line-center',
           }}
           paint={{
-            'text-color': ['get', 'textColor'],
+            'text-color': '#111827',
             'text-halo-color': '#ffffff',
             'text-halo-width': 1,
           }}
         />
       </Source>
 
-      {/* --- POINTS --- */}
-      {/* Only render points here if clustering is DISABLED to avoid duplicates */}
+      {/* POINTS */}
       {!isClusteringEnabled && (
         <Source id="data-points" type="geojson" data={pointData}>
           <Layer
             id="data-layer-point"
             type="circle"
             paint={{
-              'circle-radius': ['get', 'radius'],
-              'circle-color': ['case',
-                ['boolean', ['get', 'selected'], false],
-                '#f59e0b',
-                ['get', 'fillColor'],
-              ],
-              'circle-stroke-width': ['get', 'strokeWidth'],
-              'circle-stroke-color': ['get', 'strokeColor'],
-              'circle-opacity': ['get', 'opacity'],
+              'circle-radius': 3,
+              'circle-color': ['case', ['boolean', ['get', 'selected'], false], '#f59e0b', '#3b82f6'],
+              'circle-stroke-width': 0.5,
+              'circle-stroke-color': '#000000',
+              'circle-opacity': 0.9,
             }}
           />
           <Layer
@@ -201,17 +142,16 @@ export default function DataLayer() {
             type="symbol"
             layout={{
               'text-field': ['coalesce', ['get', 'labelText'], ''],
-              'text-size': ['get', 'textSize'],
+              'text-size': 12,
               'text-offset': [0, 1.2],
               'text-anchor': 'top',
             }}
             paint={{
-              'text-color': ['get', 'textColor'],
+              'text-color': '#111827',
               'text-halo-color': '#ffffff',
               'text-halo-width': 1,
             }}
           />
-
         </Source>
       )}
     </>

@@ -9,7 +9,7 @@ import {
   Settings2,
   Trash2,
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 
 import { ImportedDataTableModal } from './ImportedDataTableModal'
 import { useDataManagementStore } from '../store/useDataManagementStore'
@@ -56,6 +56,7 @@ export function ImportedDataManagerFab() {
     removeImportedLayer,
   } = useDataManagementStore()
 
+  const [, startTransition] = useTransition()
   const [isOpen, setIsOpen] = useState(false)
   const [showTable, setShowTable] = useState(false)
   const [themeOpen, setThemeOpen] = useState(true)
@@ -329,7 +330,7 @@ export function ImportedDataManagerFab() {
                           type="button"
                           role="switch"
                           aria-checked={layerStyles.clusterEnabled}
-                          onClick={() => updateLayerStyle({ clusterEnabled: !layerStyles.clusterEnabled })}
+                          onClick={() => startTransition(() => updateLayerStyle({ clusterEnabled: !layerStyles.clusterEnabled }))}
                           className={`relative w-11 h-6 rounded-full transition-all duration-300 shadow-inner ${layerStyles.clusterEnabled ? 'bg-slate-900' : 'bg-slate-300'}`}
                         >
                           <span className={`absolute top-0.5 left-0.5 block w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-300 ${layerStyles.clusterEnabled ? 'translate-x-5' : 'translate-x-0'}`}></span>
@@ -346,7 +347,7 @@ export function ImportedDataManagerFab() {
                           max={1}
                           step={0.01}
                           value={layerStyles.opacity}
-                          onChange={(event) => updateLayerStyle({ opacity: Number(event.target.value) })}
+                          onChange={(event) => startTransition(() => updateLayerStyle({ opacity: Number(event.target.value) }))}
                           className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
                         />
                       </div>
@@ -357,7 +358,7 @@ export function ImportedDataManagerFab() {
                         max={1}
                         step={0.01}
                         value={layerStyles.opacity}
-                        onChange={(event) => updateLayerStyle({ opacity: Number(event.target.value) })}
+                        onChange={(event) => startTransition(() => updateLayerStyle({ opacity: Number(event.target.value) }))}
                         className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
                         style={{
                           background: `linear-gradient(to right, #0f172a 0%, #0f172a ${layerStyles.opacity * 100}%, #e2e8f0 ${layerStyles.opacity * 100}%, #e2e8f0 100%)`
@@ -374,7 +375,7 @@ export function ImportedDataManagerFab() {
                           max={50}
                           step={0.5}
                           value={layerStyles.width}
-                          onChange={(event) => updateLayerStyle({ width: Number(event.target.value) })}
+                          onChange={(event) => startTransition(() => updateLayerStyle({ width: Number(event.target.value) }))}
                           className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
                         />
                       </div>
@@ -385,7 +386,7 @@ export function ImportedDataManagerFab() {
                         max={50}
                         step={0.5}
                         value={layerStyles.width}
-                        onChange={(event) => updateLayerStyle({ width: Number(event.target.value) })}
+                        onChange={(event) => startTransition(() => updateLayerStyle({ width: Number(event.target.value) }))}
                         className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
                         style={{
                           background: `linear-gradient(to right, #0f172a 0%, #0f172a ${(layerStyles.width / 50) * 100}%, #e2e8f0 ${(layerStyles.width / 50) * 100}%, #e2e8f0 100%)`
@@ -399,7 +400,7 @@ export function ImportedDataManagerFab() {
                         <input
                           type="color"
                           value={layerStyles.fillColor}
-                          onChange={(event) => updateLayerStyle({ fillColor: event.target.value })}
+                          onChange={(event) => startTransition(() => updateLayerStyle({ fillColor: event.target.value }))}
                           className="w-6 h-6 border border-slate-300 rounded-md cursor-pointer"
                         />
                         <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wide">{layerStyles.fillColor}</span>
@@ -415,7 +416,7 @@ export function ImportedDataManagerFab() {
                           max={10}
                           step={0.5}
                           value={layerStyles.strokeWidth}
-                          onChange={(event) => updateLayerStyle({ strokeWidth: Number(event.target.value) })}
+                          onChange={(event) => startTransition(() => updateLayerStyle({ strokeWidth: Number(event.target.value) }))}
                           className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
                         />
                       </div>
@@ -426,7 +427,7 @@ export function ImportedDataManagerFab() {
                         max={10}
                         step={0.5}
                         value={layerStyles.strokeWidth}
-                        onChange={(event) => updateLayerStyle({ strokeWidth: Number(event.target.value) })}
+                        onChange={(event) => startTransition(() => updateLayerStyle({ strokeWidth: Number(event.target.value) }))}
                         className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
                         style={{
                           background: `linear-gradient(to right, #0f172a 0%, #0f172a ${(layerStyles.strokeWidth / 10) * 100}%, #e2e8f0 ${(layerStyles.strokeWidth / 10) * 100}%, #e2e8f0 100%)`
@@ -440,7 +441,7 @@ export function ImportedDataManagerFab() {
                         <input
                           type="color"
                           value={layerStyles.strokeColor}
-                          onChange={(event) => updateLayerStyle({ strokeColor: event.target.value })}
+                          onChange={(event) => startTransition(() => updateLayerStyle({ strokeColor: event.target.value }))}
                           className="w-6 h-6 border border-slate-300 rounded-md cursor-pointer"
                         />
                         <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wide">{layerStyles.strokeColor}</span>
@@ -480,7 +481,7 @@ export function ImportedDataManagerFab() {
                       <select
                         id="dm-label-field"
                         value={layerStyles.labelField}
-                        onChange={(event) => updateLayerStyle({ labelField: event.target.value })}
+                        onChange={(event) => startTransition(() => updateLayerStyle({ labelField: event.target.value }))}
                         className="w-full h-9 px-3 border border-slate-300 bg-white rounded-lg text-[11px] text-slate-800 font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400 transition-all"
                       >
                         <option value="">Seçiniz</option>
@@ -499,7 +500,7 @@ export function ImportedDataManagerFab() {
                           max={48}
                           step={1}
                           value={layerStyles.textSize}
-                          onChange={(event) => updateLayerStyle({ textSize: Number(event.target.value) })}
+                          onChange={(event) => startTransition(() => updateLayerStyle({ textSize: Number(event.target.value) }))}
                           className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
                         />
                       </div>
@@ -510,7 +511,7 @@ export function ImportedDataManagerFab() {
                         max={48}
                         step={1}
                         value={layerStyles.textSize}
-                        onChange={(event) => updateLayerStyle({ textSize: Number(event.target.value) })}
+                        onChange={(event) => startTransition(() => updateLayerStyle({ textSize: Number(event.target.value) }))}
                         className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
                         style={{
                           background: `linear-gradient(to right, #0f172a 0%, #0f172a ${((layerStyles.textSize - 8) / 40) * 100}%, #e2e8f0 ${((layerStyles.textSize - 8) / 40) * 100}%, #e2e8f0 100%)`
@@ -524,7 +525,7 @@ export function ImportedDataManagerFab() {
                         <input
                           type="color"
                           value={layerStyles.textColor}
-                          onChange={(event) => updateLayerStyle({ textColor: event.target.value })}
+                          onChange={(event) => startTransition(() => updateLayerStyle({ textColor: event.target.value }))}
                           className="w-6 h-6 border border-slate-300 rounded-md cursor-pointer"
                         />
                         <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wide">{layerStyles.textColor}</span>

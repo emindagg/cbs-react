@@ -6,6 +6,7 @@ import { useAstroMap, AstroPanel, useAstroStore } from '@/features/astronomy'
 import { BasemapSwitcher } from '@/features/basemap'
 import { useClustering } from '@/features/clustering'
 import { ImportedDataManagerFab } from '@/features/data-management'
+import { useLayerStyleSync } from '@/features/data-management/hooks/useLayerStyleSync'
 import { SearchContainer } from '@/features/geocoder'
 import { GlobeToggleButton } from '@/features/globe-view'
 import { LegendContainer } from '@/features/legend'
@@ -45,6 +46,8 @@ export default function AppLayout() {
   useClustering()
   // Re-add visualization layers after style changes (basemap switch)
   useVisualizationLayerPersistence()
+  // Sync layerStyles to MapLibre paint properties (INP optimization)
+  useLayerStyleSync()
 
   // Toggle sidebar and resize map
   const toggleSidebar = () => {
