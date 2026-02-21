@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
@@ -10,9 +9,9 @@ import { indexedDbStorage } from './indexedDbStorage'
 const defaultLayerStyles: LayerStyles = {
   clusterEnabled: false,
   opacity: 0.9,
-  width: 6,
+  width: 3,
   fillColor: '#3b82f6',
-  strokeWidth: 1,
+  strokeWidth: 0.5,
   strokeColor: '#000000',
   labelField: '',
   textSize: 12,
@@ -21,7 +20,7 @@ const defaultLayerStyles: LayerStyles = {
 
 const createPersistedItem = (item: NewDataItem, source: 'drawn' | 'imported') => ({
   ...item,
-  id: uuidv4(),
+  id: crypto.randomUUID(),
   visible: true,
   source,
 })

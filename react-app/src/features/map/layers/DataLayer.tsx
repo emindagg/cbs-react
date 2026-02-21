@@ -1,90 +1,94 @@
 import type { FeatureCollection, Feature } from 'geojson'
-import { useMemo, useCallback } from 'react'
+import { useMemo } from 'react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { type StyleProperties, isStyleProperties } from '@/types/style'
 
 import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
+import type { DataItem } from '../../data-management'
+
+// Pure function - component dışında tanımla, her render'da yeniden oluşmaz
+function buildFeature(
+  i: DataItem,
+  activeItemId: string | null,
+  layerStyles: ReturnType<typeof useDataManagementStore.getState>['layerStyles'],
+): Feature {
+  const rawStyle = i.properties.style
+  const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
+  const isImported = i.source === 'imported'
+  const opacity = isImported
+    ? layerStyles.opacity
+    : (style.opacity !== undefined ? style.opacity : 0.9)
+  const fillColor = style.fillColor || (isImported ? layerStyles.fillColor : '#3b82f6')
+  const strokeColor = isImported
+    ? layerStyles.strokeColor
+    : (style.strokeColor || '#000000')
+  const strokeWidth = isImported
+    ? layerStyles.strokeWidth
+    : (style.strokeWidth || 1)
+  const radius = isImported
+    ? layerStyles.width
+    : (style.radius || 4)
+  const lineWidth = isImported
+    ? layerStyles.width
+    : 2
+  const labelValue = isImported && layerStyles.labelField
+    ? i.properties[layerStyles.labelField]
+    : undefined
+
+  return {
+    type: 'Feature',
+    id: i.id,
+    geometry: i.geometry,
+    properties: {
+      ...i.properties,
+      name: i.name,
+      id: i.id,
+      selected: i.id === activeItemId,
+      fillColor,
+      strokeColor,
+      strokeWidth,
+      opacity,
+      radius,
+      lineWidth,
+      labelText: labelValue !== undefined && labelValue !== null ? String(labelValue) : '',
+      textColor: layerStyles.textColor,
+      textSize: layerStyles.textSize,
+      fillOpacity: opacity * 0.3,
+    },
+  } as unknown as Feature
+}
 
 export default function DataLayer() {
-  const { items, activeItemId, layerStyles } = useDataManagementStore()
+  const items = useDataManagementStore(state => state.items)
+  const activeItemId = useDataManagementStore(state => state.activeItemId)
+  const layerStyles = useDataManagementStore(state => state.layerStyles)
   const { isEnabled: isClusteringEnabled } = useClusteringStore()
 
-  // Helper to flatten properties and inject consistent style defaults
-  const prepareFeatures = useCallback((itemType: 'Point' | 'LineString' | 'Polygon') => {
-    return items
-      .filter(i => i.visible && (i.geometry.type === itemType || i.geometry.type === `Multi${itemType}`))
-      .map(i => {
-        const rawStyle = i.properties.style
-        const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
-        const isImported = i.source === 'imported'
-        const opacity = isImported
-          ? layerStyles.opacity
-          : (style.opacity !== undefined ? style.opacity : 0.9)
-        // Önce item'ın kendi fillColor'unu kontrol et, yoksa fallback kullan
-        const fillColor = style.fillColor || (isImported ? layerStyles.fillColor : '#3b82f6')
-        const strokeColor = isImported
-          ? layerStyles.strokeColor
-          : (style.strokeColor || '#000000')
-        const strokeWidth = isImported
-          ? layerStyles.strokeWidth
-          : (style.strokeWidth || 1)
-        const radius = isImported
-          ? layerStyles.width
-          : (style.radius || 4)
-        const lineWidth = isImported
-          ? layerStyles.width
-          : 2
-        const labelValue = isImported && layerStyles.labelField
-          ? i.properties[layerStyles.labelField]
-          : undefined
-
-        // LEGACY DEFAULTS (Exact match from LayerStylePanel.js)
-        // Default Color: #3b82f6 (Blue-500)
-        // Default Stroke: #000000 (Black)
-
-        return {
-          type: 'Feature',
-          id: i.id,
-          geometry: i.geometry,
-          properties: {
-            ...i.properties,
-            name: i.name,
-            id: i.id,
-            selected: i.id === activeItemId,
-            // Legacy Style Mapping
-            fillColor,
-            strokeColor,
-            strokeWidth,
-            opacity,
-            radius,
-            lineWidth,
-            labelText: labelValue !== undefined && labelValue !== null ? String(labelValue) : '',
-            textColor: layerStyles.textColor,
-            textSize: layerStyles.textSize,
-
-            // Calculated Fill Opacity for Polygons (Legacy logic: opacity * 0.3)
-            fillOpacity: opacity * 0.3,
-          },
-        }
-      }) as unknown as Feature[]
-  }, [items, activeItemId, layerStyles])
+  // Visible items - bir kez filtrele
+  const visibleItems = useMemo(() => items.filter(i => i.visible), [items])
 
   const pointData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
-    features: prepareFeatures('Point'),
-  }), [prepareFeatures])
+    features: visibleItems
+      .filter(i => i.geometry.type === 'Point' || i.geometry.type === 'MultiPoint')
+      .map(i => buildFeature(i, activeItemId, layerStyles)),
+  }), [visibleItems, activeItemId, layerStyles])
 
   const lineData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
-    features: prepareFeatures('LineString'),
-  }), [prepareFeatures])
+    features: visibleItems
+      .filter(i => i.geometry.type === 'LineString' || i.geometry.type === 'MultiLineString')
+      .map(i => buildFeature(i, activeItemId, layerStyles)),
+  }), [visibleItems, activeItemId, layerStyles])
 
   const polygonData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
-    features: prepareFeatures('Polygon'),
-  }), [prepareFeatures])
+    features: visibleItems
+      .filter(i => i.geometry.type === 'Polygon' || i.geometry.type === 'MultiPolygon')
+      .map(i => buildFeature(i, activeItemId, layerStyles)),
+  }), [visibleItems, activeItemId, layerStyles])
 
   return (
     <>

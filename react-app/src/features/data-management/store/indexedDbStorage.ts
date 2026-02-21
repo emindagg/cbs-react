@@ -63,6 +63,8 @@ async function removeFromIndexedDb(name: string): Promise<void> {
 
 const isBrowser = typeof window !== 'undefined'
 
+const pendingWrites = new Map<string, ReturnType<typeof setTimeout>>()
+
 export const indexedDbStorage: StateStorage = {
   getItem: async (name) => {
     if (!isBrowser) return null
@@ -72,13 +74,19 @@ export const indexedDbStorage: StateStorage = {
       return window.localStorage.getItem(name)
     }
   },
-  setItem: async (name, value) => {
+  setItem: (name, value) => {
     if (!isBrowser) return
-    try {
-      await writeToIndexedDb(name, value)
-    } catch {
-      window.localStorage.setItem(name, value)
-    }
+    const pending = pendingWrites.get(name)
+    if (pending !== undefined) clearTimeout(pending)
+    const timer = setTimeout(async () => {
+      pendingWrites.delete(name)
+      try {
+        await writeToIndexedDb(name, value)
+      } catch {
+        window.localStorage.setItem(name, value)
+      }
+    }, 500)
+    pendingWrites.set(name, timer)
   },
   removeItem: async (name) => {
     if (!isBrowser) return

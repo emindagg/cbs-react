@@ -1,5 +1,6 @@
 import type { GeoJSONSource, MapMouseEvent } from 'maplibre-gl'
 import { useEffect } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 
 import { useDataManagementStore } from '@/features/data-management'
 import { useClusteringStore } from '@/stores/useClusteringStore'
@@ -8,27 +9,30 @@ import { useMapStore } from '@/stores/useMapStore'
 
 export function useClustering() {
   const map = useMapStore((state) => state.mapInstance)
-  // items değişince tüm hook çalışır. İçerik referansı değişse de useEffect performansı için 
-  // içeride veri hazırlığı optimize edildi.
-  const { items } = useDataManagementStore()
+  // useShallow ile sadece nokta item'larını subscribe et.
+  // ÖNEMLI: Selector içinde yeni nesne oluşturma (spread/map) - sonsuz döngüye yol açar.
+  // useShallow her elementi referans olarak karşılaştırır; store'daki stabil DataItem
+  // referanslarını döndürmek gerekir. Feature dönüşümü useEffect içinde yapılır.
+  const pointItems = useDataManagementStore(
+    useShallow((state) =>
+      state.items.filter(item =>
+        item.visible &&
+        (item.type === 'point' ||
+          (item.geometry && (item.geometry.type === 'Point' || item.geometry.type === 'MultiPoint'))),
+      )
+    ),
+  )
   const { isEnabled } = useClusteringStore()
 
   useEffect(() => {
     if (!map) return
 
-    // Nokta türündeki verileri filtrele ve tek bir Features array oluştur
-    // Bu işlem bellek dostudur.
-    const pointFeatures = items
-      .filter(item =>
-        item.visible && // Sadece görünür olanları kümele
-        (item.type === 'point' ||
-          (item.geometry && (item.geometry.type === 'Point' || item.geometry.type === 'MultiPoint'))),
-      )
-      .map(item => ({
-        type: 'Feature' as const,
-        geometry: item.geometry,
-        properties: { ...item.properties, id: item.id },
-      }))
+    // Feature dönüşümünü selector'da değil, burada yap
+    const pointFeatures = pointItems.map(item => ({
+      type: 'Feature' as const,
+      geometry: item.geometry,
+      properties: { ...item.properties, id: item.id },
+    }))
 
     const sourceId = 'clustered-points-source'
     const clusterLayerId = 'clusters-layer'
@@ -173,5 +177,5 @@ export function useClustering() {
 
     return cleanup
 
-  }, [map, isEnabled, items])
+  }, [map, isEnabled, pointItems])
 }

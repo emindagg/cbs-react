@@ -31,7 +31,18 @@ export function useFileImport() {
         })
         setShowMapper(true)
       } else if (result.items && result.items.length > 0) {
-        addItems(result.items.map(item => ({ ...item, sourceLabel: file.name })))
+        const CHUNK_SIZE = 2000
+        const mappedItems = result.items.map(item => ({ ...item, sourceLabel: file.name }))
+        if (mappedItems.length > CHUNK_SIZE) {
+          for (let i = 0; i < mappedItems.length; i += CHUNK_SIZE) {
+            addItems(mappedItems.slice(i, i + CHUNK_SIZE))
+            if (i + CHUNK_SIZE < mappedItems.length) {
+              await new Promise<void>(r => setTimeout(r, 0))
+            }
+          }
+        } else {
+          addItems(mappedItems)
+        }
         toast.success(`${result.items.length} veri yuklendi.`)
       } else {
         toast.error('Dosyada aktarilabilir veri bulunamadi.')
@@ -47,13 +58,24 @@ export function useFileImport() {
     }
   }
 
-  const handleMapperConfirm = (mapping: ColumnMapping) => {
+  const handleMapperConfirm = async (mapping: ColumnMapping) => {
     if (!mapperData) return
 
     const items = transformToGeoItems(mapperData.jsonData, mapping)
 
     if (items.length > 0) {
-      addItems(items.map(item => ({ ...item, sourceLabel: fileInputRef.current?.files?.[0]?.name ?? 'Excel Import' })))
+      const CHUNK_SIZE = 2000
+      const mappedItems = items.map(item => ({ ...item, sourceLabel: fileInputRef.current?.files?.[0]?.name ?? 'Excel Import' }))
+      if (mappedItems.length > CHUNK_SIZE) {
+        for (let i = 0; i < mappedItems.length; i += CHUNK_SIZE) {
+          addItems(mappedItems.slice(i, i + CHUNK_SIZE))
+          if (i + CHUNK_SIZE < mappedItems.length) {
+            await new Promise<void>(r => setTimeout(r, 0))
+          }
+        }
+      } else {
+        addItems(mappedItems)
+      }
       toast.success(`${items.length} veri yuklendi.`)
     } else {
       toast.error('Secilen eslestirmeden veri uretilemedi.')

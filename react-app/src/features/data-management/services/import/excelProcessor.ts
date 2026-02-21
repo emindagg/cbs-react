@@ -1,21 +1,46 @@
-import * as XLSX from 'xlsx'
-
 import type { ParseResult } from '../../types'
 import { detectColumns } from '../../utils/columnDetector'
 import { transformToGeoItems } from '../../utils/dataMapper'
+import type { WorkerOutput } from './xlsxWorker'
 
+function parseWithWorker(buffer: ArrayBuffer): Promise<WorkerOutput> {
+  return new Promise((resolve) => {
+    const worker = new Worker(
+      new URL('./xlsxWorker.ts', import.meta.url),
+      { type: 'module' },
+    )
+
+    worker.onmessage = (event: MessageEvent<WorkerOutput>) => {
+      worker.terminate()
+      resolve(event.data)
+    }
+
+    worker.onerror = (err) => {
+      worker.terminate()
+      resolve({ success: false, error: err.message })
+    }
+
+    worker.postMessage({ buffer }, [buffer])
+  })
+}
+
+/**
+ * Process Excel/CSV files - uses Web Worker for heavy parsing
+ */
 export async function parseExcel(file: File): Promise<ParseResult> {
   const buffer = await file.arrayBuffer()
-  const workbook = XLSX.read(buffer, { type: 'array' })
-  const sheetName = workbook.SheetNames[0]
-  const sheet = workbook.Sheets[sheetName]
-  const jsonData = XLSX.utils.sheet_to_json(sheet) as Record<string, unknown>[]
+  const result = await parseWithWorker(buffer)
+
+  if (!result.success) {
+    throw new Error(result.error)
+  }
+
+  const { data: jsonData, headers } = result
 
   if (jsonData.length === 0) {
     return { items: [] }
   }
 
-  const headers = Object.keys(jsonData[0] as object)
   const mapping = detectColumns(headers)
 
   if (!mapping.lat || !mapping.lon) {
@@ -28,7 +53,5 @@ export async function parseExcel(file: File): Promise<ParseResult> {
   }
 
   const items = transformToGeoItems(jsonData, mapping)
-
   return { items }
 }
-

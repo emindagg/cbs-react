@@ -370,9 +370,9 @@ export function ImportedDataManagerFab() {
                         <label htmlFor="dm-width" className="text-xs font-semibold text-slate-800">Sembol Genişliği</label>
                         <input
                           type="number"
-                          min={1}
+                          min={0.5}
                           max={50}
-                          step={1}
+                          step={0.5}
                           value={layerStyles.width}
                           onChange={(event) => updateLayerStyle({ width: Number(event.target.value) })}
                           className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
@@ -381,9 +381,9 @@ export function ImportedDataManagerFab() {
                       <input
                         id="dm-width"
                         type="range"
-                        min={1}
+                        min={0.5}
                         max={50}
-                        step={1}
+                        step={0.5}
                         value={layerStyles.width}
                         onChange={(event) => updateLayerStyle({ width: Number(event.target.value) })}
                         className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
@@ -413,7 +413,7 @@ export function ImportedDataManagerFab() {
                           type="number"
                           min={0}
                           max={10}
-                          step={1}
+                          step={0.5}
                           value={layerStyles.strokeWidth}
                           onChange={(event) => updateLayerStyle({ strokeWidth: Number(event.target.value) })}
                           className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
@@ -424,7 +424,7 @@ export function ImportedDataManagerFab() {
                         type="range"
                         min={0}
                         max={10}
-                        step={1}
+                        step={0.5}
                         value={layerStyles.strokeWidth}
                         onChange={(event) => updateLayerStyle({ strokeWidth: Number(event.target.value) })}
                         className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
