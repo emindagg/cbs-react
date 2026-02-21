@@ -17,6 +17,8 @@ import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpr
 import { applyNormalization } from '@/utils/normalization'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
 import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
+import { BUBBLE_DEFAULT_FILL_COLOR } from '../constants'
+
 
 import {
   clampToCustomRange,
@@ -139,7 +141,7 @@ export class BubbleRenderer {
 
     let colorExpression: unknown
     if (isSingleColor) {
-      colorExpression = settings.symbolFillColor || '#039d92'
+      colorExpression = settings.symbolFillColor || BUBBLE_DEFAULT_FILL_COLOR
     } else if (isContinuous) {
       colorExpression = this.buildContinuousExpression(
         colorValuesForColor,

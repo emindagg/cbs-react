@@ -18,6 +18,7 @@ import {
   VisualizationManager,
 } from '@/shared/visualization'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
+import { BUBBLE_DEFAULT_FILL_COLOR } from '@/features/visualization/bubble/constants'
 import type { PaintPropertyValue } from '@/types/maplibre-expressions'
 import type { MatchResults, VisualizationSettings } from '@/types/visualization'
 
@@ -55,7 +56,7 @@ function updateBubblePaintProperties(map: maplibregl.Map, settings: Visualizatio
   const opacity = settings.symbolOpacity ?? 0.6
   const strokeColor = settings.symbolStrokeColor || '#ffffff'
   const strokeWidth = settings.symbolStrokeWidth ?? 0.5
-  const fillColor = settings.symbolFillColor || '#039d92'
+  const fillColor = settings.symbolFillColor || BUBBLE_DEFAULT_FILL_COLOR
 
   map.setPaintProperty('bubble-circles', 'circle-color', fillColor as PaintPropertyValue<string>)
   map.setPaintProperty('bubble-circles', 'circle-opacity', opacity as PaintPropertyValue<number>)

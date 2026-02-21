@@ -4,6 +4,7 @@
 
 import { DualRangeSlider, SingleSlider } from '@/components/ui'
 import type { BubbleSizeMode, ClassificationMethod, SymbolScaling, VisualizationSettings } from '@/types/visualization'
+import { BUBBLE_DEFAULT_FILL_COLOR } from '../constants'
 
 /* ── Dual-handle range slider sabitleri ── */
 const SIZE_MIN = 2
@@ -104,18 +105,18 @@ export function BubbleSettings({
             <div className="flex gap-2">
               <input
                 type="color"
-                value={vizSettings.symbolFillColor || '#4a90d9'}
+                value={vizSettings.symbolFillColor || BUBBLE_DEFAULT_FILL_COLOR}
                 onChange={(e) => setVizSettings({ symbolFillColor: e.target.value })}
                 className="w-12 h-8 border border-zinc-200 rounded cursor-pointer"
               />
               <input
                 type="text"
-                value={vizSettings.symbolFillColor || '#4a90d9'}
+                value={vizSettings.symbolFillColor || BUBBLE_DEFAULT_FILL_COLOR}
                 onChange={(e) => {
                   if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value))
                     setVizSettings({ symbolFillColor: e.target.value })
                 }}
-                placeholder="#039d92"
+                placeholder={BUBBLE_DEFAULT_FILL_COLOR}
                 className="flex-1 px-2 py-1 text-[10px] border border-zinc-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
               />
             </div>

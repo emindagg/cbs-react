@@ -12,6 +12,7 @@ import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { calculateBreaks } from '@/utils/classification'
 import * as ss from 'simple-statistics'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
+import { BUBBLE_DEFAULT_FILL_COLOR } from '@/features/visualization/bubble/constants'
 
 import BubbleSizeLegend from './BubbleSizeLegend'
 import DatawrapperLegend from './DatawrapperLegend'
@@ -197,7 +198,7 @@ export default function Container() {
           },
         }}
         circles={isGraduated ? circlesForGraduated : legendCircles}
-        bubbleColor={!vizSettings.colorColumn ? (vizSettings.symbolFillColor || '#039d92') : undefined}
+        bubbleColor={!vizSettings.colorColumn ? (vizSettings.symbolFillColor || BUBBLE_DEFAULT_FILL_COLOR) : undefined}
         bubbleOpacity={vizSettings.symbolOpacity ?? 0.6}
         bubbleStrokeColor={vizSettings.symbolStrokeColor || '#ffffff'}
         bubbleStrokeWidth={vizSettings.symbolStrokeWidth ?? 0.5}
