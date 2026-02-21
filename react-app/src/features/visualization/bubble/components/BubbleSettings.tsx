@@ -94,8 +94,8 @@ export function BubbleSettings({
         </div>
       )}
 
-      {/* Proportional + non-bivariate: tek renk + lejant çember sayısı */}
-      {(vizSettings.bubbleSizeMode || 'proportional') === 'proportional' && !vizSettings.colorColumn && (
+      {/* Non-bivariate: tek renk (Dolgu Rengi) */}
+      {!vizSettings.colorColumn && (
         <>
           {/* Dolgu Rengi */}
           <div>

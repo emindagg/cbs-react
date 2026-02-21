@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BubbleSizeLegend — ArcGIS-style nested circles legend
  *
  * Shows concentric circles (3-7 adet) with value labels
@@ -190,10 +190,10 @@ export default function BubbleSizeLegend({
                   cx={cx}
                   cy={cls.radius + 2}
                   r={cls.radius}
-                  fill="none"
-                  stroke="#666"
-                  strokeWidth={1}
-                  opacity={0.8}
+                  fill={bubbleColor || 'none'}
+                  stroke={bubbleColor ? bubbleStrokeColor : '#666'}
+                  strokeWidth={bubbleStrokeWidth}
+                  fillOpacity={bubbleColor ? bubbleOpacity : 0}
                 />
               </svg>
               <span
