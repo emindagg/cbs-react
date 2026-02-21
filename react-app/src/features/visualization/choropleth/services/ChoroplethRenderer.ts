@@ -98,6 +98,18 @@ export class ChoroplethRenderer {
       )
     } else {
       colorExpression = buildStepExpression('dataValue', breaks, colorPalette, NO_DATA_COLOR)
+
+      // Özel sınıflarda: max sınır değerini aşan veriler gri renk alır
+      // (MapLibre step ifadesi son rengi sınırsız olarak değerlerin üstüne de uygular)
+      if (isCustom) {
+        const maxBreak = breaks[breaks.length - 1]
+        colorExpression = [
+          'case',
+          ['>', ['get', 'dataValue'], maxBreak],
+          NO_DATA_COLOR,
+          colorExpression,
+        ]
+      }
     }
 
     if (resolvedRange?.outOfRangeMode === 'gray') {
