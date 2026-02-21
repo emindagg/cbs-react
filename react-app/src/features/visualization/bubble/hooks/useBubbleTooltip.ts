@@ -70,21 +70,17 @@ export function useBubbleTooltip() {
 
   useEffect(() => {
     if (!map || vizType !== 'bubble') return
-    if (!map.getLayer(BUBBLE_LAYER_ID)) return
 
     const isBivariate = colorColumn && colorColumn !== dataColumn
 
-    // Source'dan tüm feature değerlerini çek ve sırala (bir kez)
     const buildValueCache = () => {
       const source = map.getSource(BUBBLE_SOURCE_ID) as maplibregl.GeoJSONSource | undefined
       if (!source) return
 
-      // querySourceFeatures ile tüm feature'ları al
       const features = map.querySourceFeatures(BUBBLE_SOURCE_ID)
       if (features.length === 0) return
 
       // Aynı feature farklı tile'lardan birden fazla kez gelebilir.
-      // Koordinat bazlı tekilleştirme ile gerçek feature sayısını koru.
       const uniqueByCoord = new Map<string, (typeof features)[number]>()
       for (const feature of features) {
         const geom = feature.geometry
@@ -124,10 +120,6 @@ export function useBubbleTooltip() {
       }
     }
 
-    // İlk yüklemede ve data değiştiğinde cache'i yenile
-    buildValueCache()
-    map.on('sourcedata', buildValueCache)
-
     const popup = new maplibregl.Popup({
       closeButton: false,
       closeOnClick: false,
@@ -148,7 +140,6 @@ export function useBubbleTooltip() {
       const colorVal = feature.properties?.colorValue as number
       const total = sizeValuesRef.current.sorted.length
 
-      /** @param indicator — bivariate modda 'size' | 'color' | null */
       const buildRow = (
         label: string,
         value: number,
@@ -160,7 +151,6 @@ export function useBubbleTooltip() {
         const pLabel = percentileLabel(pct)
         const badgeColor = percentileBadgeColor(pct)
 
-        // Bivariate gösterge ikonu (sadece ikon, etiket yok)
         let indicatorHtml = ''
         if (indicator === 'size') {
           indicatorHtml =
@@ -213,8 +203,36 @@ export function useBubbleTooltip() {
       popup.remove()
     }
 
-    map.on('mouseenter', BUBBLE_LAYER_ID, onMouseEnter)
-    map.on('mouseleave', BUBBLE_LAYER_ID, onMouseLeave)
+    /**
+     * Asıl kayıt işlemi — katman haritada hazır olduktan sonra çalışır.
+     * Race condition'ı önler: BubbleRenderer katmanı asenkron oluşturur.
+     */
+    const registerEvents = () => {
+      buildValueCache()
+      map.on('sourcedata', buildValueCache)
+      map.on('mouseenter', BUBBLE_LAYER_ID, onMouseEnter)
+      map.on('mouseleave', BUBBLE_LAYER_ID, onMouseLeave)
+    }
+
+    // Katman zaten varsa hemen kayıt ol
+    if (map.getLayer(BUBBLE_LAYER_ID)) {
+      registerEvents()
+    } else {
+      // Katman hazır olana kadar bekle — idle her seferinde ateşlenir
+      const onIdle = () => {
+        if (map.getLayer(BUBBLE_LAYER_ID)) {
+          map.off('idle', onIdle)
+          registerEvents()
+        }
+      }
+      map.on('idle', onIdle)
+
+      return () => {
+        map.off('idle', onIdle)
+        popup.remove()
+        popupRef.current = null
+      }
+    }
 
     return () => {
       map.off('sourcedata', buildValueCache)
