@@ -148,8 +148,7 @@ export default function DataLayer() {
             }}
             paint={{
               'text-color': '#111827',
-              'text-halo-color': '#ffffff',
-              'text-halo-width': 1,
+              'text-halo-width': 0,
             }}
           />
         </Source>
