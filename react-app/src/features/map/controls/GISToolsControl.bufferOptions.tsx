@@ -1,5 +1,5 @@
 import * as turf from '@turf/turf'
-import type { Feature, MultiPolygon, Polygon } from 'geojson'
+import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -47,6 +47,7 @@ function toPolygonFeatures(items: DataItem[]): Feature<Polygon | MultiPolygon>[]
   return polygonFeatures
 }
 
+/** Tek katmanı tek Polygon/MultiPolygon Feature yapar; MultiPolygon ise parçaları birleştirip döner. */
 function toSinglePolygonFeature(item: DataItem): Feature<Polygon | MultiPolygon> | null {
   const geometry = item.geometry
   if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
@@ -61,6 +62,28 @@ function toSinglePolygonFeature(item: DataItem): Feature<Polygon | MultiPolygon>
     const unioned = turf.union(turf.featureCollection(flattened)) as Feature<Polygon | MultiPolygon> | null
     if (!unioned) return null
     return unioned as Feature<Polygon | MultiPolygon>
+  } catch {
+    return null
+  }
+}
+
+/** Kesişim/fark için geometriyi normalize eder: rewind (yön) + gerekirse tek Polygon. */
+function normalizeForOverlay(f: Feature<Polygon | MultiPolygon>): Feature<Polygon | MultiPolygon> | null {
+  try {
+    const rewound = turf.rewind(f, { reverse: false })
+    if (!rewound?.geometry) return null
+    const geom = rewound.geometry
+    if (geom.type === 'MultiPolygon' && geom.coordinates.length > 1) {
+      const flattened = turf.flatten(rewound)
+      const polys = (flattened as FeatureCollection<Polygon>).features.filter(
+        feat => feat.geometry.type === 'Polygon'
+      ) as Feature<Polygon>[]
+      if (polys.length === 0) return rewound as Feature<Polygon | MultiPolygon>
+      if (polys.length === 1) return polys[0]
+      const unioned = turf.union(turf.featureCollection(polys)) as Feature<Polygon | MultiPolygon> | null
+      return unioned ?? (rewound as Feature<Polygon | MultiPolygon>)
+    }
+    return rewound as Feature<Polygon | MultiPolygon>
   } catch {
     return null
   }
@@ -288,19 +311,18 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
   }
 
   const activateOverlay = (mode: 'intersection' | 'difference') => {
-    const visibleBaseItems = baseBufferItems.filter(item => item.visible)
-    const sourceItems = visibleBaseItems.length >= 2 ? visibleBaseItems : baseBufferItems
-    if (sourceItems.length < 2) {
-      toast.error('Kesişim/Fark için en az 2 buffer katmanı gerekli.')
+    // polygonFeatures = flatten(baseBufferItems); tek katmandaki 3 daire → 3 poligon sayılır
+    if (polygonFeatures.length < 2) {
+      toast.error('Kesişim/Fark için en az 2 buffer poligonu gerekli.')
       return
     }
 
-    const sourceFeatures = sourceItems
-      .map(toSinglePolygonFeature)
-      .filter((feature): feature is Feature<Polygon | MultiPolygon> => feature != null)
+    const sourceFeatures = polygonFeatures
+      .map(normalizeForOverlay)
+      .filter((f): f is Feature<Polygon | MultiPolygon> => f != null)
 
     if (sourceFeatures.length < 2) {
-      toast.error('Seçili katmanların geometrisi kesişim/fark için uygun değil.')
+      toast.error('Geometriler normalize edilemedi (kesişim/fark için uygun değil).')
       return
     }
 
@@ -328,7 +350,7 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
           overlayGeometry = unionFeatures(intersections)?.geometry ?? null
         }
       } else {
-        // Symmetric difference over all source layers (order-independent).
+        // Symmetric difference: (A \ B) ∪ (B \ A) then fold with next.
         let current: Feature<Polygon | MultiPolygon> | null = sourceFeatures[0]
         for (let index = 1; index < sourceFeatures.length; index += 1) {
           if (!current) break
@@ -352,8 +374,11 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
         }
         overlayGeometry = current?.geometry ?? null
       }
-    } catch {
+    } catch (err) {
       overlayGeometry = null
+      if (import.meta.env.DEV && err instanceof Error) {
+        console.warn('[Buffer Analiz] Kesişim/Fark hatası:', err.message)
+      }
     }
 
     if (!overlayGeometry) {
