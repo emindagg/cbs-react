@@ -16,7 +16,7 @@ vi.mock('../../data-management/store/indexedDbStorage', () => ({
   },
 }))
 
-import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
+import { useDataManagementStore } from '@/features/data-management'
 import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
 import GISToolsControl from './GISToolsControl'
 

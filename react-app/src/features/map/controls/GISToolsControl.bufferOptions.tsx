@@ -3,8 +3,7 @@ import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
-import type { DataItem } from '../../data-management/types'
+import { useDataManagementStore, type DataItem } from '@/features/data-management'
 import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
 
 type BufferOption = 'normal' | 'combined' | 'intersection' | 'difference' | 'summary'
@@ -76,7 +75,7 @@ function toPolygonFeatures(items: DataItem[]): Feature<Polygon | MultiPolygon>[]
 
 function normalizeForOverlay(f: Feature<Polygon | MultiPolygon>): Feature<Polygon | MultiPolygon> | null {
   try {
-    const rewound = turf.rewind(f, { reverse: false })
+    const rewound = turf.rewind(f, { reverse: false }) as Feature<Polygon | MultiPolygon>
     if (!rewound?.geometry) return null
 
     const geometry = rewound.geometry
@@ -85,14 +84,14 @@ function normalizeForOverlay(f: Feature<Polygon | MultiPolygon>): Feature<Polygo
       const polygons = (flattened as FeatureCollection<Polygon>).features.filter(
         feature => feature.geometry.type === 'Polygon',
       ) as Feature<Polygon>[]
-      if (polygons.length === 0) return rewound as Feature<Polygon | MultiPolygon>
+      if (polygons.length === 0) return rewound
       if (polygons.length === 1) return polygons[0]
 
       const unioned = turf.union(turf.featureCollection(polygons)) as Feature<Polygon | MultiPolygon> | null
-      return unioned ?? (rewound as Feature<Polygon | MultiPolygon>)
+      return unioned ?? rewound
     }
 
-    return rewound as Feature<Polygon | MultiPolygon>
+    return rewound
   } catch {
     return null
   }
@@ -684,7 +683,7 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
   const isSummarySelected = selectedOption === 'summary'
   const showStatsModal = isStatsModalOpen && statisticalSummary != null
 
-  const wrapperStyle: React.CSSProperties = dragPosition
+  const wrapperStyle: React.CSSProperties | undefined = dragPosition
     ? { position: 'fixed', left: dragPosition.x, top: dragPosition.y, zIndex: 10003 }
     : undefined
 

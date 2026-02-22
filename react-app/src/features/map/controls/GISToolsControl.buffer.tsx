@@ -7,7 +7,7 @@ import * as turf from '@turf/turf'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
+import { useDataManagementStore } from '@/features/data-management'
 import {
   runBufferAnalysis,
   runBufferAnalysisForMultipleGeometries,
@@ -146,8 +146,7 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
         })
         onClose()
       }
-    } catch (e) {
-      console.error(e)
+    } catch {
       toast.error('Buffer analizi sırasında hata oluştu.')
     }
   }
