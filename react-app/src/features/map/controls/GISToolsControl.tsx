@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
+import { useHeatmapStore } from '@/features/heatmap'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
@@ -37,7 +38,7 @@ const TOOLS: ToolDef[] = [
   { id: 'clustering', icon: 'fa-layer-group', label: 'Nokta Kümeleri', color: 'text-blue-500', group: 'analysis' },
   { id: 'convex-hull', icon: 'fa-vector-square', label: 'Dış Sınır', color: 'text-orange-400', disabled: true, group: 'analysis' },
   { id: 'voronoi', icon: 'fa-border-all', label: 'En Yakın Alanlar', color: 'text-teal-400', disabled: true, group: 'analysis' },
-  { id: 'heatmap', icon: 'fa-fire', label: 'Isı Haritası', color: 'text-red-400', disabled: true, group: 'analysis' },
+  { id: 'heatmap', icon: 'fa-fire', label: 'Isı Haritası', color: 'text-red-400', group: 'analysis' },
   { id: 'screenshot', icon: 'fa-camera', label: 'Ekran Görüntüsü', color: 'text-zinc-500', group: 'general' },
   { id: 'clean-visuals', icon: 'fa-eraser', label: 'Haritayı Temizle', color: 'text-indigo-500', group: 'general' },
   { id: 'clear-data', icon: 'fa-broom', label: 'Verileri Sıfırla', color: 'text-amber-500', group: 'reset' },
@@ -50,6 +51,7 @@ export default function GISToolsControl() {
   const { current: map } = useMap()
 
   const { isEnabled: isClusteringEnabled, toggle: toggleClustering } = useClusteringStore()
+  const { isActive: isHeatmapActive, toggle: toggleHeatmap } = useHeatmapStore()
 
   const {
     toolsMenuMode,
@@ -116,6 +118,9 @@ export default function GISToolsControl() {
     } else if (toolId === 'clustering') {
       toggleClustering()
       maybeClose()
+    } else if (toolId === 'heatmap') {
+      toggleHeatmap()
+      maybeClose()
     } else if (toolId === 'screenshot') {
       handleScreenshot()
     } else if (toolId === 'clean-visuals') {
@@ -137,11 +142,13 @@ export default function GISToolsControl() {
 
   const isToolActive = (toolId: string) => {
     if (toolId === 'clustering') return isClusteringEnabled
+    if (toolId === 'heatmap') return isHeatmapActive
     return activeTool === toolId
   }
 
   const getToolLabel = (tool: ToolDef) => {
     if (tool.id === 'clustering' && isClusteringEnabled) return 'Kümeleri Kapat'
+    if (tool.id === 'heatmap' && isHeatmapActive) return 'Isı Haritasını Kapat'
     return tool.label
   }
 

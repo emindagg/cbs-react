@@ -1,0 +1,25 @@
+export type HeatmapColorStop = [number, string]
+
+export interface HeatmapConfig {
+  radius: number
+  intensity: number
+  opacity: number
+  weightField: string | null
+  colorStops: HeatmapColorStop[]
+}
+
+export type HeatmapPreset = 'classic' | 'cool' | 'warm' | 'monochrome'
+
+export interface HeatmapStore {
+  isActive: boolean
+  config: HeatmapConfig
+  isPanelOpen: boolean
+
+  toggle: () => void
+  activate: () => void
+  deactivate: () => void
+  setConfig: (config: Partial<HeatmapConfig>) => void
+  setPanelOpen: (open: boolean) => void
+  applyPreset: (preset: HeatmapPreset) => void
+  reset: () => void
+}

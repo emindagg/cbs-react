@@ -7,6 +7,7 @@ import { BasemapSwitcher } from '@/features/basemap'
 import { useClustering } from '@/features/clustering'
 import { ImportedDataManagerFab, useLayerStyleSync } from '@/features/data-management'
 import { SearchContainer } from '@/features/geocoder'
+import { HeatmapPanel, useHeatmap } from '@/features/heatmap'
 import { GlobeToggleButton } from '@/features/globe-view'
 import { LayersPanel, useOverlayLayers } from '@/features/layers'
 import { LegendContainer } from '@/features/legend'
@@ -47,6 +48,9 @@ export default function AppLayout() {
   useVisualizationLayerPersistence()
   // Sync layerStyles to MapLibre paint properties (INP optimization)
   useLayerStyleSync()
+
+  // Heatmap feature
+  const heatmap = useHeatmap()
 
   // Toggle sidebar and resize map
   const toggleSidebar = () => {
@@ -138,6 +142,19 @@ export default function AppLayout() {
         fontSize={mapTitle.fontSize}
         onTitleChange={(title) => setMapTitle({ title })}
         onSubtitleChange={(subtitle) => setMapTitle({ subtitle })}
+      />
+
+      {/* Heatmap Configuration Panel */}
+      <HeatmapPanel
+        isOpen={heatmap.isPanelOpen}
+        config={heatmap.config}
+        numericFields={heatmap.numericFields}
+        pointCount={heatmap.pointCount}
+        hasData={heatmap.hasData}
+        onConfigChange={heatmap.setConfig}
+        onPreset={heatmap.applyPreset}
+        onClose={() => heatmap.setPanelOpen(false)}
+        onDeactivate={heatmap.deactivate}
       />
 
       {/* Visualization Legend */}
