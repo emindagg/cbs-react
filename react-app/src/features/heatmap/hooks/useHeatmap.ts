@@ -58,7 +58,7 @@ export function useHeatmap() {
     [items],
   )
 
-  const { isActive, config, toggle, deactivate, setConfig, applyPreset, isPanelOpen, setPanelOpen } = useHeatmapStore()
+  const { isActive, config, activePreset, toggle, deactivate, setConfig, applyPreset, isPanelOpen, setPanelOpen } = useHeatmapStore()
   const rendererRef = useRef<HeatmapRenderer | null>(null)
 
   const numericFields = useMemo(() => {
@@ -113,6 +113,7 @@ export function useHeatmap() {
   return {
     isActive,
     config,
+    activePreset,
     toggle,
     deactivate,
     setConfig,

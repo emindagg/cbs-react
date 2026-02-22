@@ -8,11 +8,22 @@ export interface HeatmapConfig {
   colorStops: HeatmapColorStop[]
 }
 
-export type HeatmapPreset = 'classic' | 'cool' | 'warm' | 'monochrome'
+export type HeatmapPreset =
+  | 'classic'
+  | 'inferno'
+  | 'viridis'
+  | 'magma'
+  | 'warm'
+  | 'cool'
+  | 'ocean'
+  | 'forest'
+  | 'sunset'
+  | 'monochrome'
 
 export interface HeatmapStore {
   isActive: boolean
   config: HeatmapConfig
+  activePreset: HeatmapPreset
   isPanelOpen: boolean
 
   toggle: () => void

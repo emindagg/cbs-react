@@ -8,6 +8,7 @@ import { useClustering } from '@/features/clustering'
 import { ImportedDataManagerFab, useLayerStyleSync } from '@/features/data-management'
 import { SearchContainer } from '@/features/geocoder'
 import { HeatmapPanel, useHeatmap } from '@/features/heatmap'
+import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-analysis'
 import { GlobeToggleButton } from '@/features/globe-view'
 import { LayersPanel, useOverlayLayers } from '@/features/layers'
 import { LegendContainer } from '@/features/legend'
@@ -51,6 +52,9 @@ export default function AppLayout() {
 
   // Heatmap feature
   const heatmap = useHeatmap()
+
+  // Spatial analysis (Convex Hull, Voronoi)
+  const spatial = useSpatialAnalysis()
 
   // Toggle sidebar and resize map
   const toggleSidebar = () => {
@@ -148,6 +152,7 @@ export default function AppLayout() {
       <HeatmapPanel
         isOpen={heatmap.isPanelOpen}
         config={heatmap.config}
+        activePreset={heatmap.activePreset}
         numericFields={heatmap.numericFields}
         pointCount={heatmap.pointCount}
         hasData={heatmap.hasData}
@@ -155,6 +160,25 @@ export default function AppLayout() {
         onPreset={heatmap.applyPreset}
         onClose={() => heatmap.setPanelOpen(false)}
         onDeactivate={heatmap.deactivate}
+      />
+
+      {/* Spatial Analysis Panel */}
+      <SpatialAnalysisPanel
+        isOpen={spatial.isPanelOpen}
+        activeAnalysis={spatial.activeAnalysis}
+        convexHullStyle={spatial.convexHullStyle}
+        voronoiStyle={spatial.voronoiStyle}
+        nearestPointsStyle={spatial.nearestPointsStyle}
+        nearestPointsConfig={spatial.nearestPointsConfig}
+        nearestStats={spatial.nearestStats}
+        pointCount={spatial.pointCount}
+        hasData={spatial.hasData}
+        onConvexHullStyleChange={spatial.setConvexHullStyle}
+        onVoronoiStyleChange={spatial.setVoronoiStyle}
+        onNearestPointsStyleChange={spatial.setNearestPointsStyle}
+        onNearestPointsConfigChange={spatial.setNearestPointsConfig}
+        onClose={() => spatial.setPanelOpen(false)}
+        onDeactivate={spatial.deactivate}
       />
 
       {/* Visualization Legend */}

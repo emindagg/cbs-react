@@ -2,12 +2,13 @@ import { useState, useRef, useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
 import { useHeatmapStore } from '@/features/heatmap'
+import { useSpatialAnalysisStore } from '@/features/spatial-analysis'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
 import { BufferModal } from './GISToolsControl.buffer'
 import { BufferOptionsControl } from './GISToolsControl.bufferOptions'
-import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
+import { useDataManagementStore } from '@/features/data-management'
 
 
 /**
@@ -36,8 +37,9 @@ const TOOLS: ToolDef[] = [
   { id: 'measure-distance', icon: 'fa-ruler-combined', label: 'Mesafe & Alan', color: 'text-blue-500', group: 'measure' },
   { id: 'buffer', icon: 'fa-circle-dot', label: 'Etki Alanı Analizi', color: 'text-purple-500', group: 'analysis' },
   { id: 'clustering', icon: 'fa-layer-group', label: 'Nokta Kümeleri', color: 'text-blue-500', group: 'analysis' },
-  { id: 'convex-hull', icon: 'fa-vector-square', label: 'Dış Sınır', color: 'text-orange-400', disabled: true, group: 'analysis' },
-  { id: 'voronoi', icon: 'fa-border-all', label: 'En Yakın Alanlar', color: 'text-teal-400', disabled: true, group: 'analysis' },
+  { id: 'convex-hull', icon: 'fa-vector-square', label: 'Dış Sınır', color: 'text-orange-400', group: 'analysis' },
+  { id: 'voronoi', icon: 'fa-border-all', label: 'En Yakın Alanlar', color: 'text-teal-400', group: 'analysis' },
+  { id: 'nearest-points', icon: 'fa-arrows-to-dot', label: 'En Yakın Nokta', color: 'text-violet-500', group: 'analysis' },
   { id: 'heatmap', icon: 'fa-fire', label: 'Isı Haritası', color: 'text-red-400', group: 'analysis' },
   { id: 'screenshot', icon: 'fa-camera', label: 'Ekran Görüntüsü', color: 'text-zinc-500', group: 'general' },
   { id: 'clean-visuals', icon: 'fa-eraser', label: 'Haritayı Temizle', color: 'text-indigo-500', group: 'general' },
@@ -52,6 +54,7 @@ export default function GISToolsControl() {
 
   const { isEnabled: isClusteringEnabled, toggle: toggleClustering } = useClusteringStore()
   const { isActive: isHeatmapActive, toggle: toggleHeatmap } = useHeatmapStore()
+  const { activeAnalysis, toggle: toggleSpatial } = useSpatialAnalysisStore()
 
   const {
     toolsMenuMode,
@@ -121,6 +124,15 @@ export default function GISToolsControl() {
     } else if (toolId === 'heatmap') {
       toggleHeatmap()
       maybeClose()
+    } else if (toolId === 'convex-hull') {
+      toggleSpatial('convex-hull')
+      maybeClose()
+    } else if (toolId === 'voronoi') {
+      toggleSpatial('voronoi')
+      maybeClose()
+    } else if (toolId === 'nearest-points') {
+      toggleSpatial('nearest-points')
+      maybeClose()
     } else if (toolId === 'screenshot') {
       handleScreenshot()
     } else if (toolId === 'clean-visuals') {
@@ -143,12 +155,18 @@ export default function GISToolsControl() {
   const isToolActive = (toolId: string) => {
     if (toolId === 'clustering') return isClusteringEnabled
     if (toolId === 'heatmap') return isHeatmapActive
+    if (toolId === 'convex-hull') return activeAnalysis === 'convex-hull'
+    if (toolId === 'voronoi') return activeAnalysis === 'voronoi'
+    if (toolId === 'nearest-points') return activeAnalysis === 'nearest-points'
     return activeTool === toolId
   }
 
   const getToolLabel = (tool: ToolDef) => {
     if (tool.id === 'clustering' && isClusteringEnabled) return 'Kümeleri Kapat'
     if (tool.id === 'heatmap' && isHeatmapActive) return 'Isı Haritasını Kapat'
+    if (tool.id === 'convex-hull' && activeAnalysis === 'convex-hull') return 'Dış Sınırı Kapat'
+    if (tool.id === 'voronoi' && activeAnalysis === 'voronoi') return 'Voronoi\'yi Kapat'
+    if (tool.id === 'nearest-points' && activeAnalysis === 'nearest-points') return 'Analizi Kapat'
     return tool.label
   }
 

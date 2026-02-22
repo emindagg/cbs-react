@@ -10,6 +10,7 @@ interface HeatmapPanelProps {
     opacity: number
     weightField: string | null
   }
+  activePreset: HeatmapPreset
   numericFields: string[]
   pointCount: number
   hasData: boolean
@@ -19,16 +20,23 @@ interface HeatmapPanelProps {
   onDeactivate: () => void
 }
 
-const PRESETS: { id: HeatmapPreset; label: string; gradient: string }[] = [
-  { id: 'classic', label: 'Klasik', gradient: 'from-blue-500 via-yellow-300 to-red-600' },
-  { id: 'warm', label: 'Sıcak', gradient: 'from-red-900 via-orange-500 to-yellow-300' },
-  { id: 'cool', label: 'Soğuk', gradient: 'from-teal-700 via-cyan-400 to-lime-200' },
-  { id: 'monochrome', label: 'Mono', gradient: 'from-zinc-900 via-zinc-400 to-white' },
+const PRESET_OPTIONS: { id: HeatmapPreset; label: string; colors: string[] }[] = [
+  { id: 'classic', label: 'Klasik (Mavi-Kırmızı)', colors: ['#2166ac', '#67a9cf', '#d1e5f0', '#fddbc7', '#ef8a62', '#b2182b'] },
+  { id: 'inferno', label: 'Inferno', colors: ['#000004', '#280b54', '#65156e', '#ba3655', '#f98d0a', '#fcffa4'] },
+  { id: 'viridis', label: 'Viridis', colors: ['#440154', '#3b528b', '#21918c', '#5ec962', '#bde326', '#fde725'] },
+  { id: 'magma', label: 'Magma', colors: ['#000004', '#1c1044', '#4f127b', '#b63679', '#fb8861', '#fcfdbf'] },
+  { id: 'warm', label: 'Sıcak (Kırmızı-Sarı)', colors: ['#800026', '#bd0026', '#f03b20', '#fd8d3c', '#feb24c', '#fed976'] },
+  { id: 'cool', label: 'Soğuk (Teal-Yeşil)', colors: ['#008080', '#00c8c8', '#64e6c8', '#b4ffb4', '#e6ffe6', '#ffffc8'] },
+  { id: 'ocean', label: 'Okyanus', colors: ['#00204c', '#005596', '#1e90c8', '#64c8e6', '#c8f0ff', '#e8f8ff'] },
+  { id: 'forest', label: 'Orman', colors: ['#00300e', '#105e1d', '#31a354', '#78c679', '#d9f0a3', '#f7fcb1'] },
+  { id: 'sunset', label: 'Gün Batımı', colors: ['#5e1780', '#ab3764', '#e55934', '#fda700', '#feae5a', '#fee65a'] },
+  { id: 'monochrome', label: 'Mono (Siyah-Beyaz)', colors: ['#1e1e1e', '#505050', '#8c8c8c', '#c8c8c8', '#e6e6e6', '#ffffff'] },
 ]
 
 export default function HeatmapPanel({
   isOpen,
   config,
+  activePreset,
   numericFields,
   pointCount,
   hasData,
@@ -53,7 +61,13 @@ export default function HeatmapPanel({
     onConfigChange({ weightField: e.target.value || null })
   }, [onConfigChange])
 
+  const handlePresetChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    onPreset(e.target.value as HeatmapPreset)
+  }, [onPreset])
+
   if (!isOpen) return null
+
+  const activeOption = PRESET_OPTIONS.find((p) => p.id === activePreset)
 
   return (
     <div className="fixed top-14 right-14 z-1500 w-64 bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-zinc-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
@@ -87,24 +101,28 @@ export default function HeatmapPanel({
         </div>
       ) : (
         <div className="px-3.5 py-3 space-y-3">
-          {/* Color Presets */}
+          {/* Color Preset Dropdown */}
           <div>
-            <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
               Renk Şeması
             </label>
-            <div className="grid grid-cols-4 gap-1.5">
-              {PRESETS.map((preset) => (
-                <button
-                  key={preset.id}
-                  onClick={() => onPreset(preset.id)}
-                  className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-zinc-50 transition-colors group"
-                  title={preset.label}
-                >
-                  <div className={`w-full h-3 rounded-sm bg-gradient-to-r ${preset.gradient} ring-1 ring-zinc-200 group-hover:ring-zinc-300`} />
-                  <span className="text-[8px] text-zinc-500 group-hover:text-zinc-700">{preset.label}</span>
-                </button>
+            <select
+              value={activePreset}
+              onChange={handlePresetChange}
+              className="w-full text-[10px] border border-zinc-200 rounded-md px-2 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-red-400 focus:border-red-400 bg-white"
+            >
+              {PRESET_OPTIONS.map((preset) => (
+                <option key={preset.id} value={preset.id}>{preset.label}</option>
               ))}
-            </div>
+            </select>
+            {/* Color preview bar */}
+            {activeOption && (
+              <div className="mt-1.5 h-2.5 rounded-sm overflow-hidden flex">
+                {activeOption.colors.map((color, i) => (
+                  <div key={i} className="flex-1" style={{ backgroundColor: color }} />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Weight Field */}
