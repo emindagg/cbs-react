@@ -6,6 +6,10 @@ import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
 const CHOROPLETH_LAYER_ID = 'choropleth-fill'
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 function formatValue(value: unknown): string {
   if (typeof value === 'number') {
     return value.toLocaleString('tr-TR')
@@ -38,20 +42,18 @@ export function useChoroplethTooltip() {
 
       map.getCanvas().style.cursor = 'pointer'
 
-      const name = String(feature.properties?.displayName || feature.properties?.name || 'Bilinmiyor')
-      const value = feature.properties?.dataValue
-      const label = dataColumn || 'Değer'
+      const name = escapeHtml(String(feature.properties?.displayName || feature.properties?.name || 'Bilinmiyor'))
+      const value = escapeHtml(formatValue(feature.properties?.dataValue))
+      const label = escapeHtml(dataColumn || 'Değer')
 
       popup
         .setLngLat(e.lngLat)
         .setHTML(
-          '<div style="font-family:system-ui,sans-serif;padding:2px 0">' +
+          `<div style="font-family:system-ui,sans-serif;padding:2px 0">` +
           `<div style="font-size:14px;font-weight:700;color:#0f172a">${name}</div>` +
-          '<div style="margin-top:4px;font-size:11px;color:#64748b">' +
-          `${label}` +
-          '</div>' +
-          `<div style="font-size:13px;font-weight:600;color:#1e293b">${formatValue(value)}</div>` +
-          '</div>',
+          `<div style="margin-top:4px;font-size:11px;color:#64748b">${label}</div>` +
+          `<div style="font-size:13px;font-weight:600;color:#1e293b">${value}</div>` +
+          `</div>`,
         )
         .addTo(map)
     }

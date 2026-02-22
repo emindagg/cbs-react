@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+react-app/story-react/
+react-app/storymap/
+story-react/
+storymap/

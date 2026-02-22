@@ -12,19 +12,18 @@ import {
   CustomFilterModule,
   LocaleModule,
   ValidationModule,
+  TextEditorModule,
+  NumberEditorModule,
+  CellStyleModule,
+  RenderApiModule,
+  ModuleRegistry,
 } from 'ag-grid-community'
 
-/**
- * Temel modüller (tüm grid'lerde kullanılır)
- */
 export const baseGridModules = [
   ClientSideRowModelModule,
   LocaleModule,
 ]
 
-/**
- * Filtre modülleri (filtre kullanılan grid'lerde)
- */
 export const filterModules = [
   TextFilterModule,
   NumberFilterModule,
@@ -32,18 +31,22 @@ export const filterModules = [
   CustomFilterModule,
 ]
 
-/**
- * Geliştirme modülleri (sadece development'ta)
- */
+export const editorModules = [
+  TextEditorModule,
+  NumberEditorModule,
+  CellStyleModule,
+  RenderApiModule,
+]
+
 export const devModules = [
   ...(process.env.NODE_ENV !== 'production' ? [ValidationModule] : []),
 ]
 
-/**
- * Tam modül seti (filtre + temel)
- */
 export const fullGridModules = [
   ...baseGridModules,
   ...filterModules,
+  ...editorModules,
   ...devModules,
 ]
+
+ModuleRegistry.registerModules(fullGridModules)

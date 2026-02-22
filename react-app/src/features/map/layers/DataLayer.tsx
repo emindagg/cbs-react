@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 
 import { useClusteringStore } from '@/stores/useClusteringStore'
+import { useTimelineStore } from '@/features/timeline'
 import { type StyleProperties, isStyleProperties } from '@/types/style'
 
 import type { DataItem } from '../../data-management'
@@ -46,9 +47,38 @@ export default function DataLayer() {
   const activeItemId = useDataManagementStore(state => state.activeItemId)
   const labelField = useDataManagementStore(state => state.layerStyles.labelField)
   const defaultFillColor = useDataManagementStore(state => state.layerStyles.fillColor)
-  const { isEnabled: isClusteringEnabled } = useClusteringStore()
+  const { isEnabled: isClusteringEnabled, mode: clusterMode } = useClusteringStore()
 
-  const visibleItems = useMemo(() => items.filter(i => i.visible), [items])
+  const timelineActive = useTimelineStore(s => s.isActive)
+  const timeEnd = useTimelineStore(s => s.currentEnd)
+  const getEffectiveStart = useTimelineStore(s => s.getEffectiveStart)
+  const numericFilter = useTimelineStore(s => s.numericFilter)
+
+  const visibleItems = useMemo(() => {
+    if (!timelineActive) return items.filter(i => i.visible)
+
+    const effectiveStart = getEffectiveStart()
+
+    return items.filter(i => {
+      if (!i.visible) return false
+
+      if (i.date) {
+        const ts = new Date(i.date).getTime()
+        if (!Number.isNaN(ts)) {
+          if (ts < effectiveStart || ts > timeEnd) return false
+        }
+      }
+
+      if (numericFilter) {
+        const val = Number(i.properties[numericFilter.field])
+        if (!Number.isNaN(val)) {
+          if (val < numericFilter.currentMin || val > numericFilter.currentMax) return false
+        }
+      }
+
+      return true
+    })
+  }, [items, timelineActive, timeEnd, getEffectiveStart, numericFilter])
 
   const pointData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
@@ -134,7 +164,7 @@ export default function DataLayer() {
       </Source>
 
       {/* POINTS */}
-      {!isClusteringEnabled && (
+      {!isClusteringEnabled && clusterMode !== 'hidden' && (
         <Source id="data-points" type="geojson" data={pointData}>
           <Layer
             id="data-layer-point"

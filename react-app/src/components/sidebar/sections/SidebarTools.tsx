@@ -1,8 +1,8 @@
-﻿import { useToolStore } from '@/stores/useToolStore'
+import { useToolStore } from '@/stores/useToolStore'
 import type { ToolType } from '@/stores/useToolStore'
 
 export default function SidebarTools() {
-  const { activeTool, setActiveTool, resetDistance } = useToolStore()
+  const { activeTool, setActiveTool, resetDistance, showAdvancedAnalysis, toggleAdvancedAnalysis } = useToolStore()
 
   const handleToolToggle = (tool: ToolType) => {
     if (activeTool === tool) {
@@ -40,8 +40,8 @@ export default function SidebarTools() {
         <label className="flex items-center px-2.5 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 cursor-pointer transition-all bg-white hover:border-emerald-200">
           <input
             type="checkbox"
-            checked={activeTool === 'analysis'}
-            onChange={() => handleToolToggle('analysis')}
+            checked={showAdvancedAnalysis}
+            onChange={toggleAdvancedAnalysis}
             className="rounded-sm border-zinc-300 text-emerald-600 accent-emerald-600 focus:ring-emerald-500 mr-2.5 h-4 w-4"
           />
           <div className="flex items-center">

@@ -1,4 +1,5 @@
 import type { ColumnMapping, NewDataItem } from '../types'
+import { extractDateFromProperties } from './dateParser'
 
 export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping: ColumnMapping): NewDataItem[] {
   return jsonData.map((row, index) => {
@@ -52,7 +53,7 @@ export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping
       type: normalizedType,
       geometry,
       properties: row,
-      date: new Date().toISOString(),
+      date: extractDateFromProperties(row),
     } satisfies NewDataItem
   }).filter(Boolean) as NewDataItem[]
 }

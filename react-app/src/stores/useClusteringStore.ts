@@ -1,11 +1,37 @@
 import { create } from 'zustand'
 
+export type ClusterMode = 'normal' | 'clustered' | 'hidden'
+
 interface ClusteringState {
-  isEnabled: boolean;
-  toggle: () => void;
+  isEnabled: boolean
+  mode: ClusterMode
+  toggle: () => void
+  cycle: () => void
+}
+
+const MODE_CYCLE: Record<ClusterMode, ClusterMode> = {
+  normal: 'clustered',
+  clustered: 'hidden',
+  hidden: 'normal',
 }
 
 export const useClusteringStore = create<ClusteringState>((set) => ({
   isEnabled: false,
-  toggle: () => set((state) => ({ isEnabled: !state.isEnabled })),
+  mode: 'normal',
+
+  toggle: () => set((state) => {
+    const nextEnabled = !state.isEnabled
+    return {
+      isEnabled: nextEnabled,
+      mode: nextEnabled ? 'clustered' : 'normal',
+    }
+  }),
+
+  cycle: () => set((state) => {
+    const next = MODE_CYCLE[state.mode]
+    return {
+      mode: next,
+      isEnabled: next === 'clustered',
+    }
+  }),
 }))

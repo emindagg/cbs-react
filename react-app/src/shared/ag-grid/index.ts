@@ -7,6 +7,7 @@ export { agGridTurkishLocaleText } from './localeText'
 export {
   baseGridModules,
   filterModules,
+  editorModules,
   devModules,
   fullGridModules,
 } from './modules'

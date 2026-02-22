@@ -215,28 +215,23 @@ export class ChoroplethRenderer {
     features.forEach((feature) => {
       const featureName = this.getFeatureName(feature, locationLevel)
       const normalizedFeatureName = normalizeTurkishText(featureName)
-
-      // Get data value
       const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
 
-      // Set feature properties
-      feature.properties.displayName = featureName
-      feature.properties.name = featureName
-
-      if (dataValue !== undefined && dataValue !== 0) {
-        feature.properties.value = dataValue
-        feature.properties.dataValue = dataValue
-        feature.properties.hasData = true
-        feature.properties.inCustomRange = isValueInCustomRange(dataValue, resolvedRange)
-        featuresWithData.push(feature)
-      } else {
-        feature.properties.value = 0
-        feature.properties.dataValue = 0
-        feature.properties.hasData = false
-        feature.properties.inCustomRange = false
+      const enriched: GeoJSONFeature = {
+        ...feature,
+        properties: {
+          ...feature.properties,
+          displayName: featureName,
+          name: featureName,
+          value: dataValue ?? 0,
+          dataValue: dataValue ?? 0,
+          hasData: dataValue !== undefined,
+          inCustomRange: dataValue !== undefined ? isValueInCustomRange(dataValue, resolvedRange) : false,
+        },
       }
 
-      allFeatures.push(feature)
+      allFeatures.push(enriched)
+      if (dataValue !== undefined) featuresWithData.push(enriched)
     })
 
     return { allFeatures, featuresWithData }

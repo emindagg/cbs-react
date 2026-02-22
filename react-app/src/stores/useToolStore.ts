@@ -5,6 +5,7 @@ export type ToolsMenuMode = 'closed' | 'full' | 'icons-only'
 
 interface ToolState {
   activeTool: ToolType
+  showAdvancedAnalysis: boolean
 
   // Distance Measurement State
   distancePoints: [number, number][]
@@ -15,7 +16,10 @@ interface ToolState {
 
   // Actions
   setActiveTool: (tool: ToolType) => void
+  toggleAdvancedAnalysis: () => void
+  toggleToolsMenu: () => void
   cycleToolsMenu: () => void
+  toggleMenuCompact: () => void
   closeToolsMenu: () => void
   setDistancePoints: (points: [number, number][]) => void
   setDistanceGhostPoint: (point: [number, number] | null) => void
@@ -26,6 +30,7 @@ interface ToolState {
 export const useToolStore = create<ToolState>((set) => ({
   activeTool: 'none',
 
+  showAdvancedAnalysis: true,
   distancePoints: [],
   distanceGhostPoint: null,
   isDrawingDistance: false,
@@ -39,6 +44,12 @@ export const useToolStore = create<ToolState>((set) => ({
     return { activeTool: tool }
   }),
 
+  toggleAdvancedAnalysis: () => set((state) => ({ showAdvancedAnalysis: !state.showAdvancedAnalysis })),
+
+  toggleToolsMenu: () => set((state) => ({
+    toolsMenuMode: state.toolsMenuMode === 'closed' ? 'full' : 'closed',
+  })),
+
   cycleToolsMenu: () => set((state) => {
     const next: Record<ToolsMenuMode, ToolsMenuMode> = {
       closed: 'full',
@@ -47,6 +58,11 @@ export const useToolStore = create<ToolState>((set) => ({
     }
     return { toolsMenuMode: next[state.toolsMenuMode] }
   }),
+
+  toggleMenuCompact: () => set((state) => ({
+    toolsMenuMode: state.toolsMenuMode === 'full' ? 'icons-only' : 'full',
+  })),
+
   closeToolsMenu: () => set({ toolsMenuMode: 'closed' }),
 
   setDistancePoints: (points) => set({ distancePoints: points }),

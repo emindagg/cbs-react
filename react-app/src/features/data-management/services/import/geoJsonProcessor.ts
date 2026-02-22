@@ -1,4 +1,5 @@
 import type { NewDataItem } from '../../types'
+import { extractDateFromProperties } from '../../utils/dateParser'
 
 interface GeoJSONInput {
   type?: string
@@ -47,7 +48,7 @@ export function parseGeoJSON(geojson: GeoJSONInput, fileName: string): NewDataIt
       type,
       geometry: feature.geometry,
       properties: feature.properties || {},
-      date: new Date().toISOString(),
+      date: extractDateFromProperties(feature.properties),
     })
   })
 

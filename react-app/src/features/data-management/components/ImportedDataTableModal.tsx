@@ -1,16 +1,12 @@
-import { ModuleRegistry, type ColDef } from 'ag-grid-community'
+import type { ColDef } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { X } from 'lucide-react'
 import { useMemo } from 'react'
 import { createPortal } from 'react-dom'
 
-import { agGridTurkishLocaleText, fullGridModules } from '@/shared/ag-grid'
+import { agGridTurkishLocaleText } from '@/shared/ag-grid'
 
 import type { DataItem } from '../types'
-
-
-
-ModuleRegistry.registerModules(fullGridModules)
 
 interface ImportedDataTableModalProps {
   isOpen: boolean

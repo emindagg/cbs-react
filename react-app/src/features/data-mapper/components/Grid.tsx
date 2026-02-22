@@ -5,7 +5,6 @@
 import type { ColDef, CellValueChangedEvent } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import type { RefObject } from 'react'
-import { useMemo } from 'react'
 
 import { agGridTurkishLocaleText } from '@/shared/ag-grid'
 
@@ -49,10 +48,6 @@ export function Grid({
   const headerHeight = isModal ? 32 : 28
   const rowHeight = isModal ? 28 : 26
 
-  // Memoize context object to avoid unnecessary re-renders
-  // Note: Including full gridContext object to satisfy exhaustive-deps
-  const context = useMemo(() => gridContext, [gridContext])
-
   return (
     <div className={containerClass} style={containerStyle}>
       {isLoading ? (
@@ -70,7 +65,7 @@ export function Grid({
           getRowId={(params) => String(params.data.__rowIndex)}
           headerHeight={headerHeight}
           rowHeight={rowHeight}
-          context={context}
+          context={gridContext}
           suppressMovableColumns
           animateRows={false}
           localeText={agGridTurkishLocaleText}

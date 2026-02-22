@@ -4,16 +4,6 @@
  * Combines column mapping + AG Grid spreadsheet + real-time validation
  */
 
-import {
-  ModuleRegistry,
-  ClientSideRowModelModule,
-  TextEditorModule,
-  NumberEditorModule,
-  CellStyleModule,
-  RenderApiModule,
-  LocaleModule,
-  ValidationModule,
-} from 'ag-grid-community'
 import type { CellValueChangedEvent } from 'ag-grid-community'
 import type { AgGridReact } from 'ag-grid-react'
 import { CheckCircle, AlertCircle } from 'lucide-react'
@@ -22,20 +12,11 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
+import { CorrectionPanel } from './components/CorrectionPanel'
 import { Grid } from './components/Grid'
 import { ModalToolbar } from './components/ModalToolbar'
 import { SidebarForm } from './components/SidebarForm'
 import { useColumns } from './hooks/useColumns'
-
-ModuleRegistry.registerModules([
-  ClientSideRowModelModule,
-  LocaleModule,
-  TextEditorModule,
-  NumberEditorModule,
-  CellStyleModule,
-  RenderApiModule,
-  ...(process.env.NODE_ENV !== 'production' ? [ValidationModule] : []),
-])
 
 interface DataMapperProps {
   geoJsonKeys: string[]
@@ -172,7 +153,42 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
 
   const { columnDefs, defaultColDef } = useColumns(columns)
 
-  // Grid context — cellStyle reads from this (not closures) for fresh values
+  const applyCorrection = useCallback(
+    (originalValue: string, newValue: string, rowIndices: number[]) => {
+      if (!rawData || !selectedProvince) return
+      const updated = [...rawData]
+      for (const idx of rowIndices) {
+        updated[idx] = { ...updated[idx], [selectedProvince]: newValue }
+      }
+      setRawData(updated)
+    },
+    [rawData, selectedProvince, setRawData],
+  )
+
+  const applyAllCorrections = useCallback(
+    (corrections: Array<{ original: string; suggestion: string; rowIndices: number[] }>) => {
+      if (!rawData || !selectedProvince) return
+      const updated = [...rawData]
+      for (const c of corrections) {
+        for (const idx of c.rowIndices) {
+          updated[idx] = { ...updated[idx], [selectedProvince]: c.suggestion }
+        }
+      }
+      setRawData(updated)
+    },
+    [rawData, selectedProvince, setRawData],
+  )
+
+  const matchedKeysSet = useMemo(() => {
+    const set = new Set<string>()
+    if (!rawData || !selectedProvince) return set
+    for (const row of rawData) {
+      const val = normalizeTurkishText(String(row[selectedProvince] ?? ''))
+      if (geoJsonKeysSet.has(val)) set.add(val)
+    }
+    return set
+  }, [rawData, selectedProvince, geoJsonKeysSet])
+
   const gridContext = useMemo(() => ({
     selectedProvince,
     selectedDistrict,
@@ -202,6 +218,14 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
           numericColumns={numericColumns}
           matchCount={matchCount}
           totalCount={totalCount}
+        />
+        <CorrectionPanel
+          rawData={rawData}
+          locationColumn={selectedProvince}
+          geoJsonKeys={geoJsonKeys}
+          matchedKeys={matchedKeysSet}
+          onApplyCorrection={applyCorrection}
+          onApplyAll={applyAllCorrections}
         />
         <Grid
           gridRef={gridRef}
@@ -242,7 +266,15 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
         gridContext={gridContext}
       />
 
-      {/* D. Match Summary Bar */}
+      <CorrectionPanel
+        rawData={rawData}
+        locationColumn={selectedProvince}
+        geoJsonKeys={geoJsonKeys}
+        matchedKeys={matchedKeysSet}
+        onApplyCorrection={applyCorrection}
+        onApplyAll={applyAllCorrections}
+      />
+
       <div className="flex items-center justify-between bg-zinc-50 rounded-md px-3 py-2">
         <div className="flex items-center gap-2 text-[11px]">
           <span className="font-semibold text-zinc-700">

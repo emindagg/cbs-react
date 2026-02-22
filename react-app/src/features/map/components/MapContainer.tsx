@@ -7,6 +7,7 @@ import { useMapStore } from '@/stores/useMapStore'
 
 import { DataManagementDrawTool } from '../../data-management/components/DataManagementDrawTool'
 import GISToolsControl from '../controls/GISToolsControl'
+import TimelineControl from '../controls/TimelineControl'
 import DataLayer from '../layers/DataLayer'
 import DistanceTool from '../tools/DistanceTool'
 
@@ -103,6 +104,7 @@ export default function MapContainer() {
       <DataManagementDrawTool />
       <DataLayer />
       <GISToolsControl />
+      <TimelineControl />
     </Map>
   )
 }
