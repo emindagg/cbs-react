@@ -11,7 +11,11 @@ function App() {
   return (
     <MapProvider>
       <AppLayout />
-      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+      <Toaster
+        position="top-right"
+        toastOptions={{ duration: 4000 }}
+        containerStyle={{ right: 'calc(1rem + 5vw)' }}
+      />
     </MapProvider>
   )
 }
