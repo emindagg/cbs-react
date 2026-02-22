@@ -33,11 +33,19 @@ function buildFeature(i: DataItem, activeItemId: string | null, labelField: stri
 
 const POINT_LABEL_TEXT_OFFSET_Y = 1.2
 
+// Seçili değilse: önce customFillColor (buffer/analiz rengi), yoksa layerStyles fallback
+const fillColorExpression = (defaultFill: string) => [
+  'case',
+  ['boolean', ['get', 'selected'], false],
+  '#f59e0b',
+  ['case', ['!=', ['get', 'customFillColor'], null], ['get', 'customFillColor'], defaultFill],
+]
+
 export default function DataLayer() {
   const items = useDataManagementStore(state => state.items)
   const activeItemId = useDataManagementStore(state => state.activeItemId)
-  // Sadece labelField subscribe et - diğer stiller useLayerStyleSync tarafından yönetiliyor
   const labelField = useDataManagementStore(state => state.layerStyles.labelField)
+  const defaultFillColor = useDataManagementStore(state => state.layerStyles.fillColor)
   const { isEnabled: isClusteringEnabled } = useClusteringStore()
 
   const visibleItems = useMemo(() => items.filter(i => i.visible), [items])
@@ -71,7 +79,7 @@ export default function DataLayer() {
           id="data-layer-polygon-fill"
           type="fill"
           paint={{
-            'fill-color': ['case', ['boolean', ['get', 'selected'], false], '#f59e0b', '#3b82f6'],
+            'fill-color': fillColorExpression(defaultFillColor) as unknown as string,
             'fill-opacity': 0.27,
           }}
         />
@@ -105,7 +113,7 @@ export default function DataLayer() {
           type="line"
           layout={{ 'line-join': 'round', 'line-cap': 'round' }}
           paint={{
-            'line-color': ['case', ['boolean', ['get', 'selected'], false], '#f59e0b', '#3b82f6'],
+            'line-color': fillColorExpression(defaultFillColor) as unknown as string,
             'line-width': ['case', ['boolean', ['get', 'selected'], false], 4, 3],
             'line-opacity': 0.9,
           }}
@@ -133,7 +141,7 @@ export default function DataLayer() {
             type="circle"
             paint={{
               'circle-radius': 3,
-              'circle-color': ['case', ['boolean', ['get', 'selected'], false], '#f59e0b', '#3b82f6'],
+              'circle-color': fillColorExpression(defaultFillColor) as unknown as string,
               'circle-stroke-width': 0.5,
               'circle-stroke-color': '#000000',
               'circle-opacity': 0.9,
