@@ -58,7 +58,7 @@ function toSinglePolygonFeature(item: DataItem): Feature<Polygon | MultiPolygon>
   if (flattened.length === 1) return flattened[0]
 
   try {
-    const unioned = turf.union(turf.featureCollection(flattened))
+    const unioned = turf.union(turf.featureCollection(flattened)) as Feature<Polygon | MultiPolygon> | null
     if (!unioned) return null
     return unioned as Feature<Polygon | MultiPolygon>
   } catch {
@@ -68,6 +68,26 @@ function toSinglePolygonFeature(item: DataItem): Feature<Polygon | MultiPolygon>
 
 function formatNumber(value: number): string {
   return new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 2 }).format(value)
+}
+
+function unionFeatures(features: Feature<Polygon | MultiPolygon>[]): Feature<Polygon | MultiPolygon> | null {
+  if (features.length === 0) return null
+  if (features.length === 1) return features[0]
+
+  let current: Feature<Polygon | MultiPolygon> | null = features[0]
+  for (let index = 1; index < features.length; index += 1) {
+    if (!current) return null
+    try {
+      const unioned = turf.union(
+        turf.featureCollection([current, features[index]]),
+      ) as Feature<Polygon | MultiPolygon> | null
+      current = unioned ?? null
+    } catch {
+      return null
+    }
+  }
+
+  return current
 }
 
 function getOptionLabel(option: BufferOption): string {
@@ -248,7 +268,9 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
       mergedGeometry = polygonFeatures[0].geometry
     } else {
       try {
-        const unioned = turf.union(turf.featureCollection(polygonFeatures))
+        const unioned = turf.union(
+          turf.featureCollection(polygonFeatures),
+        ) as Feature<Polygon | MultiPolygon> | null
         mergedGeometry = (unioned?.geometry as Polygon | MultiPolygon | undefined) ?? null
       } catch {
         mergedGeometry = null
@@ -267,14 +289,17 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
 
   const activateOverlay = (mode: 'intersection' | 'difference') => {
     const visibleBaseItems = baseBufferItems.filter(item => item.visible)
-    if (visibleBaseItems.length !== 2) {
-      toast.error('Kesişim/Fark için tam olarak 2 görünür buffer katmanı seçili olmalı.')
+    const sourceItems = visibleBaseItems.length >= 2 ? visibleBaseItems : baseBufferItems
+    if (sourceItems.length < 2) {
+      toast.error('Kesişim/Fark için en az 2 buffer katmanı gerekli.')
       return
     }
 
-    const first = toSinglePolygonFeature(visibleBaseItems[0])
-    const second = toSinglePolygonFeature(visibleBaseItems[1])
-    if (!first || !second) {
+    const sourceFeatures = sourceItems
+      .map(toSinglePolygonFeature)
+      .filter((feature): feature is Feature<Polygon | MultiPolygon> => feature != null)
+
+    if (sourceFeatures.length < 2) {
       toast.error('Seçili katmanların geometrisi kesişim/fark için uygun değil.')
       return
     }
@@ -285,23 +310,47 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
     let overlayGeometry: Polygon | MultiPolygon | null = null
     try {
       if (mode === 'intersection') {
-        const result = turf.intersect(turf.featureCollection([first, second]))
-        overlayGeometry = (result?.geometry as Polygon | MultiPolygon | undefined) ?? null
-      } else {
-        // Symmetric difference (A-B) U (B-A), order-independent.
-        const diffAB = turf.difference(turf.featureCollection([first, second]))
-        const diffBA = turf.difference(turf.featureCollection([second, first]))
-
-        if (diffAB && diffBA) {
-          const unioned = turf.union(turf.featureCollection([diffAB, diffBA]))
-          overlayGeometry = (unioned?.geometry as Polygon | MultiPolygon | undefined) ?? null
-        } else if (diffAB) {
-          overlayGeometry = diffAB.geometry as Polygon | MultiPolygon
-        } else if (diffBA) {
-          overlayGeometry = diffBA.geometry as Polygon | MultiPolygon
+        if (sourceFeatures.length === 2) {
+          const result = turf.intersect(turf.featureCollection([sourceFeatures[0], sourceFeatures[1]]))
+          overlayGeometry = (result?.geometry as Polygon | MultiPolygon | undefined) ?? null
         } else {
-          overlayGeometry = null
+          const intersections: Feature<Polygon | MultiPolygon>[] = []
+          for (let left = 0; left < sourceFeatures.length; left += 1) {
+            for (let right = left + 1; right < sourceFeatures.length; right += 1) {
+              const pairIntersection = turf.intersect(
+                turf.featureCollection([sourceFeatures[left], sourceFeatures[right]]),
+              )
+              if (pairIntersection) {
+                intersections.push(pairIntersection as Feature<Polygon | MultiPolygon>)
+              }
+            }
+          }
+          overlayGeometry = unionFeatures(intersections)?.geometry ?? null
         }
+      } else {
+        // Symmetric difference over all source layers (order-independent).
+        let current: Feature<Polygon | MultiPolygon> | null = sourceFeatures[0]
+        for (let index = 1; index < sourceFeatures.length; index += 1) {
+          if (!current) break
+          const next = sourceFeatures[index]
+          const diffAB = turf.difference(turf.featureCollection([current, next]))
+          const diffBA = turf.difference(turf.featureCollection([next, current]))
+
+          if (diffAB && diffBA) {
+            const unioned = turf.union(turf.featureCollection([
+              diffAB as Feature<Polygon | MultiPolygon>,
+              diffBA as Feature<Polygon | MultiPolygon>,
+            ])) as Feature<Polygon | MultiPolygon> | null
+            current = unioned ?? null
+          } else if (diffAB) {
+            current = diffAB as Feature<Polygon | MultiPolygon>
+          } else if (diffBA) {
+            current = diffBA as Feature<Polygon | MultiPolygon>
+          } else {
+            current = null
+          }
+        }
+        overlayGeometry = current?.geometry ?? null
       }
     } catch {
       overlayGeometry = null
