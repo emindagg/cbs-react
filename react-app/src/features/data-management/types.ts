@@ -84,6 +84,7 @@ export interface DataManagementStore {
   updateItemFillColor: (id: string, fillColor: string) => void
   setFabPosition: (position: FabPosition) => void
   clearAll: () => void
+  clearBufferAnalysisItems: () => void
 
   setDrawMode: (mode: DrawMode) => void
   setDrawPoints: (points: [number, number][]) => void

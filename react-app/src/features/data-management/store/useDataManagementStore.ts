@@ -140,6 +140,22 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
     layerStyles: defaultLayerStyles,
   }),
 
+  clearBufferAnalysisItems: () => set((state) => {
+    const nextItems = state.items.filter(item => item.properties.analysis !== 'buffer')
+    const activeItemStillExists = state.activeItemId
+      ? nextItems.some(item => item.id === state.activeItemId)
+      : true
+
+    return {
+      items: nextItems,
+      activeItemId: activeItemStillExists ? state.activeItemId : null,
+      hasImportedData: nextItems.some(item => item.source === 'imported'),
+      importedLayerName: nextItems.some(item => item.source === 'imported')
+        ? state.importedLayerName
+        : null,
+    }
+  }),
+
   setDrawMode: (mode) => set((state) => {
     if (mode !== state.drawMode) {
       return {

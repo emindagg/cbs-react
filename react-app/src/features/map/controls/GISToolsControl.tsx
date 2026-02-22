@@ -60,6 +60,10 @@ export default function GISToolsControl() {
   } = useToolStore()
 
   const clearAll = useDataManagementStore(state => state.clearAll)
+  const clearBufferAnalysisItems = useDataManagementStore(state => state.clearBufferAnalysisItems)
+  const hasBufferAnalysisItems = useDataManagementStore(
+    state => state.items.some(item => item.properties.analysis === 'buffer'),
+  )
   const resetDraw = useDataManagementStore(state => state.resetDraw)
 
   const isOpen = toolsMenuMode !== 'closed'
@@ -101,7 +105,12 @@ export default function GISToolsControl() {
 
   const handleToolSelect = (toolId: string) => {
     if (toolId === 'buffer') {
-      setShowBufferModal(true)
+      if (showBufferModal || hasBufferAnalysisItems) {
+        setShowBufferModal(false)
+        clearBufferAnalysisItems()
+      } else {
+        setShowBufferModal(true)
+      }
       maybeClose()
     } else if (toolId === 'clustering') {
       toggleClustering()
