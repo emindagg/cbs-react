@@ -192,7 +192,7 @@ describe('GISToolsControl buffer toggle behavior', () => {
 
     render(<GISToolsControl />)
 
-    const optionsButton = screen.getByRole('button', { name: /Analiz Se/i })
+    const optionsButton = screen.getByRole('button', { name: /^Analiz$/i })
     fireEvent.click(optionsButton)
 
     fireEvent.click(screen.getByRole('button', { name: /Birle/i }))
@@ -242,7 +242,46 @@ describe('GISToolsControl buffer toggle behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: /statistiksel/i }))
     expect(screen.getByRole('button', { name: /Fark/i })).toHaveAttribute('aria-pressed', 'false')
     expect(screen.getByRole('button', { name: /statistiksel/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('heading', { name: /Etki Analizi/i })).toBeInTheDocument()
     expect(screen.getByText(/Toplam Alan/i)).toBeInTheDocument()
+  })
+
+  it('shows separate detail rows for multipolygon buffer produced from multiple source points', () => {
+    useDataManagementStore.setState({
+      items: [
+        {
+          id: 'buffer-multi-source',
+          name: 'Buffer(500 meters) - 3 katman',
+          type: 'polygon',
+          geometry: {
+            type: 'MultiPolygon',
+            coordinates: [
+              [[[29.0, 41.0], [29.01, 41.0], [29.01, 41.01], [29.0, 41.01], [29.0, 41.0]]],
+              [[[29.02, 41.0], [29.03, 41.0], [29.03, 41.01], [29.02, 41.01], [29.02, 41.0]]],
+              [[[29.04, 41.0], [29.05, 41.0], [29.05, 41.01], [29.04, 41.01], [29.04, 41.0]]],
+            ],
+          },
+          properties: {
+            analysis: 'buffer',
+            bufferDistance: 500,
+            bufferUnit: 'meters',
+            bufferSourceNames: ['Nokta 1', 'Nokta 2', 'Nokta 3'],
+          },
+          visible: true,
+          source: 'drawn',
+        },
+      ],
+    })
+
+    render(<GISToolsControl />)
+
+    fireEvent.click(screen.getByRole('button', { name: /^Analiz$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /statistiksel/i }))
+
+    expect(screen.getByText('Nokta 1')).toBeInTheDocument()
+    expect(screen.getByText('Nokta 2')).toBeInTheDocument()
+    expect(screen.getByText('Nokta 3')).toBeInTheDocument()
+    expect(screen.queryByText('3 katman')).not.toBeInTheDocument()
   })
 
   it('closes modal after successful analyze and clears on next buffer click', async () => {
@@ -278,7 +317,7 @@ describe('GISToolsControl buffer toggle behavior', () => {
       .items.some(item => item.properties.analysis === 'buffer')
 
     expect(hasBufferResult).toBe(true)
-    expect(screen.getByRole('button', { name: /Analiz Se/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Analiz$/i })).toBeInTheDocument()
 
     fireEvent.click(screen.getByTitle(/Etki Alan/i))
 

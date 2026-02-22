@@ -1,740 +1,514 @@
-# Architecture Documentation
+# CBS React - Sistem Mimarisi
 
-**Project:** React Map Visualization Application  
-**Architecture:** Feature-First (Domain-Driven)  
-**Last Updated:** 15 Şubat 2026
+Bu dokümantasyon, CBS React harita platformunun teknik mimarisini, bileşenler arası ilişkileri ve tasarım kararlarını detaylı olarak açıklar.
 
----
+## İçindekiler
 
-## 📋 Table of Contents
-
-1. [Overview](#overview)
-2. [Architecture Principles](#architecture-principles)
-3. [Project Structure](#project-structure)
-4. [Feature-First Architecture](#feature-first-architecture)
-5. [Code Organization Rules](#code-organization-rules)
-6. [Import Patterns](#import-patterns)
-7. [State Management](#state-management)
-8. [Styling](#styling)
-9. [Testing Strategy](#testing-strategy)
-10. [Performance Considerations](#performance-considerations)
+- [Genel Bakış](#genel-bakış)
+- [Mimari Katmanlar](#mimari-katmanlar)
+- [Feature-First Yapı](#feature-first-yapı)
+- [State Yönetimi](#state-yönetimi)
+- [Uygulama Akışı](#uygulama-akışı)
+- [Harita Mimarisi](#harita-mimarisi)
+- [Görselleştirme Pipeline](#görselleştirme-pipeline)
+- [Veri İçe Aktarma Pipeline](#veri-içe-aktarma-pipeline)
+- [Performans Stratejisi](#performans-stratejisi)
+- [Tasarım Desenleri](#tasarım-desenleri)
 
 ---
 
-## Overview
+## Genel Bakış
 
-Bu proje, harita tabanlı veri görselleştirme uygulamasıdır. **Feature-First (Domain-Driven) Architecture** prensiplerine göre organize edilmiştir.
+### Mimari Prensipler
 
-### Tech Stack
+1. **Vertical Slice Architecture**: Her feature kendi domain'ini kapsayan bağımsız bir dilim
+2. **Feature-First Organization**: Teknik katman yerine iş alanına göre gruplama
+3. **Public API via Barrel Exports**: Feature'lar arası iletişim yalnızca `index.ts` üzerinden
+4. **Co-location**: Her feature kendi components/hooks/services/types dosyalarını barındırır
+5. **Performance First**: `startTransition` + GPU-side paint updates ile düşük INP
+6. **State Isolation**: Zustand store'ları feature bazlı, minimum cross-dependency
+7. **Intentional Minimalism**: Gereksiz soyutlamalardan kaçınma
 
-- **Framework:** React 19.2.0 + TypeScript 5.9.3
-- **Build Tool:** Vite 7.3.1
-- **Map Library:** MapLibre GL 5.17.0 + React Map GL 8.1.0
-- **State Management:** Zustand 5.0.11
-- **Styling:** Tailwind CSS 4.1.18
-- **Testing:** Vitest 4.0.18
-- **Linting:** ESLint 9.39.1 + TypeScript ESLint 8.46.4
+### Teknoloji Stack
 
-### Key Features
-
-- 🗺️ Interactive map visualization
-- 📊 Multiple visualization types (choropleth, bubble, dot density)
-- 📁 Data import (Excel, CSV, GeoJSON, KML, Shapefile)
-- 🎨 Customizable color schemes and legends
-- 📐 GIS tools (buffer, measurement, drawing)
-- 🌍 Multiple basemap options
-- ⭐ Astronomy features (sun/moon position)
-
----
-
-## Architecture Principles
-
-### 1. Feature-First Organization
-
-**Prensip:** Domain kodu feature klasörlerinde organize edilir, global components sadece generic orchestrator bileşenler içerir.
-
-**Avantajlar:**
-- ✅ Yüksek cohesion (ilgili kod bir arada)
-- ✅ Düşük coupling (feature'lar bağımsız)
-- ✅ Kolay bakım ve geliştirme
-- ✅ Paralel çalışma imkanı
-- ✅ Kolay test edilebilirlik
-
-### 2. Barrel Export Pattern
-
-**Prensip:** Her feature public API'sini `index.ts` üzerinden export eder.
-
-**Avantajlar:**
-- ✅ Temiz import'lar
-- ✅ Encapsulation (internal detaylar gizli)
-- ✅ Refactoring kolaylığı
-- ✅ API versiyonlama imkanı
-
-### 3. Single Responsibility
-
-**Prensip:** Her bileşen, fonksiyon ve modül tek bir sorumluluğa sahip olmalı.
-
-**Kurallar:**
-- Bileşenler: Tek bir UI concern
-- Hooks: Tek bir logic concern
-- Utils: Tek bir utility concern
-
-### 4. Dependency Direction
-
-**Prensip:** Bağımlılıklar tek yönlü olmalı.
-
-```
-Features → Shared (utils, types, stores)
-Features ↔ Features (sadece barrel üzerinden)
-Shared → ❌ Features (yasak)
+```yaml
+Frontend Framework: React 19 + TypeScript 5.9
+Build Tool: Vite 7
+Harita Engine: MapLibre GL JS (react-map-gl v8)
+State Management: Zustand 5
+Spatial Analysis: Turf.js 7
+Data Grid: AG Grid 35
+Styling: Tailwind CSS 4
+Testing: Vitest + Testing Library
+Animation: Framer Motion
+Notifications: react-hot-toast
 ```
 
 ---
 
-## Project Structure
+## Mimari Katmanlar
+
+### Sistem Bileşenleri Diyagramı
 
 ```
-react-app/
-├── src/
-│   ├── features/              # Feature modules (domain code)
-│   │   ├── astronomy/         # Sun/moon position features
-│   │   ├── basemap/           # Basemap switching
-│   │   ├── clustering/        # Point clustering
-│   │   ├── data-import/       # File import & parsing
-│   │   ├── data-mapper/       # Column mapping & editing
-│   │   ├── geocoder/          # Address search
-│   │   ├── globe-view/        # 3D globe view
-│   │   ├── legend/            # Legend components
-│   │   ├── map/               # Map core functionality
-│   │   └── viz-wizard/        # Visualization wizard
-│   │
-│   ├── components/            # Global components (orchestrators only)
-│   │   ├── layout/            # AppLayout (root orchestrator)
-│   │   └── sidebar/           # Sidebar (feature orchestrator)
-│   │
-│   ├── stores/                # Global state (Zustand)
-│   │   ├── useDataStore.ts
-│   │   ├── useMapStore.ts
-│   │   ├── useToolStore.ts
-│   │   └── useVisualizationStore.ts
-│   │
-│   ├── utils/                 # Shared utilities
-│   │   ├── classification.ts
-│   │   ├── colorInterpolation.ts
-│   │   ├── geometryUtils.ts
-│   │   └── ...
-│   │
-│   ├── types/                 # Shared types
-│   │   ├── geojson.ts
-│   │   ├── visualization.ts
-│   │   └── ...
-│   │
-│   ├── constants/             # Global constants
-│   │   ├── colorSchemes.ts
-│   │   └── layout.ts
-│   │
-│   ├── hooks/                 # Shared hooks
-│   │   └── useMediaQuery.ts
-│   │
-│   ├── test/                  # Test utilities
-│   │   ├── mockData.ts
-│   │   └── helpers.ts
-│   │
-│   ├── App.tsx                # Root component
-│   └── main.tsx               # Entry point
-│
-├── public/                    # Static assets
-├── dist/                      # Build output
-├── coverage/                  # Test coverage reports
-│
-├── eslint.config.js           # ESLint configuration
-├── tsconfig.json              # TypeScript configuration
-├── vite.config.ts             # Vite configuration
-├── tailwind.config.js         # Tailwind configuration
-└── package.json               # Dependencies
+┌─────────────────────────────────────────────────────────┐
+│                   Entry Layer                            │
+│  main.tsx → App.tsx → MapProvider → AppLayout           │
+└────────────────────────┬────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────┐
+│              Orchestration Layer                         │
+│  AppLayout.tsx → Sidebar.tsx                            │
+│  Feature'ları public API üzerinden compose eder         │
+└────────────────────────┬────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────┐
+│                Feature Layer (13 Feature)                │
+│  map │ visualization │ viz-wizard │ legend │ layers     │
+│  data-management │ data-import │ data-mapper            │
+│  astronomy │ basemap │ clustering │ geocoder │ globe    │
+└────────────────────────┬────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────┐
+│              Shared Infrastructure                       │
+│  stores/ │ utils/ │ types/ │ constants/ │ hooks/        │
+│  shared/ │ components/ui/ │ services/                   │
+└────────────────────────┬────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────┐
+│             External Libraries                           │
+│  MapLibre GL │ Turf.js │ AG Grid │ chroma-js │ d3      │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Katman Kuralları
+
+| Katman | İçe Aktarabilir | İçe Aktaramaz |
+|--------|----------------|---------------|
+| Entry | Orchestration, Shared | Feature (doğrudan) |
+| Orchestration | Feature (public API), Shared | Feature (deep import) |
+| Feature | Shared, Kendi içi | Başka Feature (deep import) |
+| Shared | External Libraries | Feature |
+
+---
+
+## Feature-First Yapı
+
+### Klasör Yapısı
+
+```
+src/
+├── features/                    # Feature modülleri
+│   ├── astronomy/               # Güneş/Ay konum hesaplaması
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── stores/
+│   │   ├── utils/
+│   │   └── index.ts
+│   ├── basemap/                 # Altlık harita değiştirme
+│   ├── clustering/              # Nokta kümeleme
+│   ├── data-import/             # Dosya içe aktarma & parse
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   ├── utils/
+│   │   ├── constants/
+│   │   └── index.ts
+│   ├── data-management/         # Veri/katman yönetimi & çizim
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   ├── store/
+│   │   ├── utils/
+│   │   ├── constants/
+│   │   └── index.ts
+│   ├── data-mapper/             # Sütun eşleme & veri düzenleme
+│   ├── geocoder/                # Adres arama
+│   ├── globe-view/              # 3D küre görünümü
+│   ├── layers/                  # Overlay katman yönetimi
+│   ├── legend/                  # Lejant bileşenleri
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── utils/
+│   │   ├── types.ts
+│   │   └── index.ts
+│   ├── map/                     # Çekirdek harita işlevselliği
+│   │   ├── components/
+│   │   ├── controls/
+│   │   ├── hooks/
+│   │   ├── layers/
+│   │   ├── services/
+│   │   ├── tools/
+│   │   ├── utils/
+│   │   └── index.ts
+│   ├── visualization/           # Görselleştirme render'ları
+│   │   ├── bubble/
+│   │   ├── choropleth/
+│   │   ├── point/
+│   │   ├── shared/
+│   │   ├── hooks/
+│   │   └── index.ts
+│   └── viz-wizard/              # Görselleştirme sihirbazı (3 adım)
+│       ├── components/
+│       ├── hooks/
+│       ├── steps/
+│       └── index.ts
+├── stores/                      # Global Zustand store'lar
+├── components/                  # Shared UI bileşenleri
+│   ├── layout/
+│   ├── sidebar/
+│   └── ui/
+├── shared/                      # Shared modüller
+│   ├── ag-grid/
+│   ├── analytics/
+│   ├── legend/
+│   └── visualization/
+├── hooks/                       # Shared hook'lar
+├── utils/                       # Utility fonksiyonlar
+├── types/                       # Global tip tanımları
+├── constants/                   # Sabitler
+├── services/                    # Shared servisler
+├── assets/                      # Statik dosyalar
+└── test/                        # Test yardımcıları
+```
+
+### Barrel Export Kuralı
+
+Her feature `index.ts` üzerinden public API açar. Deep import yasaktır ve ESLint ile enforce edilir.
+
+```typescript
+// ✅ Doğru
+import { MapContainer, DataLayer } from '@/features/map'
+
+// ❌ Yanlış (deep import)
+import MapContainer from '@/features/map/components/MapContainer'
 ```
 
 ---
 
-## Feature-First Architecture
+## State Yönetimi
 
-### Feature Anatomy
-
-Her feature aşağıdaki yapıya sahip olabilir:
+### Zustand Store Mimarisi
 
 ```
-features/feature-name/
-├── components/          # Feature-specific UI components
-│   ├── ComponentA.tsx
-│   ├── ComponentB.tsx
-│   └── index.ts        # Barrel export (optional)
-│
-├── hooks/              # Feature-specific hooks
-│   ├── useFeatureHook.ts
-│   └── index.ts        # Barrel export (optional)
-│
-├── services/           # Feature-specific services
-│   ├── api.ts
-│   └── index.ts        # Barrel export (optional)
-│
-├── utils/              # Feature-specific utilities
-│   ├── helper.ts
-│   └── index.ts        # Barrel export (optional)
-│
-├── stores/             # Feature-specific state (optional)
-│   └── useFeatureStore.ts
-│
-├── constants/          # Feature-specific constants
-│   └── config.ts
-│
-├── types.ts            # Feature-specific types
-└── index.ts            # Public API (barrel export)
+┌──────────────────────────────────┐
+│          Global Stores           │
+│  (src/stores/)                   │
+├──────────────────────────────────┤
+│  useVisualizationStore           │  → Viz wizard state, settings, GeoJSON cache
+│  useMapStore                     │  → Map instance, basemap, zoom, center
+│  useClusteringStore              │  → Kümeleme on/off state
+│  useToolStore                    │  → GIS araç state'i
+│  useDataStore (bridge)           │  → data-management'a yönlendirme
+└──────────────────────────────────┘
+
+┌──────────────────────────────────┐
+│        Feature Stores            │
+│  (src/features/*/stores/)        │
+├──────────────────────────────────┤
+│  useDataManagementStore          │  → Veri öğeleri, çizim modu, katman stilleri
+│  useAstroStore                   │  → Astronomi panel state
+│  useClusteringStore (feature)    │  → Clustering konfigürasyonu
+└──────────────────────────────────┘
 ```
 
-### Feature Examples
+### Store İlkeleri
 
-#### 1. Simple Feature (Basemap)
+1. **Persist**: `useDataManagementStore` IndexedDB'ye persist eder (büyük GeoJSON verisi için)
+2. **Minimal Cross-Dependency**: Store'lar arası bağımlılık minimize edilir
+3. **Derived State**: Mümkün olduğunca `useMemo` ile türetilir, store'da tutulmaz
+4. **Transaction Safety**: `sanitizeVizSettings()` ile settings güncelleme güvenliği
 
-```
-features/basemap/
-├── components/
-│   └── BasemapPanel.tsx
-└── index.ts
-```
+---
 
-#### 2. Medium Feature (Data Import)
+## Uygulama Akışı
 
-```
-features/data-import/
-├── components/
-│   ├── DataImportSection.tsx
-│   ├── ExportControls.tsx
-│   ├── UrlImporter.tsx
-│   └── ColumnMapperModal.tsx
-├── hooks/
-│   ├── useFileImport.ts
-│   ├── useUrlImport.ts
-│   └── useDataExport.ts
-├── services/
-│   ├── fileParser.ts
-│   ├── geoJsonProcessor.ts
-│   └── excelProcessor.ts
-├── utils/
-│   ├── columnDetector.ts
-│   └── dataMapper.ts
-├── constants/
-│   └── formats.ts
-├── types.ts
-└── index.ts
-```
-
-#### 3. Complex Feature (Viz Wizard)
+### Boot Sırası
 
 ```
-features/viz-wizard/
-├── components/
-│   ├── Progress.tsx
-│   ├── MapTitle.tsx
-│   ├── StyleConfig.tsx
-│   └── SidebarSection.tsx
-├── steps/
-│   ├── Step1/
-│   ├── Step2/
-│   └── Step3/
-├── hooks/
-│   ├── useMatching.ts
-│   └── useVizRender.ts
-├── constants/
-│   └── dot-density.ts
-├── utils/
-│   └── dot-density.ts
-└── index.ts
+index.html
+  └── src/main.tsx
+        ├── DEV modda: clearDevStorage() (localStorage, sessionStorage, caches, IndexedDB temizliği)
+        └── createRoot → StrictMode
+              └── App.tsx
+                    ├── useGoogleAnalytics()
+                    ├── MapProvider (react-map-gl)
+                    ├── AppLayout
+                    └── Toaster (react-hot-toast)
+```
+
+### AppLayout Orkestrasyon
+
+```
+AppLayout.tsx
+  ├── Hook'lar (sırasıyla initialize):
+  │   ├── useAstroMap()                    → Astronomi hesaplamaları
+  │   ├── useClustering()                  → Kümeleme mantığı
+  │   ├── useVisualizationLayerPersistence → Basemap değişiminde katman koruma
+  │   └── useLayerStyleSync()              → Paint property senkronizasyonu
+  │
+  ├── Sidebar (sol panel):
+  │   ├── SidebarHeader
+  │   ├── SidebarTools → Sidebar sections
+  │   └── SidebarFooter
+  │
+  ├── Map (ana alan):
+  │   └── MapContainer → MapLibre GL
+  │
+  ├── Controls (üst sol):
+  │   ├── MapControlStack
+  │   │   ├── Hamburger (sidebar toggle)
+  │   │   ├── ZoomControls
+  │   │   ├── BasemapSwitcher
+  │   │   └── Astronomy toggle
+  │   └── SearchContainer + GlobeToggleButton
+  │
+  └── Overlay'ler:
+      ├── AstroPanel
+      ├── MapTitle
+      ├── LegendContainer
+      ├── LayersPanel
+      └── ImportedDataManagerFab
 ```
 
 ---
 
-## Code Organization Rules
+## Harita Mimarisi
 
-### Rule 1: Domain Code in Features
+### MapLibre GL Entegrasyonu
 
-**✅ Doğru:**
-```typescript
-// Feature-specific component
-src/features/legend/components/DynamicLegend.tsx
+react-map-gl kütüphanesi MapLibre GL JS üzerinde thin wrapper sağlar. `MapProvider` context'i tüm feature'ların harita instance'ına erişimini sağlar.
 
-// Feature-specific hook
-src/features/data-import/hooks/useFileImport.ts
-
-// Feature-specific utility
-src/features/viz-wizard/utils/dot-density.ts
+```
+MapProvider (App.tsx)
+  └── MapContainer (features/map)
+        ├── Map component (react-map-gl/maplibre)
+        ├── DataLayer (features/map/layers)
+        ├── DistanceTool (features/map/tools)
+        └── DrawTool (features/map/tools)
 ```
 
-**❌ Yanlış:**
-```typescript
-// Domain code in global components
-src/components/Legend/DynamicLegend.tsx
+### Layer Hiyerarşisi
 
-// Domain code in global utils
-src/utils/fileImport.ts
+```
+1. Basemap Style (land, water, roads, labels)
+2. Overlay Layers (features/layers)
+3. Visualization Layers
+   ├── choropleth-fill, choropleth-outline
+   ├── bubble-boundary-fill, bubble-circles
+   └── dot-density-boundary, dot-density-dots
+4. Data Management Layers (imported/drawn features)
+5. Analysis Layers (buffer, heatmap)
+6. Label & Marker Layers
 ```
 
-### Rule 2: Barrel Export Only
+### Basemap Tipleri
 
-**✅ Doğru:**
-```typescript
-// Import from barrel
-import { DynamicLegend, LegendConfig } from '@/features/legend'
-import { useFileImport } from '@/features/data-import'
+| Tip | Sağlayıcı | Açıklama |
+|-----|-----------|----------|
+| TEMEL | HGM Atlas | Standart harita |
+| UYDU | HGM Atlas | Uydu görüntüsü |
+| GECE | HGM Atlas | Gece modu |
+| SIYASI | HGM Atlas | Siyasi sınırlar |
+| YUKSEKLIK | HGM Atlas | Yükseklik haritası |
+| CARTO_LIGHT | CartoDB | Açık tema (varsayılan) |
+| CARTO_DARK | CartoDB | Koyu tema |
+| CARTO_VOYAGER | CartoDB | Voyager stili |
+| ESRI_SATELLITE | Esri | Uydu görüntüsü |
+| NONE | - | Boş arka plan |
+
+---
+
+## Görselleştirme Pipeline
+
+### Viz Wizard (3 Adımlı Sihirbaz)
+
+```
+Step 1: Veri ve Tip Seçimi
+  ├── Veri dosyası yükleme veya mevcut veriyi seçme
+  ├── Görselleştirme tipi: choropleth | bubble | dot-density
+  └── Konum seviyesi: province | district
+
+Step 2: Sütun Eşleme
+  ├── Otomatik sütun tespiti (fuzzy matching)
+  ├── Lokasyon, veri, ilçe sütunu eşleme
+  └── Eşleme sonuçları: successful | ambiguous | failed
+
+Step 3: Stil Konfigürasyonu
+  ├── Renk paleti seçimi (teal, viridis, plasma, vb.)
+  ├── Sınıflandırma: jenks | quantile | linear | logarithmic | rounded
+  ├── Sınıf sayısı (2-9)
+  ├── Renk uzayı: LAB | HCL | HSL | RGB
+  ├── Lejant konfigürasyonu
+  └── Render tetikleme
 ```
 
-**❌ Yanlış:**
-```typescript
-// Deep import (bypasses barrel)
-import DynamicLegend from '@/features/legend/components/DynamicLegend'
-import { useFileImport } from '@/features/data-import/hooks/useFileImport'
+### Görselleştirme Tipleri
+
+```
+visualization/
+├── choropleth/          # Koreopleth (renk kodlu bölgeler)
+│   ├── ChoroplethRenderer.tsx
+│   ├── ChoroplethSettings.tsx
+│   └── useChoroplethTooltip.ts
+├── bubble/              # Bubble (orantılı semboller)
+│   ├── BubbleRenderer.tsx
+│   ├── BubbleSettings.tsx
+│   └── useBubbleTooltip.ts
+├── point/               # Dot Density (nokta yoğunluğu)
+│   ├── PointRenderer.tsx
+│   ├── DotDensitySettings.tsx
+│   └── DotColorPicker.tsx
+└── shared/
+    └── VisualizationManager.tsx
 ```
 
-**İstisna:** Feature içinde relative import kullanılabilir:
-```typescript
-// Inside features/legend/components/Container.tsx
-import DynamicLegend from './DynamicLegend'  // ✅ OK
-import { useLabelCollision } from '../hooks/useLabelCollision'  // ✅ OK
+### Renk İnterpolasyon Sistemi
+
 ```
+colorSchemes.ts (paletler)
+  └── colorInterpolation.ts (renk uzayı dönüşümü)
+        ├── LAB interpolation (varsayılan, perceptually uniform)
+        ├── HCL interpolation (cylindrical LAB)
+        ├── HSL interpolation (vibrant)
+        └── RGB interpolation (basit)
 
-### Rule 3: Global Components = Orchestrators Only
-
-**✅ Doğru:**
-```typescript
-// src/components/layout/AppLayout.tsx
-// Root orchestrator - coordinates features
-import { MapContainer } from '@/features/map'
-import { LegendContainer } from '@/features/legend'
-import { VizWizardSidebar } from '@/features/viz-wizard'
-```
-
-**❌ Yanlış:**
-```typescript
-// src/components/DataVisualization.tsx
-// Domain-specific component in global
-```
-
-### Rule 4: File Size Limits
-
-**Pragmatik Limitler:**
-- **Dosya:** 600 satır (boş satırlar ve yorumlar hariç)
-- **Fonksiyon:** 300 satır (boş satırlar ve yorumlar hariç)
-
-**Aşıldığında:**
-1. Bileşeni alt bileşenlere böl
-2. Logic'i hook'lara taşı
-3. Utility fonksiyonları ayır
-
-### Rule 5: Test Co-location
-
-**✅ Doğru:**
-```
-src/utils/
-├── classification.ts
-└── classification.test.ts
-```
-
-**❌ Yanlış:**
-```
-src/utils/classification.ts
-tests/utils/classification.test.ts
+classification.ts (sınıflandırma)
+  ├── Jenks Natural Breaks (Fisher-Jenks optimizasyonu)
+  ├── Quantile (eşit sayılı gruplar)
+  ├── Linear (eşit aralıklı)
+  ├── Logarithmic (üstel ölçek)
+  └── Rounded (yuvarlak sayılar)
 ```
 
 ---
 
-## Import Patterns
+## Veri İçe Aktarma Pipeline
 
-### Import Order (ESLint Enforced)
+### Desteklenen Formatlar
 
-```typescript
-// 1. External dependencies
-import { useState, useEffect } from 'react'
-import { useMap } from 'react-map-gl/maplibre'
+| Format | Uzantı | İşleyici |
+|--------|--------|----------|
+| Excel | .xlsx, .xls | excelProcessor.ts |
+| CSV | .csv | excelProcessor.ts (PapaParse) |
+| GeoJSON | .geojson, .json | geoJsonProcessor.ts |
+| KML | .kml | kmlProcessor.ts |
+| Shapefile | .zip | shapefileProcessor.ts |
 
-// 2. Internal dependencies (@/ alias)
-import { useMapStore } from '@/stores/useMapStore'
-import { MapContainer } from '@/features/map'
-import { calculateBreaks } from '@/utils/classification'
+### İşlem Akışı
 
-// 3. Relative imports
-import { SubComponent } from './SubComponent'
-import { helper } from '../utils/helper'
+```
+Kullanıcı dosya seçer
+  └── useFileImport hook
+        └── fileParser.ts (dispatcher)
+              ├── Uzantıya göre işleyici seçimi
+              ├── excelProcessor → PapaParse/SheetJS ile parse
+              ├── geoJsonProcessor → doğrudan parse
+              ├── kmlProcessor → toGeoJSON dönüşümü
+              └── shapefileProcessor → shpjs ile parse
+                    │
+                    ▼
+              ParseResult döner
+              ├── needsMapping: true → ColumnMapperModal açılır
+              │   └── columnDetector → otomatik sütun tespiti
+              │       └── dataMapper → GeoJSON öğelerine dönüştürme
+              └── items: DataItem[] → useDataManagementStore.addItems()
 ```
 
-### Path Aliases
+### Veri Dışa Aktarma
 
-```typescript
-// tsconfig.json
-{
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
-}
 ```
-
-**Kullanım:**
-```typescript
-import { useMapStore } from '@/stores/useMapStore'  // ✅
-import { useMapStore } from '../../stores/useMapStore'  // ❌
-```
-
-### Type Imports
-
-```typescript
-// ✅ Doğru: Type import ayrımı
-import type { ColorScheme } from '@/types/visualization'
-import { getColorPalette } from '@/constants/colorSchemes'
-
-// ❌ Yanlış: Type ve value karışık
-import { ColorScheme, getColorPalette } from '@/constants/colorSchemes'
+useDataExport hook
+  ├── GeoJSON (.geojson)
+  ├── KML (.kml)
+  ├── Shapefile (.zip) → shp-write
+  └── Excel (.xlsx) → SheetJS
 ```
 
 ---
 
-## State Management
+## Performans Stratejisi
 
-### Zustand Stores
+### 1. `startTransition` ile React Önceliklendirme
 
-**Global State (src/stores/):**
+Ağır UI/state güncellemeleri transition olarak planlanır. Kullanıcı etkileşimleri (scroll, click) bloklanmaz.
 
-```typescript
-// useMapStore.ts
-import { create } from 'zustand'
+### 2. GPU-Side Paint Updates
 
-interface MapState {
-  mapInstance: maplibregl.Map | null
-  setMapInstance: (map: maplibregl.Map) => void
-  activeBasemap: string
-  setActiveBasemap: (basemap: string) => void
-}
+Stil değişimlerinde GeoJSON yeniden oluşturulmaz. Doğrudan MapLibre `setPaintProperty` / `setLayoutProperty` API'si kullanılır.
 
-export const useMapStore = create<MapState>((set) => ({
-  mapInstance: null,
-  setMapInstance: (map) => set({ mapInstance: map }),
-  activeBasemap: 'TEMEL',
-  setActiveBasemap: (basemap) => set({ activeBasemap: basemap }),
-}))
+```
+useLayerStyleSync hook
+  ├── opacity → map.setPaintProperty('layer', 'fill-opacity', value)
+  ├── color → map.setPaintProperty('layer', 'fill-color', value)
+  └── width → map.setPaintProperty('layer', 'circle-radius', value)
 ```
 
-**Feature-Specific State:**
+### 3. Persist with IndexedDB
 
-```typescript
-// features/clustering/stores/useClusteringStore.ts
-import { create } from 'zustand'
+`useDataManagementStore` büyük GeoJSON verileri için IndexedDB storage kullanır (localStorage 5MB limitinden kaçınmak için).
 
-interface ClusteringState {
-  isEnabled: boolean
-  setEnabled: (enabled: boolean) => void
-}
+### 4. Memoization
 
-export const useClusteringStore = create<ClusteringState>((set) => ({
-  isEnabled: false,
-  setEnabled: (enabled) => set({ isEnabled: enabled }),
-}))
-```
+- `useMemo` ile hesaplama önbellekleme
+- `useCallback` ile fonksiyon referans stabilitesi
+- React 19 compiler optimizasyonları
 
-### State Organization
+### 5. Chunk-Based Data Loading
 
-**Global Stores:**
-- `useMapStore` - Map instance, basemap
-- `useDataStore` - Imported data, GeoJSON
-- `useVisualizationStore` - Visualization config, colors
-- `useToolStore` - Active tools, drawing state
-
-**Feature Stores:**
-- `useClusteringStore` - Clustering state
-- `useAstronomyStore` - Astronomy calculations
-
-**Kural:** Feature-specific state feature içinde, cross-feature state global store'da.
+Büyük dosyalar chunk'lar halinde store'a eklenir, UI render bloklanmaz.
 
 ---
 
-## Styling
+## Tasarım Desenleri
 
-### Tailwind CSS
-
-**Utility-First Approach:**
-
-```tsx
-// ✅ Doğru: Tailwind utilities
-<div className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg">
-  <Icon />
-  <span>Button</span>
-</div>
-
-// ❌ Yanlış: Inline styles
-<div style={{ display: 'flex', padding: '8px 16px', background: '#3b82f6' }}>
-  <Icon />
-  <span>Button</span>
-</div>
-```
-
-### Component-Specific CSS
-
-**Sadece gerektiğinde:**
-
-```tsx
-// DynamicLegend.tsx
-import './DynamicLegend.css'
-
-// DynamicLegend.css
-.legend-gradient {
-  background: linear-gradient(to right, var(--color-start), var(--color-end));
-}
-```
-
-### CSS Modules (Kullanılmıyor)
-
-Bu projede CSS Modules kullanılmıyor. Tailwind + component-specific CSS tercih ediliyor.
-
----
-
-## Testing Strategy
-
-### Test Coverage
-
-**Hedef:** 90%+  
-**Mevcut:** 86.52%
-
-### Test Types
-
-**1. Unit Tests (Mevcut)**
-```typescript
-// src/utils/classification.test.ts
-describe('calculateBreaks', () => {
-  it('should calculate equal interval breaks', () => {
-    const values = [0, 10, 20, 30, 40, 50]
-    const breaks = calculateBreaks(values, 5, 'equal')
-    expect(breaks).toEqual([0, 10, 20, 30, 40, 50])
-  })
-})
-```
-
-**2. Component Tests (Eksik)**
-```typescript
-// features/legend/components/DynamicLegend.test.tsx
-describe('DynamicLegend', () => {
-  it('should render legend with correct colors', () => {
-    // Test implementation
-  })
-})
-```
-
-**3. Integration Tests (Eksik)**
-```typescript
-// features/data-import/integration.test.tsx
-describe('Data Import Flow', () => {
-  it('should import Excel file and map columns', async () => {
-    // Test implementation
-  })
-})
-```
-
-### Test Utilities
+### Barrel Export Pattern
 
 ```typescript
-// src/test/mockData.ts
-export const mockGeoJSON = (): GeoJSON.FeatureCollection => ({
-  type: 'FeatureCollection',
-  features: [
-    // Mock features
-  ],
-})
-
-// src/test/helpers.ts
-export const expectToBeCloseTo = (actual: number, expected: number) => {
-  expect(actual).toBeCloseTo(expected, 2)
-}
+// src/features/map/index.ts
+export { MapContainer } from './components'
+export { MapControlStack, ZoomControls } from './controls'
+export { DataLayer } from './layers'
+export { DistanceTool, DrawTool } from './tools'
 ```
 
----
+### Orchestrator Pattern
 
-## Performance Considerations
+`AppLayout.tsx` tüm feature'ları compose eder. Feature'lar birbirini bilmez, sadece shared store'lar üzerinden iletişim kurar.
 
-### Current State
+### Hook Composition
 
-- **Bundle Size:** 3.17 MB (925 KB gzipped)
-- **Modules:** 2813
-- **Build Time:** ~15s
+Feature mantığı custom hook'larda kapsüllenir. Bileşenler sadece UI render'dan sorumludur.
 
-### Optimization Opportunities
-
-**1. Code Splitting (Öncelikli)**
 ```typescript
-// Lazy load wizard steps
-const VizWizardStep1 = lazy(() => import('@/features/viz-wizard/steps/Step1'))
-const VizWizardStep2 = lazy(() => import('@/features/viz-wizard/steps/Step2'))
-const VizWizardStep3 = lazy(() => import('@/features/viz-wizard/steps/Step3'))
+// Hook: iş mantığı
+const { importFile, isLoading } = useFileImport()
+
+// Component: sadece UI
+<Button onClick={() => importFile(file)} disabled={isLoading} />
 ```
 
-**2. Manual Chunks**
+### Store Bridge Pattern
+
+Eski import yollarını korumak için bridge store'lar kullanılır:
+
+```typescript
+// src/stores/useDataStore.ts
+export { useDataManagementStore as useDataStore } from '@/features/data-management'
+```
+
+### Feature Isolation + ESLint Enforcement
+
+Cross-feature deep import'lar ESLint kuralları ile engellenir:
+
 ```javascript
-// vite.config.ts
-build: {
-  rollupOptions: {
-    output: {
-      manualChunks: {
-        'vendor': ['react', 'react-dom'],
-        'map': ['maplibre-gl', 'react-map-gl'],
-        'data': ['xlsx', 'shpjs', '@turf/turf'],
-      }
-    }
-  }
-}
-```
-
-**3. Tree Shaking**
-- Kullanılmayan kod temizliği
-- Import optimizasyonu
-- Dead code elimination
-
----
-
-## Best Practices
-
-### 1. Component Design
-
-```tsx
-// ✅ Doğru: Single responsibility
-const UserProfile = ({ user }: { user: User }) => (
-  <div>
-    <UserAvatar user={user} />
-    <UserInfo user={user} />
-  </div>
-)
-
-// ❌ Yanlış: Too many responsibilities
-const Dashboard = () => {
-  // 500 lines of mixed concerns
-}
-```
-
-### 2. Hook Design
-
-```typescript
-// ✅ Doğru: Focused hook
-const useFileImport = () => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  
-  const importFile = async (file: File) => {
-    // Import logic
-  }
-  
-  return { importFile, isLoading, error }
-}
-
-// ❌ Yanlış: God hook
-const useEverything = () => {
-  // 50 different concerns
-}
-```
-
-### 3. Type Safety
-
-```typescript
-// ✅ Doğru: Strict types
-interface LegendConfig {
-  visible: boolean
-  position: 'above' | 'below' | 'inside-left-top'
-  orientation: 'horizontal' | 'vertical'
-}
-
-// ❌ Yanlış: Loose types
-interface LegendConfig {
-  visible: boolean
-  position: string
-  orientation: string
-}
-```
-
-### 4. Error Handling
-
-```typescript
-// ✅ Doğru: Proper error handling
-try {
-  const data = await parseFile(file)
-  return { success: true, data }
-} catch (error) {
-  console.error('File parse error:', error)
-  return { success: false, error: error.message }
-}
-
-// ❌ Yanlış: Silent failures
-const data = await parseFile(file).catch(() => null)
+// eslint.config.js
+'no-restricted-imports': ['error', {
+  patterns: ['@/features/*/components/*', '@/features/*/hooks/*']
+}]
 ```
 
 ---
 
-## Migration Guide
-
-### Adding a New Feature
-
-1. **Create feature folder:**
-   ```bash
-   mkdir -p src/features/my-feature/{components,hooks,utils}
-   ```
-
-2. **Create barrel export:**
-   ```typescript
-   // src/features/my-feature/index.ts
-   export { MyComponent } from './components/MyComponent'
-   export { useMyHook } from './hooks/useMyHook'
-   export type * from './types'
-   ```
-
-3. **Update ESLint (if needed):**
-   ```javascript
-   // eslint.config.js - usually not needed
-   ```
-
-4. **Add tests:**
-   ```typescript
-   // src/features/my-feature/components/MyComponent.test.tsx
-   ```
-
-   # Project Architecture Rules
-
-This project strictly follows **Vertical Slice Architecture** within a **Feature-First** structure.
-
-## Core Principles
-1.  **Vertical Slicing:** Every feature must be self-contained.
-    -   Do NOT group by technical layer (e.g., no global `src/services/renderers`).
-    -   Group by business domain (e.g., `src/features/visualization/bubble/`).
-
-2.  **Co-location:** A feature folder must contain EVERYTHING it needs:
-    -   `components/` (UI)
-    -   `hooks/` (Logic)
-    -   `services/` or `utils/` (Business Logic/Renderers)
-    -   `index.ts` (Public API)
-
-3.  **Public API:** Features should only communicate via their `index.ts` file. Deep imports (e.g., `import X from 'features/map/components/X'`) are forbidden.
-
-4.  **New Features:** When I ask for a new feature, automatically create this folder structure under `src/features/` without asking.
-
-### Moving Code to Features
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed migration guide.
-
----
-
-## References
-
-- [Feature-First Architecture](https://feature-sliced.design/)
-- [React Best Practices](https://react.dev/learn)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [Zustand Documentation](https://docs.pmnd.rs/zustand)
-- [Tailwind CSS](https://tailwindcss.com/docs)
-- [Vitest](https://vitest.dev/)
-
----
-
-**Maintainers:** Development Team  
-**Last Review:** 15 Şubat 2026  
-**Next Review:** Quarterly
+**Son Güncelleme:** 22 Şubat 2026
+**Versiyon:** 2.0.0 (React mimarisine yeniden yazıldı)

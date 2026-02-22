@@ -80,6 +80,7 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
       selectedItems.length === 1
         ? selectedItems[0].name
         : `${selectedItems.length} katman`
+    const sourceLayerNames = selectedItems.map(item => item.name)
 
     try {
       if (distances.length === 1) {
@@ -98,6 +99,9 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
             geometry: geom,
             properties: {
               analysis: 'buffer',
+              bufferDistance: distances[0],
+              bufferUnit,
+              bufferSourceNames: sourceLayerNames,
               dissolve,
               sideType,
               style: { fillColor: BUFFER_MODE_COLORS.normal },
@@ -131,6 +135,9 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
             geometry: geom,
             properties: {
               analysis: 'buffer',
+              bufferDistance: distances[i],
+              bufferUnit,
+              bufferSourceNames: sourceLayerNames,
               dissolve,
               sideType,
               style: { fillColor: BUFFER_MODE_COLORS.normal },

@@ -1,6 +1,6 @@
 # CBS React Map Platform
 
-Feature-first bir React + TypeScript harita uygulaması. MapLibre GL üzerinde büyük veriyle çalışan görselleştirmeler (choropleth / dot / bubble), dosya içe aktarma, katman yönetimi ve performans odaklı stil güncellemeleri içerir.
+Feature-first (Vertical Slice) mimariye sahip bir React 19 + TypeScript 5 harita platformu. MapLibre GL üzerinde büyük veriyle çalışan görselleştirmeler (choropleth / dot density / bubble), çoklu dosya formatı içe aktarma, overlay katman yönetimi, CBS araçları ve performans odaklı stil güncellemeleri içerir. 13 bağımsız feature modülünden oluşur.
 
 ## Başlangıç
 
@@ -13,14 +13,17 @@ Varsayılan geliştirme adresi: `http://localhost:5173`
 
 ## Kullanılan Teknolojiler
 
-- React 19 + TypeScript 5
-- Vite 7
-- MapLibre GL + react-map-gl
-- Zustand (state)
-- Vitest + Testing Library
-- ESLint (feature-boundary kuralları dahil)
-
-Detaylar için: `package.json:24-84`
+- **React 19** + **TypeScript 5.9** (strict mode)
+- **Vite 7** (build & dev server)
+- **MapLibre GL** + **react-map-gl** v8 (harita motoru)
+- **Zustand 5** (state management, IndexedDB persist)
+- **Tailwind CSS 4** (styling)
+- **AG Grid 35** (veri tablosu & düzenleme)
+- **Turf.js 7** (mekansal analiz)
+- **Vitest** + **Testing Library** (test)
+- **ESLint** (feature-boundary kuralları dahil)
+- **Framer Motion** (animasyon)
+- **chroma-js** + **d3** (renk interpolasyonu)
 
 ## Komutlar
 
@@ -43,43 +46,36 @@ npm run test:ui
 npm run test:watch
 ```
 
-Kaynak: `package.json:6-23`
-
 ## Mimari: Vertical Slice (Feature-First)
 
-Kod tabanı feature bazlı organize edilir. Her feature kendi `components/hooks/services/types` alt yapısını taşır ve dışarıya `index.ts` üzerinden public API açar.
+Kod tabanı 13 bağımsız feature modülü olarak organize edilir. Her feature kendi `components/hooks/services/types` alt yapısını taşır ve dışarıya `index.ts` üzerinden public API açar.
 
-Örnek feature API dosyaları:
-- `src/features/map/index.ts:6-16`
-- `src/features/visualization/index.ts:1-25`
-- `src/features/data-management/index.ts:1-30`
+**Feature'lar:** astronomy, basemap, clustering, data-import, data-management, data-mapper, geocoder, globe-view, layers, legend, map, visualization, viz-wizard
 
 ### Sınırlar
 
-- Root orchestrator katmanı (`src/components/layout/AppLayout.tsx`) feature’ları public API üzerinden toplar.
-- Feature içinden başka feature’a deep import yasaktır.
-- Bu kural ESLint ile enforced edilir (`eslint.config.js:86-101`, `eslint.config.js:245-258`).
+- Root orchestrator katmanı (`AppLayout.tsx`) feature'ları public API üzerinden compose eder.
+- Feature içinden başka feature'a deep import yasaktır ve ESLint ile enforce edilir.
+- State paylaşımı yalnızca `src/stores/` altındaki global Zustand store'lar üzerinden yapılır.
 
 ### Uygulama Akışı
 
-- Boot: `index.html:20-23` → `src/main.tsx` → `src/App.tsx:12-15`
-- Orkestrasyon: `src/components/layout/AppLayout.tsx:27`
-- Harita + veri katmanı: `src/features/map/components/MapContainer.tsx:73`, `src/features/map/layers/DataLayer.tsx:34`
+- Boot: `index.html` → `main.tsx` → `App.tsx` (MapProvider + Toaster)
+- Orkestrasyon: `AppLayout.tsx` (Sidebar + MapContainer + Controls + Overlays)
+- Harita: `MapContainer` → `DataLayer` → Visualization Layers
 
-## Web Worker ile Dosya Okuma / İçe Aktarma
+## Dosya İçe Aktarma Pipeline
 
-Excel/CSV gibi dosyalar ana thread’i bloklamamak için worker hattı üzerinden parse edilir.
+Excel/CSV/GeoJSON/KML/Shapefile dosyaları `data-import` feature'ı üzerinden parse edilir.
 
 Pipeline:
-1. UI tetikleme: `src/features/data-management/components/DataImportExportSection.tsx:11`
-2. Hook: `src/features/data-management/hooks/useFileImport.ts:20`
-3. Dispatcher: `src/features/data-management/services/import/fileParser.ts:11`
-4. Excel/CSV worker parse: `src/features/data-management/services/import/excelProcessor.ts:6-25`
-5. Sonuçlar store’a chunk’lı eklenir: `src/features/data-management/hooks/useFileImport.ts:34-45`
+1. UI tetikleme → `DataImportSection` bileşeni
+2. Hook: `useFileImport` → dosya tipi algılama
+3. Dispatcher: `fileParser` → uzantıya göre işleyici seçimi
+4. İşleyiciler: `excelProcessor`, `geoJsonProcessor`, `kmlProcessor`, `shapefileProcessor`
+5. Sonuçlar: `useDataManagementStore.addItems()` ile store'a eklenir
 
-Desteklenen formatlar:
-- `geojson/json`, `xlsx/xls/csv`, `kml`, `zip(shapefile)`
-- Kaynak: `src/features/data-management/services/import/fileParser.ts:15-43`
+Desteklenen formatlar: GeoJSON, Excel (.xlsx/.xls), CSV, KML, Shapefile (.zip)
 
 ## Harita Performansı: `startTransition` + GPU `setPaintProperty`
 
@@ -87,41 +83,36 @@ Bu projede INP düşürmek için iki ana strateji birlikte kullanılır:
 
 ### 1) React tarafında önceliklendirme (`startTransition`)
 
-Ağır UI/state güncellemeleri kullanıcı etkileşimlerini bloklamayacak şekilde transition olarak planlanır (özellikle büyük veri ve kontrol paneli etkileşimlerinde).
+Ağır UI/state güncellemeleri kullanıcı etkileşimlerini bloklamayacak şekilde transition olarak planlanır.
 
 ### 2) Stil güncellemelerini veri yeniden üretiminden ayırma (GPU-side)
 
-Layer style değişimlerinde GeoJSON’i yeniden inşa etmek yerine doğrudan MapLibre katman paint/layout property’leri güncellenir:
-- `src/features/data-management/hooks/useLayerStyleSync.ts:12-73`
+Layer style değişimlerinde GeoJSON yeniden inşa edilmez. `useLayerStyleSync` hook'u doğrudan MapLibre `setPaintProperty` / `setLayoutProperty` API'sini kullanır.
 
 Bu sayede:
 - CPU tarafındaki veri dönüşümü azaltılır
-- Map katman güncellemeleri GPU pipeline’da daha hızlı işlenir
+- Map katman güncellemeleri GPU pipeline'da daha hızlı işlenir
 - Etkileşim gecikmesi ciddi şekilde düşer
 
-Ek olarak görselleştirme tarafında full re-render ile paint-only update ayrımı bulunur:
-- `src/features/viz-wizard/hooks/useVizRender.ts:73-110`
-- `src/features/viz-wizard/hooks/useVizRender.ts:129-148`
-
-Sonuç bağlamı: INP değeri önceki yapıya göre yaklaşık **~16ms** seviyesine çekildi (commit geçmişindeki performans düzeltme notları ile uyumlu).
+Ek olarak `useVizRender` hook'u full re-render ile paint-only update arasında ayrım yapar. INP değeri yaklaşık **~16ms** seviyesindedir.
 
 ## Test ve Kalite
 
-- Vitest `jsdom` ortamı: `vitest.config.ts:7-10`
-- Coverage threshold: `%70` (line/function/branch/statement): `vitest.config.ts:24-29`
-- TypeScript strict: `tsconfig.app.json:26`
-- Lint kuralları (import boundary dahil): `eslint.config.js`
+- Vitest `jsdom` ortamı
+- Coverage threshold: `%70` (line/function/branch/statement)
+- TypeScript strict mode
+- ESLint: import boundary kuralları dahil
 
-> Not: Coverage değeri zamanla değişir; güncel durum için `npm run test:coverage` çalıştırıp `coverage/index.html` dosyasını referans alın.
+> Not: Güncel coverage durumu için `npm run test:coverage` çalıştırıp `coverage/index.html` dosyasını referans alın.
 
 ## Dokümantasyon
 
 Detaylı teknik dokümanlar:
-- `docs/ARCHITECTURE.md`
-- `docs/FEATURES.md`
-- `docs/CONTRIBUTING.md`
-- `docs/DATAWRAPPER_FEATURES.md`
-- `docs/DATAWRAPPER_INTEGRATION.md`
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Mimari, katmanlar, state yönetimi
+- [docs/FEATURES.md](docs/FEATURES.md) - 13 feature'ın detaylı dökümü
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) - Geliştirme rehberi
+- [docs/DATAWRAPPER_FEATURES.md](docs/DATAWRAPPER_FEATURES.md) - Renk interpolasyonu & sınıflandırma
+- [docs/DATAWRAPPER_INTEGRATION.md](docs/DATAWRAPPER_INTEGRATION.md) - Datawrapper stili entegrasyon
 
 ## Lisans
 
