@@ -9,7 +9,7 @@ import { indexedDbStorage } from './indexedDbStorage'
 const defaultLayerStyles: LayerStyles = {
   clusterEnabled: false,
   opacity: 0.9,
-  width: 3,
+  width: 10,
   fillColor: '#3b82f6',
   strokeWidth: 0.5,
   strokeColor: '#000000',
