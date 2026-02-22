@@ -154,10 +154,15 @@ function getItemFillColor(item: DataItem): string | null {
   return typeof fillColor === 'string' ? fillColor : null
 }
 
+const DRAG_THRESHOLD = 6
+
 export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlProps) {
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [selectedOption, setSelectedOption] = useState<BufferOption>('normal')
+  const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null)
   const popupRef = useRef<HTMLDivElement>(null)
+  const dragStartRef = useRef<{ offsetX: number; offsetY: number; startX: number; startY: number } | null>(null)
+  const didDragRef = useRef(false)
 
   const items = useDataManagementStore(state => state.items)
   const addItem = useDataManagementStore(state => state.addItem)
@@ -223,6 +228,57 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isPopupOpen])
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const start = dragStartRef.current
+      if (!start) return
+      if (Math.abs(e.clientX - start.startX) > DRAG_THRESHOLD || Math.abs(e.clientY - start.startY) > DRAG_THRESHOLD) {
+        didDragRef.current = true
+      }
+      setDragPosition({ x: e.clientX - start.offsetX, y: e.clientY - start.offsetY })
+    }
+    const onUp = () => {
+      dragStartRef.current = null
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    return () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+  }, [])
+
+  const handlePointerDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    didDragRef.current = false
+    if (dragPosition === null && popupRef.current) {
+      const rect = popupRef.current.getBoundingClientRect()
+      setDragPosition({ x: rect.left, y: rect.top })
+      dragStartRef.current = {
+        offsetX: e.clientX - rect.left,
+        offsetY: e.clientY - rect.top,
+        startX: e.clientX,
+        startY: e.clientY,
+      }
+    } else if (dragPosition !== null) {
+      dragStartRef.current = {
+        offsetX: e.clientX - dragPosition.x,
+        offsetY: e.clientY - dragPosition.y,
+        startX: e.clientX,
+        startY: e.clientY,
+      }
+    }
+  }
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (didDragRef.current) {
+      e.preventDefault()
+      didDragRef.current = false
+      return
+    }
+    setIsPopupOpen(prev => !prev)
+  }
 
   useEffect(() => {
     if (selectedOption !== 'normal') return
@@ -422,16 +478,25 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
 
   const isSummarySelected = selectedOption === 'summary'
 
+  const wrapperStyle: React.CSSProperties = dragPosition
+    ? { position: 'fixed', left: dragPosition.x, top: dragPosition.y, zIndex: 10003 }
+    : undefined
+
   return (
-    <div ref={popupRef} className="mt-2 w-52 relative">
+    <div
+      ref={popupRef}
+      className={dragPosition ? 'relative' : 'mt-2 w-auto relative'}
+      style={wrapperStyle}
+    >
       <button
         type="button"
-        onClick={() => setIsPopupOpen(prev => !prev)}
-        className="w-full h-9 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-[0_6px_18px_rgba(147,51,234,0.35)] transition-colors flex items-center justify-center gap-2"
-        title="Analiz sonrası seçenekleri aç"
+        onMouseDown={handlePointerDown}
+        onClick={handleClick}
+        className="inline-flex items-center gap-1.5 h-7 pl-2 pr-2.5 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-[11px] font-medium shadow-sm border border-violet-400/40 transition-colors cursor-grab active:cursor-grabbing"
+        title="Analiz seçenekleri (sürükleyebilirsiniz)"
       >
-        <i className="fa-solid fa-sliders text-[11px]"></i>
-        Analiz Seçenekleri
+        <i className="fa-solid fa-sliders text-[10px] opacity-90" aria-hidden></i>
+        <span>Analiz</span>
       </button>
 
       {isPopupOpen && (
