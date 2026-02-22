@@ -15,6 +15,7 @@ import {
   type BufferDissolve,
   type BufferSideType,
 } from '../utils/bufferAnalysis'
+import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
 
 interface BufferModalProps {
   isOpen: boolean
@@ -95,7 +96,12 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
             date: new Date().toISOString(),
             type: 'polygon',
             geometry: geom,
-            properties: { analysis: 'buffer', dissolve, sideType },
+            properties: {
+              analysis: 'buffer',
+              dissolve,
+              sideType,
+              style: { fillColor: BUFFER_MODE_COLORS.normal },
+            },
           })
           onClose()
         } else {
@@ -123,7 +129,12 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
             date: new Date().toISOString(),
             type: 'polygon',
             geometry: geom,
-            properties: { analysis: 'buffer', dissolve, sideType },
+            properties: {
+              analysis: 'buffer',
+              dissolve,
+              sideType,
+              style: { fillColor: BUFFER_MODE_COLORS.normal },
+            },
           })
         })
         onClose()

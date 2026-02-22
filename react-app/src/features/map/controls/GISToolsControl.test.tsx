@@ -17,6 +17,7 @@ vi.mock('../../data-management/store/indexedDbStorage', () => ({
 }))
 
 import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
+import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
 import GISToolsControl from './GISToolsControl'
 
 function resetStores() {
@@ -150,6 +151,100 @@ describe('GISToolsControl buffer toggle behavior', () => {
     expect(useDataManagementStore.getState().items.map(item => item.id)).toEqual(['src-3'])
   })
 
+  it('applies single-select modes with requested colors', () => {
+    useDataManagementStore.setState({
+      items: [
+        {
+          id: 'src-4',
+          name: 'Kaynak 4',
+          type: 'point',
+          geometry: { type: 'Point', coordinates: [29.4, 41.4] },
+          properties: {},
+          visible: true,
+          source: 'drawn',
+        },
+        {
+          id: 'buffer-4a',
+          name: 'Buffer 4A',
+          type: 'polygon',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[[29.4, 41.4], [29.42, 41.4], [29.42, 41.42], [29.4, 41.42], [29.4, 41.4]]],
+          },
+          properties: { analysis: 'buffer' },
+          visible: true,
+          source: 'drawn',
+        },
+        {
+          id: 'buffer-4b',
+          name: 'Buffer 4B',
+          type: 'polygon',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[[29.41, 41.41], [29.43, 41.41], [29.43, 41.43], [29.41, 41.43], [29.41, 41.41]]],
+          },
+          properties: { analysis: 'buffer' },
+          visible: true,
+          source: 'drawn',
+        },
+      ],
+    })
+
+    render(<GISToolsControl />)
+
+    const optionsButton = screen.getByRole('button', { name: /Analiz Se/i })
+    fireEvent.click(optionsButton)
+
+    fireEvent.click(screen.getByRole('button', { name: /Birle/i }))
+    expect(screen.getByRole('button', { name: /Birle/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /Normal/i })).toHaveAttribute('aria-pressed', 'false')
+
+    const stateAfterCombined = useDataManagementStore.getState()
+    const combinedLayer = stateAfterCombined.items.find(
+      item => item.properties.bufferDerivedType === 'combined',
+    )
+    expect(combinedLayer).toBeDefined()
+    expect((combinedLayer?.properties as Record<string, unknown>).style).toMatchObject({
+      fillColor: BUFFER_MODE_COLORS.combined,
+    })
+    expect(stateAfterCombined.items.find(item => item.id === 'buffer-4a')?.visible).toBe(false)
+    expect(stateAfterCombined.items.find(item => item.id === 'buffer-4b')?.visible).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: /Normal/i }))
+    const stateAfterNormal = useDataManagementStore.getState()
+    expect((stateAfterNormal.items.find(item => item.id === 'buffer-4a')?.properties as Record<string, unknown>).style).toMatchObject({
+      fillColor: BUFFER_MODE_COLORS.normal,
+    })
+    expect((stateAfterNormal.items.find(item => item.id === 'buffer-4b')?.properties as Record<string, unknown>).style).toMatchObject({
+      fillColor: BUFFER_MODE_COLORS.normal,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Kesi/i }))
+    const stateAfterIntersection = useDataManagementStore.getState()
+    const intersectionLayer = stateAfterIntersection.items.find(
+      item => item.properties.bufferDerivedType === 'intersection',
+    )
+    expect(intersectionLayer).toBeDefined()
+    expect((intersectionLayer?.properties as Record<string, unknown>).style).toMatchObject({
+      fillColor: BUFFER_MODE_COLORS.intersection,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Fark/i }))
+    const stateAfterDifference = useDataManagementStore.getState()
+    const differenceLayer = stateAfterDifference.items.find(
+      item => item.properties.bufferDerivedType === 'difference',
+    )
+    expect(differenceLayer).toBeDefined()
+    expect((differenceLayer?.properties as Record<string, unknown>).style).toMatchObject({
+      fillColor: BUFFER_MODE_COLORS.difference,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /statistiksel/i }))
+    expect(screen.getByRole('button', { name: /Fark/i })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: /statistiksel/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText(/Toplam Alan/i)).toBeInTheDocument()
+  })
+
   it('closes modal after successful analyze and clears on next buffer click', async () => {
     useDataManagementStore.setState({
       items: [
@@ -183,6 +278,7 @@ describe('GISToolsControl buffer toggle behavior', () => {
       .items.some(item => item.properties.analysis === 'buffer')
 
     expect(hasBufferResult).toBe(true)
+    expect(screen.getByRole('button', { name: /Analiz Se/i })).toBeInTheDocument()
 
     fireEvent.click(screen.getByTitle(/Etki Alan/i))
 

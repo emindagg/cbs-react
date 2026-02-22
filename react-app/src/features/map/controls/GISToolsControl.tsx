@@ -5,6 +5,7 @@ import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
 import { BufferModal } from './GISToolsControl.buffer'
+import { BufferOptionsControl } from './GISToolsControl.bufferOptions'
 import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
 
 
@@ -214,6 +215,9 @@ export default function GISToolsControl() {
           })}
         </div>
       )}
+
+      {/* Buffer Modal */}
+      <BufferOptionsControl hasBufferResults={hasBufferAnalysisItems} />
 
       {/* Buffer Modal */}
       <BufferModal
