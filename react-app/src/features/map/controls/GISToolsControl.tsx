@@ -52,7 +52,7 @@ export default function GISToolsControl() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { current: map } = useMap()
 
-  const { isEnabled: isClusteringEnabled, mode: clusterMode, cycle: cycleClustering } = useClusteringStore()
+  const { mode: clusterMode, cycle: cycleClustering } = useClusteringStore()
   const { isActive: isHeatmapActive, toggle: toggleHeatmap } = useHeatmapStore()
   const { activeAnalysis, toggle: toggleSpatial } = useSpatialAnalysisStore()
 

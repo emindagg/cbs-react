@@ -154,7 +154,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
   const { columnDefs, defaultColDef } = useColumns(columns)
 
   const applyCorrection = useCallback(
-    (originalValue: string, newValue: string, rowIndices: number[]) => {
+    (_originalValue: string, newValue: string, rowIndices: number[]) => {
       if (!rawData || !selectedProvince) return
       const updated = [...rawData]
       for (const idx of rowIndices) {
