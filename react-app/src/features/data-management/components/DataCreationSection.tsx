@@ -4,36 +4,40 @@ import toast from 'react-hot-toast'
 import { useDataManagementStore } from '../store/useDataManagementStore'
 import type { DataItemType, DrawMode } from '../types'
 
+const toolOptions: Array<{ id: DrawMode; label: string; icon: string }> = [
+  { id: 'point',   label: 'Nokta', icon: 'fa-location-dot' },
+  { id: 'line',    label: 'Çizgi', icon: 'fa-route' },
+  { id: 'polygon', label: 'Alan',  icon: 'fa-draw-polygon' },
+]
+
 export function DataCreationSection() {
   const {
     drawMode,
+    isDrawing,
     setDrawMode,
     drawPoints,
     resetDraw,
     addItem,
+    layerStyles,
   } = useDataManagementStore()
 
   const [name, setName] = useState('')
   const [date, setDate] = useState('')
 
-  const toolOptions: Array<{ id: DrawMode; label: string; iconClassName: string }> = [
-    { id: 'point', label: 'Nokta', iconClassName: 'fa-solid fa-location-dot' },
-    { id: 'line', label: 'Çizgi', iconClassName: 'fa-solid fa-route' },
-    { id: 'polygon', label: 'Alan', iconClassName: 'fa-solid fa-draw-polygon' },
-  ]
+  const isEditing =
+    !isDrawing &&
+    (drawMode === 'line' || drawMode === 'polygon') &&
+    drawPoints.length >= 2
 
   const handleToolSelect = (toolId: DrawMode) => {
     if (drawMode === toolId) {
-      // Aynı araca tekrar tıklandığında iptal et
       setDrawMode('none')
       resetDraw()
-      setName('')
-      setDate('')
     } else {
       setDrawMode(toolId)
-      setName('')
-      setDate('')
     }
+    setName('')
+    setDate('')
   }
 
   const handleCancel = () => {
@@ -65,9 +69,9 @@ export function DataCreationSection() {
         return
       }
 
-      const dataType: DataItemType = drawMode === 'line' || drawMode === 'polygon' || drawMode === 'point'
-        ? drawMode
-        : 'point'
+      const dataType: DataItemType =
+        drawMode === 'line' || drawMode === 'polygon' || drawMode === 'point'
+          ? drawMode : 'point'
 
       addItem({
         name: name.trim(),
@@ -94,97 +98,133 @@ export function DataCreationSection() {
   }
 
   return (
-    <section className="hover:bg-zinc-50 rounded-lg px-2.5 py-1.5 transition-colors group">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
-          <i className="fa-solid fa-pen-ruler text-emerald-600 text-[10px]"></i>
+    <section className="px-2.5 py-2">
+
+      {/* ── Başlık ── */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[9.5px] font-semibold tracking-[0.12em] uppercase text-slate-400 select-none">
           Veri Oluşturma
-        </h3>
+        </span>
         {drawMode !== 'none' && (
           <button
             onClick={handleCancel}
-            className="text-[11px] text-slate-400 hover:text-red-500 font-bold transition-colors"
-            title="İptal Et"
+            className="text-[10.5px] text-slate-300 hover:text-slate-500 transition-colors duration-150 tracking-wide"
           >
-            İptal Et
+            iptal
           </button>
         )}
       </div>
 
-      <div className="space-y-3">
-        {/* Segmentli Buton Grubu */}
-        <div className="flex bg-zinc-100/80 p-1 rounded-lg border border-slate-200/60">
-          {toolOptions.map((tool) => {
-            const isActive = drawMode === tool.id
-            return (
-              <button
-                key={tool.id}
-                onClick={() => handleToolSelect(tool.id)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 text-[13px] font-bold rounded-md transition-all duration-200 ${
-                  isActive
-                    ? 'bg-white text-emerald-600 shadow-sm ring-1 ring-slate-900/5'
-                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
-                }`}
-              >
-                <i className={`${tool.iconClassName} text-[16px]`}></i>
-                {tool.label}
-              </button>
-            )
-          })}
-        </div>
+      {/* ── Segment control — ince border, slate ── */}
+      <div
+        className="flex rounded-md overflow-hidden"
+        style={{ border: '1px solid #e2e8f0' }}
+      >
+        {toolOptions.map((tool, i) => {
+          const active = drawMode === tool.id
+          return (
+            <button
+              key={tool.id}
+              onClick={() => handleToolSelect(tool.id)}
+              className={[
+                'flex-1 flex items-center justify-center gap-1.5 py-[7px] text-[11.5px] font-medium transition-colors duration-150 select-none',
+                i > 0 ? 'border-l border-slate-200' : '',
+                active ? 'text-white' : 'bg-white text-slate-400 hover:text-slate-600 hover:bg-slate-50',
+              ].join(' ')}
+              style={active ? { background: layerStyles.fillColor } : undefined}
+            >
+              <i className={`fa-solid ${tool.icon} text-[11px]`} />
+              {tool.label}
+            </button>
+          )
+        })}
+      </div>
 
-        {drawMode !== 'none' && (
-          <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="bg-zinc-50 text-zinc-700 p-2 rounded-sm border border-zinc-200">
-              <p className="text-[11.5px] text-zinc-700 font-medium leading-relaxed">
-                {drawMode === 'point' && (
-                  <span className="text-[9.75px]">
-                    Haritaya tıklayarak nokta ekleyin.
-                  </span>
-                )}
-                {drawMode === 'polygon' && (
-                  <span className="text-[9.75px]">
-                    Haritaya tıklayarak alan çizin. Çift tıklayarak bitirin.
-                  </span>
-                )}
-                {drawMode === 'line' && (
-                  <span className="text-[9.75px]">
-                    Haritaya tıklayarak çizgi çizin. Çift tıklayarak bitirin.
-                  </span>
-                )}
+      {/* ── Aktif form ── */}
+      {drawMode !== 'none' && (
+        <div className="mt-3 space-y-2.5 animate-in fade-in duration-150">
+
+          {/* Durum satırı */}
+          {isEditing ? (
+            <div
+              className="flex items-center gap-2 px-2.5 py-2 rounded-md"
+              style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
+            >
+              {/* Küçük slate dot — marka dili ile tutarlı */}
+              <span
+                className="w-[5px] h-[5px] rounded-full shrink-0"
+                style={{ background: '#334155' }}
+              />
+              <p className="text-[10px] text-slate-500 leading-snug">
+                Köşeleri sürükleyerek şekli düzenleyin.
               </p>
             </div>
-
-            <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">Veri Adı</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Örn: Tarihi Müze, Hastane, Park..."
-                className="w-full px-2.5 py-1.5 border border-zinc-300 bg-zinc-50 rounded-lg text-xs text-zinc-900 placeholder-zinc-500 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-zinc-700 mb-1">Tarih (Opsiyonel)</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="w-full px-2.5 py-1.5 border border-zinc-300 bg-zinc-50 rounded-lg text-xs text-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-              />
-            </div>
-            <button
-              onClick={handleAddData}
-              className="w-full bg-zinc-900 hover:bg-black text-white font-medium py-1.5 px-2.5 text-xs rounded-lg transition-all flex items-center justify-center transform active:scale-95"
+          ) : (
+            <div
+              className="flex items-center gap-2 px-2.5 py-2 rounded-md"
+              style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
             >
-              <i className="fa-solid fa-plus mr-2"></i>Veri Ekle
-            </button>
+              <span
+                className="w-[5px] h-[5px] rounded-full shrink-0 opacity-40"
+                style={{ background: '#334155' }}
+              />
+              <p className="text-[10px] text-slate-400 leading-snug">
+                {drawMode === 'point'   && 'Haritaya tıklayarak nokta ekleyin.'}
+                {drawMode === 'line'    && 'Tıklayın, çizgi oluşturun. Çift tık ile bitirin.'}
+                {drawMode === 'polygon' && 'Tıklayın, alan çizin. Çift tık ile kapatın.'}
+              </p>
+            </div>
+          )}
+
+          {/* Ad */}
+          <div>
+            <label className="block text-[9.5px] font-semibold tracking-[0.08em] uppercase text-slate-400 mb-1.5">
+              Ad
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Örn: Orman Sınırı, Yol Güzergahı…"
+              className="w-full px-2.5 py-[7px] rounded-md text-[11.5px] text-slate-700 placeholder-slate-300 outline-none transition-all duration-150"
+              style={{ border: '1px solid #e2e8f0', background: '#fff' }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#94a3b8' }}
+              onBlur={e  => { e.currentTarget.style.borderColor = '#e2e8f0' }}
+            />
           </div>
-        )}
-      </div>
+
+          {/* Tarih */}
+          <div>
+            <label className="block text-[9.5px] font-semibold tracking-[0.08em] uppercase text-slate-400 mb-1.5">
+              Tarih <span className="normal-case tracking-normal font-normal text-slate-300">— opsiyonel</span>
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="w-full px-2.5 py-[7px] rounded-md text-[11.5px] text-slate-600 outline-none transition-all duration-150"
+              style={{ border: '1px solid #e2e8f0', background: '#fff' }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#94a3b8' }}
+              onBlur={e  => { e.currentTarget.style.borderColor = '#e2e8f0' }}
+            />
+          </div>
+
+          {/* Ekle — koyu slate, düz ── */}
+          <button
+            onClick={handleAddData}
+            className="w-full flex items-center justify-center gap-2 py-[8px] rounded-md text-[12px] font-semibold text-white transition-all duration-150 active:scale-[0.98]"
+            style={{ background: layerStyles.fillColor }}
+            onMouseEnter={e => { e.currentTarget.style.background = layerStyles.fillColor }}
+            onMouseLeave={e => { e.currentTarget.style.background = layerStyles.fillColor }}
+          >
+            <i className="fa-solid fa-plus text-[10px]" />
+            Veri Ekle
+          </button>
+
+        </div>
+      )}
     </section>
   )
 }

@@ -7,7 +7,7 @@
     "version:generate": "node scripts/version-from-git.cjs",
     "predev": "node scripts/version-from-git.cjs",
     "prebuild": "node scripts/version-from-git.cjs",
-    "dev": "vite",
+    "dev": "start \"\" \"C:\\Program Files\\Google\\Chrome Dev\\Application\\chrome.exe\" --guest http://localhost:5173/cbs-react/ & vite",
     "build": "tsc -b && vite build",
     "lint": "eslint src/**/*.{ts,tsx} --report-unused-disable-directives",
     "lint:fix": "eslint src/**/*.{ts,tsx} --fix",

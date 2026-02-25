@@ -9,6 +9,7 @@ export interface LayerStyles {
   clusterEnabled: boolean
   opacity: number
   width: number
+  lineWidth: number
   fillColor: string
   strokeWidth: number
   strokeColor: string
@@ -90,5 +91,6 @@ export interface DataManagementStore {
   setDrawPoints: (points: [number, number][]) => void
   setDrawGhostPoint: (point: [number, number] | null) => void
   setIsDrawing: (isDrawing: boolean) => void
+  updateDrawPoint: (index: number, point: [number, number]) => void
   resetDraw: () => void
 }

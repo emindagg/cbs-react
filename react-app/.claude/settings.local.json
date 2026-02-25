@@ -15,7 +15,10 @@
       "Bash(npx vitest:*)",
       "Bash(git push:*)",
       "Bash(npm:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(head:*)",
+      "Bash(find:*)",
+      "Bash(echo EXIT:$?:*)"
     ]
   }
 }

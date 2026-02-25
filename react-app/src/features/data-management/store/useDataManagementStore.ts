@@ -9,10 +9,11 @@ import { indexedDbStorage } from './indexedDbStorage'
 const defaultLayerStyles: LayerStyles = {
   clusterEnabled: false,
   opacity: 0.9,
-  width: 10,
-  fillColor: '#3b82f6',
-  strokeWidth: 0.5,
-  strokeColor: '#000000',
+  width: 5,
+  lineWidth: 2,
+  fillColor: '#111111',
+  strokeWidth: 2,
+  strokeColor: '#111111',
   labelField: '',
   textSize: 12,
   textColor: '#111827',
@@ -156,6 +157,11 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
     }
   }),
 
+  updateDrawPoint: (index, point) => set((state) => {
+    const next = [...state.drawPoints]
+    next[index] = point
+    return { drawPoints: next }
+  }),
   setDrawMode: (mode) => set((state) => {
     if (mode !== state.drawMode) {
       return {
@@ -189,6 +195,10 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
   }),
   onRehydrateStorage: () => (state) => {
     if (!state) return
+    // Eski kayıtlarda lineWidth olmayabilir, varsayılan değeri ata
+    if (state.layerStyles.lineWidth === undefined) {
+      state.layerStyles.lineWidth = 3
+    }
     const clusteringEnabled = useClusteringStore.getState().isEnabled
     if (state.layerStyles.clusterEnabled !== clusteringEnabled) {
       useClusteringStore.getState().toggle()
