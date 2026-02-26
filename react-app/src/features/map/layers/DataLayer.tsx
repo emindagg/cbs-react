@@ -15,7 +15,7 @@ import { useDataManagementStore } from '../../data-management/store/useDataManag
 function buildFeature(i: DataItem, activeItemId: string | null, labelField: string): Feature {
   const rawStyle = i.properties.style
   const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
-  const customFillColor = (i.source === 'drawn' && style.fillColor) ? style.fillColor : null
+  const customFillColor = style.fillColor ? style.fillColor : null
   const labelValue = labelField ? i.properties[labelField] : undefined
 
   return {
