@@ -7,6 +7,7 @@ import { BasemapSwitcher } from '@/features/basemap'
 import { useClustering } from '@/features/clustering'
 import { ImportedDataManagerFab, useLayerStyleSync } from '@/features/data-management'
 import { SearchContainer } from '@/features/geocoder'
+import { StorymapModal } from '@/features/storymap-modal'
 import { HeatmapPanel, useHeatmap } from '@/features/heatmap'
 import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-analysis'
 import { GlobeToggleButton } from '@/features/globe-view'
@@ -185,6 +186,8 @@ export default function AppLayout() {
       <LegendContainer />
       <ImportedDataManagerFab />
 
+      {/* Hikâye Haritası modal (iframe) */}
+      <StorymapModal />
     </div>
   )
 }

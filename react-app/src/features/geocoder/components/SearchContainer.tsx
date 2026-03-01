@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMapStore } from '@/stores/useMapStore'
+import { useStorymapModalStore } from '@/stores/useStorymapModalStore'
 
 import { SearchResults } from './SearchResults'
 import { useGeocoder } from '../hooks/useGeocoder'
@@ -149,6 +150,8 @@ export function SearchContainer({
 
       <button
         id="storymap-toggle-btn"
+        type="button"
+        onClick={() => useStorymapModalStore.getState().open()}
         className="absolute top-0 h-9 bg-[#1c1c1e] rounded-[18px] shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-[11px] font-medium hover:bg-black/90 active:scale-95 transition-all cursor-pointer px-3.5 whitespace-nowrap"
         style={{
           left: isOpen ? '447px' : '138px',
