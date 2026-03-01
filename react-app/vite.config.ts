@@ -22,7 +22,7 @@ function serveStorymap() {
   return {
     name: 'serve-storymap',
     configureServer(server: { middlewares: { use: (fn: (req: any, res: any, next: () => void) => void) => void } }) {
-      server.middlewares.use((req: { url?: string }, res: { setHeader: (a: string, b: string) => void; statusCode: number; end: (c?: string) => void }, next: () => void) => {
+      server.middlewares.use((req: any, res: any, next: () => void) => {
         let url = req.url ?? ''
         const q = url.indexOf('?')
         if (q !== -1) url = url.slice(0, q)
