@@ -2,7 +2,7 @@ import { authManager } from './services/authManager.js';
 import { apiService } from './services/apiService.js';
 
 async function handleLoginRedirect() {
-    const loader = document.getElementById('loader');
+    const loader = document.getElementById('loading-overlay');
     const errorBox = document.getElementById('error-box');
     const errorMessage = document.getElementById('error-message');
 
