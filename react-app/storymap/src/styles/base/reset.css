@@ -1,0 +1,61 @@
+/* ============================================
+   BASE RESET
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-body);
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Dynamic viewport height - mobil address bar desteği */
+    width: 100vw;
+    width: 100dvw;
+    overflow: hidden;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    line-height: 1.5;
+}
+
+/* Main App Container */
+#main-app {
+    display: none;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--bg-primary);
+}
+
+#main-app.show {
+    display: flex;
+}
+
+/* Typography - Refined System */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--color-text-primary);
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.125rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.875rem; }
+
+/* Monospace for code and numbers */
+code, kbd, samp, pre {
+    font-family: var(--font-mono);
+}
+

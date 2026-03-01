@@ -1,0 +1,25 @@
+01.03.2026:15.00
+Değişiklik Günlüğü
+İçeri / dışarı aktarma
+İçeri Aktar artık sadece Çalışmalarım ekranında (üstteki aksiyonlar alanında).
+Editörde (harita açıkken) İçeri Aktar butonu kaldırıldı; dışa aktar editörde kaldı.
+Çalışmalarım’dan JSON dosyası seçerek yeni yerel harita oluşturabilirsiniz.
+İçe aktarılan haritalar
+İçe aktarılan haritaların şablonu (Nokta Bazlı, Rota Bazlı, Zaman Çizelgesi, Hikâye Haritası) listede doğru gösteriliyor.
+Çalışmalarım – silme
+Yerel haritalar artık giriş yapmış olsanız da Çalışmalarım listesinden silinebiliyor.
+Metin düzenlemeleri
+“Yerel haritaları sunucuya yükle” onayında “backend” ifadesi “sunucuya” olarak güncellendi.
+Arayüz
+Onay ve bilgi pencereleri (Haritaları Yükle, Sil onayı vb.) uygulama temasına (renkler ve fontlar) uyumlu hale getirildi.
+
+Harita ve noktalar
+Haritadaki pinler büyütüldü ve etrafına beyaz çerçeve eklendi.
+O an seçili olan noktanın pininde siyah çerçeve gösteriliyor (Nokta, Rota, Timeline ve Hikâye Haritası şablonlarında).
+Hikâye Haritası
+“Önizlemeyi kapat” butonu mobilde de görünüyor ve kartın sağ üstünde.
+Sidebar kapatılırken yanlışlıkla timeline panelinin açılması sorunu giderildi.
+Veri ve güvenlik
+Başkasının paylaştığı haritayı görüntüledikten sonra o harita artık “Yerel Haritalar” listesinde görünmüyor ve kendi haritanız gibi yüklenemiyor.
+Ayarlar
+Ayarlar sekmesindeki “Harita yapılandırması” alanı (haritada gezinmeye izin ver / ara seçenekleri) kaldırıldı; arayüz sadeleştirildi.

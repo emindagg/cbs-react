@@ -1,0 +1,304 @@
+/* ========================================
+   DETAIL PANEL
+   Sağ tarafta açılan detay paneli stilleri
+   ======================================== */
+
+.detail-panel {
+    position: fixed;
+    right: -400px;
+    top: 56px;
+    width: 380px;
+    height: calc(100vh - 56px);
+    background: #f5f5f0;
+    color: #374151;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    transition: right 0.3s ease;
+    overflow: hidden;
+}
+
+.detail-panel--open {
+    right: 0;
+}
+
+/* ========================================
+   ÜST NAVİGASYON
+   ======================================== */
+
+.detail-panel__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #f5f5f0;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: move;
+}
+
+.detail-panel__nav-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detail-panel__nav-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0 0 0;
+}
+
+.detail-panel__nav-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #6b7280;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.detail-panel__nav-meta-item i {
+    font-size: 10px;
+    color: #3b82f6;
+}
+
+.detail-panel__nav-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    color: #1f2937;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.detail-panel__nav-btn:hover:not(:disabled) {
+    background: white;
+    color: #000;
+}
+
+.detail-panel__nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.detail-panel__nav-counter {
+    background: rgba(255, 255, 255, 0.9);
+    color: #374151;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.detail-panel__close {
+    margin-left: auto;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    color: #1f2937;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.detail-panel__close:hover {
+    background: white;
+    color: #000;
+}
+
+/* ========================================
+   BAŞLIK
+   ======================================== */
+
+.detail-panel__header {
+    padding: 16px;
+    background: #f5f5f0;
+}
+
+.detail-panel__type {
+    font-size: 12px;
+    color: #10b981;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.detail-panel__title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: #374151;
+}
+
+/* ========================================
+   RESİM GALERİSİ
+   ======================================== */
+
+.detail-panel__image {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    background: #e5e7eb;
+    overflow: hidden;
+}
+
+.detail-panel__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.detail-panel__image-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    color: #1f2937;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.detail-panel__image-nav:hover {
+    background: white;
+    color: #000;
+}
+
+.detail-panel__image-nav--prev {
+    left: 10px;
+}
+
+.detail-panel__image-nav--next {
+    right: 10px;
+}
+
+.detail-panel__image-counter {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 9px;
+    color: #374151;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   İÇERİK
+   ======================================== */
+
+.detail-panel__content {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #f5f5f0;
+}
+
+.detail-panel__description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #4b5563;
+    margin: 0 0 16px 0;
+    text-align: justify;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.detail-panel__description--empty {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.detail-panel__info {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.detail-panel__info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.detail-panel__info-item i {
+    width: 20px;
+    color: #10b981;
+}
+
+/* ========================================
+   ALT BUTONLAR
+   ======================================== */
+
+.detail-panel__actions {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: #f5f5f0;
+    border-top: 1px solid #e5e7eb;
+}
+
+.detail-panel__action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.detail-panel__action-btn:hover {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+.detail-panel__action-btn--danger:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
