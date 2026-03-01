@@ -12,7 +12,7 @@ import type { VisualizationSettings } from '@/types/visualization'
 import { calculateBreaks } from '@/utils/classification'
 import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
-import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
+import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 import {
   clampToCustomRange,
@@ -214,6 +214,19 @@ export class ChoroplethRenderer {
 
     features.forEach((feature) => {
       const featureName = this.getFeatureName(feature, locationLevel)
+
+      // Provinces: normalize display name via plate code so aliases like "Afyon" → "Afyonkarahisar"
+      let displayName = featureName
+      if (locationLevel === 'province') {
+        const plateCode = getPlateCodeByName(featureName)
+        if (plateCode) {
+          const officialName = getProvinceByPlateCode(plateCode)
+          if (officialName) {
+            displayName = officialName
+          }
+        }
+      }
+
       const normalizedFeatureName = normalizeTurkishText(featureName)
       const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
 
@@ -221,8 +234,8 @@ export class ChoroplethRenderer {
         ...feature,
         properties: {
           ...feature.properties,
-          displayName: featureName,
-          name: featureName,
+          displayName,
+          name: displayName,
           value: dataValue ?? 0,
           dataValue: dataValue ?? 0,
           hasData: dataValue !== undefined,

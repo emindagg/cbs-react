@@ -16,7 +16,7 @@ import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
 import { applyNormalization } from '@/utils/normalization'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
-import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
+import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
 import { BUBBLE_DEFAULT_FILL_COLOR } from '../constants'
 
 
@@ -261,6 +261,19 @@ export class BubbleRenderer {
 
     features.forEach((feature) => {
       const featureName = this.getFeatureName(feature, locationLevel)
+
+      // Provinces: normalize display name via plate code (e.g. "Afyon" → "Afyonkarahisar")
+      let displayName = featureName
+      if (locationLevel === 'province') {
+        const plateCode = getPlateCodeByName(featureName)
+        if (plateCode) {
+          const officialName = getProvinceByPlateCode(plateCode)
+          if (officialName) {
+            displayName = officialName
+          }
+        }
+      }
+
       const normalizedFeatureName = normalizeTurkishText(featureName)
 
       // Get size data value
@@ -290,8 +303,8 @@ export class BubbleRenderer {
       bubbleFeatures.push({
         type: 'Feature',
         properties: {
-          displayName: featureName,
-          name: featureName,
+          displayName,
+          name: displayName,
           value: dataValue,
           dataValue,
           colorValue,

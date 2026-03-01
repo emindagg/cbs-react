@@ -21,7 +21,7 @@ import type { VisualizationSettings } from '@/types/visualization'
 import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
 import { calculateBounds } from '@/utils/geometryUtils'
 import { hashString, mulberry32 } from '@/utils/prng'
-import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
+import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 import {
   isValueInCustomRange,
@@ -225,6 +225,7 @@ export class PointRenderer {
         featureName,
         dataValue,
         inCustomRange,
+        locationLevel,
       )
 
       allDots.push(...dots)
@@ -248,6 +249,7 @@ export class PointRenderer {
     featureName: string,
     dataValue: number,
     inCustomRange: boolean,
+    locationLevel: 'province' | 'district',
   ): GeoJSON.Feature[] {
     const [minLng, minLat, maxLng, maxLat] = bbox
     const dots: GeoJSON.Feature[] = []
@@ -266,11 +268,23 @@ export class PointRenderer {
 
       // Point-in-polygon test: inside exterior AND outside all holes
       if (this.pointInPolygonWithHoles([lng, lat], polygonRings)) {
+        // Provinces: normalize display name via plate code (e.g. "Afyon" → "Afyonkarahisar")
+        let displayName = featureName
+        if (locationLevel === 'province') {
+          const plateCode = getPlateCodeByName(featureName)
+          if (plateCode) {
+            const officialName = getProvinceByPlateCode(plateCode)
+            if (officialName) {
+              displayName = officialName
+            }
+          }
+        }
+
         dots.push({
           type: 'Feature',
           properties: {
-            displayName: featureName,
-            name: featureName,
+            displayName,
+            name: displayName,
             value: dataValue,
             dataValue,
             hasData: true,
