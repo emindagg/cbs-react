@@ -18,7 +18,12 @@
       "Bash(npx:*)",
       "Bash(head:*)",
       "Bash(find:*)",
-      "Bash(echo EXIT:$?:*)"
+      "Bash(echo EXIT:$?:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.mapbox.com)",
+      "WebFetch(domain:maplibre.org)",
+      "WebFetch(domain:www.datawrapper.de)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
