@@ -7,7 +7,11 @@
 export { MapContainer } from './components'
 
 // Controls
-export { MapControlStack, ZoomControls, GISToolsControl } from './controls'
+export { MapControlStack, ZoomControls, GISToolsControl, CoordinateDisplay, GeolocationButton } from './controls'
+
+// Hooks
+export { useCoordinateDisplay } from './hooks/useCoordinateDisplay'
+export { useGeolocation } from './hooks/useGeolocation'
 
 // Layers
 export { DataLayer } from './layers'

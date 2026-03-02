@@ -2,6 +2,7 @@
 
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
+import { GeolocationButton } from './GeolocationButton'
 import { ZoomControls } from './ZoomControls'
 
 interface MapControlStackProps {
@@ -45,6 +46,9 @@ export function MapControlStack({
         <>
           {/* Zoom Controls */}
           <ZoomControls />
+
+          {/* Geolocation */}
+          <GeolocationButton />
 
           {/* Basemap Switcher */}
           {basemapControl}

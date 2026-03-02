@@ -13,7 +13,7 @@ import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-ana
 import { GlobeToggleButton } from '@/features/globe-view'
 import { LayersPanel, useOverlayLayers } from '@/features/layers'
 import { LegendContainer } from '@/features/legend'
-import { MapContainer, MapControlStack } from '@/features/map'
+import { MapContainer, MapControlStack, CoordinateDisplay } from '@/features/map'
 import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -185,6 +185,12 @@ export default function AppLayout() {
       {/* Visualization Legend */}
       <LegendContainer />
       <ImportedDataManagerFab />
+
+      {/* Coordinate Display – sidebar farkındalıklı; mobilde sidebar açıkken gizle */}
+      <CoordinateDisplay
+        leftPosition={controlsLeft}
+        hidden={isSidebarOpen && !isMdUp}
+      />
 
       {/* Hikâye Haritası modal (iframe) */}
       <StorymapModal />
