@@ -39,12 +39,6 @@ export function GeolocationButton() {
     const isSuccess = status === 'success'
     const isError = status === 'error'
 
-    const ringClass = isSuccess
-        ? 'ring-2 ring-emerald-400'
-        : (isError && !isPermissionDenied)
-            ? 'ring-2 ring-red-400'
-            : ''
-
     const buttonColor = isSuccess
         ? 'text-emerald-400'
         : (isError && !isPermissionDenied)
@@ -82,7 +76,6 @@ export function GeolocationButton() {
                     'text-sm transition-colors cursor-pointer',
                     buttonColor,
                     isLoading ? 'opacity-70 cursor-not-allowed' : '',
-                    ringClass,
                 ].join(' ')}
             >
                 {isPermissionDenied ? (
