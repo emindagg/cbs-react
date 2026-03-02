@@ -113,8 +113,16 @@ export function useVizRender({
     vizSettings.symbolStrokeWidth ?? 'auto',
   ].join('-')
 
+  // Display-only settings → updateDisplayOptions (no data recomputation, no full re-render)
+  const displayVizKey = [
+    vizSettings.showLabels ?? false,
+    vizSettings.showValues ?? false,
+    vizSettings.dataOnlyMode ?? false,
+  ].join('-')
+
   const prevDataVizKeyRef = useRef<string | null>(null)
   const prevPaintVizKeyRef = useRef<string | null>(null)
+  const prevDisplayVizKeyRef = useRef<string | null>(null)
 
   // Full re-render when data-affecting settings change
   useEffect(() => {
@@ -126,6 +134,7 @@ export function useVizRender({
     if (prevDataVizKeyRef.current !== dataVizKey) {
       prevDataVizKeyRef.current = dataVizKey
       prevPaintVizKeyRef.current = paintVizKey // sync paint key on full render
+      prevDisplayVizKeyRef.current = displayVizKey // sync display key on full render
       void handleRender()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -150,6 +159,21 @@ export function useVizRender({
       }
     }
   }, [paintVizKey, hasRendered, map])
+
+  // Display-only update: showLabels / showValues / dataOnlyMode toggles (instant, no re-render)
+  useEffect(() => {
+    if (!hasRendered || !map) return
+    if (prevDisplayVizKeyRef.current === null) {
+      prevDisplayVizKeyRef.current = displayVizKey
+      return
+    }
+    if (prevDisplayVizKeyRef.current !== displayVizKey) {
+      prevDisplayVizKeyRef.current = displayVizKey
+      const { vizSettings: s } = useVisualizationStore.getState()
+      const vizManager = new VisualizationManager(map)
+      vizManager.updateDisplayOptions(s)
+    }
+  }, [displayVizKey, hasRendered, map])
 
   const handleRender = async () => {
     if (!map) {

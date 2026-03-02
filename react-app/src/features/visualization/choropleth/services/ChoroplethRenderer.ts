@@ -10,6 +10,8 @@ import { getContinuousColor, getColorPalette } from '@/constants/colorSchemes'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
 import type { VisualizationSettings } from '@/types/visualization'
 import { calculateBreaks } from '@/utils/classification'
+import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
+import { calculateCentroid } from '@/utils/geometryUtils'
 import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
 import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
@@ -20,6 +22,7 @@ import {
   resolveCustomRange,
   type ResolvedCustomRange,
 } from '../../shared/customRange'
+import { applyLabelLayers } from '../../shared/labelLayers'
 
 const NO_DATA_COLOR = '#e4e4e4'
 const CONTINUOUS_STOPS = 16
@@ -324,11 +327,18 @@ export class ChoroplethRenderer {
     resolvedRange: ResolvedCustomRange | null,
   ): void {
     const sourceId = 'choropleth-source'
-    const fillOpacity = settings.choroplethOpacity ?? 1
-    const layerFilter: NonNullable<Parameters<Map['setFilter']>[1]> =
-      resolvedRange?.outOfRangeMode === 'transparent'
-        ? ['any', ['==', 'hasData', false], ['==', 'inCustomRange', true]]
-        : ['any', ['==', 'hasData', true], ['==', 'hasData', false]]
+    const choroplethOpacity = settings.choroplethOpacity ?? 1
+    const fillOpacity: unknown = settings.dataOnlyMode && settings.dataOnlyStyle === 'transparent'
+      ? ['case', ['==', ['get', 'hasData'], false], 0, choroplethOpacity]
+      : choroplethOpacity
+    let layerFilter: NonNullable<Parameters<Map['setFilter']>[1]>
+    if (settings.dataOnlyMode && settings.dataOnlyStyle === 'hidden') {
+      layerFilter = ['==', ['get', 'hasData'], true]
+    } else if (resolvedRange?.outOfRangeMode === 'transparent') {
+      layerFilter = ['any', ['==', 'hasData', false], ['==', 'inCustomRange', true]]
+    } else {
+      layerFilter = ['any', ['==', 'hasData', true], ['==', 'hasData', false]]
+    }
 
     // Convert to MapLibre-compatible GeoJSON
     const safeGeoJSON: GeoJSON.FeatureCollection = {
@@ -370,7 +380,7 @@ export class ChoroplethRenderer {
         filter: layerFilter,
         paint: {
           'fill-color': colorExpression as Parameters<Map['setPaintProperty']>[2],
-          'fill-opacity': fillOpacity,
+          'fill-opacity': fillOpacity as Parameters<Map['setPaintProperty']>[2],
         },
       })
     } else {
@@ -398,5 +408,48 @@ export class ChoroplethRenderer {
       this.map.setPaintProperty('choropleth-outline', 'line-width', 1)
       this.map.setPaintProperty('choropleth-outline', 'line-opacity', 0.8)
     }
+
+    const labelPoints = this.buildLabelPoints(geojson.features)
+    this.renderLabelLayers(settings, labelPoints)
+  }
+
+  /**
+   * Build deduplicated centroid Point GeoJSON for label layers.
+   * Features are already enriched (displayName, hasData, dataValue).
+   */
+  private buildLabelPoints(features: GeoJSONFeature[]): GeoJSON.FeatureCollection {
+    const seen = new Set<string>()
+    const pointFeatures: GeoJSON.Feature[] = []
+
+    features.forEach((feature) => {
+      const geometry = feature.geometry
+      if (!isPolygonOrMultiPolygon(geometry)) return
+
+      const displayName = String(feature.properties.displayName || '')
+      if (!displayName || seen.has(displayName)) return
+      seen.add(displayName)
+
+      const centroid = calculateCentroid(geometry)
+      pointFeatures.push({
+        type: 'Feature',
+        properties: {
+          displayName,
+          dataValue: feature.properties.dataValue ?? 0,
+          hasData: feature.properties.hasData ?? false,
+        },
+        geometry: { type: 'Point', coordinates: centroid },
+      })
+    })
+
+    return { type: 'FeatureCollection', features: pointFeatures }
+  }
+
+  private renderLabelLayers(settings: VisualizationSettings, labelPoints: GeoJSON.FeatureCollection): void {
+    if (this.map.getSource('viz-label-source')) {
+      (this.map.getSource('viz-label-source') as GeoJSONSource).setData(labelPoints)
+    } else {
+      this.map.addSource('viz-label-source', { type: 'geojson', data: labelPoints })
+    }
+    applyLabelLayers(this.map, 'viz-label-source', settings)
   }
 }

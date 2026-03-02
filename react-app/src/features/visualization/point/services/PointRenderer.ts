@@ -19,7 +19,7 @@ import type { GeoJSONSource, Map } from 'maplibre-gl'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
 import type { VisualizationSettings } from '@/types/visualization'
 import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
-import { calculateBounds } from '@/utils/geometryUtils'
+import { calculateBounds, calculateCentroid } from '@/utils/geometryUtils'
 import { hashString, mulberry32 } from '@/utils/prng'
 import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
@@ -28,6 +28,7 @@ import {
   resolveCustomRange,
   type ResolvedCustomRange,
 } from '../../shared/customRange'
+import { applyLabelLayers } from '../../shared/labelLayers'
 import {
   DEFAULT_DOT_COLOR,
   DEFAULT_DOT_OPACITY,
@@ -114,6 +115,9 @@ export class PointRenderer {
       `📍 Dot density: ${userData.length} data rows → ${dotsGeoJSON.features.length} dots (1 dot = ${dotValue} units)`,
     )
 
+    // Build label polygons for name/value label layers
+    const labelPolygons = this.buildLabelPolygons(geojson.features, dataMap, locationLevel)
+
     // 5. Render with single color (no classification needed)
     this.renderToMap(
       dotsGeoJSON,
@@ -121,6 +125,7 @@ export class PointRenderer {
         type: 'FeatureCollection',
         features: geojson.features as GeoJSON.Feature[],
       },
+      labelPolygons,
       settings,
       dotColor,
       dotSize,
@@ -422,12 +427,67 @@ export class PointRenderer {
   }
 
   /* ------------------------------------------------------------------ */
+  /*  LABEL HELPERS                                                     */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Build enriched polygon GeoJSON for label layers (displayName, dataValue, hasData)
+   */
+  private buildLabelPolygons(
+    features: GeoJSONFeature[],
+    dataMap: Record<string, number>,
+    locationLevel: 'province' | 'district',
+  ): GeoJSON.FeatureCollection {
+    const seen = new Set<string>()
+    const pointFeatures: GeoJSON.Feature[] = []
+
+    features.forEach((feature) => {
+      const geometry = feature.geometry
+      if (!isPolygonOrMultiPolygon(geometry)) return
+
+      const featureName = this.getFeatureName(feature, locationLevel)
+      let displayName = featureName
+      if (locationLevel === 'province') {
+        const plateCode = getPlateCodeByName(featureName)
+        if (plateCode) {
+          const officialName = getProvinceByPlateCode(plateCode)
+          if (officialName) displayName = officialName
+        }
+      }
+
+      if (seen.has(displayName)) return
+      seen.add(displayName)
+
+      const normalizedFeatureName = normalizeTurkishText(featureName)
+      const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
+      const centroid = calculateCentroid(geometry)
+
+      pointFeatures.push({
+        type: 'Feature',
+        properties: {
+          displayName,
+          dataValue: dataValue ?? 0,
+          hasData: dataValue !== undefined,
+        },
+        geometry: { type: 'Point', coordinates: centroid },
+      })
+    })
+
+    return { type: 'FeatureCollection', features: pointFeatures }
+  }
+
+  private renderLabelLayers(sourceId: string, settings: VisualizationSettings): void {
+    applyLabelLayers(this.map, sourceId, settings)
+  }
+
+  /* ------------------------------------------------------------------ */
   /*  MAP RENDERING                                                     */
   /* ------------------------------------------------------------------ */
 
   private renderToMap(
     geojson: GeoJSON.FeatureCollection,
     backdropGeoJSON: GeoJSON.FeatureCollection,
+    labelPolygonGeoJSON: GeoJSON.FeatureCollection,
     settings: VisualizationSettings,
     dotColor: string,
     dotSize: number,
@@ -446,6 +506,8 @@ export class PointRenderer {
         ? ['case', ['==', ['get', 'inCustomRange'], false], OUT_OF_RANGE_COLOR, dotColor]
         : dotColor
     const backdropFillOpacity = settings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY
+    const effectiveBackdropFillOpacity = settings.dataOnlyMode ? 0 : backdropFillOpacity
+    const effectiveBackdropLineOpacity = settings.dataOnlyMode ? 0 : BACKDROP_LINE_OPACITY
     const circleLayerExists = Boolean(this.map.getLayer(layerId))
 
     // Add or update backdrop source
@@ -469,12 +531,12 @@ export class PointRenderer {
         source: BACKDROP_SOURCE_ID,
         paint: {
           'fill-color': BACKDROP_FILL_COLOR,
-          'fill-opacity': backdropFillOpacity,
+          'fill-opacity': effectiveBackdropFillOpacity,
         },
       }, circleLayerExists ? layerId : undefined)
     } else {
       this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-color', BACKDROP_FILL_COLOR)
-      this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-opacity', backdropFillOpacity)
+      this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-opacity', effectiveBackdropFillOpacity)
     }
 
     // Add backdrop outline layer (always under circles)
@@ -485,14 +547,21 @@ export class PointRenderer {
         source: BACKDROP_SOURCE_ID,
         paint: {
           'line-color': BACKDROP_LINE_COLOR,
-          'line-opacity': BACKDROP_LINE_OPACITY,
+          'line-opacity': effectiveBackdropLineOpacity,
           'line-width': BACKDROP_LINE_WIDTH,
         },
       }, circleLayerExists ? layerId : undefined)
     } else {
       this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-color', BACKDROP_LINE_COLOR)
-      this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-opacity', BACKDROP_LINE_OPACITY)
+      this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-opacity', effectiveBackdropLineOpacity)
       this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-width', BACKDROP_LINE_WIDTH)
+    }
+
+    // Add or update viz-label-source for name/value labels
+    if (this.map.getSource('viz-label-source')) {
+      (this.map.getSource('viz-label-source') as GeoJSONSource).setData(labelPolygonGeoJSON)
+    } else {
+      this.map.addSource('viz-label-source', { type: 'geojson', data: labelPolygonGeoJSON })
     }
 
     // Add or update source
@@ -531,5 +600,7 @@ export class PointRenderer {
       this.map.setPaintProperty(layerId, 'circle-stroke-width', DOT_STROKE_WIDTH)
       this.map.setPaintProperty(layerId, 'circle-opacity', dotOpacity)
     }
+
+    this.renderLabelLayers('viz-label-source', settings)
   }
 }

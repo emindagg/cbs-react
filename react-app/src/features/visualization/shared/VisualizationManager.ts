@@ -14,9 +14,13 @@ import type { ClassificationMethod, VisualizationSettings } from '@/types/visual
 import { suggestClassificationMethod } from '@/utils/dataStats'
 import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
+import { applyLabelLayers } from './labelLayers'
 import { BubbleRenderer } from '../bubble/services/BubbleRenderer'
 import { ChoroplethRenderer } from '../choropleth/services/ChoroplethRenderer'
 import { PointRenderer } from '../point/services/PointRenderer'
+
+const DEFAULT_BACKDROP_FILL_OPACITY = 0.22
+const BACKDROP_LINE_OPACITY = 0.85
 
 export class VisualizationManager {
   private map: Map
@@ -372,6 +376,11 @@ export class VisualizationManager {
       this.map.removeLayer('viz-backdrop-fill')
     }
 
+    // Remove label layers before sources
+    if (this.map.getLayer('viz-name-labels')) this.map.removeLayer('viz-name-labels')
+    if (this.map.getLayer('viz-value-labels')) this.map.removeLayer('viz-value-labels')
+    if (this.map.getSource('viz-label-source')) this.map.removeSource('viz-label-source')
+
     // Remove sources
     if (this.map.getSource('choropleth-source')) {
       this.map.removeSource('choropleth-source')
@@ -385,6 +394,52 @@ export class VisualizationManager {
     if (this.map.getSource('viz-backdrop-source')) {
       this.map.removeSource('viz-backdrop-source')
     }
+  }
+
+  /**
+   * Update label layers without full re-render.
+   * Detects active source from the current map state.
+   */
+  updateLabels(settings: VisualizationSettings): void {
+    if (!this.map.getSource('viz-label-source')) return
+    applyLabelLayers(this.map, 'viz-label-source', settings)
+  }
+
+  /**
+   * Update display-only toggles (showLabels, showValues, dataOnlyMode) without full re-render.
+   * Updates layer filters / paint properties and refreshes label layers in-place.
+   */
+  updateDisplayOptions(settings: VisualizationSettings): void {
+    type LayerFilter = NonNullable<Parameters<Map['setFilter']>[1]>
+
+    // Choropleth: update fill/outline filter and opacity
+    if (this.map.getLayer('choropleth-fill')) {
+      const layerFilter: LayerFilter = (settings.dataOnlyMode && settings.dataOnlyStyle !== 'transparent')
+        ? ['==', ['get', 'hasData'], true] as LayerFilter
+        : ['any', ['==', 'hasData', true], ['==', 'hasData', false]] as LayerFilter
+      this.map.setFilter('choropleth-fill', layerFilter)
+      this.map.setFilter('choropleth-outline', layerFilter)
+
+      const choroplethOpacity = settings.choroplethOpacity ?? 1
+      const fillOpacity = settings.dataOnlyMode && settings.dataOnlyStyle === 'transparent'
+        ? ['case', ['==', ['get', 'hasData'], false], 0, choroplethOpacity]
+        : choroplethOpacity
+      this.map.setPaintProperty('choropleth-fill', 'fill-opacity', fillOpacity)
+    }
+
+    // Bubble/Point: update backdrop opacity
+    if (this.map.getLayer('viz-backdrop-fill')) {
+      const backdropFillOpacity = settings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY
+      const effectiveFillOpacity = settings.dataOnlyMode ? 0 : backdropFillOpacity
+      this.map.setPaintProperty('viz-backdrop-fill', 'fill-opacity', effectiveFillOpacity)
+    }
+    if (this.map.getLayer('viz-backdrop-outline')) {
+      const effectiveLineOpacity = settings.dataOnlyMode ? 0 : BACKDROP_LINE_OPACITY
+      this.map.setPaintProperty('viz-backdrop-outline', 'line-opacity', effectiveLineOpacity)
+    }
+
+    // Always refresh label layers
+    this.updateLabels(settings)
   }
 
   /**

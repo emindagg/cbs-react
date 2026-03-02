@@ -137,6 +137,14 @@ export interface VisualizationSettings {
   symbolFillColor?: string;
   /** Boyut lejantında gösterilecek çember sayısı (3-7). Varsayılan: 3 */
   bubbleLegendCount?: number;
+  /** Verisi olmayan bölgeleri gizle veya şeffaflaştır */
+  dataOnlyMode?: boolean;
+  /** dataOnlyMode aktifken görüntüleme şekli */
+  dataOnlyStyle?: 'hidden' | 'transparent';
+  /** İl/İlçe isimlerini harita üzerinde göster */
+  showLabels?: boolean;
+  /** Verisi olan bölgelerde değerleri harita üzerinde göster */
+  showValues?: boolean;
 }
 
 export interface CurrentVisualization {

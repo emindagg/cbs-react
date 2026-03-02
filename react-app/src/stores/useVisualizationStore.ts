@@ -101,6 +101,10 @@ const defaultVizSettings: VisualizationSettings = {
   choroplethOpacity: 1,
   dotOpacity: 0.85,
   backdropFillOpacity: 0.22,
+  dataOnlyMode: false,
+  dataOnlyStyle: 'hidden',
+  showLabels: false,
+  showValues: false,
 }
 
 const defaultMatchResults: MatchResults = {
