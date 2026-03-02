@@ -57,12 +57,12 @@ export function CoordinateDisplay({ leftPosition, hidden = false }: CoordinateDi
                 {/* Pulsing kırmızı nokta */}
                 <span
                     style={{
-                        width: 7,
-                        height: 7,
+                        width: 5,
+                        height: 5,
                         borderRadius: '50%',
-                        background: '#ef4444',
+                        background: '#22c55e',
                         flexShrink: 0,
-                        boxShadow: '0 0 6px #ef4444aa',
+                        boxShadow: '0 0 6px #22c55eaa',
                         animation: 'coordPulse 1.6s ease-in-out infinite',
                     }}
                 />

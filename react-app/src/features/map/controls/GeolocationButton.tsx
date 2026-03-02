@@ -76,7 +76,7 @@ export function GeolocationButton() {
                                 : 'Konumuma git'
                 }
                 className={[
-                    'w-9 h-9 bg-[#1c1c1e] rounded-full',
+                    'w-9 h-9 bg-[#1c1c1e] rounded-[12px]',
                     'shadow-[0_2px_8px_rgba(34,34,34,0.35)]',
                     'border-none flex items-center justify-center',
                     'text-sm transition-colors cursor-pointer',

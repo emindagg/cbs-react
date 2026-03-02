@@ -196,11 +196,11 @@ export default function GISToolsControl() {
           e.stopPropagation()
           toggleToolsMenu()
         }}
-        className={`w-9 h-9 flex items-center justify-center rounded-full border-none cursor-pointer transition-colors ${toolsMenuMode === 'icons-only'
-            ? 'bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.4)]'
-            : isOpen
-              ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]'
-              : 'bg-[#1c1c1e] text-[#8e8e93] hover:text-white active:text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+        className={`w-9 h-9 flex items-center justify-center rounded-[12px] border-none cursor-pointer transition-colors ${toolsMenuMode === 'icons-only'
+          ? 'bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.4)]'
+          : isOpen
+            ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]'
+            : 'bg-[#1c1c1e] text-[#8e8e93] hover:text-white active:text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
           }`}
         title="CBS Araçları"
       >
