@@ -2,22 +2,18 @@ import { useState } from 'react'
 
 import { useGeolocation } from '../hooks/useGeolocation'
 
-/** Apple Maps / Lucide tarzı outline navigation arrow */
+/** Material Design "near_me" — FA light location-arrow tarzı, kütüphanesiz */
 function NavArrowSVG({ style }: { style?: React.CSSProperties }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            fill="currentColor"
             width="15"
             height="15"
-            style={style}
+            style={{ display: 'block', ...style }}
         >
-            <polygon points="3 11 22 2 13 21 11 13 3 11" />
+            <path d="M21 3L3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z" />
         </svg>
     )
 }
