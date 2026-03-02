@@ -8,6 +8,7 @@ export type GeolocationStatus = 'idle' | 'loading' | 'success' | 'error'
 export interface UseGeolocationReturn {
     status: GeolocationStatus
     errorMessage: string | null
+    isPermissionDenied: boolean
     locate: () => void
 }
 
@@ -22,6 +23,7 @@ export function useGeolocation(): UseGeolocationReturn {
     const mapInstance = useMapStore((state) => state.mapInstance)
     const [status, setStatus] = useState<GeolocationStatus>('idle')
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [isPermissionDenied, setIsPermissionDenied] = useState(false)
     const markerRef = useRef<maplibregl.Marker | null>(null)
 
     // Harita değiştiğinde eski marker'ı temizle
@@ -43,6 +45,7 @@ export function useGeolocation(): UseGeolocationReturn {
 
         setStatus('loading')
         setErrorMessage(null)
+        setIsPermissionDenied(false)
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -189,18 +192,15 @@ export function useGeolocation(): UseGeolocationReturn {
             },
             (err) => {
                 setStatus('error')
-                switch (err.code) {
-                    case err.PERMISSION_DENIED:
-                        setErrorMessage('Konum izni reddedildi.')
-                        break
-                    case err.POSITION_UNAVAILABLE:
-                        setErrorMessage('Konum bilgisi alınamadı.')
-                        break
-                    case err.TIMEOUT:
-                        setErrorMessage('Konum isteği zaman aşımına uğradı.')
-                        break
-                    default:
-                        setErrorMessage('Bilinmeyen bir konum hatası oluştu.')
+                if (err.code === err.PERMISSION_DENIED) {
+                    setIsPermissionDenied(true)
+                    setErrorMessage('Konum izni reddedildi.')
+                } else if (err.code === err.POSITION_UNAVAILABLE) {
+                    setErrorMessage('Konum bilgisi alınamadı.')
+                } else if (err.code === err.TIMEOUT) {
+                    setErrorMessage('Konum isteği zaman aşımına uğradı.')
+                } else {
+                    setErrorMessage('Bilinmeyen bir konum hatası oluştu.')
                 }
             },
             {
@@ -211,7 +211,7 @@ export function useGeolocation(): UseGeolocationReturn {
         )
     }, [mapInstance])
 
-    return { status, errorMessage, locate }
+    return { status, errorMessage, isPermissionDenied, locate }
 }
 
 /**

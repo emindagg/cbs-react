@@ -196,7 +196,12 @@ export default function GISToolsControl() {
           e.stopPropagation()
           toggleToolsMenu()
         }}
-        className={`w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 border-none text-white cursor-pointer ${toolsMenuMode === 'icons-only' ? 'bg-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.4)]' : isOpen ? 'bg-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)]' : 'bg-[#1c1c1e] hover:bg-black shadow-[0_2px_8px_rgba(0,0,0,0.3)]'}`}
+        className={`w-9 h-9 flex items-center justify-center rounded-full border-none cursor-pointer transition-colors ${toolsMenuMode === 'icons-only'
+            ? 'bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.4)]'
+            : isOpen
+              ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]'
+              : 'bg-[#1c1c1e] text-[#8e8e93] hover:text-white active:text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+          }`}
         title="CBS Araçları"
       >
         <i className={`fa-solid fa-screwdriver-wrench text-[13px] ${isOpen ? 'rotate-45' : ''} transition-transform duration-300`}></i>
@@ -267,7 +272,7 @@ export default function GISToolsControl() {
                     ? `${customStyle.bg} text-white ${customStyle.shadow} ring-2 ${customStyle.ring}`
                     : 'bg-blue-500 text-white shadow-[0_2px_8px_rgba(59,130,246,0.4)] ring-2 ring-blue-300'
                   : 'hover:bg-zinc-100 text-zinc-600 hover:scale-105'
-                }`}
+                  }`}
                 title={getToolLabel(tool)}
               >
                 <i className={`fa-solid ${tool.icon} text-[13px] ${active ? 'text-white' : tool.color}`}></i>
