@@ -88,32 +88,9 @@ export function DotDensitySettings({
     applyDotValue(inputStr.trim())
   }, [inputStr, applyDotValue])
 
-  /* ── dotSize debounce (slider + number input) ── */
-  const [localDotSize, setLocalDotSize] = useState(currentDotSize)
-  const dotSizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // Dışarıdan gelen dotSize değişirse yerel state'i senkronla
-  useEffect(() => { setLocalDotSize(currentDotSize) }, [currentDotSize])
-
-  const handleDotSizeChange = useCallback(
-    (val: number) => {
-      if (val < 0.5 || val > 10 || isNaN(val)) return
-      setLocalDotSize(val)
-      if (dotSizeTimerRef.current) clearTimeout(dotSizeTimerRef.current)
-      dotSizeTimerRef.current = setTimeout(() => setVizSettings({ dotSize: val }), DEBOUNCE_MS)
-    },
-    [setVizSettings],
-  )
-
-  const flushDotSize = useCallback(() => {
-    if (dotSizeTimerRef.current) clearTimeout(dotSizeTimerRef.current)
-    setVizSettings({ dotSize: localDotSize })
-  }, [localDotSize, setVizSettings])
-
   /* ── Cleanup ── */
   useEffect(() => () => {
     if (dotValueTimerRef.current) clearTimeout(dotValueTimerRef.current)
-    if (dotSizeTimerRef.current) clearTimeout(dotSizeTimerRef.current)
   }, [])
 
   return (
@@ -206,36 +183,16 @@ export function DotDensitySettings({
         </div>
       </div>
 
-      {/* Dot Size — debounced */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label className="text-[10px] font-medium text-zinc-600">Nokta boyutu</label>
-          <div className="flex items-center gap-1">
-            <input
-              type="number"
-              min={0.5}
-              max={10}
-              step={0.1}
-              value={localDotSize}
-              onChange={(e) => handleDotSizeChange(parseFloat(e.target.value))}
-              onBlur={flushDotSize}
-              className="w-14 px-1.5 py-0.5 text-[10px] text-center border border-zinc-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <span className="text-[9px] text-zinc-400">px</span>
-          </div>
-        </div>
-
-        <input
-          type="range"
-          min={0.5}
-          max={10}
-          step={0.1}
-          value={localDotSize}
-          onChange={(e) => handleDotSizeChange(parseFloat(e.target.value))}
-          onPointerUp={flushDotSize}
-          className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
-        />
-      </div>
+      {/* Dot Size */}
+      <SingleSlider
+        label="Nokta boyutu"
+        min={0.5}
+        max={10}
+        step={0.1}
+        value={currentDotSize}
+        formatValue={(v) => `${v.toFixed(1)} px`}
+        onChange={(v) => setVizSettings({ dotSize: v })}
+      />
 
       {/* Dot Opacity */}
       <SingleSlider

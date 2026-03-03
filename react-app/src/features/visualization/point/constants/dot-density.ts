@@ -4,7 +4,7 @@
  */
 
 /** Varsayılan nokta yarıçapı (px) */
-export const DEFAULT_DOT_SIZE = 2.4
+export const DEFAULT_DOT_SIZE = 2.5
 
 /** Varsayılan nokta rengi */
 export const DEFAULT_DOT_COLOR = '#2d6a4f'
