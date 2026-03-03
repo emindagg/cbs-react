@@ -10,7 +10,7 @@ export const DEFAULT_DOT_SIZE = 2.4
 export const DEFAULT_DOT_COLOR = '#2d6a4f'
 
 /** Varsayılan nokta opaklığı */
-export const DEFAULT_DOT_OPACITY = 0.85
+export const DEFAULT_DOT_OPACITY = 1
 
 /** Toplam hedef nokta sayısı — otomatik dotValue hesabında kullanılır */
 export const TARGET_TOTAL_DOTS = 5_000

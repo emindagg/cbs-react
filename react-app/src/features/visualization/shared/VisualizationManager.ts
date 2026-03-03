@@ -19,8 +19,8 @@ import { BubbleRenderer } from '../bubble/services/BubbleRenderer'
 import { ChoroplethRenderer } from '../choropleth/services/ChoroplethRenderer'
 import { PointRenderer } from '../point/services/PointRenderer'
 
-const DEFAULT_BACKDROP_FILL_OPACITY = 0.22
-const BACKDROP_LINE_OPACITY = 0.85
+const DEFAULT_BACKDROP_FILL_OPACITY = 1
+const BACKDROP_LINE_OPACITY = 1
 
 export class VisualizationManager {
   private map: Map

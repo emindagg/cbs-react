@@ -53,7 +53,7 @@ function updateChoroplethPaintProperties(map: maplibregl.Map, settings: Visualiz
 /** Update bubble paint-only properties (stroke, opacity) without full re-render */
 function updateBubblePaintProperties(map: maplibregl.Map, settings: VisualizationSettings) {
   if (!map.getLayer('bubble-circles')) return
-  const opacity = settings.symbolOpacity ?? 0.6
+  const opacity = settings.symbolOpacity ?? 1
   const strokeColor = settings.symbolStrokeColor || '#ffffff'
   const strokeWidth = settings.symbolStrokeWidth ?? 0.5
   const fillColor = settings.symbolFillColor || BUBBLE_DEFAULT_FILL_COLOR
@@ -79,7 +79,7 @@ export function useVizRender({
   // visualization type alone does NOT trigger an automatic re-render.
   // The user must click the "Yeniden Görselleştir" button for the type change to take effect.
   const range = colorConfig.customRange
-  const DEFAULT_BACKDROP_FILL_OPACITY = 0.22
+  const DEFAULT_BACKDROP_FILL_OPACITY = 1
   const dataVizKey = [
     vizSettings.classificationMethod,
     vizSettings.classCount,

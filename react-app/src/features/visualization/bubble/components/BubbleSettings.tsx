@@ -214,7 +214,7 @@ export function BubbleSettings({
         min={0}
         max={1}
         step={0.05}
-        value={vizSettings.symbolOpacity ?? 0.6}
+        value={vizSettings.symbolOpacity ?? 1}
         formatValue={(v) => `%${Math.round(v * 100)}`}
         onChange={(v) => setVizSettings({ symbolOpacity: v })}
       />
