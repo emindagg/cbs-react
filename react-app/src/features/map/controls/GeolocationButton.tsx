@@ -39,7 +39,7 @@ export function GeolocationButton() {
         ? 'text-emerald-400'
         : (isError && !isPermissionDenied)
             ? 'text-red-400'
-            : 'text-[#8e8e93] hover:text-white active:text-white'
+            : 'text-white'
 
     const handleClick = () => {
         if (isPermissionDenied) {
@@ -66,10 +66,10 @@ export function GeolocationButton() {
                                 : 'Konumuma git'
                 }
                 className={[
-                    'w-9 h-9 bg-[#1c1c1e] rounded-[12px]',
+                    'w-9 h-9 bg-[#1c1c1e] hover:bg-[#2a2a2c] hover:text-white/70 active:bg-[#2c2c2e] rounded-[12px]',
                     'shadow-[0_2px_8px_rgba(34,34,34,0.35)]',
                     'border-none flex items-center justify-center',
-                    'text-sm transition-colors cursor-pointer',
+                    'text-sm cursor-pointer',
                     buttonColor,
                     isLoading ? 'opacity-70 cursor-not-allowed' : '',
                 ].join(' ')}

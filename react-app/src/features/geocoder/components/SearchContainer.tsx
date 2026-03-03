@@ -122,7 +122,7 @@ export function SearchContainer({
         <button
           id="geocoder-toggle-btn"
           onClick={open}
-          className="w-9 h-9 bg-[#1c1c1e] rounded-[12px] shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-[#8e8e93] text-sm hover:text-white active:text-white transition-colors cursor-pointer"
+          className="w-9 h-9 bg-[#1c1c1e] hover:bg-[#2a2a2c] hover:text-white/70 active:bg-[#2c2c2e] rounded-[12px] shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm cursor-pointer"
           title="Arama"
         >
           <i className="fa-solid fa-magnifying-glass"></i>
@@ -132,7 +132,7 @@ export function SearchContainer({
       <button
         id="layers-toggle-btn"
         onClick={onLayersClick}
-        className={`absolute top-0 w-9 h-9 rounded-[12px] shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-[#8e8e93] text-sm hover:text-white active:text-white transition-colors cursor-pointer ${isLayersOpen ? 'bg-black text-white' : 'bg-[#1c1c1e]'}`}
+        className={`absolute top-0 w-9 h-9 rounded-[12px] shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-sm cursor-pointer hover:text-white/70 ${isLayersOpen ? 'bg-black hover:bg-[#1a1a1a] active:bg-black' : 'bg-[#1c1c1e] hover:bg-[#2a2a2c] active:bg-[#2c2c2e]'}`}
         style={{ left: isOpen ? '355px' : '46px' }}
         title="Katmanlar"
       >
@@ -152,7 +152,7 @@ export function SearchContainer({
         id="storymap-toggle-btn"
         type="button"
         onClick={() => useStorymapModalStore.getState().open()}
-        className="absolute top-0 h-9 bg-[#1c1c1e] rounded-[12px] shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-[#8e8e93] text-[11px] font-medium hover:text-white active:text-white transition-colors cursor-pointer px-3.5 whitespace-nowrap"
+        className="absolute top-0 h-9 bg-[#1c1c1e] hover:bg-[#2a2a2c] hover:text-white/70 active:bg-[#2c2c2e] rounded-[12px] shadow-[0_2px_8px_rgba(34,34,34,0.35)] border-none flex items-center justify-center text-white text-[11px] font-medium cursor-pointer px-3.5 whitespace-nowrap"
         style={{
           left: isOpen ? '447px' : '138px',
           letterSpacing: '-0.3px',
