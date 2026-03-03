@@ -16,6 +16,7 @@ interface DotDensityLegendProps {
   dotColor: string
   dotSize: number
   dotValue: number
+  dotLabel?: string
   onTitleChange?: (title: string) => void
 }
 
@@ -24,6 +25,7 @@ export default function DotDensityLegend({
   dotColor,
   dotSize,
   dotValue,
+  dotLabel,
   onTitleChange,
 }: DotDensityLegendProps) {
   const legendRef = useRef<HTMLDivElement>(null)
@@ -161,7 +163,7 @@ export default function DotDensityLegend({
         <span
           className="text-[13px] font-medium text-gray-700 whitespace-nowrap"
         >
-          1 nokta = {fmt(dotValue)}
+          1 nokta = {fmt(dotValue)}{dotLabel ? ` ${dotLabel}` : ''}
         </span>
       </div>
     </div>

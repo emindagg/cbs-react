@@ -229,6 +229,7 @@ export default function Container() {
         dotColor={dotColor}
         dotSize={dotSize}
         dotValue={dotValue}
+        dotLabel={vizSettings.dotLabel}
         onTitleChange={handleTitleChange}
       />
     )
