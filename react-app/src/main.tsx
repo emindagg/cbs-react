@@ -37,9 +37,7 @@ async function clearDevStorage() {
   }
 }
 
-if (import.meta.env.DEV) {
-  void clearDevStorage()
-}
+await clearDevStorage()
 
 const rootElement = document.getElementById('root')
 
