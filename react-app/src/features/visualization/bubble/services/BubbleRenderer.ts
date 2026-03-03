@@ -518,8 +518,12 @@ export class BubbleRenderer {
     const strokeColor = settings.symbolStrokeColor || '#ffffff'
     const strokeWidth = settings.symbolStrokeWidth !== undefined ? settings.symbolStrokeWidth : 0.5
     const backdropFillOpacity = settings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY
-    const effectiveBackdropFillOpacity = settings.dataOnlyMode ? 0 : backdropFillOpacity
-    const effectiveBackdropLineOpacity = settings.dataOnlyMode ? 0 : BACKDROP_LINE_OPACITY
+    const effectiveBackdropFillOpacity: unknown = settings.dataOnlyMode
+      ? ['case', ['==', ['get', 'hasData'], true], backdropFillOpacity, 0]
+      : backdropFillOpacity
+    const effectiveBackdropLineOpacity: unknown = settings.dataOnlyMode
+      ? ['case', ['==', ['get', 'hasData'], true], BACKDROP_LINE_OPACITY, 0]
+      : BACKDROP_LINE_OPACITY
     const circleLayerExists = Boolean(this.map.getLayer(layerId))
 
     // Add or update backdrop source
@@ -543,9 +547,10 @@ export class BubbleRenderer {
         source: BACKDROP_SOURCE_ID,
         paint: {
           'fill-color': BACKDROP_FILL_COLOR,
-          'fill-opacity': effectiveBackdropFillOpacity,
+          'fill-opacity': backdropFillOpacity,
         },
       }, circleLayerExists ? layerId : undefined)
+      this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-opacity', effectiveBackdropFillOpacity)
     } else {
       this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-color', BACKDROP_FILL_COLOR)
       this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-opacity', effectiveBackdropFillOpacity)
@@ -559,10 +564,11 @@ export class BubbleRenderer {
         source: BACKDROP_SOURCE_ID,
         paint: {
           'line-color': BACKDROP_LINE_COLOR,
-          'line-opacity': effectiveBackdropLineOpacity,
+          'line-opacity': BACKDROP_LINE_OPACITY,
           'line-width': BACKDROP_LINE_WIDTH,
         },
       }, circleLayerExists ? layerId : undefined)
+      this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-opacity', effectiveBackdropLineOpacity)
     } else {
       this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-color', BACKDROP_LINE_COLOR)
       this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-opacity', effectiveBackdropLineOpacity)

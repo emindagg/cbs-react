@@ -430,11 +430,15 @@ export class VisualizationManager {
     // Bubble/Point: update backdrop opacity
     if (this.map.getLayer('viz-backdrop-fill')) {
       const backdropFillOpacity = settings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY
-      const effectiveFillOpacity = settings.dataOnlyMode ? 0 : backdropFillOpacity
+      const effectiveFillOpacity: unknown = settings.dataOnlyMode
+        ? ['case', ['==', ['get', 'hasData'], true], backdropFillOpacity, 0]
+        : backdropFillOpacity
       this.map.setPaintProperty('viz-backdrop-fill', 'fill-opacity', effectiveFillOpacity)
     }
     if (this.map.getLayer('viz-backdrop-outline')) {
-      const effectiveLineOpacity = settings.dataOnlyMode ? 0 : BACKDROP_LINE_OPACITY
+      const effectiveLineOpacity: unknown = settings.dataOnlyMode
+        ? ['case', ['==', ['get', 'hasData'], true], BACKDROP_LINE_OPACITY, 0]
+        : BACKDROP_LINE_OPACITY
       this.map.setPaintProperty('viz-backdrop-outline', 'line-opacity', effectiveLineOpacity)
     }
 
