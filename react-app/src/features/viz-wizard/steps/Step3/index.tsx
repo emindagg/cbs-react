@@ -310,7 +310,7 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         <label className="flex items-center justify-between cursor-pointer">
           <div>
             <span className="text-[10px] font-medium text-zinc-700">Sadece Veri Modu</span>
-            <p className="text-[9px] text-zinc-400 mt-0.5">Verisi olmayan bölgeleri gizler</p>
+            <p className="text-[9px] text-zinc-400 mt-0.5">Verisi olmayan il/ilçeleri gizler</p>
           </div>
           <input type="checkbox" checked={vizSettings.dataOnlyMode ?? false}
             onChange={(e) => setVizSettings({ dataOnlyMode: e.target.checked })}
