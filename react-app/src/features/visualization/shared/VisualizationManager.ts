@@ -412,7 +412,9 @@ export class VisualizationManager {
   updateDisplayOptions(settings: VisualizationSettings): void {
     type LayerFilter = NonNullable<Parameters<Map['setFilter']>[1]>
 
-    // Choropleth: update fill/outline filter and opacity
+    const noDataColor = settings.noDataColor ?? '#e4e4e4'
+
+    // Choropleth: update fill/outline filter, opacity, and noDataColor
     if (this.map.getLayer('choropleth-fill')) {
       const layerFilter: LayerFilter = (settings.dataOnlyMode && settings.dataOnlyStyle !== 'transparent')
         ? ['==', ['get', 'hasData'], true] as LayerFilter
@@ -425,10 +427,22 @@ export class VisualizationManager {
         ? ['case', ['==', ['get', 'hasData'], false], 0, choroplethOpacity]
         : choroplethOpacity
       this.map.setPaintProperty('choropleth-fill', 'fill-opacity', fillOpacity)
+
+      // Live noDataColor update: rebuild the outer hasData wrap with the new color
+      if (this.choroplethRenderer.lastBaseColorExpression !== null) {
+        const newColorExpression: unknown = [
+          'case',
+          ['==', ['get', 'hasData'], false],
+          noDataColor,
+          this.choroplethRenderer.lastBaseColorExpression,
+        ]
+        this.map.setPaintProperty('choropleth-fill', 'fill-color', newColorExpression)
+      }
     }
 
-    // Bubble/Point: update backdrop opacity
+    // Bubble/Point: update backdrop fill-color and opacity
     if (this.map.getLayer('viz-backdrop-fill')) {
+      this.map.setPaintProperty('viz-backdrop-fill', 'fill-color', noDataColor)
       const backdropFillOpacity = settings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY
       const effectiveFillOpacity: unknown = settings.dataOnlyMode
         ? ['case', ['==', ['get', 'hasData'], true], backdropFillOpacity, 0]

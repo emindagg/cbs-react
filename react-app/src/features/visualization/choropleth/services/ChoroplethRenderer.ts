@@ -30,6 +30,17 @@ const CONTINUOUS_STOPS = 16
 export class ChoroplethRenderer {
   private map: Map
 
+  /**
+   * Per-map cache of the base color expression (before hasData wrap).
+   * Static WeakMap ensures it survives across VisualizationManager re-instantiations.
+   */
+  static readonly expressionCache = new WeakMap<Map, unknown[]>()
+
+  /** Instance accessor — delegates to the static cache */
+  get lastBaseColorExpression(): unknown[] | null {
+    return ChoroplethRenderer.expressionCache.get(this.map) ?? null
+  }
+
   constructor(map: Map) {
     this.map = map
   }
@@ -124,10 +135,13 @@ export class ChoroplethRenderer {
       ]
     }
 
+    // Store base expression for live noDataColor updates (before the outermost hasData wrap)
+    ChoroplethRenderer.expressionCache.set(this.map, colorExpression as unknown[])
+
     colorExpression = [
       'case',
       ['==', ['get', 'hasData'], false],
-      NO_DATA_COLOR,
+      settings.noDataColor ?? NO_DATA_COLOR,
       colorExpression,
     ]
 

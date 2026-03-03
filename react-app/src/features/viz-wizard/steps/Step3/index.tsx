@@ -342,6 +342,21 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
             onChange={(e) => setVizSettings({ showValues: e.target.checked })}
             className="w-4 h-4 accent-zinc-800" />
         </label>
+
+        <div className="border-t border-zinc-100" />
+
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-medium text-zinc-700">Verisi Olmayan Renk</span>
+            <p className="text-[9px] text-zinc-400 mt-0.5">Veri bulunmayan il/ilçe dolgu rengi</p>
+          </div>
+          <input
+            type="color"
+            value={vizSettings.noDataColor ?? '#e4e4e4'}
+            onChange={(e) => setVizSettings({ noDataColor: e.target.value })}
+            className="w-7 h-7 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
+          />
+        </div>
       </div>
 
       {/* Action buttons */}

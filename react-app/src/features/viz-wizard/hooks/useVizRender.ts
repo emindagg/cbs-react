@@ -118,6 +118,7 @@ export function useVizRender({
     vizSettings.showLabels ?? false,
     vizSettings.showValues ?? false,
     vizSettings.dataOnlyMode ?? false,
+    vizSettings.noDataColor ?? '#e4e4e4',
   ].join('-')
 
   const prevDataVizKeyRef = useRef<string | null>(null)

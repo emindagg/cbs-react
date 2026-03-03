@@ -145,6 +145,8 @@ export interface VisualizationSettings {
   showLabels?: boolean;
   /** Verisi olan bölgelerde değerleri harita üzerinde göster */
   showValues?: boolean;
+  /** Verisi olmayan il/ilçe dolgu rengi (hex). Varsayılan: #e4e4e4 */
+  noDataColor?: string;
 }
 
 export interface CurrentVisualization {

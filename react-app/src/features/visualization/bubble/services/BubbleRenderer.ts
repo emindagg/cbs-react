@@ -547,6 +547,8 @@ export class BubbleRenderer {
       })
     }
 
+    const backdropFillColor = settings.noDataColor ?? BACKDROP_FILL_COLOR
+
     // Add backdrop fill layer (always under circles)
     if (!this.map.getLayer(BACKDROP_FILL_LAYER_ID)) {
       this.map.addLayer({
@@ -554,13 +556,13 @@ export class BubbleRenderer {
         type: 'fill',
         source: BACKDROP_SOURCE_ID,
         paint: {
-          'fill-color': BACKDROP_FILL_COLOR,
+          'fill-color': backdropFillColor,
           'fill-opacity': backdropFillOpacity,
         },
       }, circleLayerExists ? layerId : undefined)
       this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-opacity', effectiveBackdropFillOpacity)
     } else {
-      this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-color', BACKDROP_FILL_COLOR)
+      this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-color', backdropFillColor)
       this.map.setPaintProperty(BACKDROP_FILL_LAYER_ID, 'fill-opacity', effectiveBackdropFillOpacity)
     }
 
