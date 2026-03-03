@@ -347,8 +347,7 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
 
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-[10px] font-medium text-zinc-700">Verisi Olmayan Renk</span>
-            <p className="text-[9px] text-zinc-400 mt-0.5">Veri bulunmayan il/ilçe dolgu rengi</p>
+            <span className="text-[10px] font-medium text-zinc-700">Harita Dolgu Rengi</span>
           </div>
           <input
             type="color"
