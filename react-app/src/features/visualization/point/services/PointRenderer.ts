@@ -118,13 +118,21 @@ export class PointRenderer {
     // Build label polygons for name/value label layers
     const labelPolygons = this.buildLabelPolygons(geojson.features, dataMap, locationLevel)
 
+    // Build backdrop with hasData so dataOnlyMode case expression works correctly
+    const backdropFeatures = geojson.features.map((feature) => {
+      const featureName = this.getFeatureName(feature, locationLevel)
+      const normalizedName = normalizeTurkishText(featureName)
+      const dataValue = this.getDataValue(feature, dataMap, normalizedName, locationLevel)
+      return {
+        ...feature,
+        properties: { ...(feature.properties ?? {}), hasData: dataValue !== undefined && dataValue !== 0 },
+      } as GeoJSON.Feature
+    })
+
     // 5. Render with single color (no classification needed)
     this.renderToMap(
       dotsGeoJSON,
-      {
-        type: 'FeatureCollection',
-        features: geojson.features as GeoJSON.Feature[],
-      },
+      { type: 'FeatureCollection', features: backdropFeatures },
       labelPolygons,
       settings,
       dotColor,

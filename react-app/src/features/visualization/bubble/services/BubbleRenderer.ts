@@ -165,13 +165,21 @@ export class BubbleRenderer {
     // Build label polygons for name/value label layers
     const labelPolygons = this.buildLabelPolygons(geojson.features, sizeDataMap, locationLevel)
 
+    // Build backdrop with hasData so dataOnlyMode case expression works correctly
+    const backdropFeatures = geojson.features.map((feature) => {
+      const featureName = this.getFeatureName(feature, locationLevel)
+      const normalizedFeatureName = normalizeTurkishText(featureName)
+      const dataValue = this.getDataValue(feature, sizeDataMap, normalizedFeatureName, locationLevel)
+      return {
+        ...feature,
+        properties: { ...(feature.properties ?? {}), hasData: dataValue !== undefined && dataValue !== 0 },
+      } as GeoJSON.Feature
+    })
+
     // Render to map
     this.renderToMap(
       bubblesGeoJSON,
-      {
-        type: 'FeatureCollection',
-        features: geojson.features as GeoJSON.Feature[],
-      },
+      { type: 'FeatureCollection', features: backdropFeatures },
       labelPolygons,
       settings,
       colorExpression,
