@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
 import { useHeatmapStore } from '@/features/heatmap'
+import { useIsochroneStore } from '@/features/isochrone'
 import { useSpatialAnalysisStore } from '@/features/spatial-analysis'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useToolStore, type ToolType } from '@/stores/useToolStore'
@@ -41,6 +42,7 @@ const TOOLS: ToolDef[] = [
   { id: 'voronoi', icon: 'fa-border-all', label: 'En Yakın Alanlar', color: 'text-teal-400', group: 'analysis' },
   { id: 'nearest-points', icon: 'fa-arrows-to-dot', label: 'En Yakın Nokta', color: 'text-violet-500', group: 'analysis' },
   { id: 'heatmap', icon: 'fa-fire', label: 'Isı Haritası', color: 'text-red-400', group: 'analysis' },
+  { id: 'isochrone', icon: 'fa-circle-nodes', label: 'Erişilebilirlik Analizi', color: 'text-cyan-500', group: 'analysis' },
   { id: 'screenshot', icon: 'fa-camera', label: 'Ekran Görüntüsü', color: 'text-zinc-500', group: 'general' },
   { id: 'clean-visuals', icon: 'fa-eraser', label: 'Haritayı Temizle', color: 'text-indigo-500', group: 'general' },
   { id: 'clear-data', icon: 'fa-broom', label: 'Verileri Sıfırla', color: 'text-amber-500', group: 'reset' },
@@ -54,6 +56,7 @@ export default function GISToolsControl() {
 
   const { mode: clusterMode, cycle: cycleClustering } = useClusteringStore()
   const { isActive: isHeatmapActive, toggle: toggleHeatmap } = useHeatmapStore()
+  const { isActive: isIsochroneActive, toggle: toggleIsochrone } = useIsochroneStore()
   const { activeAnalysis, toggle: toggleSpatial } = useSpatialAnalysisStore()
 
   const {
@@ -127,6 +130,9 @@ export default function GISToolsControl() {
     } else if (toolId === 'heatmap') {
       toggleHeatmap()
       maybeClose()
+    } else if (toolId === 'isochrone') {
+      toggleIsochrone()
+      maybeClose()
     } else if (toolId === 'convex-hull') {
       toggleSpatial('convex-hull')
       maybeClose()
@@ -158,6 +164,7 @@ export default function GISToolsControl() {
   const isToolActive = (toolId: string) => {
     if (toolId === 'clustering') return clusterMode !== 'normal'
     if (toolId === 'heatmap') return isHeatmapActive
+    if (toolId === 'isochrone') return isIsochroneActive
     if (toolId === 'convex-hull') return activeAnalysis === 'convex-hull'
     if (toolId === 'voronoi') return activeAnalysis === 'voronoi'
     if (toolId === 'nearest-points') return activeAnalysis === 'nearest-points'
@@ -168,6 +175,7 @@ export default function GISToolsControl() {
     if (tool.id === 'clustering' && clusterMode === 'clustered') return 'Noktaları Gizle'
     if (tool.id === 'clustering' && clusterMode === 'hidden') return 'Normal Göster'
     if (tool.id === 'heatmap' && isHeatmapActive) return 'Isı Haritasını Kapat'
+    if (tool.id === 'isochrone' && isIsochroneActive) return 'İzocron Kapat'
     if (tool.id === 'convex-hull' && activeAnalysis === 'convex-hull') return 'Dış Sınırı Kapat'
     if (tool.id === 'voronoi' && activeAnalysis === 'voronoi') return 'Voronoi\'yi Kapat'
     if (tool.id === 'nearest-points' && activeAnalysis === 'nearest-points') return 'Analizi Kapat'

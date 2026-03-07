@@ -7,13 +7,14 @@ import { BasemapSwitcher } from '@/features/basemap'
 import { useClustering } from '@/features/clustering'
 import { ImportedDataManagerFab, useLayerStyleSync } from '@/features/data-management'
 import { SearchContainer } from '@/features/geocoder'
-import { StorymapModal } from '@/features/storymap-modal'
-import { HeatmapPanel, useHeatmap } from '@/features/heatmap'
-import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-analysis'
 import { GlobeToggleButton } from '@/features/globe-view'
+import { HeatmapPanel, useHeatmap } from '@/features/heatmap'
+import { IsochronePanel, useIsochrone } from '@/features/isochrone'
 import { LayersPanel, useOverlayLayers } from '@/features/layers'
 import { LegendContainer } from '@/features/legend'
 import { MapContainer, MapControlStack, CoordinateDisplay } from '@/features/map'
+import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-analysis'
+import { StorymapModal } from '@/features/storymap-modal'
 import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -56,6 +57,9 @@ export default function AppLayout() {
 
   // Spatial analysis (Convex Hull, Voronoi)
   const spatial = useSpatialAnalysis()
+
+  // Isochrone accessibility analysis
+  const isochrone = useIsochrone()
 
   // Toggle sidebar and resize map
   const toggleSidebar = () => {
@@ -180,6 +184,26 @@ export default function AppLayout() {
         onNearestPointsConfigChange={spatial.setNearestPointsConfig}
         onClose={() => spatial.setPanelOpen(false)}
         onDeactivate={spatial.deactivate}
+      />
+
+      {/* Isochrone Panel */}
+      <IsochronePanel
+        isOpen={isochrone.isPanelOpen}
+        mode={isochrone.mode}
+        selectedTimes={isochrone.selectedTimes}
+        origin={isochrone.origin}
+        isochroneData={isochrone.isochroneData}
+        routeStats={isochrone.routeStats}
+        isLoading={isochrone.isLoading}
+        isRouteLoading={isochrone.isRouteLoading}
+        isAwaitingDestination={isochrone.isAwaitingDestination}
+        error={isochrone.error}
+        onModeChange={isochrone.setMode}
+        onTimeToggle={isochrone.toggleTime}
+        onStartDirections={isochrone.startDirections}
+        onCancelDirections={isochrone.cancelDirections}
+        onClose={() => isochrone.setPanelOpen(false)}
+        onDeactivate={isochrone.deactivate}
       />
 
       {/* Visualization Legend */}

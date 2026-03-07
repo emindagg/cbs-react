@@ -56,6 +56,18 @@ body {
     width: 100%;
 }
 
+/* Isochrone context popup — strip MapLibre default chrome */
+.iso-context-popup .maplibregl-popup-content {
+    padding: 0;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+.iso-context-popup .maplibregl-popup-tip {
+    border-top-color: #e2e8f0;
+}
+
 .logo {
     height: 70px;
 }
