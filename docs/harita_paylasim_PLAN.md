@@ -1,52 +1,72 @@
-# Harita Paylaşım Mimarisi
+# Kullanıcı Üretimi Veri Dahil Harita Paylaşımı
 
 ## Özet
-- Araştırma sonucu: ana React uygulaması bugün local-first çalışıyor; kullanıcı katmanları tarayıcı depolamasında tutuluyor, paylaşım backend’i yok. Statik il/ilçe sınırları GitHub Raw’dan okunuyor; kullanıcı haritası GitHub’a yazılmıyor. Dayanak: [useDataManagementStore.ts](/D:/0GM/MEB%20PROJELER/CBS%20PROJELER/cbs-react/react-app/src/features/data-management/store/useDataManagementStore.ts#L29), [VisualizationManager.ts](/D:/0GM/MEB%20PROJELER/CBS%20PROJELER/cbs-react/react-app/src/features/visualization/shared/VisualizationManager.ts#L49), [apiService.js](/D:/0GM/MEB%20PROJELER/CBS%20PROJELER/cbs-react/react-app/storymap/src/services/apiService.js#L219).
-- Doğru model, storymap’teki desenin aynısı: haritayı backend’de JSON belge olarak sakla, paylaşınca `publicKey` üret, auth’suz read-only viewer ile aç.
-- Karar: kullanıcı verisini her paylaşımda GitHub’a yazma. Paylaşım dokümanını uzak depoda sakla; ortak boundary verisini share başına DB’ye kopyalama.
+- Paylaşım kapsamı yalnızca veri görselleştirme olmayacak; kullanıcının haritada oluşturduğu veya içe aktardığı veriler de paylaşılacak.
+- Paylaşım oluşturma login gerektirecek ve mevcut storymap sunucusu kullanılacak.
+- Backend içinde storymap’ten ayrı bir `MapShare` kaynağı açılacak.
+- Paylaşılan link ayrı bir read-only sayfa açacak; alıcı haritayı ve veri detaylarını görecek, hiçbir şeyi düzenleyemeyecek.
+- V1 varsayılanı snapshot modelidir: paylaşılan içerik otomatik değişmez. Kullanıcı yeni hali paylaşmak isterse yeniden yayınlar.
 
-## Uygulama Tasarımı
-- Ana uygulamaya bir `Paylaş` butonu eklenir; yalnızca paylaşılabilir içerik varsa aktif olur.
-- Kullanıcı paylaş dediğinde istemci bir `SharedMapSnapshot` üretir:
+## Uygulama Davranışı
+- `Paylaş` butonu şu durumda aktif olur:
+  - en az bir kullanıcı verisi varsa (`drawn` veya `imported` katman),
+  - veya aktif bir görselleştirme varsa,
+  - veya ikisi birden varsa.
+- Kullanıcı giriş yapmamışsa paylaşım akışı login’e yönlendirir.
+- Login sonrası istemci tek bir `SharedMapSnapshot` üretir ve backend’e kaydeder.
+- Snapshot şunları içerir:
   - `view`: `center`, `zoom`, `basemap`
-  - `dataLayers`: `items`, `layerStyles`
-  - `visualization`: `currentVisualization`, `colorConfig`, `mapTitle`
-  - `datasetRef`: `province-v1` veya `district-v1`
-  - `meta`: `title`, `version`, zaman damgaları
-- Snapshot backend’e kaydedilir; metadata veritabanında, büyük JSON payload object storage/blob alanında tutulur.
-- Share açılınca backend `publicKey` üretir; link ayrı bir viewer entry olur: `shared-map.html?code={publicKey}`. Mevcut projede router olmadığı için ayrı HTML/entry seçilir; tüm uygulamaya router eklenmez.
-- Public viewer `GET public/{publicKey}` ile snapshot’ı alır ve read-only layout içinde haritayı hydrate eder; pan/zoom serbest, import/draw/edit/share yoktur.
-- Unshare akışı `publicKey`’i iptal eder; eski link “paylaşım kapatıldı” ekranına düşer.
-- Statik il/ilçe boundary GeoJSON snapshot’a gömülmez. Viewer bunları `datasetRef` üzerinden ortak kaynaktan çözer. Kullanıcının çizdiği veya içe aktardığı geometri ise snapshot içinde tam saklanır.
+  - `dataLayers`: tüm `items` listesi
+  - `dataPresentation`: `layerStyles`, görünürlük bilgileri, per-item style override’ları
+  - `visualization`: varsa `currentVisualization`, `colorConfig`, `mapTitle`
+  - `meta`: başlık, owner, zaman damgaları, sürüm
+  - `datasetRef`: il/ilçe boundary referansı gerekiyorsa
+- Alıcı tarafında read-only viewer:
+  - tüm kullanıcı geometrilerini haritada gösterir
+  - obje seçilince sağ panel veya popup içinde `properties` alanlarını gösterir
+  - aktif görselleştirme varsa legend ve başlığı da gösterir
+  - import, draw, edit, save, share, delete, style değiştirme işlemlerini kapatır
 
-## API ve Veri Sözleşmesi
-- Yeni kaynak: `MapShare`
+## Backend ve Link Modeli
+- Aynı storymap sunucusunda yeni kaynak: `MapShare`
 - Endpoint’ler:
   - `POST /api/MapShare`
-  - `PUT /api/MapShare/{id}`
   - `PATCH /api/MapShare/share/{id}`
   - `PATCH /api/MapShare/unshare/{id}`
   - `GET /api/MapShare/public/{publicKey}`
-- Snapshot şeması:
-  - `version: 1`
-  - `view: { center, zoom, basemap }`
-  - `dataLayers: { items, layerStyles }`
-  - `visualization: { currentVisualization, colorConfig, mapTitle } | null`
-  - `datasetRef: 'province-v1' | 'district-v1' | null`
-  - `meta: { title, ownerId, createdAt, updatedAt }`
-- Public viewer için `rawData`, wizard step state, `matchResults`, geçici modal state ve browser cache verisi taşınmaz; yalnızca yeniden render için gereken snapshot saklanır.
+- Link yapısı:
+  - örnek: `shared-map.html?code={publicKey}`
+- `publicKey` auth’suz okunur ama yalnızca görüntüleme yapar.
+- Kullanıcı verisi GitHub’a yazılmaz.
+- Ortak boundary verileri istenirse mevcut GitHub/CDN kaynağından okunmaya devam eder.
+- Kullanıcının kendi oluşturduğu/import ettiği geometri ve öznitelikler snapshot içinde tam saklanır.
+
+## Read-Only Sayfa İçeriği
+- Gösterilecekler:
+  - harita
+  - kullanıcı oluşturduğu nokta/çizgi/poligon verileri
+  - obje detay paneli
+  - varsa tematik görselleştirme
+  - varsa legend ve harita başlığı
+- Gösterilmeyecekler:
+  - veri düzenleme araçları
+  - çizim araçları
+  - import/export işlemleri
+  - paylaşım ve kayıt kontrolleri
+  - tam veri tablosu
+- V1 veri görünümü: `Harita + özellik paneli`
 
 ## Test Planı
-- Çizilmiş katmanlı harita paylaşılır; farklı tarayıcıda aynı geometri görünür.
-- İçe aktarılmış GeoJSON/KML/shapefile katmanlı harita paylaşılır; kullanıcı verisi GitHub’a bağlı olmadan yüklenir.
-- Choropleth, bubble ve dot görselleştirmeleri paylaşılır; legend, başlık, basemap ve zoom korunur.
-- Sadece il/ilçe tematik görselleştirme paylaşılır; boundary verisi ortak kaynaktan çözülür, DB’ye kopyalanmaz.
-- Unshare sonrası eski link açılmaz.
-- Read-only viewer’da düzenleme kontrolleri görünmez veya çalışmaz.
-- Büyük payload limitleri ve hata mesajları doğrulanır.
+- Sadece kullanıcı çizimi olan harita paylaşılır; farklı tarayıcıda tüm geometri ve özellikler görünür.
+- İçe aktarılmış GeoJSON/KML/shapefile verisi paylaşılır; alıcı tüm kayıtları read-only görür.
+- Hem kullanıcı verisi hem görselleştirme birlikte paylaşılır; ikisi de doğru hydrate edilir.
+- Feature seçilince öznitelik paneli doğru açılır.
+- Login olmadan paylaşım başlatılamaz.
+- Unshare sonrası link çalışmaz.
+- Owner yerelde veri değiştirse bile mevcut public link otomatik değişmez.
 
-## Varsayımlar ve Seçilen Varsayılanlar
-- V1 paylaşım modeli snapshot’tır; owner linki ancak yeniden güncelleyerek değiştirir.
-- Paylaşım oluşturmak auth gerektirir; linke sahip herkes auth’suz görüntüler.
-- Kullanıcı verisi GitHub’a yazılmaz.
-- Storymap altyapısı doğrudan reuse edilmez; yalnızca backend deseni reuse edilir, çünkü mevcut `StorymapModal` ana uygulama state’ini storymap’e taşımıyor.
+## Varsayımlar
+- V1’de paylaşılan snapshot sabittir; yeni içerik için yeniden paylaşım gerekir.
+- V1’de alıcı veri indiremez; yalnızca görür.
+- V1’de tüm `properties` alanları olduğu gibi paylaşılır; alan bazlı maskeleme yoktur.
+- Storymap backend’in auth ve public-key desenleri yeniden kullanılır, storymap payload modeli kullanılmaz.
