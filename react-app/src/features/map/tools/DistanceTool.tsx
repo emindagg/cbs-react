@@ -1,6 +1,6 @@
 import type { FeatureCollection, LineString, Polygon } from 'geojson'
 import type maplibregl from 'maplibre-gl'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useCallback } from 'react'
 import { useMap, Source, Layer, Marker } from 'react-map-gl/maplibre'
 import type { LayerProps } from 'react-map-gl/maplibre'
 
@@ -28,6 +28,7 @@ export default function DistanceTool() {
   } = useToolStore()
 
   const isActive = activeTool === 'measure-distance'
+  const isDraggingMarker = useRef(false)
 
   // Check if shape is closed
   const isClosed = useMemo(() => {
@@ -52,6 +53,12 @@ export default function DistanceTool() {
     isClosed,
   })
 
+  // Wrap click handler to suppress map clicks triggered by marker drag
+  const handleClickSafe = useCallback((e: maplibregl.MapMouseEvent) => {
+    if (isDraggingMarker.current) return
+    handleClick(e)
+  }, [handleClick])
+
   // Attach/Detach Listeners
   useEffect(() => {
     if (!map || !isActive) return
@@ -59,7 +66,7 @@ export default function DistanceTool() {
     const mapInstance = map as unknown as maplibregl.Map
 
     mapInstance.on('mousemove', handleMouseMove)
-    mapInstance.on('click', handleClick)
+    mapInstance.on('click', handleClickSafe)
     mapInstance.on('dblclick', handleDblClick)
     document.addEventListener('keydown', handleKeyDown)
 
@@ -70,12 +77,12 @@ export default function DistanceTool() {
 
     return () => {
       mapInstance.off('mousemove', handleMouseMove)
-      mapInstance.off('click', handleClick)
+      mapInstance.off('click', handleClickSafe)
       mapInstance.off('dblclick', handleDblClick)
       document.removeEventListener('keydown', handleKeyDown)
       mapInstance.getCanvas().style.cursor = ''
     }
-  }, [map, isActive, handleMouseMove, handleClick, handleDblClick, handleKeyDown, isDrawingDistance])
+  }, [map, isActive, handleMouseMove, handleClickSafe, handleDblClick, handleKeyDown, isDrawingDistance])
 
 
   // --- GeoJSON Generation ---
@@ -241,6 +248,8 @@ export default function DistanceTool() {
               transition: 'none',
             }}
             title={idx === 0 && isDrawingDistance ? 'Kapatmak için tıkla' : ''}
+            onPointerDown={() => { isDraggingMarker.current = true }}
+            onPointerUp={() => { setTimeout(() => { isDraggingMarker.current = false }, 50) }}
           />
         </Marker>
       ))}
