@@ -11,6 +11,7 @@ import { useDistanceHandlers } from './DistanceTool.handlers'
 import {
   calculateMeasurement,
   calculatePerimeter,
+  calculateTempSegmentDistance,
   calculateTempDistance,
   formatArea,
   formatDistance,
@@ -146,6 +147,11 @@ export default function DistanceTool() {
     [distancePoints, distanceGhostPoint],
   )
 
+  const tempSegmentDistance = useMemo(
+    () => calculateTempSegmentDistance(distancePoints, distanceGhostPoint),
+    [distancePoints, distanceGhostPoint],
+  )
+
 
   // STRICT VISIBILITY & CLEAN START
   // 1. If not active -> Null
@@ -190,6 +196,7 @@ export default function DistanceTool() {
         perimeterValue={perimeterValue}
         measurementValue={measurementValue}
         tempTotalDistance={tempTotalDistance}
+        tempSegmentDistance={tempSegmentDistance}
         isDrawingDistance={isDrawingDistance}
         formatDistance={formatDistance}
         formatArea={formatArea}

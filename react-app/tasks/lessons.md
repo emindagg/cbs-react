@@ -1,0 +1,1 @@
+- Kullanıcı görsel/ölçü isteğini düzeltince önce mevcut bileşenin gerçek ölçülerini yeniden oku; önceki patch bağlamına güvenip kör düzenleme yapma.
