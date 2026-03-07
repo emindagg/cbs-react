@@ -64,6 +64,7 @@ export default function GISToolsControl() {
     setActiveTool,
     activeTool,
     resetDistance,
+    showMeasurementTools,
     showAdvancedAnalysis,
   } = useToolStore()
 
@@ -183,6 +184,7 @@ export default function GISToolsControl() {
 
   const enabledTools = TOOLS.filter((t) => {
     if (t.disabled) return false
+    if (t.group === 'measure' && !showMeasurementTools) return false
     if (t.group === 'analysis' && !showAdvancedAnalysis) return false
     return true
   })
@@ -221,6 +223,7 @@ export default function GISToolsControl() {
           </div>
           <div className="pb-1.5 divide-y divide-zinc-50">
             {TOOL_GROUPS.map((group) => {
+              if (group.key === 'measure' && !showMeasurementTools) return null
               if (group.key === 'analysis' && !showAdvancedAnalysis) return null
               const groupTools = enabledTools.filter((t) => t.group === group.key)
               if (groupTools.length === 0) return null
@@ -346,4 +349,3 @@ function CompactMenuItem({ icon, label, onClick, active, color, disabled, active
     </button>
   )
 }
-

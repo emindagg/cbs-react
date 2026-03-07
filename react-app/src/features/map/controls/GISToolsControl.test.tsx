@@ -16,13 +16,15 @@ vi.mock('../../data-management/store/indexedDbStorage', () => ({
   },
 }))
 
-import { useDataManagementStore } from '@/features/data-management'
-import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
 import GISToolsControl from './GISToolsControl'
+import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
+import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
 
 function resetStores() {
   useToolStore.setState({
     activeTool: 'none',
+    showMeasurementTools: true,
+    showAdvancedAnalysis: true,
     distancePoints: [],
     distanceGhostPoint: null,
     isDrawingDistance: false,
@@ -45,7 +47,7 @@ function openIconsOnlyMenu(container: HTMLElement) {
   const toggleButton = container.querySelector('#toggle-gis-tools')
   expect(toggleButton).not.toBeNull()
   fireEvent.click(toggleButton as HTMLButtonElement) // closed -> full
-  fireEvent.click(toggleButton as HTMLButtonElement) // full -> icons-only
+  fireEvent.click(screen.getByTitle(/Sadece ikonlar/i)) // full -> icons-only
 }
 
 describe('GISToolsControl buffer toggle behavior', () => {
@@ -326,5 +328,14 @@ describe('GISToolsControl buffer toggle behavior', () => {
       .getState()
       .items.some(item => item.properties.analysis === 'buffer')
     expect(hasBufferAfterClear).toBe(false)
+  })
+
+  it('hides measurement tools when measurement visibility is disabled', () => {
+    useToolStore.setState({ showMeasurementTools: false })
+
+    const { container } = render(<GISToolsControl />)
+    openIconsOnlyMenu(container)
+
+    expect(screen.queryByTitle(/Mesafe & Alan/i)).not.toBeInTheDocument()
   })
 })

@@ -5,6 +5,7 @@ export type ToolsMenuMode = 'closed' | 'full' | 'icons-only'
 
 interface ToolState {
   activeTool: ToolType
+  showMeasurementTools: boolean
   showAdvancedAnalysis: boolean
 
   // Distance Measurement State
@@ -16,6 +17,7 @@ interface ToolState {
 
   // Actions
   setActiveTool: (tool: ToolType) => void
+  toggleMeasurementTools: () => void
   toggleAdvancedAnalysis: () => void
   toggleToolsMenu: () => void
   cycleToolsMenu: () => void
@@ -30,6 +32,7 @@ interface ToolState {
 export const useToolStore = create<ToolState>((set) => ({
   activeTool: 'none',
 
+  showMeasurementTools: true,
   showAdvancedAnalysis: true,
   distancePoints: [],
   distanceGhostPoint: null,
@@ -42,6 +45,24 @@ export const useToolStore = create<ToolState>((set) => ({
       return { activeTool: tool, distancePoints: [], distanceGhostPoint: null, isDrawingDistance: false }
     }
     return { activeTool: tool }
+  }),
+
+  toggleMeasurementTools: () => set((state) => {
+    if (!state.showMeasurementTools) {
+      return { showMeasurementTools: true }
+    }
+
+    if (state.activeTool === 'measure-distance') {
+      return {
+        showMeasurementTools: false,
+        activeTool: 'none',
+        distancePoints: [],
+        distanceGhostPoint: null,
+        isDrawingDistance: false,
+      }
+    }
+
+    return { showMeasurementTools: false }
   }),
 
   toggleAdvancedAnalysis: () => set((state) => ({ showAdvancedAnalysis: !state.showAdvancedAnalysis })),
