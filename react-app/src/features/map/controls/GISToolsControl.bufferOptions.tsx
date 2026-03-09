@@ -274,23 +274,6 @@ function getOptionLabel(option: BufferOption): string {
   }
 }
 
-function _getOptionColor(option: BufferOption): string {
-  switch (option) {
-    case 'normal':
-      return BUFFER_MODE_COLORS.normal
-    case 'combined':
-      return BUFFER_MODE_COLORS.combined
-    case 'intersection':
-      return BUFFER_MODE_COLORS.intersection
-    case 'difference':
-      return BUFFER_MODE_COLORS.difference
-    case 'summary':
-      return '#334155'
-    default:
-      return '#334155'
-  }
-}
-
 function getItemFillColor(item: DataItem): string | null {
   const rawStyle = item.properties.style
   if (!rawStyle || typeof rawStyle !== 'object') return null
