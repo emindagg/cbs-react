@@ -13,8 +13,47 @@ import DistanceTool from '../tools/DistanceTool'
 
 
 
+const SPACE_COLOR = '#010108'
+
+// Star positions: [x%, y%, size, opacity]
+const STARS: [number, number, number, number][] = [
+  [5, 8, 1.5, 0.9], [12, 22, 1, 0.7], [18, 5, 2, 0.8], [25, 40, 1, 0.6],
+  [33, 15, 1.5, 0.9], [40, 65, 1, 0.7], [48, 30, 2, 1.0], [55, 80, 1, 0.6],
+  [62, 10, 1.5, 0.8], [70, 55, 1, 0.7], [77, 25, 2, 0.9], [83, 70, 1, 0.6],
+  [90, 45, 1.5, 0.8], [95, 88, 1, 0.7], [8, 75, 1, 0.5], [20, 90, 1.5, 0.8],
+  [35, 52, 1, 0.6], [50, 12, 2, 0.9], [65, 82, 1, 0.7], [80, 38, 1.5, 0.8],
+  [92, 18, 1, 0.6], [3, 48, 2, 0.7], [15, 62, 1, 0.5], [28, 78, 1.5, 0.9],
+  [42, 95, 1, 0.6], [58, 42, 2, 0.8], [72, 68, 1, 0.7], [87, 92, 1.5, 0.9],
+  [96, 72, 1, 0.5], [44, 20, 1, 0.8], [7, 35, 1.5, 0.7], [38, 5, 1, 0.9],
+]
+
+function SpaceBackground() {
+  return (
+    <div
+      className="absolute inset-0 pointer-events-none overflow-hidden"
+      style={{ background: 'transparent', zIndex: 2 }}
+    >
+      {STARS.map(([x, y, size, opacity], i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-white"
+          style={{
+            left: `${x}%`,
+            top: `${y}%`,
+            width: size,
+            height: size,
+            opacity,
+            transform: 'translate(-50%, -50%)',
+            boxShadow: size >= 2 ? `0 0 ${size * 2}px rgba(255,255,255,0.6)` : 'none',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
 export default function MapContainer() {
-  const { setLoaded, setMapInstance, activeBasemap } = useMapStore()
+  const { setLoaded, setMapInstance, activeBasemap, isGlobeMode } = useMapStore()
 
   // Bubble haritası tooltip hook'u
   useBubbleTooltip()
@@ -58,20 +97,25 @@ export default function MapContainer() {
   }, [activeBasemap])
 
   // "Empty" style for when using raster basemaps or NONE
-  // We can't pass null to mapStyle, but we can pass a simple JSON style
+  // In globe mode, always include a dark background layer so the space shows through
   const mapStyleObj = useMemo(() => {
+    const bgColor = isGlobeMode ? SPACE_COLOR : '#f8f9fa'
+    const needsBg = activeBasemap === 'NONE' || isGlobeMode
     return {
       version: 8,
+      projection: { type: isGlobeMode ? 'globe' : 'mercator' },
       sources: {},
-      layers: activeBasemap === 'NONE' ? [{
+      layers: needsBg ? [{
         id: 'background',
         type: 'background',
-        paint: { 'background-color': '#f8f9fa' },
+        paint: { 'background-color': bgColor },
       }] : [],
     }
-  }, [activeBasemap])
+  }, [activeBasemap, isGlobeMode])
 
   return (
+    <div className="relative w-full h-screen">
+      {isGlobeMode && <SpaceBackground />}
     <Map
       mapLib={maplibregl}
       attributionControl={false}
@@ -80,7 +124,7 @@ export default function MapContainer() {
         latitude: 38.9637,
         zoom: 6,
       }}
-      style={{ width: '100%', height: '100vh' }}
+      style={{ width: '100%', height: '100vh', position: 'relative', zIndex: 1 }}
       mapStyle={mapStyleObj as maplibregl.StyleSpecification}
       onLoad={(e) => {
         setLoaded(true)
@@ -106,6 +150,7 @@ export default function MapContainer() {
       <GISToolsControl />
       <TimelineControl />
     </Map>
+    </div>
   )
 }
 

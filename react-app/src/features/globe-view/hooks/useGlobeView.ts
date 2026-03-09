@@ -2,6 +2,8 @@ import { useRef, useCallback, useState } from 'react'
 
 import { useMapStore } from '@/stores/useMapStore'
 
+const SPACE_BG = '#010108'
+
 export interface GlobeViewState {
   isGlobeMode: boolean
   toggle: () => void
@@ -16,6 +18,7 @@ export interface GlobeViewState {
  */
 export function useGlobeView(): GlobeViewState {
   const mapInstance = useMapStore((state) => state.mapInstance)
+  const setGlobeMode = useMapStore((state) => state.setGlobeMode)
   const previousZoomRef = useRef<number | null>(null)
   const [isGlobeMode, setIsGlobeMode] = useState(false)
 
@@ -39,6 +42,10 @@ export function useGlobeView(): GlobeViewState {
       // Set globe projection
       mapInstance.setProjection({ type: 'globe' })
 
+      // Space background: dark CSS on canvas + notify store for overlay
+      mapInstance.getCanvas().style.background = SPACE_BG
+      setGlobeMode(true)
+
       // Optimize for globe view
       if (mapInstance.getZoom() > 2) {
         mapInstance.setZoom(2)
@@ -47,9 +54,10 @@ export function useGlobeView(): GlobeViewState {
 
       setIsGlobeMode(true)
     } catch (error) {
+      setGlobeMode(false)
       console.error('❌ Failed to enable globe:', error)
     }
-  }, [mapInstance, isGlobeMode])
+  }, [mapInstance, isGlobeMode, setGlobeMode])
 
   const disable = useCallback(() => {
     if (!mapInstance) return
@@ -58,6 +66,10 @@ export function useGlobeView(): GlobeViewState {
 
     try {
       mapInstance.setProjection({ type: 'mercator' })
+
+      // Restore canvas background and notify store
+      mapInstance.getCanvas().style.background = ''
+      setGlobeMode(false)
 
       // Restore previous zoom or default to Turkey
       if (previousZoomRef.current !== null) {
@@ -72,7 +84,7 @@ export function useGlobeView(): GlobeViewState {
     } catch (error) {
       console.error('❌ Failed to disable globe:', error)
     }
-  }, [mapInstance])
+  }, [mapInstance, setGlobeMode])
 
   const toggle = useCallback(() => {
     if (isGlobeMode) {

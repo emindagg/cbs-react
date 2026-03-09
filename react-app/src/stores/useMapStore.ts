@@ -19,11 +19,13 @@ interface MapState {
   center: [number, number]
   activeBasemap: BasemapType
   mapInstance: Map | null
+  isGlobeMode: boolean
 
   setLoaded: (loaded: boolean) => void
   setViewState: (zoom: number, center: [number, number]) => void
   setActiveBasemap: (basemap: BasemapType) => void
   setMapInstance: (map: Map | null) => void
+  setGlobeMode: (isGlobe: boolean) => void
 }
 
 // Default Turkey center coordinates
@@ -35,9 +37,11 @@ export const useMapStore = create<MapState>((set) => ({
   center: TURKEY_CENTER,
   activeBasemap: 'CARTO_LIGHT', // Default
   mapInstance: null,
+  isGlobeMode: false,
 
   setLoaded: (loaded) => set({ isLoaded: loaded }),
   setViewState: (zoom, center) => set({ zoom, center }),
   setActiveBasemap: (basemap) => set({ activeBasemap: basemap }),
   setMapInstance: (map) => set({ mapInstance: map }),
+  setGlobeMode: (isGlobe) => set({ isGlobeMode: isGlobe }),
 }))

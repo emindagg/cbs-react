@@ -25,7 +25,9 @@
       "WebFetch(domain:www.datawrapper.de)",
       "WebFetch(domain:github.com)",
       "Bash(sed:*)",
-      "Bash(claude plugin:*)"
+      "Bash(claude plugin:*)",
+      "Bash(node:*)",
+      "Bash(grep:*)"
     ]
   }
 }
