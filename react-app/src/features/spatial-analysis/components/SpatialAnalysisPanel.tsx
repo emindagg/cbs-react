@@ -64,10 +64,10 @@ export default function SpatialAnalysisPanel({
   if (!isOpen || !activeAnalysis) return null
 
   const title = isConvexHull
-    ? 'Dış Sınır (Convex Hull)'
+    ? 'Dış Sınır'
     : isNearest
       ? 'En Yakın Nokta Analizi'
-      : 'En Yakın Alanlar (Voronoi)'
+      : 'En Yakın Alanlar'
   const icon = isConvexHull ? 'fa-vector-square' : isNearest ? 'fa-arrows-to-dot' : 'fa-border-all'
   const iconColor = isConvexHull ? 'bg-orange-500' : isNearest ? 'bg-violet-500' : 'bg-teal-500'
   const accentColor = isConvexHull
