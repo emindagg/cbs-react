@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
 import { useDataManagementStore, type DataItem } from '@/features/data-management'
+
 import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
 
 type BufferOption = 'normal' | 'combined' | 'intersection' | 'difference' | 'summary'
@@ -404,18 +405,17 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
       setIsPopupOpen(false)
       setIsStatsModalOpen(false)
       setSelectedOption('normal')
+      setDragPosition(null)
     }
   }, [hasBufferResults])
 
   useEffect(() => {
     if (!isPopupOpen) return
-
     const handleClickOutside = (event: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
         setIsPopupOpen(false)
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isPopupOpen])
@@ -430,14 +430,15 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
     const onMove = (e: MouseEvent) => {
       const start = dragStartRef.current
       if (!start) return
-      if (Math.abs(e.clientX - start.startX) > DRAG_THRESHOLD || Math.abs(e.clientY - start.startY) > DRAG_THRESHOLD) {
+      if (
+        Math.abs(e.clientX - start.startX) > DRAG_THRESHOLD ||
+        Math.abs(e.clientY - start.startY) > DRAG_THRESHOLD
+      ) {
         didDragRef.current = true
       }
       setDragPosition({ x: e.clientX - start.offsetX, y: e.clientY - start.offsetY })
     }
-    const onUp = () => {
-      dragStartRef.current = null
-    }
+    const onUp = () => { dragStartRef.current = null }
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
     return () => {
@@ -683,15 +684,15 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
   const isSummarySelected = selectedOption === 'summary'
   const showStatsModal = isStatsModalOpen && statisticalSummary != null
 
-  const wrapperStyle: React.CSSProperties | undefined = dragPosition
+  const wrapperStyle: React.CSSProperties = dragPosition
     ? { position: 'fixed', left: dragPosition.x, top: dragPosition.y, zIndex: 10003 }
-    : undefined
+    : { position: 'fixed', top: 12, right: 56, zIndex: 10003 }
 
   return (
     <>
       <div
         ref={popupRef}
-        className={dragPosition ? 'relative' : 'mt-2 w-auto relative'}
+        className="relative"
         style={wrapperStyle}
       >
         <button
