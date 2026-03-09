@@ -4,9 +4,9 @@ import { Zap } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { useDataManagementStore, type DataItem } from '@/features/data-management'
-
 import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
+import { useDataManagementStore, type DataItem } from '../../data-management'
+
 
 type BufferOption = 'normal' | 'combined' | 'intersection' | 'difference' | 'summary'
 type DerivedBufferType = 'combined' | 'intersection' | 'difference'
@@ -104,7 +104,7 @@ function formatNumber(value: number): string {
 }
 
 function formatDistanceKm(value: number | null): string {
-  return value == null ? '-' : `${value.toFixed(2)} km`
+  return value === null ? '-' : `${value.toFixed(2)} km`
 }
 
 function formatAreaKm2(value: number): string {
@@ -167,7 +167,7 @@ function getBufferRadiusKm(item: DataItem): number | null {
 
   if (typeof rawDistance === 'number') {
     const fromMeta = toKilometers(rawDistance, rawUnit)
-    if (fromMeta != null) return fromMeta
+    if (fromMeta !== null) return fromMeta
   }
 
   const parsed = parseDistanceFromName(item.name)
@@ -274,7 +274,7 @@ function getOptionLabel(option: BufferOption): string {
   }
 }
 
-function getOptionColor(option: BufferOption): string {
+function _getOptionColor(option: BufferOption): string {
   switch (option) {
     case 'normal':
       return BUFFER_MODE_COLORS.normal
@@ -352,7 +352,7 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
 
     const radiusValues = detailSegments
       .map(detail => detail.radiusKm)
-      .filter((radius): radius is number => radius != null && Number.isFinite(radius))
+      .filter((radius): radius is number => radius !== null && radius !== undefined && Number.isFinite(radius))
 
     const averageRadiusKm = radiusValues.length > 0
       ? radiusValues.reduce((sum, radius) => sum + radius, 0) / radiusValues.length
@@ -363,7 +363,7 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
     const normalizedFeatures = detailSegments
       .map(detail => detail.feature)
       .map(normalizeForOverlay)
-      .filter((feature): feature is Feature<Polygon | MultiPolygon> => feature != null)
+      .filter((feature): feature is Feature<Polygon | MultiPolygon> => feature !== null && feature !== undefined)
 
     let overlapPairCount = 0
     for (let left = 0; left < normalizedFeatures.length; left += 1) {
@@ -574,7 +574,7 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
 
     const sourceFeatures = polygonFeatures
       .map(normalizeForOverlay)
-      .filter((f): f is Feature<Polygon | MultiPolygon> => f != null)
+      .filter((f): f is Feature<Polygon | MultiPolygon> => f !== null && f !== undefined)
 
     if (sourceFeatures.length < 2) {
       toast.error('Geometriler normalize edilemedi (kesişim/fark için uygun değil).')
@@ -683,7 +683,7 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
   const primaryOptions: BufferOption[] = ['normal', 'combined', 'intersection', 'difference']
 
   const isSummarySelected = selectedOption === 'summary'
-  const showStatsModal = isStatsModalOpen && statisticalSummary != null
+  const showStatsModal = isStatsModalOpen && statisticalSummary !== null && statisticalSummary !== undefined
 
   const wrapperStyle: React.CSSProperties = dragPosition
     ? { position: 'fixed', left: dragPosition.x, top: dragPosition.y, zIndex: 10003 }

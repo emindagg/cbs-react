@@ -5,13 +5,12 @@
 
 import type * as turf from '@turf/turf'
 import { Check, ChevronDown, Zap } from 'lucide-react'
-import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import toast from 'react-hot-toast'
 
-import { useDataManagementStore } from '@/features/data-management'
-
 import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
+import { useDataManagementStore } from '../../data-management'
 import {
   runBufferAnalysis,
   runBufferAnalysisForMultipleGeometries,
@@ -110,7 +109,7 @@ function CustomSelect<T extends string>({
             </button>
           ))}
         </div>,
-        document.body
+        document.body,
       )}
     </div>
   )
