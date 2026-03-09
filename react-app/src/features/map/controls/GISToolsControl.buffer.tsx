@@ -4,6 +4,7 @@
  */
 
 import type * as turf from '@turf/turf'
+import { Zap } from 'lucide-react'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -402,9 +403,10 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
           <button
             onClick={handleBufferAnalyze}
             disabled={!hasSelection}
-            className="flex-2 h-8 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold shadow-xs disabled:opacity-50 transition-all"
+            className="flex items-center gap-1.5 px-4 h-8 text-[11.5px] font-medium text-white bg-zinc-800 hover:bg-zinc-900 rounded-lg active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:pointer-events-none"
           >
-            Analiz Yap
+            <Zap size={12} className="text-purple-400" />
+            <span>Analizi Başlat</span>
           </button>
         </div>
       </div>

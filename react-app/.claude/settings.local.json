@@ -24,7 +24,8 @@
       "WebFetch(domain:maplibre.org)",
       "WebFetch(domain:www.datawrapper.de)",
       "WebFetch(domain:github.com)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(claude plugin:*)"
     ]
   }
 }

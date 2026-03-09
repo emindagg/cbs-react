@@ -1,5 +1,6 @@
 import * as turf from '@turf/turf'
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import { Zap } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -699,10 +700,10 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
           type="button"
           onMouseDown={handlePointerDown}
           onClick={handleClick}
-          className="inline-flex items-center gap-1.5 h-7 pl-2 pr-2.5 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-[11px] font-medium shadow-sm border border-violet-400/40 transition-colors cursor-grab active:cursor-grabbing"
+          className="relative flex items-center justify-center gap-2 px-4 py-2 text-[12.5px] font-semibold text-white bg-zinc-900 hover:bg-black rounded-md shadow-[0_4px_10px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_15px_rgba(0,0,0,0.15)] active:scale-95 transition-all duration-200 overflow-hidden cursor-grab active:cursor-grabbing"
           title="Analiz seçenekleri (sürükleyebilirsiniz)"
         >
-          <i className="fa-solid fa-sliders text-[10px] opacity-90" aria-hidden></i>
+          <Zap size={13} className="text-purple-400" />
           <span>Analiz</span>
         </button>
 
@@ -752,130 +753,134 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
       </div>
 
       {showStatsModal && statisticalSummary && (
-        <div className="fixed inset-0 z-10004 bg-slate-900/55 backdrop-blur-[3px] flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-4xl max-h-[88vh] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_72px_rgba(15,23,42,0.28)] animate-in zoom-in-95 duration-200">
-            <div className="relative overflow-hidden border-b border-slate-200 px-6 py-5 bg-slate-50">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-base font-semibold text-slate-900 flex items-center gap-2.5">
-                    <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-slate-800 text-white shadow-sm">
-                      <i className="fa-solid fa-chart-pie text-xs" aria-hidden></i>
-                    </span>
-                    Etki Analizi İstatistikleri
-                  </h3>
-                  <p className="mt-1 text-xs text-slate-600">
-                    Etki alanı analizi sonuçlarını özet ve detay bazında inceleyin.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  aria-label="Kapat"
-                  onClick={() => setIsStatsModalOpen(false)}
-                  className="h-8 w-8 shrink-0 inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-100"
-                >
-                  <i className="fa-solid fa-xmark" aria-hidden></i>
-                </button>
+        <div className="fixed inset-0 z-10004 bg-black/30 backdrop-blur-[3px] flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div
+            className="w-full max-w-lg flex flex-col max-h-[82vh] rounded-xl overflow-hidden animate-in zoom-in-95 duration-150"
+            style={{ background: '#fff', border: '1px solid #e5e5e5', boxShadow: '0 0 0 1px rgba(0,0,0,0.03), 0 16px 48px rgba(0,0,0,0.12)' }}
+          >
+            {/* Header */}
+            <div className="flex items-center gap-2.5 px-4 py-3 shrink-0" style={{ borderBottom: '1px solid #eaeaea' }}>
+              <div className="h-5 w-5 rounded-md flex items-center justify-center shrink-0" style={{ background: '#7c3aed' }}>
+                <i className="fa-solid fa-chart-pie text-[9px] text-white" aria-hidden></i>
               </div>
+              <span className="flex-1 text-[13px] font-semibold tracking-[-0.01em]" style={{ color: '#111' }}>
+                Etki Analizi İstatistikleri
+              </span>
+              <button
+                type="button"
+                aria-label="Kapat"
+                onClick={() => setIsStatsModalOpen(false)}
+                className="h-6 w-6 flex items-center justify-center rounded-md transition-colors"
+                style={{ color: '#999', background: 'transparent' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f5f5f5'; (e.currentTarget as HTMLButtonElement).style.color = '#333' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#999' }}
+              >
+                <i className="fa-solid fa-xmark text-[11px]" aria-hidden></i>
+              </button>
             </div>
 
-            <div className="p-5 md:p-6 space-y-4 overflow-y-auto max-h-[calc(88vh-104px)] text-sm text-slate-700">
-              <section className="rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-                  <i className="fa-solid fa-layer-group text-[11px] text-slate-600" aria-hidden></i>
-                  <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-900">
-                    Genel İstatistikler
-                  </h4>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3">
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="text-[11px] text-slate-500">Etki Alanı Sayısı</div>
-                    <div className="mt-1 text-lg font-semibold text-slate-900">{statisticalSummary.layerCount}</div>
-                  </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="text-[11px] text-slate-500">Toplam Alan</div>
-                    <div className="mt-1 text-lg font-semibold text-slate-900">{formatAreaKm2(statisticalSummary.totalAreaKm2)}</div>
-                  </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="text-[11px] text-slate-500">Birleşik Alan</div>
-                    <div className="mt-1 text-lg font-semibold text-slate-900">{formatAreaKm2(statisticalSummary.mergedAreaKm2)}</div>
-                  </div>
-                </div>
-              </section>
+            <div className="overflow-y-auto flex-1 p-3 space-y-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#ddd #fff' }}>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <section className="rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] p-4 space-y-2.5">
-                  <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-900 flex items-center gap-2">
-                    <i className="fa-solid fa-compass-drafting text-[11px] text-slate-600" aria-hidden></i>
-                    Yarıçap Analizi
-                  </h4>
-                  <div className="flex items-center justify-between gap-3 text-sm">
-                    <span>Ortalama</span>
-                    <strong className="text-slate-900">{formatDistanceKm(statisticalSummary.averageRadiusKm)}</strong>
+              {/* KPI row */}
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { label: 'Etki Alanı', value: String(statisticalSummary.layerCount), large: true },
+                  { label: 'Toplam Alan', value: formatAreaKm2(statisticalSummary.totalAreaKm2), large: false },
+                  { label: 'Birleşik Alan', value: formatAreaKm2(statisticalSummary.mergedAreaKm2), large: false },
+                ].map(({ label, value, large }) => (
+                  <div
+                    key={label}
+                    className="rounded-lg px-3 py-2.5"
+                    style={{ background: '#fafafa', border: '1px solid #eaeaea' }}
+                  >
+                    <div className={`font-semibold tabular-nums leading-none ${large ? 'text-2xl' : 'text-sm'}`} style={{ color: '#111' }}>
+                      {value}
+                    </div>
+                    <div className="text-[10px] mt-1.5" style={{ color: '#999' }}>{label}</div>
                   </div>
-                  <div className="flex items-center justify-between gap-3 text-sm">
-                    <span>Minimum</span>
-                    <strong className="text-slate-900">{formatDistanceKm(statisticalSummary.minRadiusKm)}</strong>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 text-sm">
-                    <span>Maksimum</span>
-                    <strong className="text-slate-900">{formatDistanceKm(statisticalSummary.maxRadiusKm)}</strong>
-                  </div>
-                </section>
-
-                <section className="rounded-xl border border-rose-200 bg-rose-50/60 shadow-[0_1px_2px_rgba(190,24,93,0.08)] p-3 space-y-1.5">
-                  <h4 className="text-[10px] font-semibold uppercase tracking-[0.08em] text-rose-900 flex items-center gap-1.5">
-                    <i className="fa-solid fa-link-slash text-[10px] text-rose-600" aria-hidden></i>
-                    Çakışma Tespit Edildi
-                  </h4>
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span>Çakışan Çift</span>
-                    <strong className="text-sm text-rose-800">{statisticalSummary.overlapPairCount}</strong>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span>Çakışma Oranı</span>
-                    <strong className="text-sm text-rose-800">{formatPercent(statisticalSummary.overlapRatioPercent)}</strong>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span>Çakışma Alanı</span>
-                    <strong className="text-sm text-rose-800">{formatAreaHectares(statisticalSummary.overlapAreaHectare)}</strong>
-                  </div>
-                </section>
+                ))}
               </div>
 
-              <section className="rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-                  <i className="fa-solid fa-table-list text-[11px] text-slate-600" aria-hidden></i>
-                  <h4 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-900">
-                    Etki Alanı Detayları
-                  </h4>
+              {/* Yarıçap + Çakışma */}
+              <div className="grid grid-cols-2 gap-1.5">
+                <div className="rounded-lg px-3 py-2.5 space-y-2" style={{ background: '#fafafa', border: '1px solid #eaeaea' }}>
+                  <div className="text-[10px] font-medium uppercase tracking-widest pb-1.5" style={{ color: '#bbb', borderBottom: '1px solid #eaeaea' }}>
+                    Yarıçap
+                  </div>
+                  {(
+                    [
+                      ['Ort.', formatDistanceKm(statisticalSummary.averageRadiusKm)],
+                      ['Min', formatDistanceKm(statisticalSummary.minRadiusKm)],
+                      ['Max', formatDistanceKm(statisticalSummary.maxRadiusKm)],
+                    ] as [string, string][]
+                  ).map(([label, value]) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <span className="text-[11px]" style={{ color: '#999' }}>{label}</span>
+                      <span className="text-[11px] font-medium tabular-nums" style={{ color: '#222' }}>{value}</span>
+                    </div>
+                  ))}
                 </div>
+                <div className="rounded-lg px-3 py-2.5 space-y-2" style={{ background: '#fff8f8', border: '1px solid #fde8e8' }}>
+                  <div className="text-[10px] font-medium uppercase tracking-widest pb-1.5" style={{ color: '#fca5a5', borderBottom: '1px solid #fde8e8' }}>
+                    Çakışma
+                  </div>
+                  {(
+                    [
+                      ['Çift', String(statisticalSummary.overlapPairCount)],
+                      ['Oran', formatPercent(statisticalSummary.overlapRatioPercent)],
+                      ['Alan', formatAreaHectares(statisticalSummary.overlapAreaHectare)],
+                    ] as [string, string][]
+                  ).map(([label, value]) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <span className="text-[11px]" style={{ color: '#fca5a5' }}>{label}</span>
+                      <span className="text-[11px] font-medium tabular-nums" style={{ color: '#dc2626' }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                <div className="overflow-x-auto px-2 pb-2">
-                  <table className="w-full min-w-[560px] text-xs">
+              {/* Table */}
+              <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #eaeaea' }}>
+                <div className="px-3 py-2 text-[10px] font-medium uppercase tracking-widest" style={{ color: '#bbb', background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
+                  Detaylar
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
                     <thead>
-                      <tr className="text-slate-600 border-b border-slate-200">
-                        <th className="text-left py-3 px-2 font-semibold">İsim</th>
-                        <th className="text-left py-3 px-2 font-semibold">Yarıçap</th>
-                        <th className="text-left py-3 px-2 font-semibold">Alan</th>
-                        <th className="text-left py-3 px-2 font-semibold">Çevre</th>
+                      <tr style={{ borderBottom: '1px solid #eaeaea' }}>
+                        {['İsim', 'Yarıçap', 'Alan', 'Çevre'].map((h, i) => (
+                          <th
+                            key={h}
+                            className={`py-2 px-3 text-[10px] font-medium ${i === 0 ? 'text-left' : 'text-right'}`}
+                            style={{ color: '#bbb', background: '#fafafa' }}
+                          >
+                            {h}
+                          </th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody>
                       {statisticalSummary.details.map((detail, index) => (
                         <tr
                           key={detail.id}
-                          className={`border-t border-slate-100 ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'} hover:bg-slate-100/70 transition-colors`}
+                          style={{
+                            borderTop: '1px solid #f5f5f5',
+                            background: index % 2 !== 0 ? '#fafafa' : '#fff',
+                          }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#f5f3ff' }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = index % 2 !== 0 ? '#fafafa' : '#fff' }}
                         >
-                          <td className="py-2.5 px-2 text-slate-900 font-medium">{detail.name}</td>
-                          <td className="py-2.5 px-2 text-slate-700">{formatDistanceKm(detail.radiusKm)}</td>
-                          <td className="py-2.5 px-2 text-slate-700">{formatTableMetric(detail.areaKm2, 'km²')}</td>
-                          <td className="py-2.5 px-2 text-slate-700">{formatTableMetric(detail.perimeterKm, 'km')}</td>
+                          <td className="py-2 px-3 text-[11px] font-medium" style={{ color: '#111' }}>{detail.name}</td>
+                          <td className="py-2 px-3 text-[11px] text-right tabular-nums" style={{ color: '#888' }}>{formatDistanceKm(detail.radiusKm)}</td>
+                          <td className="py-2 px-3 text-[11px] text-right tabular-nums" style={{ color: '#888' }}>{formatTableMetric(detail.areaKm2, 'km²')}</td>
+                          <td className="py-2 px-3 text-[11px] text-right tabular-nums" style={{ color: '#888' }}>{formatTableMetric(detail.perimeterKm, 'km')}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              </section>
+              </div>
+
             </div>
           </div>
         </div>
