@@ -31,7 +31,7 @@ export function GlobeToggleButton({ className, style }: GlobeToggleButtonProps) 
       }}
       title="Küre Görünümü"
     >
-      <span>{isGlobeMode ? '3D' : '2D'}</span>
+      <span>{isGlobeMode ? '3B' : '2B'}</span>
     </button>
   )
 }
