@@ -7,7 +7,7 @@
 export { default as DynamicLegend } from './components/DynamicLegend'
 export { default as DotDensityLegend } from './components/DotDensityLegend'
 export { default as BubbleSizeLegend } from './components/BubbleSizeLegend'
-export { default as DatawrapperLegend } from './components/DatawrapperLegend'
+export { default as ColorLegend } from './components/ColorLegend'
 
 // Legend building blocks
 export { default as LegendBar } from './components/LegendBar'

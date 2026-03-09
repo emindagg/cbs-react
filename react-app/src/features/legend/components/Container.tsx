@@ -14,7 +14,7 @@ import { calculateSymbolSize } from '@/utils/symbolShapes'
 import { BUBBLE_DEFAULT_FILL_COLOR } from '@/features/visualization/bubble/constants'
 
 import BubbleSizeLegend from './BubbleSizeLegend'
-import DatawrapperLegend from './DatawrapperLegend'
+import ColorLegend from './ColorLegend'
 import DotDensityLegend from './DotDensityLegend'
 import DynamicLegend from './DynamicLegend'
 
@@ -255,7 +255,7 @@ export default function Container() {
   if (colorConfig.legend.orientation === 'vertical') {
     return (
       <>
-        <DatawrapperLegend
+        <ColorLegend
           config={colorConfig.legend}
           breaks={breaks}
           colors={colors}

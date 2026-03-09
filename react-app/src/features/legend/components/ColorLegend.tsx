@@ -19,7 +19,7 @@ interface LegendProps {
   onTitleChange?: (title: string) => void;
 }
 
-export default function Legend({
+export default function ColorLegend({
   config,
   breaks,
   colors,

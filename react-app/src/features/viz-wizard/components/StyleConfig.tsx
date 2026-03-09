@@ -26,7 +26,7 @@ export default function StyleConfig({ dataValues = [] }: StyleConfigProps) {
       <div className="border-b border-zinc-200 pb-3">
         <h3 className="text-sm font-semibold text-zinc-800">Renk ve Lejant Ayarları</h3>
         <p className="text-[10px] text-zinc-500 mt-0.5">
-          Datawrapper tarzı gelişmiş renk interpolasyonu ve lejant ayarları
+          Gelişmiş renk interpolasyonu ve lejant ayarları
         </p>
       </div>
 
@@ -63,7 +63,7 @@ export default function StyleConfig({ dataValues = [] }: StyleConfigProps) {
         <div className="flex items-start gap-2">
           <div className="text-blue-600 text-sm flex-shrink-0">ℹ️</div>
           <div className="text-[10px] text-blue-700 leading-relaxed">
-            <strong>Datawrapper Özellikleri:</strong>
+            <strong>Renk Skala Özellikleri:</strong>
             <ul className="mt-1 space-y-0.5 ml-3">
               <li>• <strong>Basamaklı:</strong> Belirgin renk kırılmaları</li>
               <li>• <strong>Sürekli:</strong> Yumuşak geçişli renk gradyanları</li>

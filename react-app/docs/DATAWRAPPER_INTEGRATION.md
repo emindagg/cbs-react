@@ -1,6 +1,6 @@
-# Datawrapper-Style Type Interpolation ve Legend Entegrasyonu
+# Renk İnterpolasyonu ve Legend Entegrasyonu
 
-Bu dokümantasyon, React projenize Datawrapper tarzında renk interpolasyonu ve legend özelliklerinin nasıl entegre edileceğini açıklar.
+Bu dokümantasyon, React projenize gelişmiş renk interpolasyonu ve legend özelliklerinin nasıl entegre edileceğini açıklar.
 
 ## 📦 Kurulum
 
@@ -63,17 +63,17 @@ Lejant ayarları paneli (pozisyon, boyut, format, vb.).
 />
 ```
 
-#### 5. `DatawrapperStyleConfig.tsx` (Yeni)
+#### 5. `StyleConfig.tsx` (Yeni)
 Tüm ayarları tek bir panelde birleştiren entegre bileşen.
 
 ```tsx
-<DatawrapperStyleConfig dataValues={dataValues} />
+<StyleConfig dataValues={dataValues} />
 ```
 
 ### Yeni Utility Fonksiyonları
 
 #### `numberFormatter.ts`
-Datawrapper tarzı sayı formatlama.
+Gelişmiş sayı formatlama.
 
 ```ts
 import { formatNumber } from '@/utils/numberFormatter'
@@ -161,7 +161,7 @@ const {
 ### Örnek 1: Basit Entegrasyon
 
 ```tsx
-import { DatawrapperStyleConfig } from '@/components/visualization'
+import { StyleConfig } from '@/components/visualization'
 
 function MyVisualizationPanel() {
   const dataValues = [100, 250, 500, 750, 1000, 1500]
@@ -169,7 +169,7 @@ function MyVisualizationPanel() {
   return (
     <div>
       <h2>Görselleştirme Ayarları</h2>
-      <DatawrapperStyleConfig dataValues={dataValues} />
+      <StyleConfig dataValues={dataValues} />
     </div>
   )
 }
@@ -393,13 +393,12 @@ export function formatNumber(value: number, format: NumberFormat): string {
 
 ## 📚 Ek Kaynaklar
 
-- [Datawrapper Academy](https://academy.datawrapper.de/)
 - [D3 Scale Documentation](https://github.com/d3/d3-scale)
 - [Chroma.js Documentation](https://gka.github.io/chroma.js/)
 - [ColorBrewer Palettes](https://colorbrewer2.org/)
 
 ## 🎉 Sonuç
 
-Artık projenizde Datawrapper tarzında profesyonel renk interpolasyonu ve lejant özellikleri kullanabilirsiniz!
+Artık projenizde profesyonel renk interpolasyonu ve lejant özellikleri kullanabilirsiniz!
 
 Herhangi bir sorunuz olursa lütfen dokümantasyonu inceleyin veya issue açın.

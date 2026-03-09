@@ -293,7 +293,7 @@ import { LayersPanel, useOverlayLayers } from '@/features/layers'
 - `DynamicLegend` - Genel lejant
 - `DotDensityLegend` - Nokta yoğunluğu lejantı
 - `BubbleSizeLegend` - Bubble boyut lejantı
-- `DatawrapperLegend` - Datawrapper stili lejant
+- `ColorLegend` - Gelişmiş renk lejantı
 - `LegendBar` - Lejant çubuğu
 - `LegendLabels` - Lejant etiketleri
 - `SmartLabel` - Akıllı etiket konumlandırma
@@ -321,7 +321,7 @@ import {
   DynamicLegend,
   DotDensityLegend,
   BubbleSizeLegend,
-  DatawrapperLegend,
+  ColorLegend,
   LegendContainer,
   LegendConfig,
   useLabelCollision,
@@ -569,8 +569,8 @@ src/features/<feature-name>/
 
 - [Architecture Guide](./ARCHITECTURE.md)
 - [Contributing Guide](./CONTRIBUTING.md)
-- [Datawrapper Features](./DATAWRAPPER_FEATURES.md)
-- [Datawrapper Integration](./DATAWRAPPER_INTEGRATION.md)
+- [Color Scale Features](./DATAWRAPPER_FEATURES.md)
+- [Color Scale Integration](./DATAWRAPPER_INTEGRATION.md)
 
 ---
 

@@ -112,7 +112,7 @@ Detaylı teknik dokümanlar:
 - [docs/FEATURES.md](docs/FEATURES.md) - 13 feature'ın detaylı dökümü
 - [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) - Geliştirme rehberi
 - [docs/DATAWRAPPER_FEATURES.md](docs/DATAWRAPPER_FEATURES.md) - Renk interpolasyonu & sınıflandırma
-- [docs/DATAWRAPPER_INTEGRATION.md](docs/DATAWRAPPER_INTEGRATION.md) - Datawrapper stili entegrasyon
+- [docs/DATAWRAPPER_INTEGRATION.md](docs/DATAWRAPPER_INTEGRATION.md) - Gelişmiş renk skala entegrasyonu
 
 ## Lisans
 

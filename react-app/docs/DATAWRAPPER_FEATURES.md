@@ -1,10 +1,10 @@
-# Datawrapper-Style Color Interpolation Features
+# Color Interpolation Features
 
-This document describes the advanced color interpolation and data classification features inspired by Datawrapper.
+This document describes the advanced color interpolation and data classification features.
 
 ## Overview
 
-We've implemented a comprehensive color interpolation system that provides professional-grade data visualization capabilities similar to Datawrapper. The system includes:
+We've implemented a comprehensive color interpolation system that provides professional-grade data visualization capabilities. The system includes:
 
 1. **Multiple Color Spaces** (RGB, HSL, LAB, HCL)
 2. **Advanced Classification Methods** (Quantile, Jenks, Linear, Logarithmic, Rounded)
@@ -293,7 +293,7 @@ Potential additions:
 
 ## References
 
-- [Datawrapper Blog: Color Interpolation](https://www.datawrapper.de/blog/interpolation-for-color-scales-and-maps)
+- [CIE LAB & Color Interpolation](https://www.datawrapper.de/blog/interpolation-for-color-scales-and-maps)
 - [CIE LAB Color Space](https://en.wikipedia.org/wiki/CIELAB_color_space)
 - [Jenks Natural Breaks](https://en.wikipedia.org/wiki/Jenks_natural_breaks_optimization)
 - [ColorBrewer](https://colorbrewer2.org/)
