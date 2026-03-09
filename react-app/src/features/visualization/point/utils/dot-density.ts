@@ -43,7 +43,6 @@ export function calculateSmartDotValue(dataValues: number[]): number {
 
 /**
  * Zoom-dependent dot size — MapLibre interpolate expression.
- * ArcGIS referenceScale konseptinin karşılığı:
  *   zoom 4  → dotSize × 0.5
  *   zoom 6  → dotSize (referans — Türkiye görünümü)
  *   zoom 10 → dotSize × 3

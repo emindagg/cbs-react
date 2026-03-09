@@ -1,7 +1,6 @@
-﻿/**
+/**
  * Legend Container
  * Connects DynamicLegend component to visualization store and renders on map.
- * Dot density maps get a specialized "1 nokta = X" legend (ArcGIS style).
  */
 
 import { useCallback, useMemo } from 'react'
@@ -120,7 +119,7 @@ export default function Container() {
       const sizeBreaks = calculateBreaks(dataValues, vizSettings.classificationMethod, vizSettings.classCount)
       const classCount = sizeBreaks.length - 1
 
-      // Standard Deviation labels logic (matches ArcGIS Pro)
+  // Standard Deviation labels logic
       const isStdDev = vizSettings.classificationMethod === 'stddev'
       const mean = isStdDev ? ss.mean(dataValues) : 0
       const stdDev = isStdDev ? ss.standardDeviation(dataValues) : 1
@@ -217,7 +216,7 @@ export default function Container() {
     return null
   }
 
-  // Dot density → ArcGIS-style "1 nokta = X" legend
+  // Dot density → "1 nokta = X" legend
   if (vizSettings.type === 'dot') {
     const dotValue = vizSettings.dotValue ?? calculateSmartDotValue(dataValues)
     const dotColor = vizSettings.dotColor ?? DEFAULT_DOT_COLOR

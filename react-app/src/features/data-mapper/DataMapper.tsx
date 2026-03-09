@@ -1,6 +1,5 @@
 /**
  * DataMapper Component
- * Datawrapper-style data mapping & validation interface
  * Combines column mapping + AG Grid spreadsheet + real-time validation
  */
 

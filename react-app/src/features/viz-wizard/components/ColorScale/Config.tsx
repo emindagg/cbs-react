@@ -1,6 +1,5 @@
 /**
  * Color Scale Configuration Component
- * Datawrapper-style interface for color interpolation settings
  */
 
 import { useState } from 'react'

@@ -1,6 +1,6 @@
 /**
  * Interpolation Methods
- * Datawrapper-style continuous color scale interpolation
+ * Continuous color scale interpolation
  * Handles break calculation, class counting, normalization
  */
 
@@ -8,7 +8,7 @@ import { calculateBreaks } from './classification'
 import type { InterpolationMethod } from '../types/visualization'
 
 /**
- * Calculate breaks using Datawrapper-style interpolation methods
+ * Calculate breaks using interpolation methods
  */
 export function calculateBreaksFromInterpolation(
   values: number[],

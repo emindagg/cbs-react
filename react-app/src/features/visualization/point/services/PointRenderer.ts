@@ -1,19 +1,3 @@
-/**
- * Point Renderer — ArcGIS-style Dot Density
- *
- * Each dot represents a fixed quantity (dot value).
- * Dots are scattered inside each polygon using seeded PRNG
- * (deterministic placement — same feature name → same dot positions).
- *
- * Key concepts (ArcGIS):
- *  - dotValue   : how many units a single dot represents
- *  - dotCount   : Math.round(featureValue / dotValue)
- *  - Zoom-dependent dot size (referenceScale equivalent)
- *  - Hole polygon support (GeoJSON spec: coordinates[1..n] = holes)
- *
- * Uses MapLibre data-driven styling (GPU-side color rendering)
- */
-
 import type { GeoJSONSource, Map } from 'maplibre-gl'
 
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
@@ -179,7 +163,7 @@ export class PointRenderer {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  DOT GENERATION (ArcGIS-style)                                     */
+  /*  DOT GENERATION                                                    */
   /* ------------------------------------------------------------------ */
 
   private generateDots(

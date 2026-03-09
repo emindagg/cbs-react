@@ -1,7 +1,6 @@
 /**
  * Data Distribution Preview Component
  * Shows how data will be classified with histogram and color mapping
- * Inspired by Datawrapper's data preview
  */
 
 import { useMemo } from 'react'

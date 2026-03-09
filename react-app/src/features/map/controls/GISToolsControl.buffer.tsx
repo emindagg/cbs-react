@@ -1,8 +1,3 @@
-/**
- * Buffer Modal – ArcGIS-style Etki Alanı Analizi
- * Çoklu katman, dissolve, tek taraflı (çizgi), çoklu mesafe. Yöntem: düzlem (planar).
- */
-
 import type * as turf from '@turf/turf'
 import { Check, ChevronDown, Zap } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'

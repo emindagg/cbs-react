@@ -319,7 +319,6 @@ export function getColorPalette(colorScheme: ColorScheme, classCount: number): s
 
 /**
  * Get interpolated color palette with advanced color space support
- * Inspired by Datawrapper's color interpolation
  */
 export function getInterpolatedColorPalette(
   colorScheme: ColorScheme,

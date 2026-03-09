@@ -1,5 +1,5 @@
 /**
- * Datawrapper-Style Configuration Panel
+ * Visualization Style Configuration Panel
  * Complete panel integrating color scale, interpolation, custom range, and legend
  */
 

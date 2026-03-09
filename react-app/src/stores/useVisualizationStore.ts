@@ -70,7 +70,7 @@ interface VisualizationStore {
   isVisualizationRenderInProgress: boolean
   setVisualizationRenderInProgress: (inProgress: boolean) => void
 
-  // Color configuration (Datawrapper-style)
+  // Color configuration
   colorConfig: ColorConfiguration
   setColorConfig: (config: Partial<ColorConfiguration>) => void
   setLegendConfig: (config: Partial<LegendConfiguration>) => void
@@ -255,7 +255,7 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
   isVisualizationRenderInProgress: false,
   setVisualizationRenderInProgress: (inProgress) => set({ isVisualizationRenderInProgress: inProgress }),
 
-  // Color configuration (Datawrapper-style)
+  // Color configuration
   colorConfig: defaultColorConfig,
   setColorConfig: (config) =>
     set((state) => ({

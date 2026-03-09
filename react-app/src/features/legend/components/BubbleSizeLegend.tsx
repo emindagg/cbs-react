@@ -1,5 +1,5 @@
-﻿/**
- * BubbleSizeLegend — ArcGIS-style nested circles legend
+/**
+ * BubbleSizeLegend — nested circles legend
  *
  * Shows concentric circles (3-7 adet) with value labels
  * to indicate what bubble sizes represent.

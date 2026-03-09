@@ -1,6 +1,5 @@
 /**
  * Legend Configuration Panel
- * Datawrapper-style legend settings interface
  */
 
 import type { LegendConfiguration } from '@/types/visualization'

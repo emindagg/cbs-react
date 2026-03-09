@@ -3,7 +3,7 @@
  *
  * Measures formatted label widths and determines the optimal layout mode:
  *   - inline    → all labels fit side-by-side horizontally
- *   - vertical  → labels rotate ~55° downward (Datawrapper style)
+ *   - vertical  → labels rotate ~55° downward
  *   - thinned   → only a subset of labels is shown (extreme case)
  */
 

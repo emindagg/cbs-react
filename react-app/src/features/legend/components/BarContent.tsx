@@ -1,5 +1,5 @@
 /**
- * Legend bar content: continuous/stepped, horizontal/vertical (Datawrapper-style)
+ * Legend bar content: continuous/stepped, horizontal/vertical
  */
 
 import type { ClassificationMethod, ColorScaleType, LegendConfiguration } from '@/types/visualization'

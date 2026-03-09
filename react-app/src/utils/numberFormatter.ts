@@ -1,6 +1,5 @@
 /**
  * Number Formatting Utilities
- * Datawrapper-style number formatting without external dependencies
  */
 
 export type NumberFormat =

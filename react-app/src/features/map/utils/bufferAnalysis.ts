@@ -1,8 +1,3 @@
-/**
- * ArcGIS-style buffer analysis
- * Düzlem (planar), dissolve, negatif buffer, multi-ring, tek taraflı (çizgi)
- */
-
 import * as turf from '@turf/turf'
 import type {
   Feature,
@@ -16,7 +11,6 @@ import type {
 } from 'geojson'
 
 export type BufferDissolve = 'none' | 'all'
-/** ArcGIS Side Type: Tam = her iki taraf, Sol/Sağ = çizgi için tek taraflı (topolojik) */
 export type BufferSideType = 'full' | 'left' | 'right'
 
 export interface BufferOptions {

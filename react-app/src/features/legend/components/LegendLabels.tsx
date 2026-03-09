@@ -3,9 +3,9 @@
  *
  * Renders boundary-aligned labels below the color bar.
  * Supports three label types:
- *   • ruler   → one value per boundary (Datawrapper default)
+ *   • ruler   → one value per boundary
  *   • ranges  → "min – max" per color segment
- *   • custom  → user-defined labels per segment
+   *   • custom  → user-defined labels per segment
  *
  * Uses useLabelCollision to auto-switch inline → staggered → thinned.
  */
@@ -87,7 +87,7 @@ export default function LegendLabels({
     )
   }
 
-  // ── Ranges / Custom mode: Datawrapper-style swatch list ─────
+  // ── Ranges / Custom mode: swatch list ─────
   const segmentItems = colors.map((color, i) => {
     if (labelType === 'custom' && customLabels?.[i]) {
       return { color, text: customLabels[i] }

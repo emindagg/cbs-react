@@ -1,5 +1,5 @@
 /**
- * Datawrapper-style Legend Component
+ * Legend Component
  * Flexible legend with position, orientation, and format options
  */
 

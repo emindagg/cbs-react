@@ -1,5 +1,5 @@
 /**
- * DotDensityLegend — ArcGIS-style "1 nokta = X birim" lejantı
+ * DotDensityLegend — "1 nokta = X birim" lejantı
  *
  * Choropleth renk skalası yerine, tek bir nokta sembolü ve
  * dot value açıklaması gösterir.

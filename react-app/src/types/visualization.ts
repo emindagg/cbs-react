@@ -28,7 +28,6 @@ export type ClassificationMethod =
 
 export type ColorScheme =
   | 'viridis'
-  // Datawrapper Sequential
   | 'greenBlue'
   | 'sunset'
   | 'plasma'
@@ -36,7 +35,6 @@ export type ColorScheme =
   | 'pinkPurple'
   | 'yellowBlue'
   | 'rosePurple'
-  // Datawrapper Diverging
   | 'brownTeal'
   | 'pinkGreen'
   | 'redBlue'
@@ -184,7 +182,7 @@ export interface MatchSummary {
 }
 
 /**
- * Datawrapper-style Interpolation Types
+ * Interpolation Types
  */
 export type InterpolationMethod =
   | 'equidistant'      // Linear/Equal intervals
@@ -250,7 +248,7 @@ export interface MapTitleConfiguration {
 }
 
 /**
- * Complete Color Configuration (Datawrapper-style)
+ * Complete Color Configuration
  */
 export interface ColorConfiguration {
   column: string | null;

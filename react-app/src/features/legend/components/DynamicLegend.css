@@ -93,7 +93,6 @@
 }
 
 /* Segment labels (ranges / custom mode) */
-/* Datawrapper-style swatch list (ranges/custom) */
 .legend-items {
   display: flex;
   flex-wrap: wrap;
@@ -145,7 +144,7 @@
   font-weight: 450;
 }
 
-/* ---- Vertical / Rotated labels (bottom-to-top like Datawrapper) ---- */
+/* ---- Vertical / Rotated labels (bottom-to-top) ---- */
 .smart-label--vertical {
   top: 2px;
   transform: translateX(-50%);

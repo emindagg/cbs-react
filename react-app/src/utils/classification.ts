@@ -75,7 +75,6 @@ export function calculateBreaks(
     const maxVal = sorted[sorted.length - 1]
 
     // Generate Standard Deviation breaks at 1.0 intervals
-    // Capped at k=1.5 to ensure maximum 5 classes (as requested by user / ArcGIS default mimic)
     for (let k = 0.5; k <= 1.5; k += 1.0) {
       const b1 = mean + k * stdDev
       const b2 = mean - k * stdDev
@@ -90,7 +89,7 @@ export function calculateBreaks(
 
     const sortedBreaks = Array.from(breaksSet).sort((a, b) => a - b)
 
-    // Filter out breaks that result in empty classes (ArcGIS Pro behavior)
+    // Filter out breaks that result in empty classes
     const validBreaks = [minVal]
     for (const b of sortedBreaks) {
       const lastBreak = validBreaks[validBreaks.length - 1]
