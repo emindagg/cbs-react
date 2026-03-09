@@ -454,7 +454,7 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
 
           {/* Taraf */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">Taraf</label>
+            <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">Taraf <span className="normal-case font-normal text-zinc-400">(çizgi için)</span></label>
             <CustomSelect
               value={sideType}
               onChange={v => setSideType(v as BufferSideType)}

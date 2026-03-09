@@ -758,9 +758,6 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
 
             {/* Header */}
             <div className="flex items-center gap-3 px-5 py-3.5 shrink-0 border-b border-zinc-100">
-              <div className="h-6 w-6 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-sm">
-                <i className="fa-solid fa-chart-pie text-[9px] text-white" aria-hidden></i>
-              </div>
               <span className="flex-1 text-[13px] font-semibold text-zinc-900 tracking-[-0.02em]">
                 Etki Analizi İstatistikleri
               </span>
