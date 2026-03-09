@@ -4,8 +4,8 @@
  */
 
 import type * as turf from '@turf/turf'
-import { Zap } from 'lucide-react'
-import { useState } from 'react'
+import { Check, ChevronDown, Zap } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
 import { useDataManagementStore } from '@/features/data-management'
@@ -34,6 +34,63 @@ const SIDE_OPTIONS: { value: BufferSideType; label: string }[] = [
   { value: 'left', label: 'Sol (çizgi için)' },
   { value: 'right', label: 'Sağ (çizgi için)' },
 ]
+
+function CustomSelect<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T
+  onChange: (v: T) => void
+  options: { value: T; label: string }[]
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const selected = options.find(o => o.value === value)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(p => !p)}
+        className={`w-full h-8 px-3 flex items-center justify-between bg-zinc-50 border rounded-xl text-[11px] text-zinc-800 transition-all outline-hidden ${
+          open ? 'border-zinc-400 ring-1 ring-zinc-900' : 'border-zinc-200 hover:border-zinc-300'
+        }`}
+      >
+        <span>{selected?.label}</span>
+        <ChevronDown size={12} className={`text-zinc-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-white border border-zinc-200/80 rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] overflow-hidden animate-in fade-in zoom-in-95 duration-100 p-1">
+          {options.map(o => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => { onChange(o.value); setOpen(false) }}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] transition-colors ${
+                o.value === value
+                  ? 'bg-zinc-900 text-white font-medium'
+                  : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+              }`}
+            >
+              <span>{o.label}</span>
+              {o.value === value && <Check size={10} className="text-zinc-300" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const parseDistances = (raw: string): number[] =>
   raw.split(/[,\s]+/).map(s => Number(s.trim())).filter(n => !isNaN(n) && n > 0)
@@ -239,38 +296,41 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
     : selectedLayerIds.length
 
   return (
-    <div className="fixed inset-0 bg-black/30 z-10003 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[320px] overflow-hidden animate-in zoom-in-95 duration-200 border border-zinc-100">
-        <div className="px-4 py-3 border-b border-zinc-50 flex items-center justify-between bg-zinc-50/50">
-          <h3 className="text-xs font-bold text-zinc-900 uppercase tracking-tight flex items-center gap-2">
-            <i className="fa-solid fa-circle-dot text-purple-500"></i>
+    <div className="fixed inset-0 bg-black/20 z-10003 flex items-center justify-center p-4 backdrop-blur-[2px]">
+      <div className="bg-white rounded-2xl w-full max-w-[320px] overflow-hidden animate-in zoom-in-95 duration-150 border border-zinc-200/80 shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_20px_60px_rgba(0,0,0,0.10)]">
+
+        {/* Header */}
+        <div className="px-5 py-3.5 border-b border-zinc-100 flex items-center justify-between">
+          <h3 className="text-[13px] font-semibold text-zinc-900 tracking-[-0.02em]">
             Etki Alanı Analizi
           </h3>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 transition-colors">
-            <i className="fa-solid fa-xmark"></i>
+          <button onClick={onClose} className="h-6 w-6 flex items-center justify-center rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors">
+            <i className="fa-solid fa-xmark text-[11px]"></i>
           </button>
         </div>
 
-        <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
-          <div className="space-y-1">
+        {/* Body */}
+        <div className="p-4 space-y-3.5 max-h-[60vh] overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#e4e4e7 transparent' }}>
+
+          {/* Katmanlar */}
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">
+              <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">
                 Katman(lar)
               </label>
               <div className="flex items-center gap-2">
-                {/* Bulk / Individual toggle */}
-                <div className="flex items-center rounded-md border border-zinc-200 overflow-hidden text-[10px] font-medium">
+                <div className="flex items-center rounded-lg border border-zinc-200 overflow-hidden text-[10px] font-medium">
                   <button
                     type="button"
                     onClick={switchToBulk}
-                    className={`px-2 py-0.5 transition-colors ${inputMode === 'bulk' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}
+                    className={`px-2.5 py-1 transition-colors ${inputMode === 'bulk' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'}`}
                   >
                     Toplu
                   </button>
                   <button
                     type="button"
                     onClick={switchToIndividual}
-                    className={`px-2 py-0.5 transition-colors ${inputMode === 'individual' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}
+                    className={`px-2.5 py-1 transition-colors ${inputMode === 'individual' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-50'}`}
                   >
                     Ayrı Ayrı
                   </button>
@@ -278,35 +338,35 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
                 <button
                   type="button"
                   onClick={toggleSelectAll}
-                  className="text-[10px] text-purple-600 hover:text-purple-700 font-medium"
+                  className="text-[10px] text-violet-600 hover:text-violet-700 font-medium transition-colors"
                 >
                   {allSelected ? 'Seçimi Kaldır' : 'Tümünü seç'}
                 </button>
               </div>
             </div>
-            <div className="max-h-32 overflow-y-auto border border-zinc-200 rounded-lg p-1.5 bg-zinc-50 space-y-0.5">
+            <div className="max-h-32 overflow-y-auto border border-zinc-200/80 rounded-xl p-1.5 bg-zinc-50/60 space-y-0.5" style={{ scrollbarWidth: 'thin', scrollbarColor: '#e4e4e7 transparent' }}>
               {visibleItems.length === 0 ? (
                 <p className="text-[10px] text-zinc-400 px-2 py-1">Görünür katman yok</p>
               ) : (
                 visibleItems.map(i => (
                   <label
                     key={i.id}
-                    className="flex items-center gap-2 px-2 py-1 rounded hover:bg-zinc-100 cursor-pointer text-xs"
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white cursor-pointer transition-colors"
                   >
                     <input
                       type="checkbox"
                       checked={selectedLayerIds.includes(i.id)}
                       onChange={() => toggleLayer(i.id)}
-                      className="rounded border-zinc-300 text-purple-600 focus:ring-purple-500 shrink-0"
+                      className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 shrink-0"
                     />
-                    <span className="truncate flex-1">{i.name}</span>
+                    <span className="truncate flex-1 text-[11px] text-zinc-700 font-medium">{i.name}</span>
                     {inputMode === 'individual' && (
                       <input
                         type="text"
                         value={layerDistances[i.id] ?? ''}
                         onChange={e => setLayerDistances(prev => ({ ...prev, [i.id]: e.target.value }))}
                         onClick={e => e.stopPropagation()}
-                        className="w-20 h-6 px-1.5 bg-white border border-zinc-300 rounded text-[10px] focus:ring-1 focus:ring-purple-500 outline-hidden shrink-0"
+                        className="w-20 h-6 px-1.5 bg-white border border-zinc-200 rounded-lg text-[10px] focus:ring-1 focus:ring-zinc-900 outline-hidden shrink-0"
                         placeholder="500"
                       />
                     )}
@@ -315,88 +375,86 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
               )}
             </div>
             {inputMode === 'bulk' && selectedLayerIds.length > 1 && (
-              <p className="text-[9px] text-zinc-500">
+              <p className="text-[10px] text-zinc-400 px-0.5">
                 {willAnalyzeCount} katman seçili — hepsi aynı mesafe ile buffer'lanacak
               </p>
             )}
             {inputMode === 'individual' && selectedLayerIds.length > 0 && (
-              <p className="text-[9px] text-zinc-500">
+              <p className="text-[10px] text-zinc-400 px-0.5">
                 {selectedLayerIds.length} katman seçili
                 {filledCount < selectedLayerIds.length && ` — ${selectedLayerIds.length - filledCount} tanesi varsayılan mesafe kullanacak`}
               </p>
             )}
           </div>
 
+          {/* Mesafe + Birim */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">
-                {inputMode === 'individual' ? 'Varsayılan mesafe' : 'Mesafe'}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">
+                {inputMode === 'individual' ? 'Varsayılan' : 'Mesafe'}
               </label>
               <input
                 type="number"
                 value={bufferRadius}
                 onChange={e => setBufferRadius(Number(e.target.value))}
-                className="w-full h-8 px-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:ring-1 focus:ring-purple-500 outline-hidden"
-                placeholder="Poligonda negatif = içe"
+                className="w-full h-8 px-3 bg-zinc-50 border border-zinc-200 rounded-xl text-[11px] text-zinc-800 focus:ring-1 focus:ring-zinc-900 focus:border-zinc-400 outline-hidden transition-colors"
+                placeholder="500"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Birim</label>
-              <select
-                value={bufferUnit}
-                onChange={e => setBufferUnit(e.target.value as turf.Units)}
-                className="w-full h-8 px-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:ring-1 focus:ring-purple-500 outline-hidden"
-              >
-                <option value="meters">Metre</option>
-                <option value="kilometers">Kilometre</option>
-              </select>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">Birim</label>
+              <CustomSelect
+                value={bufferUnit as string}
+                onChange={v => setBufferUnit(v as turf.Units)}
+                options={[
+                  { value: 'meters', label: 'Metre' },
+                  { value: 'kilometers', label: 'Kilometre' },
+                ]}
+              />
             </div>
           </div>
 
+          {/* Çoklu mesafe */}
           {inputMode === 'bulk' && (
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Çoklu mesafe</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">Çoklu Mesafe</label>
               <input
                 type="text"
                 value={multiDistances}
                 onChange={e => setMultiDistances(e.target.value)}
-                className="w-full h-8 px-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:ring-1 focus:ring-purple-500 outline-hidden"
+                className="w-full h-8 px-3 bg-zinc-50 border border-zinc-200 rounded-xl text-[11px] text-zinc-800 focus:ring-1 focus:ring-zinc-900 focus:border-zinc-400 outline-hidden transition-colors"
                 placeholder="Örn: 100, 200, 500"
               />
             </div>
           )}
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Taraf</label>
-            <select
+          {/* Taraf */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">Taraf</label>
+            <CustomSelect
               value={sideType}
-              onChange={e => setSideType(e.target.value as BufferSideType)}
-              className="w-full h-8 px-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:ring-1 focus:ring-purple-500 outline-hidden"
-            >
-              {SIDE_OPTIONS.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+              onChange={v => setSideType(v as BufferSideType)}
+              options={SIDE_OPTIONS}
+            />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Birleştir</label>
-            <select
+          {/* Birleştir */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">Birleştir</label>
+            <CustomSelect
               value={dissolve}
-              onChange={e => setDissolve(e.target.value as BufferDissolve)}
-              className="w-full h-8 px-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:ring-1 focus:ring-purple-500 outline-hidden"
-            >
-              {DISSOLVE_OPTIONS.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+              onChange={v => setDissolve(v as BufferDissolve)}
+              options={DISSOLVE_OPTIONS}
+            />
           </div>
+
         </div>
 
-        <div className="p-3 bg-zinc-50/50 flex gap-2">
+        {/* Footer */}
+        <div className="px-4 py-3 border-t border-zinc-100 flex gap-2">
           <button
             onClick={onClose}
-            className="flex-1 h-8 text-xs font-medium text-zinc-500 hover:bg-zinc-200 rounded-lg transition-colors"
+            className="flex-1 h-8 text-[11px] font-medium text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 rounded-xl transition-colors"
           >
             İptal
           </button>
@@ -409,6 +467,7 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
             <span>Analizi Başlat</span>
           </button>
         </div>
+
       </div>
     </div>
   )

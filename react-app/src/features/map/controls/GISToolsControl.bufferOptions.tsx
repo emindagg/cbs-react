@@ -708,12 +708,12 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
         </button>
 
         {isPopupOpen && (
-          <div className="absolute right-0 mt-2 w-64 bg-white border border-zinc-200 rounded-xl shadow-[0_12px_28px_rgba(0,0,0,0.16)] p-3 z-10003">
-            <h4 className="text-[11px] font-bold text-zinc-900 uppercase tracking-wide mb-2">
-              Analiz Seçenekleri
-            </h4>
+          <div className="absolute right-0 mt-2 w-56 bg-white border border-zinc-200/80 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.06)] p-2.5 z-10003">
+            <p className="text-[10px] font-medium text-zinc-400 uppercase tracking-widest px-1 mb-2">
+              Analiz Modu
+            </p>
 
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-1">
               {primaryOptions.map(option => {
                 const isSelected = selectedOption === option
                 return (
@@ -722,12 +722,11 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
                     type="button"
                     aria-pressed={isSelected}
                     onClick={() => handleOptionSelect(option)}
-                    className={`w-full h-8 rounded-md text-[11px] font-medium border transition-colors ${
+                    className={`w-full h-7 rounded-lg text-[11px] font-medium transition-all duration-150 ${
                       isSelected
-                        ? 'text-white'
-                        : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'
+                        ? 'bg-zinc-900 text-white shadow-sm'
+                        : 'bg-zinc-50 border border-zinc-200/70 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700'
                     }`}
-                    style={isSelected ? { backgroundColor: getOptionColor(option), borderColor: getOptionColor(option) } : undefined}
                   >
                     {getOptionLabel(option)}
                   </button>
@@ -735,16 +734,17 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
               })}
             </div>
 
+            <div className="my-2 border-t border-zinc-100" />
+
             <button
               type="button"
               aria-pressed={isSummarySelected}
               onClick={() => handleOptionSelect('summary')}
-              className={`mt-2 w-full h-8 rounded-md text-[11px] font-medium border transition-colors ${
+              className={`w-full h-7 rounded-lg text-[11px] font-medium transition-all duration-150 ${
                 isSummarySelected
-                  ? 'text-white'
-                  : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'
+                  ? 'bg-zinc-900 text-white shadow-sm'
+                  : 'bg-zinc-50 border border-zinc-200/70 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700'
               }`}
-              style={isSummarySelected ? { backgroundColor: getOptionColor('summary'), borderColor: getOptionColor('summary') } : undefined}
             >
               {getOptionLabel('summary')}
             </button>
@@ -753,60 +753,51 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
       </div>
 
       {showStatsModal && statisticalSummary && (
-        <div className="fixed inset-0 z-10004 bg-black/30 backdrop-blur-[3px] flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div
-            className="w-full max-w-lg flex flex-col max-h-[82vh] rounded-xl overflow-hidden animate-in zoom-in-95 duration-150"
-            style={{ background: '#fff', border: '1px solid #e5e5e5', boxShadow: '0 0 0 1px rgba(0,0,0,0.03), 0 16px 48px rgba(0,0,0,0.12)' }}
-          >
+        <div className="fixed inset-0 z-10004 bg-black/20 backdrop-blur-[2px] flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="w-full max-w-lg flex flex-col max-h-[82vh] rounded-2xl overflow-hidden animate-in zoom-in-95 duration-150 bg-white border border-zinc-200/80 shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_20px_60px_rgba(0,0,0,0.10)]">
+
             {/* Header */}
-            <div className="flex items-center gap-2.5 px-4 py-3 shrink-0" style={{ borderBottom: '1px solid #eaeaea' }}>
-              <div className="h-5 w-5 rounded-md flex items-center justify-center shrink-0" style={{ background: '#7c3aed' }}>
+            <div className="flex items-center gap-3 px-5 py-3.5 shrink-0 border-b border-zinc-100">
+              <div className="h-6 w-6 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow-sm">
                 <i className="fa-solid fa-chart-pie text-[9px] text-white" aria-hidden></i>
               </div>
-              <span className="flex-1 text-[13px] font-semibold tracking-[-0.01em]" style={{ color: '#111' }}>
+              <span className="flex-1 text-[13px] font-semibold text-zinc-900 tracking-[-0.02em]">
                 Etki Analizi İstatistikleri
               </span>
               <button
                 type="button"
                 aria-label="Kapat"
                 onClick={() => setIsStatsModalOpen(false)}
-                className="h-6 w-6 flex items-center justify-center rounded-md transition-colors"
-                style={{ color: '#999', background: 'transparent' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f5f5f5'; (e.currentTarget as HTMLButtonElement).style.color = '#333' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#999' }}
+                className="h-6 w-6 flex items-center justify-center rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
               >
                 <i className="fa-solid fa-xmark text-[11px]" aria-hidden></i>
               </button>
             </div>
 
-            <div className="overflow-y-auto flex-1 p-3 space-y-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#ddd #fff' }}>
+            <div className="overflow-y-auto flex-1 p-4 space-y-3" style={{ scrollbarWidth: 'thin', scrollbarColor: '#e4e4e7 transparent' }}>
 
               {/* KPI row */}
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-3 gap-2">
                 {[
                   { label: 'Etki Alanı', value: String(statisticalSummary.layerCount), large: true },
                   { label: 'Toplam Alan', value: formatAreaKm2(statisticalSummary.totalAreaKm2), large: false },
                   { label: 'Birleşik Alan', value: formatAreaKm2(statisticalSummary.mergedAreaKm2), large: false },
                 ].map(({ label, value, large }) => (
-                  <div
-                    key={label}
-                    className="rounded-lg px-3 py-2.5"
-                    style={{ background: '#fafafa', border: '1px solid #eaeaea' }}
-                  >
-                    <div className={`font-semibold tabular-nums leading-none ${large ? 'text-2xl' : 'text-sm'}`} style={{ color: '#111' }}>
+                  <div key={label} className="rounded-xl border border-zinc-100 bg-zinc-50/60 px-3.5 py-3">
+                    <div className={`font-semibold tabular-nums leading-none text-zinc-900 ${large ? 'text-2xl' : 'text-[13px]'}`}>
                       {value}
                     </div>
-                    <div className="text-[10px] mt-1.5" style={{ color: '#999' }}>{label}</div>
+                    <div className="text-[10.5px] text-zinc-400 mt-1.5 font-medium">{label}</div>
                   </div>
                 ))}
               </div>
 
               {/* Yarıçap + Çakışma */}
-              <div className="grid grid-cols-2 gap-1.5">
-                <div className="rounded-lg px-3 py-2.5 space-y-2" style={{ background: '#fafafa', border: '1px solid #eaeaea' }}>
-                  <div className="text-[10px] font-medium uppercase tracking-widest pb-1.5" style={{ color: '#bbb', borderBottom: '1px solid #eaeaea' }}>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-3 space-y-2.5">
+                  <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest border-b border-zinc-200 pb-2">
                     Yarıçap
-                  </div>
+                  </p>
                   {(
                     [
                       ['Ort.', formatDistanceKm(statisticalSummary.averageRadiusKm)],
@@ -815,15 +806,15 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
                     ] as [string, string][]
                   ).map(([label, value]) => (
                     <div key={label} className="flex items-center justify-between">
-                      <span className="text-[11px]" style={{ color: '#999' }}>{label}</span>
-                      <span className="text-[11px] font-medium tabular-nums" style={{ color: '#222' }}>{value}</span>
+                      <span className="text-[11px] text-zinc-500">{label}</span>
+                      <span className="text-[11px] font-semibold text-zinc-800 tabular-nums">{value}</span>
                     </div>
                   ))}
                 </div>
-                <div className="rounded-lg px-3 py-2.5 space-y-2" style={{ background: '#fff8f8', border: '1px solid #fde8e8' }}>
-                  <div className="text-[10px] font-medium uppercase tracking-widest pb-1.5" style={{ color: '#fca5a5', borderBottom: '1px solid #fde8e8' }}>
+                <div className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-3 space-y-2.5">
+                  <p className="text-[10px] font-semibold text-red-400 uppercase tracking-widest border-b border-red-200 pb-2">
                     Çakışma
-                  </div>
+                  </p>
                   {(
                     [
                       ['Çift', String(statisticalSummary.overlapPairCount)],
@@ -832,27 +823,26 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
                     ] as [string, string][]
                   ).map(([label, value]) => (
                     <div key={label} className="flex items-center justify-between">
-                      <span className="text-[11px]" style={{ color: '#fca5a5' }}>{label}</span>
-                      <span className="text-[11px] font-medium tabular-nums" style={{ color: '#dc2626' }}>{value}</span>
+                      <span className="text-[11px] text-red-400">{label}</span>
+                      <span className="text-[11px] font-semibold text-red-600 tabular-nums">{value}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Table */}
-              <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #eaeaea' }}>
-                <div className="px-3 py-2 text-[10px] font-medium uppercase tracking-widest" style={{ color: '#bbb', background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
+              <div className="rounded-xl border border-zinc-100 overflow-hidden">
+                <div className="px-3.5 py-2.5 text-[10px] font-semibold text-zinc-400 uppercase tracking-widest bg-zinc-50/80 border-b border-zinc-100">
                   Detaylar
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr style={{ borderBottom: '1px solid #eaeaea' }}>
+                      <tr className="border-b border-zinc-100 bg-zinc-50/50">
                         {['İsim', 'Yarıçap', 'Alan', 'Çevre'].map((h, i) => (
                           <th
                             key={h}
-                            className={`py-2 px-3 text-[10px] font-medium ${i === 0 ? 'text-left' : 'text-right'}`}
-                            style={{ color: '#bbb', background: '#fafafa' }}
+                            className={`py-2 px-3.5 text-[10px] font-semibold text-zinc-400 ${i === 0 ? 'text-left' : 'text-right'}`}
                           >
                             {h}
                           </th>
@@ -863,17 +853,12 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
                       {statisticalSummary.details.map((detail, index) => (
                         <tr
                           key={detail.id}
-                          style={{
-                            borderTop: '1px solid #f5f5f5',
-                            background: index % 2 !== 0 ? '#fafafa' : '#fff',
-                          }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#f5f3ff' }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = index % 2 !== 0 ? '#fafafa' : '#fff' }}
+                          className={`border-t border-zinc-50 transition-colors hover:bg-violet-50/50 ${index % 2 !== 0 ? 'bg-zinc-50/40' : 'bg-white'}`}
                         >
-                          <td className="py-2 px-3 text-[11px] font-medium" style={{ color: '#111' }}>{detail.name}</td>
-                          <td className="py-2 px-3 text-[11px] text-right tabular-nums" style={{ color: '#888' }}>{formatDistanceKm(detail.radiusKm)}</td>
-                          <td className="py-2 px-3 text-[11px] text-right tabular-nums" style={{ color: '#888' }}>{formatTableMetric(detail.areaKm2, 'km²')}</td>
-                          <td className="py-2 px-3 text-[11px] text-right tabular-nums" style={{ color: '#888' }}>{formatTableMetric(detail.perimeterKm, 'km')}</td>
+                          <td className="py-2.5 px-3.5 text-[11px] font-medium text-zinc-800">{detail.name}</td>
+                          <td className="py-2.5 px-3.5 text-[11px] text-right tabular-nums text-zinc-500">{formatDistanceKm(detail.radiusKm)}</td>
+                          <td className="py-2.5 px-3.5 text-[11px] text-right tabular-nums text-zinc-500">{formatTableMetric(detail.areaKm2, 'km²')}</td>
+                          <td className="py-2.5 px-3.5 text-[11px] text-right tabular-nums text-zinc-500">{formatTableMetric(detail.perimeterKm, 'km')}</td>
                         </tr>
                       ))}
                     </tbody>
