@@ -5,6 +5,7 @@
 
 import type * as turf from '@turf/turf'
 import { Check, ChevronDown, Zap } from 'lucide-react'
+import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -45,23 +46,35 @@ function CustomSelect<T extends string>({
   options: { value: T; label: string }[]
 }) {
   const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+  const [rect, setRect] = useState<DOMRect | null>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const selected = options.find(o => o.value === value)
+
+  const handleOpen = () => {
+    if (triggerRef.current) setRect(triggerRef.current.getBoundingClientRect())
+    setOpen(p => !p)
+  }
 
   useEffect(() => {
     if (!open) return
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      const t = e.target as Node
+      if (
+        triggerRef.current && !triggerRef.current.contains(t) &&
+        dropdownRef.current && !dropdownRef.current.contains(t)
+      ) setOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setOpen(p => !p)}
+        onClick={handleOpen}
         className={`w-full h-8 px-3 flex items-center justify-between bg-zinc-50 border rounded-xl text-[11px] text-zinc-800 transition-all outline-hidden ${
           open ? 'border-zinc-400 ring-1 ring-zinc-900' : 'border-zinc-200 hover:border-zinc-300'
         }`}
@@ -69,8 +82,18 @@ function CustomSelect<T extends string>({
         <span>{selected?.label}</span>
         <ChevronDown size={12} className={`text-zinc-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && (
-        <div className="absolute z-50 left-0 right-0 mt-1 bg-white border border-zinc-200/80 rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.06)] overflow-hidden animate-in fade-in zoom-in-95 duration-100 p-1">
+      {open && rect && createPortal(
+        <div
+          ref={dropdownRef}
+          style={{
+            position: 'fixed',
+            top: rect.bottom + 4,
+            left: rect.left,
+            width: rect.width,
+            zIndex: 99999,
+          }}
+          className="bg-white border border-zinc-200/80 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.10)] animate-in fade-in zoom-in-95 duration-100 p-1"
+        >
           {options.map(o => (
             <button
               key={o.value}
@@ -86,7 +109,8 @@ function CustomSelect<T extends string>({
               {o.value === value && <Check size={10} className="text-zinc-300" />}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
