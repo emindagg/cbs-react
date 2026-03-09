@@ -50,9 +50,15 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
     )
   }
 
-  const selectAllLayers = () => {
-    const visible = items.filter(i => i.visible).map(i => i.id)
-    setSelectedLayerIds(visible)
+  const visibleLayerIds = items.filter(i => i.visible).map(i => i.id)
+  const allSelected = visibleLayerIds.length > 0 && visibleLayerIds.every(id => selectedLayerIds.includes(id))
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedLayerIds([])
+    } else {
+      setSelectedLayerIds(visibleLayerIds)
+    }
   }
 
   const handleBufferAnalyze = () => {
@@ -175,10 +181,10 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
               </label>
               <button
                 type="button"
-                onClick={selectAllLayers}
+                onClick={toggleSelectAll}
                 className="text-[10px] text-purple-600 hover:text-purple-700 font-medium"
               >
-                Tümünü seç
+                {allSelected ? 'Seçimi Kaldır' : 'Tümünü seç'}
               </button>
             </div>
             <div className="max-h-32 overflow-y-auto border border-zinc-200 rounded-lg p-1.5 bg-zinc-50 space-y-0.5">
@@ -233,7 +239,7 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Çoklu mesafe (opsiyonel)</label>
+            <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Çoklu mesafe</label>
             <input
               type="text"
               value={multiDistances}
@@ -244,7 +250,7 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Taraf (çizgi için)</label>
+            <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Taraf</label>
             <select
               value={sideType}
               onChange={e => setSideType(e.target.value as BufferSideType)}
@@ -257,7 +263,7 @@ export function BufferModal({ isOpen, onClose }: BufferModalProps) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Birleştir (dissolve)</label>
+            <label className="text-[10px] font-bold text-zinc-400 uppercase ml-0.5">Birleştir</label>
             <select
               value={dissolve}
               onChange={e => setDissolve(e.target.value as BufferDissolve)}
