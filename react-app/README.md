@@ -111,8 +111,8 @@ Detaylı teknik dokümanlar:
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Mimari, katmanlar, state yönetimi
 - [docs/FEATURES.md](docs/FEATURES.md) - 13 feature'ın detaylı dökümü
 - [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) - Geliştirme rehberi
-- [docs/DATAWRAPPER_FEATURES.md](docs/DATAWRAPPER_FEATURES.md) - Renk interpolasyonu & sınıflandırma
-- [docs/DATAWRAPPER_INTEGRATION.md](docs/DATAWRAPPER_INTEGRATION.md) - Gelişmiş renk skala entegrasyonu
+- [docs/COLOR_SCALE_FEATURES.md](docs/COLOR_SCALE_FEATURES.md) - Renk interpolasyonu & sınıflandırma
+- [docs/COLOR_SCALE_INTEGRATION.md](docs/COLOR_SCALE_INTEGRATION.md) - Gelişmiş renk skala entegrasyonu
 
 ## Lisans
 

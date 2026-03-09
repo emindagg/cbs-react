@@ -13,8 +13,8 @@ Bu klasör, projenin tüm dokümantasyon dosyalarını içerir.
 
 ## Entegrasyonlar
 
-- [DATAWRAPPER_INTEGRATION.md](./DATAWRAPPER_INTEGRATION.md) - Gelişmiş renk interpolasyonu ve lejant entegrasyonu
-- [DATAWRAPPER_FEATURES.md](./DATAWRAPPER_FEATURES.md) - Renk uzayları, sınıflandırma yöntemleri ve sürekli/basamaklı ölçekler
+- [COLOR_SCALE_INTEGRATION.md](./COLOR_SCALE_INTEGRATION.md) - Gelişmiş renk interpolasyonu ve lejant entegrasyonu
+- [COLOR_SCALE_FEATURES.md](./COLOR_SCALE_FEATURES.md) - Renk uzayları, sınıflandırma yöntemleri ve sürekli/basamaklı ölçekler
 
 ---
 

@@ -569,8 +569,8 @@ src/features/<feature-name>/
 
 - [Architecture Guide](./ARCHITECTURE.md)
 - [Contributing Guide](./CONTRIBUTING.md)
-- [Color Scale Features](./DATAWRAPPER_FEATURES.md)
-- [Color Scale Integration](./DATAWRAPPER_INTEGRATION.md)
+- [Color Scale Features](./COLOR_SCALE_FEATURES.md)
+- [Color Scale Integration](./COLOR_SCALE_INTEGRATION.md)
 
 ---
 
