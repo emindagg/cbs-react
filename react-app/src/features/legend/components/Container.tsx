@@ -25,7 +25,7 @@ export default function Container() {
   const dataValues = useMemo(() => {
     return matchResults.successful
       .map((result) => result.value)
-      .filter((v): v is number => v !== undefined)
+      .filter((v): v is number => v !== undefined && v !== 0)
   }, [matchResults])
 
   // Bivariate modda renk lejantı colorColumn'dan hesaplanmalı
