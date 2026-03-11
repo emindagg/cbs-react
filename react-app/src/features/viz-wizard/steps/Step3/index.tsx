@@ -7,7 +7,7 @@ import { SingleSlider } from '@/components/ui'
 import { DEFAULT_BACKDROP_FILL_OPACITY } from '@/features/visualization/point/services/PointRenderer'
 import { COLOR_SCHEME_LIST } from '@/constants/colorSchemes'
 import { LegendConfig } from '@/shared/legend'
-import { BubbleSettings, ChoroplethSettings, DotDensitySettings } from '@/shared/visualization'
+import { BubbleSettings, DotDensitySettings } from '@/shared/visualization'
 import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
 
 import { MapTitleSection } from './components/MapTitleSection'
@@ -153,14 +153,6 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         />
       )}
 
-      {/* Choropleth Settings */}
-      {vizSettings.type === 'choropleth' && (
-        <ChoroplethSettings
-          vizSettings={vizSettings}
-          setVizSettings={setVizSettings}
-        />
-      )}
-
       {/* Dot Density Settings - only for dot visualization */}
       {vizSettings.type === 'dot' && (
         <DotDensitySettings
@@ -168,20 +160,6 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
           setVizSettings={(s) => setVizSettings(s)}
           dataValues={dataValues}
         />
-      )}
-
-      {(vizSettings.type === 'dot' || vizSettings.type === 'bubble') && (
-        <div className="bg-white border border-zinc-200 rounded-lg p-3">
-          <SingleSlider
-            label="İl/İlçe Dolgu Şeffaflığı"
-            min={0}
-            max={1}
-            step={0.05}
-            value={vizSettings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY}
-            formatValue={(v) => `%${Math.round(v * 100)}`}
-            onChange={(v) => setVizSettings({ backdropFillOpacity: v })}
-          />
-        </div>
       )}
 
       {/* Steps section - only for stepped scales, NOT for dot density or bubble non-bivariate */}
@@ -355,6 +333,36 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
             className="w-7 h-7 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
           />
         </div>
+
+        {vizSettings.type === 'choropleth' && (
+          <>
+            <div className="border-t border-zinc-100" />
+            <SingleSlider
+              label="İl/İlçe Dolgu Şeffaflığı"
+              min={0}
+              max={1}
+              step={0.05}
+              value={vizSettings.choroplethOpacity ?? 1}
+              formatValue={(v) => `%${Math.round(v * 100)}`}
+              onChange={(v) => setVizSettings({ choroplethOpacity: v })}
+            />
+          </>
+        )}
+
+        {(vizSettings.type === 'dot' || vizSettings.type === 'bubble') && (
+          <>
+            <div className="border-t border-zinc-100" />
+            <SingleSlider
+              label="İl/İlçe Dolgu Şeffaflığı"
+              min={0}
+              max={1}
+              step={0.05}
+              value={vizSettings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY}
+              formatValue={(v) => `%${Math.round(v * 100)}`}
+              onChange={(v) => setVizSettings({ backdropFillOpacity: v })}
+            />
+          </>
+        )}
       </div>
 
       {/* Action buttons */}

@@ -9,7 +9,6 @@ export {
   calculateSmartDotValue,
   DotDensitySettings,
   BubbleSettings,
-  ChoroplethSettings,
   useBubbleTooltip,
   useChoroplethTooltip,
 } from '@/features/visualization'
