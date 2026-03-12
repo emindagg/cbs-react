@@ -52,7 +52,7 @@ export default function BasemapSwitcher() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute top-0 left-12 ml-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50 animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute top-0 left-12 ml-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50 animate-in fade-in zoom-in-95 duration-200">
           <div className="px-3 py-2 border-b border-gray-100 mb-1">
             <h3 className="text-xs font-semibold text-gray-500 uppercase">Altlık Harita</h3>
           </div>
