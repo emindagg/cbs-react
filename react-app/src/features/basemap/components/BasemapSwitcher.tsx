@@ -31,7 +31,7 @@ export default function BasemapSwitcher() {
     { id: 'GECE', label: 'HGM Gece', icon: 'fa-star' },
     { id: 'SIYASI', label: 'HGM Siyasi', icon: 'fa-flag' },
     { id: 'YUKSEKLIK', label: 'HGM Yükseklik', icon: 'fa-mountain' },
-    { id: 'NONE', label: 'Altlık Yok (Gri)', icon: 'fa-ban' },
+    { id: 'NONE', label: 'Altlık Haritayı Gizle', icon: 'fa-ban' },
   ]
 
   const handleSelect = (id: BasemapType) => {
