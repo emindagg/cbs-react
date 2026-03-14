@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { NORTH_ARROW_STYLES } from '@/shared/northArrowStyles'
 import { useMapStore } from '@/stores/useMapStore'
 
 export default function DraggableNorthArrow() {
-  const { mapInstance, northArrowVisible } = useMapStore()
+  const { mapInstance, northArrowVisible, northArrowStyle } = useMapStore()
   const [bearing, setBearing] = useState(0)
   const [pos, setPos] = useState(() => ({
     x: window.innerWidth - 80,
@@ -61,41 +62,14 @@ export default function DraggableNorthArrow() {
         justifyContent: 'center',
       }}
     >
-      {/* SVG döner, etiketler sabit kalır */}
       <svg
         width="72"
         height="72"
-        viewBox="-36 -36 72 72"
+        viewBox="-30 -30 60 60"
+        overflow="visible"
         style={{ transform: `rotate(${bearing}deg)`, transition: 'transform 0.1s ease' }}
       >
-        {/* --- 4 yön okları --- */}
-
-        {/* Kuzey (K) - kırmızı */}
-        <path d="M 0,-26 L 6,0 L 0,-5 L -6,0 Z" fill="#c0392b" />
-        {/* Güney (G) */}
-        <path d="M 0,26 L 6,0 L 0,5 L -6,0 Z" fill="#1a1a1a" />
-        {/* Doğu (D) */}
-        <path d="M 26,0 L 0,6 L 5,0 L 0,-6 Z" fill="#1a1a1a" />
-        {/* Batı (B) */}
-        <path d="M -26,0 L 0,6 L -5,0 L 0,-6 Z" fill="#1a1a1a" />
-
-        {/* Merkez çember */}
-        <circle r="7" fill="white" stroke="#1a1a1a" strokeWidth="1.5" />
-        <circle r="2.5" fill="#1a1a1a" />
-
-        {/* Yön etiketleri */}
-        <text x="0" y="-29" textAnchor="middle" dominantBaseline="auto"
-          fontSize="10" fontWeight="700" fontFamily="system-ui, sans-serif"
-          fill="#c0392b">K</text>
-        <text x="0" y="36" textAnchor="middle" dominantBaseline="auto"
-          fontSize="10" fontWeight="700" fontFamily="system-ui, sans-serif"
-          fill="#1a1a1a">G</text>
-        <text x="31" y="2.5" textAnchor="middle" dominantBaseline="middle"
-          fontSize="10" fontWeight="700" fontFamily="system-ui, sans-serif"
-          fill="#1a1a1a">D</text>
-        <text x="-31" y="2.5" textAnchor="middle" dominantBaseline="middle"
-          fontSize="10" fontWeight="700" fontFamily="system-ui, sans-serif"
-          fill="#1a1a1a">B</text>
+        {NORTH_ARROW_STYLES[northArrowStyle].render()}
       </svg>
     </div>
   )

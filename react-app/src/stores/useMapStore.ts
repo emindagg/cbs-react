@@ -1,6 +1,10 @@
 import type { Map } from 'maplibre-gl'
 import { create } from 'zustand'
 
+import type { NorthArrowStyleId } from '@/shared/northArrowStyles'
+
+export type { NorthArrowStyleId }
+
 export type BasemapType =
   | 'TEMEL'
   | 'UYDU'
@@ -21,6 +25,7 @@ interface MapState {
   mapInstance: Map | null
   isGlobeMode: boolean
   northArrowVisible: boolean
+  northArrowStyle: NorthArrowStyleId
 
   setLoaded: (loaded: boolean) => void
   setViewState: (zoom: number, center: [number, number]) => void
@@ -28,6 +33,7 @@ interface MapState {
   setMapInstance: (map: Map | null) => void
   setGlobeMode: (isGlobe: boolean) => void
   setNorthArrowVisible: (visible: boolean) => void
+  setNorthArrowStyle: (style: NorthArrowStyleId) => void
 }
 
 // Default Turkey center coordinates
@@ -41,6 +47,7 @@ export const useMapStore = create<MapState>((set) => ({
   mapInstance: null,
   isGlobeMode: false,
   northArrowVisible: true,
+  northArrowStyle: 'four-dir',
 
   setLoaded: (loaded) => set({ isLoaded: loaded }),
   setViewState: (zoom, center) => set({ zoom, center }),
@@ -48,4 +55,5 @@ export const useMapStore = create<MapState>((set) => ({
   setMapInstance: (map) => set({ mapInstance: map }),
   setGlobeMode: (isGlobe) => set({ isGlobeMode: isGlobe }),
   setNorthArrowVisible: (visible) => set({ northArrowVisible: visible }),
+  setNorthArrowStyle: (style) => set({ northArrowStyle: style }),
 }))

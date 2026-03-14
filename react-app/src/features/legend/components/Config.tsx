@@ -3,6 +3,7 @@
  */
 
 import type { LegendConfiguration } from '@/types/visualization'
+import { NORTH_ARROW_STYLES } from '@/shared/northArrowStyles'
 import { coerceNumberFormat, FORMAT_OPTIONS } from '@/utils/numberFormatter'
 import { useMapStore } from '@/stores/useMapStore'
 
@@ -17,7 +18,7 @@ interface LegendConfigProps {
 }
 
 export default function LegendConfig({ config, onChange, classCount }: LegendConfigProps) {
-  const { northArrowVisible, setNorthArrowVisible } = useMapStore()
+  const { northArrowVisible, setNorthArrowVisible, northArrowStyle, setNorthArrowStyle } = useMapStore()
 
   return (
     <div className="space-y-4">
@@ -48,6 +49,23 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
           />
         </button>
       </div>
+
+      {northArrowVisible && (
+        <div>
+          <label className="text-[11px] font-medium text-zinc-600 mb-1.5 block">
+            Yön Oku Modeli
+          </label>
+          <select
+            value={northArrowStyle}
+            onChange={(e) => setNorthArrowStyle(e.target.value as Parameters<typeof setNorthArrowStyle>[0])}
+            className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded bg-white hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            {(Object.entries(NORTH_ARROW_STYLES) as [Parameters<typeof setNorthArrowStyle>[0], { label: string }][]).map(([id, { label }]) => (
+              <option key={id} value={id}>{label}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {config.visible && (
         <>
