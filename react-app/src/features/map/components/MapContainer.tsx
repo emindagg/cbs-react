@@ -1,11 +1,12 @@
 import maplibregl from 'maplibre-gl'
 import { useMemo } from 'react'
-import Map, { ScaleControl, Source, Layer } from 'react-map-gl/maplibre'
+import Map, { Source, Layer } from 'react-map-gl/maplibre'
 
 import { useBubbleTooltip, useChoroplethTooltip } from '@/shared/visualization'
 import { useMapStore } from '@/stores/useMapStore'
 
 import { DataManagementDrawTool } from '../../data-management/components/DataManagementDrawTool'
+import DraggableScaleControl from '../controls/DraggableScaleControl'
 import GISToolsControl from '../controls/GISToolsControl'
 import TimelineControl from '../controls/TimelineControl'
 import DataLayer from '../layers/DataLayer'
@@ -143,13 +144,13 @@ export default function MapContainer() {
       )}
 
 
-      <ScaleControl position="bottom-right" />
       <DistanceTool />
       <DataManagementDrawTool />
       <DataLayer />
       <GISToolsControl />
       <TimelineControl />
     </Map>
+    <DraggableScaleControl />
     </div>
   )
 }
