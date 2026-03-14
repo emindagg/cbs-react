@@ -6,8 +6,8 @@ export default function DraggableNorthArrow() {
   const { mapInstance, northArrowVisible } = useMapStore()
   const [bearing, setBearing] = useState(0)
   const [pos, setPos] = useState(() => ({
-    x: window.innerWidth - 60,
-    y: window.innerHeight - 160,
+    x: window.innerWidth - 80,
+    y: window.innerHeight - 200,
   }))
   const isDragging = useRef(false)
   const dragOrigin = useRef({ mx: 0, my: 0, px: 0, py: 0 })
@@ -54,45 +54,48 @@ export default function DraggableNorthArrow() {
         cursor: 'grab',
         userSelect: 'none',
         touchAction: 'none',
-        width: 44,
-        height: 44,
-        background: 'rgba(255,255,255,0.92)',
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
-        border: '1px solid rgba(0,0,0,0.12)',
-        borderRadius: '50%',
-        boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+        width: 72,
+        height: 72,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
+      {/* SVG döner, etiketler sabit kalır */}
       <svg
-        width="28"
-        height="28"
-        viewBox="-14 -14 28 28"
+        width="72"
+        height="72"
+        viewBox="-36 -36 72 72"
         style={{ transform: `rotate(${bearing}deg)`, transition: 'transform 0.1s ease' }}
       >
-        {/* North half - dark */}
-        <path d="M 0,-11 L 4.5,0 L 0,-1.5 L -4.5,0 Z" fill="#1a1a1a" />
-        {/* South half - light */}
-        <path d="M 0,11 L 4.5,0 L 0,1.5 L -4.5,0 Z" fill="#bbb" />
-        {/* Center dot */}
-        <circle r="1.8" fill="#1a1a1a" />
-        {/* N label */}
-        <text
-          x="0"
-          y="-13"
-          textAnchor="middle"
-          dominantBaseline="auto"
-          fontSize="5.5"
-          fontWeight="700"
-          fontFamily="system-ui, sans-serif"
-          fill="#1a1a1a"
-          letterSpacing="0.02em"
-        >
-          N
-        </text>
+        {/* --- 4 yön okları --- */}
+
+        {/* Kuzey (K) - kırmızı */}
+        <path d="M 0,-26 L 6,0 L 0,-5 L -6,0 Z" fill="#c0392b" />
+        {/* Güney (G) */}
+        <path d="M 0,26 L 6,0 L 0,5 L -6,0 Z" fill="#1a1a1a" />
+        {/* Doğu (D) */}
+        <path d="M 26,0 L 0,6 L 5,0 L 0,-6 Z" fill="#1a1a1a" />
+        {/* Batı (B) */}
+        <path d="M -26,0 L 0,6 L -5,0 L 0,-6 Z" fill="#1a1a1a" />
+
+        {/* Merkez çember */}
+        <circle r="7" fill="white" stroke="#1a1a1a" strokeWidth="1.5" />
+        <circle r="2.5" fill="#1a1a1a" />
+
+        {/* Yön etiketleri */}
+        <text x="0" y="-29" textAnchor="middle" dominantBaseline="auto"
+          fontSize="10" fontWeight="700" fontFamily="system-ui, sans-serif"
+          fill="#c0392b">K</text>
+        <text x="0" y="36" textAnchor="middle" dominantBaseline="auto"
+          fontSize="10" fontWeight="700" fontFamily="system-ui, sans-serif"
+          fill="#1a1a1a">G</text>
+        <text x="31" y="2.5" textAnchor="middle" dominantBaseline="middle"
+          fontSize="10" fontWeight="700" fontFamily="system-ui, sans-serif"
+          fill="#1a1a1a">D</text>
+        <text x="-31" y="2.5" textAnchor="middle" dominantBaseline="middle"
+          fontSize="10" fontWeight="700" fontFamily="system-ui, sans-serif"
+          fill="#1a1a1a">B</text>
       </svg>
     </div>
   )
