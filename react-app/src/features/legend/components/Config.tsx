@@ -4,6 +4,7 @@
 
 import type { LegendConfiguration } from '@/types/visualization'
 import { coerceNumberFormat, FORMAT_OPTIONS } from '@/utils/numberFormatter'
+import { useMapStore } from '@/stores/useMapStore'
 
 import { ConfigLabelsSection } from './ConfigLabelsSection'
 import { ConfigSizeSection } from './ConfigSizeSection'
@@ -16,6 +17,8 @@ interface LegendConfigProps {
 }
 
 export default function LegendConfig({ config, onChange, classCount }: LegendConfigProps) {
+  const { northArrowVisible, setNorthArrowVisible } = useMapStore()
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -27,6 +30,21 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
         >
           <div
             className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${config.visible ? 'left-6' : 'left-0.5'}`}
+          />
+        </button>
+      </div>
+
+      <hr className="border-zinc-200" />
+
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-medium text-zinc-700">Yön Oku</label>
+        <button
+          type="button"
+          onClick={() => setNorthArrowVisible(!northArrowVisible)}
+          className={`w-12 h-6 rounded-full transition-all relative ${northArrowVisible ? 'bg-blue-500' : 'bg-zinc-300'}`}
+        >
+          <div
+            className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${northArrowVisible ? 'left-6' : 'left-0.5'}`}
           />
         </button>
       </div>

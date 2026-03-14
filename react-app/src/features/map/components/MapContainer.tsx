@@ -6,6 +6,7 @@ import { useBubbleTooltip, useChoroplethTooltip } from '@/shared/visualization'
 import { useMapStore } from '@/stores/useMapStore'
 
 import { DataManagementDrawTool } from '../../data-management/components/DataManagementDrawTool'
+import DraggableNorthArrow from '../controls/DraggableNorthArrow'
 import DraggableScaleControl from '../controls/DraggableScaleControl'
 import GISToolsControl from '../controls/GISToolsControl'
 import TimelineControl from '../controls/TimelineControl'
@@ -151,6 +152,7 @@ export default function MapContainer() {
       <TimelineControl />
     </Map>
     <DraggableScaleControl />
+    <DraggableNorthArrow />
     </div>
   )
 }
