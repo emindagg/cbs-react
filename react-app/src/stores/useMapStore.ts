@@ -26,6 +26,7 @@ interface MapState {
   isGlobeMode: boolean
   northArrowVisible: boolean
   northArrowStyle: NorthArrowStyleId
+  northArrowBearing: number
 
   setLoaded: (loaded: boolean) => void
   setViewState: (zoom: number, center: [number, number]) => void
@@ -34,6 +35,7 @@ interface MapState {
   setGlobeMode: (isGlobe: boolean) => void
   setNorthArrowVisible: (visible: boolean) => void
   setNorthArrowStyle: (style: NorthArrowStyleId) => void
+  setNorthArrowBearing: (deg: number) => void
 }
 
 // Default Turkey center coordinates
@@ -48,6 +50,7 @@ export const useMapStore = create<MapState>((set) => ({
   isGlobeMode: false,
   northArrowVisible: true,
   northArrowStyle: 'four-dir',
+  northArrowBearing: 0,
 
   setLoaded: (loaded) => set({ isLoaded: loaded }),
   setViewState: (zoom, center) => set({ zoom, center }),
@@ -56,4 +59,5 @@ export const useMapStore = create<MapState>((set) => ({
   setGlobeMode: (isGlobe) => set({ isGlobeMode: isGlobe }),
   setNorthArrowVisible: (visible) => set({ northArrowVisible: visible }),
   setNorthArrowStyle: (style) => set({ northArrowStyle: style }),
+  setNorthArrowBearing: (deg) => set({ northArrowBearing: deg }),
 }))

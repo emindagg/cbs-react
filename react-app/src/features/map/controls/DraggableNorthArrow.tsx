@@ -1,25 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import { NORTH_ARROW_STYLES } from '@/shared/northArrowStyles'
 import { useMapStore } from '@/stores/useMapStore'
 
 export default function DraggableNorthArrow() {
-  const { mapInstance, northArrowVisible, northArrowStyle } = useMapStore()
-  const [bearing, setBearing] = useState(0)
+  const { mapInstance, northArrowVisible, northArrowStyle, northArrowBearing } = useMapStore()
   const [pos, setPos] = useState(() => ({
     x: window.innerWidth - 80,
     y: window.innerHeight - 200,
   }))
   const isDragging = useRef(false)
   const dragOrigin = useRef({ mx: 0, my: 0, px: 0, py: 0 })
-
-  useEffect(() => {
-    if (!mapInstance) return
-    const update = () => setBearing(mapInstance.getBearing())
-    update()
-    mapInstance.on('rotate', update)
-    return () => { mapInstance.off('rotate', update) }
-  }, [mapInstance])
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -67,7 +58,7 @@ export default function DraggableNorthArrow() {
         height="72"
         viewBox="-30 -30 60 60"
         overflow="visible"
-        style={{ transform: `rotate(${bearing}deg)`, transition: 'transform 0.1s ease' }}
+        style={{ transform: `rotate(${northArrowBearing}deg)`, transition: 'transform 0.1s ease' }}
       >
         {NORTH_ARROW_STYLES[northArrowStyle].render()}
       </svg>

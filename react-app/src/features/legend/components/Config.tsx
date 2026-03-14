@@ -6,6 +6,7 @@ import type { LegendConfiguration } from '@/types/visualization'
 import { NORTH_ARROW_STYLES } from '@/shared/northArrowStyles'
 import { coerceNumberFormat, FORMAT_OPTIONS } from '@/utils/numberFormatter'
 import { useMapStore } from '@/stores/useMapStore'
+import { SingleSlider } from '@/components/ui'
 
 import { ConfigLabelsSection } from './ConfigLabelsSection'
 import { ConfigSizeSection } from './ConfigSizeSection'
@@ -18,7 +19,7 @@ interface LegendConfigProps {
 }
 
 export default function LegendConfig({ config, onChange, classCount }: LegendConfigProps) {
-  const { northArrowVisible, setNorthArrowVisible, northArrowStyle, setNorthArrowStyle } = useMapStore()
+  const { northArrowVisible, setNorthArrowVisible, northArrowStyle, setNorthArrowStyle, northArrowBearing, setNorthArrowBearing } = useMapStore()
 
   return (
     <div className="space-y-4">
@@ -51,19 +52,35 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
       </div>
 
       {northArrowVisible && (
-        <div>
-          <label className="text-[11px] font-medium text-zinc-600 mb-1.5 block">
-            Yön Oku Modeli
-          </label>
-          <select
-            value={northArrowStyle}
-            onChange={(e) => setNorthArrowStyle(e.target.value as Parameters<typeof setNorthArrowStyle>[0])}
-            className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded bg-white hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            {(Object.entries(NORTH_ARROW_STYLES) as [Parameters<typeof setNorthArrowStyle>[0], { label: string }][]).map(([id, { label }]) => (
-              <option key={id} value={id}>{label}</option>
-            ))}
-          </select>
+        <div className="space-y-3">
+          <div>
+            <label className="text-[11px] font-medium text-zinc-600 mb-1.5 block">
+              Yön Oku Modeli
+            </label>
+            <select
+              value={northArrowStyle}
+              onChange={(e) => setNorthArrowStyle(e.target.value as Parameters<typeof setNorthArrowStyle>[0])}
+              className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded bg-white hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {(Object.entries(NORTH_ARROW_STYLES) as [Parameters<typeof setNorthArrowStyle>[0], { label: string }][]).map(([id, { label }]) => (
+                <option key={id} value={id}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <SingleSlider
+              label="Pusula Yönü"
+              min={0}
+              max={360}
+              step={1}
+              value={northArrowBearing}
+              formatValue={(v) => `${v}°`}
+              onChange={setNorthArrowBearing}
+            />
+            <div className="flex justify-between text-[9px] text-zinc-400 mt-0.5">
+              <span>0° (K)</span><span>180° (G)</span><span>360°</span>
+            </div>
+          </div>
         </div>
       )}
 
