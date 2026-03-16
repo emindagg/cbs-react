@@ -83,21 +83,6 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
   )
 }
 
-// ─── Lejant Barı ────────────────────────────────────────────────────────────
-function HypsometricLegend() {
-  const stops = COLOR_STOPS.map(s => `rgb(${s.r},${s.g},${s.b})`).join(', ')
-  return (
-    <div className="flex items-center gap-2 px-4 pt-1.5 shrink-0">
-      <span className="text-[9px] text-zinc-400 tabular-nums">0 m</span>
-      <div
-        className="flex-1 h-2 rounded-full"
-        style={{ background: `linear-gradient(to right, ${stops})` }}
-      />
-      <span className="text-[9px] text-zinc-400 tabular-nums">2500+ m</span>
-    </div>
-  )
-}
-
 // ─── Panel ──────────────────────────────────────────────────────────────────
 export default function ElevationProfilePanel({
   isOpen,
