@@ -2,9 +2,11 @@ import { useCallback, useRef, useState } from 'react'
 
 import { NORTH_ARROW_STYLES } from '@/shared/northArrowStyles'
 import { useMapStore } from '@/stores/useMapStore'
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
 export default function DraggableNorthArrow() {
   const { mapInstance, northArrowVisible, northArrowStyle, northArrowBearing } = useMapStore()
+  const { currentVisualization } = useVisualizationStore()
   const [pos, setPos] = useState(() => ({
     x: window.innerWidth - 80,
     y: window.innerHeight - 200,
@@ -31,7 +33,7 @@ export default function DraggableNorthArrow() {
 
   const onPointerUp = useCallback(() => { isDragging.current = false }, [])
 
-  if (!northArrowVisible || !mapInstance) return null
+  if (!northArrowVisible || !mapInstance || currentVisualization.type === null) return null
 
   return (
     <div
