@@ -214,7 +214,7 @@ export default function GISToolsControl() {
   })
 
   return (
-    <div ref={containerRef} className={`absolute top-3 right-3 z-10002 flex flex-col items-end ${toolsMenuMode === 'closed' ? 'pointer-events-none' : ''}`}>
+    <div ref={containerRef} className={`absolute top-3 right-3 z-10002 flex flex-col items-end ${toolsMenuMode === 'closed' && !showBufferModal ? 'pointer-events-none' : ''}`}>
       {/* Toggle Button */}
       <button
         id="toggle-gis-tools"
