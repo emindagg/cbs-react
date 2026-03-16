@@ -96,13 +96,17 @@ export default function ElevationProfileTool() {
   const waypointsRef = useRef<[number, number][]>([])
 
   // Store action ref'leri
-  const addWaypointRef = useRef(store.addWaypoint)
-  const resetRef       = useRef(store.reset)
+  const addWaypointRef  = useRef(store.addWaypoint)
+  const resetRef        = useRef(store.reset)
   useEffect(() => { addWaypointRef.current = store.addWaypoint }, [store.addWaypoint])
   useEffect(() => { resetRef.current = store.reset }, [store.reset])
 
+  // Çizim tamamlandı bayrağı — ghost line'ı durdurur
+  const drawingDoneRef = useRef(false)
+
   useEffect(() => {
     waypointsRef.current = store.waypoints
+    if (store.waypoints.length === 0) drawingDoneRef.current = false
   }, [store.waypoints])
 
   // ─── Çizim: setup / teardown ─────────────────────────────────────────────
@@ -148,8 +152,11 @@ export default function ElevationProfileTool() {
     } as maplibregl.CircleLayerSpecification)
 
     map.getCanvas().style.cursor = 'crosshair'
+    map.doubleClickZoom.disable()
+    drawingDoneRef.current = false
 
     const handleMouseMove = (e: maplibregl.MapMouseEvent) => {
+      if (drawingDoneRef.current) return
       ghostRef.current = [e.lngLat.lng, e.lngLat.lat]
       const pts = waypointsRef.current
       const coords: [number, number][] = pts.length > 0
@@ -166,6 +173,26 @@ export default function ElevationProfileTool() {
       setSource(map, SRC_WAYPOINTS, pointFC(next))
     }
 
+    // Çift tıklama / mobil çift dokunma: ghost line durdur, son eklenen fazla noktayı temizle
+    const handleDblClick = () => {
+      drawingDoneRef.current = true
+      const pts = waypointsRef.current.slice(0, -1)
+      waypointsRef.current = pts
+      ghostRef.current = null
+      // Ghost kaldır, waypoint'ler arası çizgiyi koru
+      setSource(map, SRC_PREVIEW, pts.length >= 2 ? lineFC(pts) : EMPTY_FC as FeatureCollection<LineString>)
+      setSource(map, SRC_WAYPOINTS, pointFC(pts))
+    }
+
+    // Sağ tık: ghost line durdur, waypoint'ler arası çizgiyi koru
+    const handleContextMenu = (e: maplibregl.MapMouseEvent) => {
+      e.preventDefault()
+      drawingDoneRef.current = true
+      ghostRef.current = null
+      const pts = waypointsRef.current
+      setSource(map, SRC_PREVIEW, pts.length >= 2 ? lineFC(pts) : EMPTY_FC as FeatureCollection<LineString>)
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         ghostRef.current = null
@@ -178,13 +205,18 @@ export default function ElevationProfileTool() {
 
     map.on('mousemove', handleMouseMove)
     map.on('click', handleClick)
+    map.on('dblclick', handleDblClick)
+    map.on('contextmenu', handleContextMenu)
     document.addEventListener('keydown', handleKeyDown)
 
     return () => {
       map.off('mousemove', handleMouseMove)
       map.off('click', handleClick)
+      map.off('dblclick', handleDblClick)
+      map.off('contextmenu', handleContextMenu)
       document.removeEventListener('keydown', handleKeyDown)
       map.getCanvas().style.cursor = ''
+      map.doubleClickZoom.enable()
       removeLayers(map, [LYR_PREVIEW, LYR_WAYPOINTS])
       removeSources(map, [SRC_PREVIEW, SRC_WAYPOINTS])
       ghostRef.current = null

@@ -194,7 +194,7 @@ export default function ElevationProfilePanel({
           <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
             <div className="flex items-center gap-2 text-[12px] text-zinc-500">
               <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              Yükseklik verisi alınıyor…
+              Yükselti profili analizi yapılıyor…
             </div>
           </div>
         )}

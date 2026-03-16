@@ -219,7 +219,7 @@ export default function AppLayout() {
         isLoading={elevationProfile.isLoading}
         error={elevationProfile.error}
         onClose={() => elevationProfile.setPanelOpen(false)}
-        onDeactivate={elevationProfile.deactivate}
+        onDeactivate={() => { elevationProfile.deactivate(); elevationProfile.setPanelOpen(true) }}
         onActivePoint={elevationProfile.setActivePoint}
         onRunAnalysis={() => elevationProfile.finalize(elevationProfile.waypoints)}
       />
