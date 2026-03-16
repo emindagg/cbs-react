@@ -104,15 +104,22 @@ export default function ElevationProfilePanel({
 
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-1.5 border-b border-zinc-100 shrink-0">
-        <span className="text-[12px] font-semibold text-zinc-800 tracking-tight">Yükseklik Profili</span>
+        <span className="text-[12px] font-semibold text-zinc-800 tracking-tight">Yükselti Profili Analizi</span>
         <div className="ml-auto flex items-center gap-1">
           <button
             onClick={onRunAnalysis}
             disabled={waypointCount < 2 || isLoading}
-            className="px-2.5 py-0.5 text-[10px] font-semibold bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-200 disabled:text-zinc-400 text-white rounded-md transition-colors tracking-tight"
+            className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              waypointCount >= 2 && !isLoading
+                ? 'border-slate-800 bg-slate-800 text-white hover:bg-slate-700'
+                : 'bg-zinc-50 border-zinc-100 text-zinc-300 cursor-not-allowed'
+            }`}
             title={waypointCount < 2 ? 'En az 2 nokta ekleyin' : 'Analizi çalıştır'}
           >
-            Analizi Çalıştır
+            {isLoading
+              ? <span className="flex items-center gap-1"><div className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin" />Yükleniyor</span>
+              : 'Analizi Çalıştır'
+            }
           </button>
           <button
             onClick={onDeactivate}
