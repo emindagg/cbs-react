@@ -6,6 +6,7 @@ import { useAstroMap, AstroPanel, useAstroStore } from '@/features/astronomy'
 import { BasemapSwitcher } from '@/features/basemap'
 import { useClustering } from '@/features/clustering'
 import { ImportedDataManagerFab, useLayerStyleSync } from '@/features/data-management'
+import { ElevationProfilePanel, useElevationProfile } from '@/features/elevation-profile'
 import { SearchContainer } from '@/features/geocoder'
 import { GlobeToggleButton } from '@/features/globe-view'
 import { HeatmapPanel, useHeatmap } from '@/features/heatmap'
@@ -60,6 +61,9 @@ export default function AppLayout() {
 
   // Isochrone accessibility analysis
   const isochrone = useIsochrone()
+
+  // Elevation profile
+  const elevationProfile = useElevationProfile()
 
   // Toggle sidebar and resize map
   const toggleSidebar = () => {
@@ -206,14 +210,28 @@ export default function AppLayout() {
         onDeactivate={isochrone.deactivate}
       />
 
+      {/* Elevation Profile Panel */}
+      <ElevationProfilePanel
+        isOpen={elevationProfile.isPanelOpen}
+        waypointCount={elevationProfile.waypoints.length}
+        elevationData={elevationProfile.elevationData}
+        stats={elevationProfile.stats}
+        isLoading={elevationProfile.isLoading}
+        error={elevationProfile.error}
+        onClose={() => elevationProfile.setPanelOpen(false)}
+        onDeactivate={elevationProfile.deactivate}
+        onHoverIndex={elevationProfile.setHoverIndex}
+        onRunAnalysis={() => elevationProfile.finalize(elevationProfile.waypoints)}
+      />
+
       {/* Visualization Legend */}
       <LegendContainer />
       <ImportedDataManagerFab />
 
-      {/* Coordinate Display – sidebar farkındalıklı; mobilde sidebar açıkken gizle */}
+      {/* Coordinate Display – sidebar farkındalıklı; mobilde sidebar açıkken ve yükseklik profili paneli açıkken gizle */}
       <CoordinateDisplay
         leftPosition={controlsLeft}
-        hidden={isSidebarOpen && !isMdUp}
+        hidden={(isSidebarOpen && !isMdUp) || elevationProfile.isPanelOpen}
       />
 
       {/* Hikâye Haritası modal (iframe) */}

@@ -6,6 +6,7 @@ import { useBubbleTooltip, useChoroplethTooltip } from '@/shared/visualization'
 import { useMapStore } from '@/stores/useMapStore'
 
 import { DataManagementDrawTool } from '../../data-management/components/DataManagementDrawTool'
+import ElevationProfileTool from '../../elevation-profile/components/ElevationProfileTool'
 import DraggableNorthArrow from '../controls/DraggableNorthArrow'
 import DraggableScaleControl from '../controls/DraggableScaleControl'
 import GISToolsControl from '../controls/GISToolsControl'
@@ -147,6 +148,7 @@ export default function MapContainer() {
 
 
       <DistanceTool />
+      <ElevationProfileTool />
       <DataManagementDrawTool />
       <DataLayer />
       <GISToolsControl />

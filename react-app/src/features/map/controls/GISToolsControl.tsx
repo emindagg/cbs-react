@@ -13,6 +13,7 @@ import {
   Eraser,
   Paintbrush,
   Trash2,
+  TrendingUp,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -24,6 +25,7 @@ import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
 import { BufferModal } from './GISToolsControl.buffer'
 import { BufferOptionsControl } from './GISToolsControl.bufferOptions'
+import { useElevationProfileStore } from '../../elevation-profile/stores/useElevationProfileStore'
 import { useDataManagementStore } from '@/features/data-management'
 
 interface ToolDef {
@@ -53,6 +55,7 @@ const TOOLS: ToolDef[] = [
   { id: 'nearest-points',   icon: Crosshair,     label: 'En Yakın Nokta',          activeColor: 'text-violet-600',  activeBg: 'bg-violet-50',  activeBorder: 'border-violet-200',  group: 'analysis' },
   { id: 'heatmap',          icon: Flame,         label: 'Isı Haritası',            activeColor: 'text-red-600',     activeBg: 'bg-red-50',     activeBorder: 'border-red-200',     group: 'analysis' },
   { id: 'isochrone',        icon: Network,       label: 'Erişilebilirlik Analizi', activeColor: 'text-cyan-600',    activeBg: 'bg-cyan-50',    activeBorder: 'border-cyan-200',    group: 'analysis' },
+  { id: 'elevation-profile', icon: TrendingUp,   label: 'Yükseklik Profili',       activeColor: 'text-teal-600',    activeBg: 'bg-teal-50',    activeBorder: 'border-teal-200',    group: 'analysis' },
   { id: 'screenshot',       icon: Camera,        label: 'Ekran Görüntüsü',         activeColor: 'text-zinc-700',    activeBg: 'bg-zinc-100',   activeBorder: 'border-zinc-300',    group: 'general' },
   { id: 'clean-visuals',    icon: Eraser,        label: 'Haritayı Temizle',        activeColor: 'text-zinc-700',    activeBg: 'bg-zinc-100',   activeBorder: 'border-zinc-300',    group: 'general' },
   { id: 'clear-data',       icon: Paintbrush,    label: 'Verileri Sıfırla',        activeColor: 'text-amber-600',   activeBg: 'bg-amber-50',   activeBorder: 'border-amber-200',   group: 'reset' },
@@ -68,6 +71,7 @@ export default function GISToolsControl() {
   const { isActive: isHeatmapActive, toggle: toggleHeatmap } = useHeatmapStore()
   const { isActive: isIsochroneActive, toggle: toggleIsochrone } = useIsochroneStore()
   const { activeAnalysis, toggle: toggleSpatial, deactivate: deactivateSpatial } = useSpatialAnalysisStore()
+  const { isPanelOpen: isElevationPanelOpen, setPanelOpen: setElevationPanelOpen, deactivate: deactivateElevation } = useElevationProfileStore()
 
   const {
     toolsMenuMode,
@@ -120,6 +124,10 @@ export default function GISToolsControl() {
     if (exceptToolId !== 'measure-distance' && activeTool === 'measure-distance') {
       setActiveTool('none' as ToolType)
     }
+    if (exceptToolId !== 'elevation-profile' && isElevationPanelOpen) {
+      deactivateElevation()
+      setActiveTool('none' as ToolType)
+    }
   }
 
   const handleScreenshot = () => {
@@ -167,6 +175,15 @@ export default function GISToolsControl() {
     } else if (toolId === 'nearest-points') {
       toggleSpatial('nearest-points')
       maybeClose()
+    } else if (toolId === 'elevation-profile') {
+      if (activeTool === 'elevation-profile') {
+        deactivateElevation()
+        setActiveTool('none' as ToolType)
+      } else {
+        setActiveTool('elevation-profile' as ToolType)
+        setElevationPanelOpen(true)
+      }
+      maybeClose()
     } else if (toolId === 'screenshot') {
       handleScreenshot()
     } else if (toolId === 'clean-visuals') {
@@ -192,6 +209,7 @@ export default function GISToolsControl() {
     if (toolId === 'convex-hull') return activeAnalysis === 'convex-hull'
     if (toolId === 'voronoi') return activeAnalysis === 'voronoi'
     if (toolId === 'nearest-points') return activeAnalysis === 'nearest-points'
+    if (toolId === 'elevation-profile') return activeTool === 'elevation-profile'
     return activeTool === toolId
   }
 
