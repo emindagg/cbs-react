@@ -7,6 +7,7 @@ import { useMap } from 'react-map-gl/maplibre'
 import { useToolStore } from '@/stores/useToolStore'
 
 import { useElevationProfile } from '../hooks/useElevationProfile'
+import { useElevationProfileStore } from '../stores/useElevationProfileStore'
 
 // ─── Sabit GeoJSON yapıları ───────────────────────────────────────────────────
 const EMPTY_FC: FeatureCollection = { type: 'FeatureCollection', features: [] }
@@ -284,52 +285,57 @@ export default function ElevationProfileTool() {
   }, [mapObj, store.elevationData])
 
   // ─── Map-Chart Sync: Tracking Marker ────────────────────────────────────
-  // activePoint store'da grafik hover koordinatını taşır;
-  // Tool doğrudan .lng/.lat okur — indeks araması yok
+  // Zustand subscribe ile React render döngüsü atlatılır — senkron güncelleme.
+  // mapRef aracılığıyla her zaman güncel map instance'ı kullanılır.
+  const mapRef = useRef<maplibregl.Map | null>(null)
   useEffect(() => {
-    const map = mapObj?.getMap() as maplibregl.Map | null ?? null
-    if (!map) return
+    mapRef.current = mapObj?.getMap() as maplibregl.Map | null ?? null
+  }, [mapObj])
 
-    if (!store.activePoint) {
-      setSource(map, SRC_HOVER, EMPTY_FC as FeatureCollection<Point>)
-      return
-    }
-
-    const pt = store.activePoint
-
-    ensureSource(map, SRC_HOVER)
-
-    // Hover: glow halkası
-    ensureLayer(map, {
-      id: LYR_HOVER_GLOW,
-      type: 'circle',
-      source: SRC_HOVER,
-      paint: {
-        'circle-radius': 20,
-        'circle-color': C_RED,
-        'circle-opacity': 0.18,
-        'circle-stroke-width': 0,
-        'circle-blur': 0.5,
-      },
-    } as maplibregl.CircleLayerSpecification)
-
-    // Hover: nokta
-    ensureLayer(map, {
-      id: LYR_HOVER_DOT,
-      type: 'circle',
-      source: SRC_HOVER,
-      paint: {
-        'circle-radius': 7,
-        'circle-color': C_WHITE,
-        'circle-stroke-width': 3,
-        'circle-stroke-color': C_RED,
-        'circle-stroke-opacity': 1,
-        'circle-opacity': 1,
-      },
-    } as maplibregl.CircleLayerSpecification)
-
-    setSource(map, SRC_HOVER, pointFC([[pt.lng, pt.lat]]))
-  }, [mapObj, store.activePoint])
+  useEffect(() => {
+    // Zustand subscribe: React render döngüsü yok, senkron güncelleme
+    // ensureSource/ensureLayer her seferinde çalışır — reset sonrası da güvenli
+    let prev = useElevationProfileStore.getState().activePoint
+    const unsub = useElevationProfileStore.subscribe((state) => {
+      if (state.activePoint === prev) return
+      prev = state.activePoint
+      const map = mapRef.current
+      if (!map) return
+      if (!state.activePoint) {
+        setSource(map, SRC_HOVER, EMPTY_FC as FeatureCollection<Point>)
+        return
+      }
+      ensureSource(map, SRC_HOVER)
+      ensureLayer(map, {
+        id: LYR_HOVER_GLOW,
+        type: 'circle',
+        source: SRC_HOVER,
+        paint: {
+          'circle-radius': 20,
+          'circle-color': C_RED,
+          'circle-opacity': 0.18,
+          'circle-stroke-width': 0,
+          'circle-blur': 0.5,
+        },
+      } as maplibregl.CircleLayerSpecification)
+      ensureLayer(map, {
+        id: LYR_HOVER_DOT,
+        type: 'circle',
+        source: SRC_HOVER,
+        paint: {
+          'circle-radius': 7,
+          'circle-color': C_WHITE,
+          'circle-stroke-width': 3,
+          'circle-stroke-color': C_RED,
+          'circle-stroke-opacity': 1,
+          'circle-opacity': 1,
+        },
+      } as maplibregl.CircleLayerSpecification)
+      setSource(map, SRC_HOVER, pointFC([[state.activePoint.lng, state.activePoint.lat]]))
+    })
+    return unsub
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ─── Reset ────────────────────────────────────────────────────────────────
   useEffect(() => {
