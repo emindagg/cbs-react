@@ -49,6 +49,8 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
     setShowLegendConfig,
     showMapTitleConfig,
     setShowMapTitleConfig,
+    showMapSettings,
+    setShowMapSettings,
     suggestion,
     showSuggestion,
     setShowSuggestion,
@@ -281,9 +283,20 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
       )}
 
       {/* Harita Ayarları */}
-      <div className="bg-white border border-zinc-200 rounded-lg p-3 space-y-2.5">
-        <div className="text-[11px] font-semibold text-zinc-700">Harita Ayarları</div>
+      <div className="bg-white border border-zinc-200 rounded-lg">
+        <button
+          onClick={() => setShowMapSettings(!showMapSettings)}
+          className="w-full px-3 py-2 flex items-center justify-between hover:bg-zinc-50 transition-colors rounded-t-lg"
+        >
+          <div className="flex items-center gap-2">
+            <i className="fa-solid fa-map text-[10px] text-zinc-500"></i>
+            <span className="text-[11px] font-semibold text-zinc-700">Harita Ayarları</span>
+          </div>
+          <i className={`fa-solid fa-chevron-${showMapSettings ? 'up' : 'down'} text-[9px] text-zinc-400`}></i>
+        </button>
 
+        {showMapSettings && (
+        <div className="px-3 pb-3 pt-2 border-t border-zinc-100 space-y-2.5">
         <label className="flex items-center justify-between cursor-pointer">
           <div>
             <span className="text-[10px] font-medium text-zinc-700">Sadece Veri Modu</span>
@@ -362,6 +375,8 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
               onChange={(v) => setVizSettings({ backdropFillOpacity: v })}
             />
           </>
+        )}
+        </div>
         )}
       </div>
 

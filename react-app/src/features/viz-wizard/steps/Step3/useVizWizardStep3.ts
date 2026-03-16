@@ -30,6 +30,7 @@ export function useVizWizardStep3() {
   const [showDataPreview, setShowDataPreview] = useState(false)
   const [showLegendConfig, setShowLegendConfig] = useState(false)
   const [showMapTitleConfig, setShowMapTitleConfig] = useState(false)
+  const [showMapSettings, setShowMapSettings] = useState(false)
 
   const {
     suggestion,
@@ -76,6 +77,8 @@ export function useVizWizardStep3() {
     setShowLegendConfig,
     showMapTitleConfig,
     setShowMapTitleConfig,
+    showMapSettings,
+    setShowMapSettings,
     suggestion,
     showSuggestion,
     setShowSuggestion,
