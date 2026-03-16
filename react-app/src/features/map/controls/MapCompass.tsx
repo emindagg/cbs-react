@@ -1,0 +1,124 @@
+import { useCallback, useEffect, useState } from 'react'
+
+import { useMapStore } from '@/stores/useMapStore'
+import { useToolStore } from '@/stores/useToolStore'
+
+const DIRECTIONS = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB']
+
+function getDirectionText(bearing: number): string {
+  const normalized = ((bearing % 360) + 360) % 360
+  const index = Math.floor((normalized + 22.5) / 45) % 8
+  return DIRECTIONS[index]
+}
+
+export function MapCompass() {
+  const { mapInstance } = useMapStore()
+  const isGisOpen = useToolStore((s) => s.toolsMenuMode !== 'closed')
+  const [bearing, setBearing] = useState(0)
+  const [compassText, setCompassText] = useState('K')
+
+  useEffect(() => {
+    if (!mapInstance) return
+
+    const onRotate = () => {
+      const current = mapInstance.getBearing()
+      setBearing(current)
+      setCompassText(getDirectionText(current))
+    }
+
+    mapInstance.on('rotate', onRotate)
+    mapInstance.once('idle', onRotate)
+
+    return () => {
+      mapInstance.off('rotate', onRotate)
+    }
+  }, [mapInstance])
+
+  const handleClick = useCallback(() => {
+    if (!mapInstance) return
+    mapInstance.easeTo({ bearing: 0, pitch: 0, duration: 600 })
+  }, [mapInstance])
+
+  if (!mapInstance) return null
+
+  return (
+    <div
+      onClick={handleClick}
+      title="Kuzeye Sıfırla"
+      style={{
+        position: 'fixed',
+        top: 60,
+        right: 15,
+        width: 43,
+        height: 43,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        zIndex: isGisOpen ? 0 : 1200,
+        userSelect: 'none',
+        background: 'rgba(28,28,30,0.85)',
+        backdropFilter: 'blur(15px)',
+        WebkitBackdropFilter: 'blur(15px)',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.5), inset 0 0 0 0.5px rgba(255,255,255,0.15)',
+      }}
+    >
+      {/* Dönen kadran */}
+      <div
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          borderRadius: '50%',
+          transform: `rotate(${-bearing}deg)`,
+          transition: 'transform 0.05s linear',
+        }}
+      >
+        <svg width="100%" height="100%" viewBox="0 0 100 100">
+          {/* Kuzey üçgeni (kırmızı) */}
+          <polygon
+            points="50,6 56,16 44,16"
+            fill="#FF3B30"
+            stroke="#FF3B30"
+            strokeWidth="1"
+            strokeLinejoin="round"
+          />
+          {/* Ana yön tikleri (D, G, B) */}
+          <rect x="48.5" y="8" width="3" height="7" fill="#E5E5EA" rx="1.5" transform="rotate(90 50 50)" />
+          <rect x="48.5" y="8" width="3" height="7" fill="#E5E5EA" rx="1.5" transform="rotate(180 50 50)" />
+          <rect x="48.5" y="8" width="3" height="7" fill="#E5E5EA" rx="1.5" transform="rotate(270 50 50)" />
+          {/* Ara yön tikleri */}
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(22.5 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(45 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(67.5 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(112.5 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(135 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(157.5 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(202.5 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(225 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(247.5 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(292.5 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(315 50 50)" />
+          <rect x="49" y="9" width="2" height="5" fill="#636366" rx="1" transform="rotate(337.5 50 50)" />
+        </svg>
+      </div>
+
+      {/* Sabit yön harfi — dönen kadranın üzerinde, pozisyon bağımsız */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          fontSize: 18,
+          fontWeight: 500,
+          letterSpacing: '0.5px',
+          color: '#E5E5EA',
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif",
+          lineHeight: 1,
+        }}
+      >
+        {compassText}
+      </div>
+    </div>
+  )
+}

@@ -9,6 +9,7 @@ import { DataManagementDrawTool } from '../../data-management/components/DataMan
 import DraggableNorthArrow from '../controls/DraggableNorthArrow'
 import DraggableScaleControl from '../controls/DraggableScaleControl'
 import GISToolsControl from '../controls/GISToolsControl'
+import { MapCompass } from '../controls/MapCompass'
 import TimelineControl from '../controls/TimelineControl'
 import DataLayer from '../layers/DataLayer'
 import DistanceTool from '../tools/DistanceTool'
@@ -153,6 +154,7 @@ export default function MapContainer() {
     </Map>
     <DraggableScaleControl />
     <DraggableNorthArrow />
+    <MapCompass />
     </div>
   )
 }
