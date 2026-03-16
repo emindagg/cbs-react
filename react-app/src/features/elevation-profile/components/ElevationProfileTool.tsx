@@ -93,7 +93,7 @@ export default function ElevationProfileTool() {
 
   // ─── Çizim araçları: sadece isActive değişince setup/teardown ───────────
   useEffect(() => {
-    const map = mapObj as unknown as maplibregl.Map | null
+    const map = mapObj?.getMap() as maplibregl.Map | null ?? null
     if (!map) return
 
     if (!isActive) {
@@ -183,7 +183,7 @@ export default function ElevationProfileTool() {
 
   // ─── Analiz sonucu: rota çizgisi ─────────────────────────────────────────
   useEffect(() => {
-    const map = mapObj as unknown as maplibregl.Map | null
+    const map = mapObj?.getMap() as maplibregl.Map | null ?? null
     if (!map) return
 
     if (!store.elevationData || store.elevationData.length < 2) {
@@ -214,7 +214,7 @@ export default function ElevationProfileTool() {
 
   // ─── Grafik hover: haritada nokta göster ─────────────────────────────────
   useEffect(() => {
-    const map = mapObj as unknown as maplibregl.Map | null
+    const map = mapObj?.getMap() as maplibregl.Map | null ?? null
     if (!map) return
 
     if (store.hoverIndex === null || !store.elevationData) {
@@ -244,7 +244,7 @@ export default function ElevationProfileTool() {
   // ─── Reset: tüm layer'ları temizle ───────────────────────────────────────
   useEffect(() => {
     if (store.waypoints.length > 0 || store.elevationData) return
-    const map = mapObj as unknown as maplibregl.Map | null
+    const map = mapObj?.getMap() as maplibregl.Map | null ?? null
     if (!map) return
     setSource(map, SRC_PREVIEW, EMPTY_FC as FeatureCollection<LineString>)
     setSource(map, SRC_WAYPOINTS, EMPTY_FC as FeatureCollection<Point>)
