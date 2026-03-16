@@ -5,20 +5,16 @@
 
 import { SingleSlider } from '@/components/ui'
 import { DEFAULT_BACKDROP_FILL_OPACITY } from '@/features/visualization/point/services/PointRenderer'
-import { COLOR_SCHEME_LIST } from '@/constants/colorSchemes'
 import { LegendConfig } from '@/shared/legend'
 import { BubbleSettings, DotDensitySettings } from '@/shared/visualization'
-import type { ColorScheme, ClassificationMethod, VizType } from '@/types/visualization'
+import type { ClassificationMethod, VizType } from '@/types/visualization'
 
 import { MapTitleSection } from './components/MapTitleSection'
 import { StepsSection } from './components/StepsSection'
 import { clampLegendClassCount } from './constants'
 import { useVizWizardStep3 } from './useVizWizardStep3'
-import {
-  ColorScaleConfig,
-  ColorSchemePreview,
-  DataDistributionPreview,
-} from '../../components/ColorScale'
+import { ColorScaleConfig, DataDistributionPreview } from '../../components/ColorScale'
+import ColorSchemePicker from '../../components/ColorSchemePicker'
 import { CustomRangeConfig } from '../../components/CustomRange'
 
 
@@ -127,20 +123,10 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
           {/* Color scheme */}
           <div>
             <label className="block text-[11px] font-medium text-zinc-600 mb-1.5">Renk Paleti</label>
-            <select
+            <ColorSchemePicker
               value={vizSettings.colorScheme}
-              onChange={(e) =>
-                setVizSettings({ colorScheme: e.target.value as ColorScheme })
-              }
-              className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-            >
-              {COLOR_SCHEME_LIST.map((scheme) => (
-                <option key={scheme.value} value={scheme.value}>
-                  {scheme.label}
-                </option>
-              ))}
-            </select>
-            <ColorSchemePreview colorScheme={vizSettings.colorScheme} />
+              onChange={(scheme) => setVizSettings({ colorScheme: scheme })}
+            />
           </div>
         </>
       )}
@@ -250,38 +236,6 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         />
       )}
 
-      {/* Legend Configuration Panel */}
-      <div className="bg-white border border-zinc-200 rounded-lg">
-        <button
-          onClick={() => setShowLegendConfig(!showLegendConfig)}
-          className="w-full px-3 py-2 flex items-center justify-between hover:bg-zinc-50 transition-colors rounded-t-lg"
-        >
-          <div className="flex items-center gap-2">
-            <i className="fa-solid fa-list text-[10px] text-zinc-500"></i>
-            <span className="text-[11px] font-semibold text-zinc-700">Lejant Ayarları</span>
-          </div>
-          <i className={`fa-solid fa-chevron-${showLegendConfig ? 'up' : 'down'} text-[9px] text-zinc-400`}></i>
-        </button>
-
-        {showLegendConfig && (
-          <div className="px-3 pb-3 pt-2 border-t border-zinc-100">
-            <LegendConfig
-              config={colorConfig.legend}
-              onChange={(config) => setLegendConfig(config)}
-              classCount={vizSettings.classCount}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Map Title Configuration Panel */}
-      <MapTitleSection
-        mapTitle={mapTitle}
-        setMapTitle={setMapTitle}
-        expanded={showMapTitleConfig}
-        onToggle={() => setShowMapTitleConfig(!showMapTitleConfig)}
-      />
-
       {/* Harita Ayarları */}
       <div className="bg-white border border-zinc-200 rounded-lg">
         <button
@@ -379,6 +333,38 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         </div>
         )}
       </div>
+
+      {/* Legend Configuration Panel */}
+      <div className="bg-white border border-zinc-200 rounded-lg">
+        <button
+          onClick={() => setShowLegendConfig(!showLegendConfig)}
+          className="w-full px-3 py-2 flex items-center justify-between hover:bg-zinc-50 transition-colors rounded-t-lg"
+        >
+          <div className="flex items-center gap-2">
+            <i className="fa-solid fa-list text-[10px] text-zinc-500"></i>
+            <span className="text-[11px] font-semibold text-zinc-700">Lejant Ayarları</span>
+          </div>
+          <i className={`fa-solid fa-chevron-${showLegendConfig ? 'up' : 'down'} text-[9px] text-zinc-400`}></i>
+        </button>
+
+        {showLegendConfig && (
+          <div className="px-3 pb-3 pt-2 border-t border-zinc-100">
+            <LegendConfig
+              config={colorConfig.legend}
+              onChange={(config) => setLegendConfig(config)}
+              classCount={vizSettings.classCount}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Map Title Configuration Panel */}
+      <MapTitleSection
+        mapTitle={mapTitle}
+        setMapTitle={setMapTitle}
+        expanded={showMapTitleConfig}
+        onToggle={() => setShowMapTitleConfig(!showMapTitleConfig)}
+      />
 
       {/* Action buttons */}
       <div className="space-y-1.5 pt-1">
