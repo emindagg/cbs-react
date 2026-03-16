@@ -225,6 +225,31 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         />
       </div>
 
+      {/* Data Distribution Preview Toggle */}
+      {dataValues.length > 0 && (
+        <div>
+          <button
+            onClick={() => setShowDataPreview(!showDataPreview)}
+            className="w-full px-3 py-2 text-[10px] font-medium text-zinc-700 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-md transition-colors flex items-center justify-center gap-1.5"
+          >
+            <i className={`fa-solid ${showDataPreview ? 'fa-eye-slash' : 'fa-chart-bar'} text-[10px]`}></i>
+            {showDataPreview ? 'Veri Önizlemesini Gizle' : 'Veri Dağılımını Göster'}
+          </button>
+        </div>
+      )}
+
+      {/* Data Distribution Preview */}
+      {showDataPreview && dataValues.length > 0 && (
+        <DataDistributionPreview
+          values={dataValues}
+          colorScheme={vizSettings.colorScheme}
+          classCount={vizSettings.classCount}
+          classificationMethod={vizSettings.classificationMethod}
+          interpolation={vizSettings.interpolation ?? colorConfig.interpolation}
+          scaleType={colorConfig.scaleType}
+        />
+      )}
+
       {/* Legend Configuration Panel */}
       <div className="bg-white border border-zinc-200 rounded-lg">
         <button
@@ -256,31 +281,6 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         expanded={showMapTitleConfig}
         onToggle={() => setShowMapTitleConfig(!showMapTitleConfig)}
       />
-
-      {/* Data Distribution Preview Toggle */}
-      {dataValues.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowDataPreview(!showDataPreview)}
-            className="w-full px-3 py-2 text-[10px] font-medium text-zinc-700 bg-white hover:bg-zinc-50 border border-zinc-200 rounded-md transition-colors flex items-center justify-center gap-1.5"
-          >
-            <i className={`fa-solid ${showDataPreview ? 'fa-eye-slash' : 'fa-chart-bar'} text-[10px]`}></i>
-            {showDataPreview ? 'Veri Önizlemesini Gizle' : 'Veri Dağılımını Göster'}
-          </button>
-        </div>
-      )}
-
-      {/* Data Distribution Preview */}
-      {showDataPreview && dataValues.length > 0 && (
-        <DataDistributionPreview
-          values={dataValues}
-          colorScheme={vizSettings.colorScheme}
-          classCount={vizSettings.classCount}
-          classificationMethod={vizSettings.classificationMethod}
-          interpolation={vizSettings.interpolation ?? colorConfig.interpolation}
-          scaleType={colorConfig.scaleType}
-        />
-      )}
 
       {/* Harita Ayarları */}
       <div className="bg-white border border-zinc-200 rounded-lg">
