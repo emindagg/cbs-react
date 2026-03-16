@@ -55,6 +55,55 @@ interface Props {
   onRunAnalysis: () => void
 }
 
+// ─── Custom X-Axis Tick (son etiket sola hizalı) ────────────────────────────
+interface XTickProps {
+  x?: number
+  y?: number
+  payload?: { value: number }
+  index?: number
+  visibleTicksCount?: number
+}
+
+function XAxisTick({ x = 0, y = 0, payload, index = 0, visibleTicksCount = 0 }: XTickProps) {
+  const isLast = index === visibleTicksCount - 1
+  return (
+    <text
+      x={x}
+      y={y + 4}
+      textAnchor={isLast ? 'end' : 'middle'}
+      fontSize={11}
+      fontWeight={600}
+      fill="#9ca3af"
+    >
+      {`${payload?.value}km`}
+    </text>
+  )
+}
+
+// ─── Custom Cursor ──────────────────────────────────────────────────────────
+interface CursorProps {
+  points?: { x: number; y: number }[]
+  height?: number
+}
+
+function ChartCursor({ points, height }: CursorProps) {
+  if (!points?.length || !height) return null
+  const x = Math.round(points[0].x)
+  return (
+    <g pointerEvents="none">
+      {/* Glow halkası */}
+      <line x1={x} y1={0} x2={x} y2={height}
+        stroke="#1e293b" strokeWidth={9} strokeOpacity={0.055} />
+      {/* Ana çizgi */}
+      <line x1={x} y1={0} x2={x} y2={height}
+        stroke="#1e293b" strokeWidth={1} strokeOpacity={0.55} />
+      {/* Üst tick */}
+      <line x1={x - 3} y1={0} x2={x + 3} y2={0}
+        stroke="#1e293b" strokeWidth={1.5} strokeOpacity={0.4} strokeLinecap="round" />
+    </g>
+  )
+}
+
 // ─── Custom Tooltip ─────────────────────────────────────────────────────────
 interface TooltipPayload { payload?: ElevationPoint }
 
@@ -228,14 +277,15 @@ function ChartContent({
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Grafik */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 [&_*:focus]:outline-none [&_*:focus-visible]:outline-none">
         <ResponsiveContainer width="100%" height="100%" debounce={50} minHeight={80}>
           <AreaChart
             data={elevationData}
             margin={{ top: 6, right: 14, left: 0, bottom: 2 }}
             onMouseMove={(data) => {
-              const idx = data.activeTooltipIndex
-              if (typeof idx === 'number') onActivePoint(elevationData[idx] ?? null)
+              const d = data as unknown as { activePayload?: Array<{ payload: ElevationPoint }> }
+              const point = d.activePayload?.[0]?.payload
+              if (point) onActivePoint(point)
             }}
             onMouseLeave={() => onActivePoint(null)}
           >
@@ -259,8 +309,7 @@ function ChartContent({
               type="number"
               domain={[0, Math.round(totalDist)]}
               ticks={xTicks}
-              tickFormatter={(v: number) => `${v}km`}
-              tick={{ fontSize: 8, fill: '#9ca3af' }}
+              tick={<XAxisTick />}
               tickLine={false}
               axisLine={false}
               interval={0}
@@ -270,7 +319,7 @@ function ChartContent({
             <YAxis
               domain={[Math.max(0, yMin - 50), yMax + 50]}
               tickFormatter={(v: number) => `${v}`}
-              tick={{ fontSize: 8, fill: '#9ca3af' }}
+              tick={{ fontSize: 11, fontWeight: 600, fill: '#9ca3af' }}
               tickLine={false}
               axisLine={false}
               width={36}
@@ -279,7 +328,7 @@ function ChartContent({
 
             <Tooltip
               content={<CustomTooltip />}
-              cursor={{ stroke: '#d1d5db', strokeWidth: 1, strokeDasharray: '3 3' }}
+              cursor={<ChartCursor />}
             />
 
             <Area
