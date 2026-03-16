@@ -42,14 +42,11 @@ const SRC_WAYPOINTS = 'elev-waypoints'
 const SRC_ROUTE     = 'elev-route'
 const SRC_HOVER     = 'elev-hover'
 
-// Preview: glow + beyaz zemin + noktalı renk üstte
-const LYR_PREVIEW_GLOW  = 'elev-preview-glow'
-const LYR_PREVIEW_BG    = 'elev-preview-bg'
-const LYR_PREVIEW       = 'elev-preview-line'
+// Preview: 2.5px siyah çizgi
+const LYR_PREVIEW   = 'elev-preview-line'
 
-// Waypoints: dış halka + iç nokta
-const LYR_WP_RING    = 'elev-wp-ring'
-const LYR_WAYPOINTS  = 'elev-waypoints-circles'
+// Waypoints: beyaz dolgulu halka
+const LYR_WAYPOINTS = 'elev-waypoints-circles'
 
 // Route: glow + çizgi
 const LYR_ROUTE_GLOW = 'elev-route-glow'
@@ -85,10 +82,8 @@ function removeSources(m: maplibregl.Map, ids: string[]) {
 }
 
 // ─── Renk sabitleri ───────────────────────────────────────────────────────────
-const C_INDIGO  = '#6366f1'
-const C_INDIGO2 = '#818cf8'
-const C_WHITE   = '#ffffff'
-const C_RED     = '#f43f5e'
+const C_WHITE = '#ffffff'
+const C_RED   = '#f43f5e'
 
 // ─── Bileşen ──────────────────────────────────────────────────────────────────
 export default function ElevationProfileTool() {
@@ -118,7 +113,7 @@ export default function ElevationProfileTool() {
     if (!map) return
 
     if (!isActive) {
-      removeLayers(map, [LYR_PREVIEW_GLOW, LYR_PREVIEW_BG, LYR_PREVIEW, LYR_WP_RING, LYR_WAYPOINTS])
+      removeLayers(map, [LYR_PREVIEW, LYR_WAYPOINTS])
       removeSources(map, [SRC_PREVIEW, SRC_WAYPOINTS])
       ghostRef.current = null
       return
@@ -127,70 +122,30 @@ export default function ElevationProfileTool() {
     ensureSource(map, SRC_PREVIEW)
     ensureSource(map, SRC_WAYPOINTS)
 
-    // Preview: 1) glow
-    ensureLayer(map, {
-      id: LYR_PREVIEW_GLOW,
-      type: 'line',
-      source: SRC_PREVIEW,
-      paint: {
-        'line-color': C_INDIGO2,
-        'line-width': 14,
-        'line-opacity': 0.18,
-        'line-blur': 8,
-      },
-    } as maplibregl.LineLayerSpecification)
-
-    // Preview: 2) beyaz zemin (okunabilirlik)
-    ensureLayer(map, {
-      id: LYR_PREVIEW_BG,
-      type: 'line',
-      source: SRC_PREVIEW,
-      paint: {
-        'line-color': C_WHITE,
-        'line-width': 2.5,
-        'line-opacity': 0.7,
-      },
-    } as maplibregl.LineLayerSpecification)
-
-    // Preview: 3) noktalı indigo üst katman
+    // Preview çizgisi: 2.5px siyah
     ensureLayer(map, {
       id: LYR_PREVIEW,
       type: 'line',
       source: SRC_PREVIEW,
       paint: {
-        'line-color': C_INDIGO,
-        'line-width': 1.5,
-        'line-dasharray': [6, 5],
-        'line-opacity': 1,
+        'line-color': '#000000',
+        'line-width': 2,
+        'line-opacity': 0.85,
       },
     } as maplibregl.LineLayerSpecification)
 
-    // Waypoints: dış halka
-    ensureLayer(map, {
-      id: LYR_WP_RING,
-      type: 'circle',
-      source: SRC_WAYPOINTS,
-      paint: {
-        'circle-radius': 9,
-        'circle-color': 'transparent',
-        'circle-stroke-width': 1.5,
-        'circle-stroke-color': C_INDIGO2,
-        'circle-stroke-opacity': 0.5,
-        'circle-opacity': 0,
-      },
-    } as maplibregl.CircleLayerSpecification)
-
-    // Waypoints: iç nokta
+    // Waypoints: beyaz dolgulu halka
     ensureLayer(map, {
       id: LYR_WAYPOINTS,
       type: 'circle',
       source: SRC_WAYPOINTS,
       paint: {
-        'circle-radius': 4,
-        'circle-color': C_INDIGO,
+        'circle-radius': 7,
+        'circle-color': C_WHITE,
         'circle-stroke-width': 2,
-        'circle-stroke-color': C_WHITE,
-        'circle-stroke-opacity': 1,
+        'circle-stroke-color': '#000000',
+        'circle-stroke-opacity': 0.85,
+        'circle-opacity': 1,
       },
     } as maplibregl.CircleLayerSpecification)
 
@@ -232,7 +187,7 @@ export default function ElevationProfileTool() {
       map.off('click', handleClick)
       document.removeEventListener('keydown', handleKeyDown)
       map.getCanvas().style.cursor = ''
-      removeLayers(map, [LYR_PREVIEW_GLOW, LYR_PREVIEW_BG, LYR_PREVIEW, LYR_WP_RING, LYR_WAYPOINTS])
+      removeLayers(map, [LYR_PREVIEW, LYR_WAYPOINTS])
       removeSources(map, [SRC_PREVIEW, SRC_WAYPOINTS])
       ghostRef.current = null
     }
@@ -259,9 +214,9 @@ export default function ElevationProfileTool() {
       type: 'line',
       source: SRC_ROUTE,
       paint: {
-        'line-color': C_INDIGO2,
+        'line-color': '#000000',
         'line-width': 16,
-        'line-opacity': 0.15,
+        'line-opacity': 0.08,
         'line-blur': 10,
       },
     } as maplibregl.LineLayerSpecification)
@@ -272,9 +227,9 @@ export default function ElevationProfileTool() {
       type: 'line',
       source: SRC_ROUTE,
       paint: {
-        'line-color': C_INDIGO,
-        'line-width': 2.5,
-        'line-opacity': 0.95,
+        'line-color': '#000000',
+        'line-width': 2,
+        'line-opacity': 0.85,
       },
     } as maplibregl.LineLayerSpecification)
 
