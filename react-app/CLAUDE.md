@@ -79,6 +79,10 @@ Two critical patterns reduce INP to ~16ms:
 1. **`startTransition`** — Heavy state updates are wrapped so they don't block user interactions.
 2. **GPU-side style updates** — `useLayerStyleSync` calls MapLibre `setPaintProperty`/`setLayoutProperty` directly instead of rebuilding GeoJSON. `useVizRender` distinguishes paint-only updates from full re-renders.
 
+## Git Commit Messages
+
+- **Always write in Turkish** — commit messages must be in Turkish at all times.
+
 ## Code Style (enforced by ESLint)
 
 - **No semicolons** (`@stylistic/semi: never`)
