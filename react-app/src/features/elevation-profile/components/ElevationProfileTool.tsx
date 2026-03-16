@@ -39,6 +39,7 @@ const SRC_PREVIEW   = 'elev-preview'
 const SRC_WAYPOINTS = 'elev-waypoints'
 const SRC_ROUTE     = 'elev-route'
 const SRC_HOVER     = 'elev-hover'
+const SRC_PIN       = 'elev-pin'
 
 // Preview: glow + beyaz zemin + noktalı renk üstte
 const LYR_PREVIEW_GLOW  = 'elev-preview-glow'
@@ -56,6 +57,10 @@ const LYR_ROUTE      = 'elev-route-line'
 // Hover dot: glow + nokta
 const LYR_HOVER_GLOW = 'elev-hover-glow'
 const LYR_HOVER_DOT  = 'elev-hover-dot'
+
+// Pinned dot: kalıcı işaret
+const LYR_PIN_GLOW   = 'elev-pin-glow'
+const LYR_PIN_DOT    = 'elev-pin-dot'
 
 // ─── Yardımcılar ─────────────────────────────────────────────────────────────
 function setSource(m: maplibregl.Map, id: string, data: FeatureCollection) {
@@ -86,6 +91,7 @@ const C_INDIGO  = '#6366f1'
 const C_INDIGO2 = '#818cf8'
 const C_WHITE   = '#ffffff'
 const C_RED     = '#f43f5e'
+const C_AMBER   = '#f59e0b'
 
 // ─── Bileşen ──────────────────────────────────────────────────────────────────
 export default function ElevationProfileTool() {
@@ -329,6 +335,54 @@ export default function ElevationProfileTool() {
     setSource(map, SRC_HOVER, pointFC([[pt.lng, pt.lat]]))
   }, [mapObj, store.hoverIndex, store.elevationData])
 
+  // ─── Pinned nokta: tıklanan grafik noktası haritada sabit işaret ─────────
+  useEffect(() => {
+    const map = mapObj?.getMap() as maplibregl.Map | null ?? null
+    if (!map) return
+
+    if (store.pinnedIndex === null || !store.elevationData) {
+      removeLayers(map, [LYR_PIN_GLOW, LYR_PIN_DOT])
+      removeSources(map, [SRC_PIN])
+      return
+    }
+
+    const pt = store.elevationData[store.pinnedIndex]
+    if (!pt) return
+
+    ensureSource(map, SRC_PIN)
+
+    // Pin: dış glow halkası (amber)
+    ensureLayer(map, {
+      id: LYR_PIN_GLOW,
+      type: 'circle',
+      source: SRC_PIN,
+      paint: {
+        'circle-radius': 18,
+        'circle-color': C_AMBER,
+        'circle-opacity': 0.15,
+        'circle-stroke-width': 0,
+        'circle-blur': 0.5,
+      },
+    } as maplibregl.CircleLayerSpecification)
+
+    // Pin: nokta (amber dolgulu, beyaz çerçeve)
+    ensureLayer(map, {
+      id: LYR_PIN_DOT,
+      type: 'circle',
+      source: SRC_PIN,
+      paint: {
+        'circle-radius': 6,
+        'circle-color': C_AMBER,
+        'circle-stroke-width': 2.5,
+        'circle-stroke-color': C_WHITE,
+        'circle-stroke-opacity': 1,
+        'circle-opacity': 1,
+      },
+    } as maplibregl.CircleLayerSpecification)
+
+    setSource(map, SRC_PIN, pointFC([[pt.lng, pt.lat]]))
+  }, [mapObj, store.pinnedIndex, store.elevationData])
+
   // ─── Reset ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (store.waypoints.length > 0 || store.elevationData) return
@@ -336,8 +390,8 @@ export default function ElevationProfileTool() {
     if (!map) return
     setSource(map, SRC_PREVIEW, EMPTY_FC as FeatureCollection<LineString>)
     setSource(map, SRC_WAYPOINTS, EMPTY_FC as FeatureCollection<Point>)
-    removeLayers(map, [LYR_ROUTE_GLOW, LYR_ROUTE, LYR_HOVER_GLOW, LYR_HOVER_DOT])
-    removeSources(map, [SRC_ROUTE, SRC_HOVER])
+    removeLayers(map, [LYR_ROUTE_GLOW, LYR_ROUTE, LYR_HOVER_GLOW, LYR_HOVER_DOT, LYR_PIN_GLOW, LYR_PIN_DOT])
+    removeSources(map, [SRC_ROUTE, SRC_HOVER, SRC_PIN])
   }, [mapObj, store.waypoints, store.elevationData])
 
   return null

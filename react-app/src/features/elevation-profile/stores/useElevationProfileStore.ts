@@ -12,6 +12,7 @@ const initialState = {
   elevationData: null as ElevationPoint[] | null,
   stats: null as ElevationStats | null,
   hoverIndex: null as number | null,
+  pinnedIndex: null as number | null,
 }
 
 export const useElevationProfileStore = create<ElevationProfileState>((set) => ({
@@ -25,6 +26,7 @@ export const useElevationProfileStore = create<ElevationProfileState>((set) => (
   setError: (error) => set({ error }),
   setResult: (data, stats) => set({ elevationData: data, stats }),
   setHoverIndex: (hoverIndex) => set({ hoverIndex }),
+  setPinnedIndex: (pinnedIndex) => set({ pinnedIndex }),
 
   reset: () => set({ ...initialState }),
 

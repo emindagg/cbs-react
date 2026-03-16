@@ -6,6 +6,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ReferenceLine,
   ResponsiveContainer,
 } from 'recharts'
 
@@ -51,6 +52,8 @@ interface Props {
   onClose: () => void
   onDeactivate: () => void
   onHoverIndex: (idx: number | null) => void
+  onClickIndex: (idx: number | null) => void
+  pinnedIndex: number | null
   onRunAnalysis: () => void
 }
 
@@ -94,6 +97,8 @@ export default function ElevationProfilePanel({
   onClose,
   onDeactivate,
   onHoverIndex,
+  onClickIndex,
+  pinnedIndex,
   onRunAnalysis,
 }: Props) {
   if (!isOpen) return null
@@ -168,6 +173,8 @@ export default function ElevationProfilePanel({
             elevationData={elevationData}
             stats={stats}
             onHoverIndex={onHoverIndex}
+            onClickIndex={onClickIndex}
+            pinnedIndex={pinnedIndex}
           />
         )}
       </div>
@@ -180,10 +187,14 @@ function ChartContent({
   elevationData,
   stats,
   onHoverIndex,
+  onClickIndex,
+  pinnedIndex,
 }: {
   elevationData: ElevationPoint[]
   stats: ElevationStats | null
   onHoverIndex: (idx: number | null) => void
+  onClickIndex: (idx: number | null) => void
+  pinnedIndex: number | null
 }) {
   const yMin = stats?.minElevation ?? 0
   const yMax = stats?.maxElevation ?? 1
@@ -224,11 +235,18 @@ function ChartContent({
           <AreaChart
             data={elevationData}
             margin={{ top: 6, right: 14, left: 0, bottom: 2 }}
+            style={{ cursor: 'crosshair' }}
             onMouseMove={(data) => {
               const idx = data.activeTooltipIndex
               if (typeof idx === 'number') onHoverIndex(idx)
             }}
             onMouseLeave={() => onHoverIndex(null)}
+            onClick={(data) => {
+              const idx = data?.activeTooltipIndex
+              if (typeof idx === 'number') {
+                onClickIndex(idx)
+              }
+            }}
           >
             <defs>
               <linearGradient id="hypsGradient" x1="0" y1="0" x2="0" y2="1">
@@ -272,6 +290,15 @@ function ChartContent({
               content={<CustomTooltip />}
               cursor={{ stroke: '#d1d5db', strokeWidth: 1, strokeDasharray: '3 3' }}
             />
+
+            {pinnedIndex !== null && elevationData[pinnedIndex] && (
+              <ReferenceLine
+                x={elevationData[pinnedIndex].distance}
+                stroke="#f43f5e"
+                strokeWidth={1.5}
+                strokeDasharray="4 3"
+              />
+            )}
 
             <Area
               type="monotone"

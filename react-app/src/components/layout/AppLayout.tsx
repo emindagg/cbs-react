@@ -221,6 +221,8 @@ export default function AppLayout() {
         onClose={() => elevationProfile.setPanelOpen(false)}
         onDeactivate={elevationProfile.deactivate}
         onHoverIndex={elevationProfile.setHoverIndex}
+        onClickIndex={elevationProfile.setPinnedIndex}
+        pinnedIndex={elevationProfile.pinnedIndex}
         onRunAnalysis={() => elevationProfile.finalize(elevationProfile.waypoints)}
       />
 
