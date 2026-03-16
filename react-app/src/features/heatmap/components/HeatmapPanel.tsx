@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import type { HeatmapPreset } from '../types'
 
@@ -61,9 +61,12 @@ export default function HeatmapPanel({
     onConfigChange({ weightField: e.target.value || null })
   }, [onConfigChange])
 
-  const handlePresetChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    onPreset(e.target.value as HeatmapPreset)
+  const handlePresetChange = useCallback((preset: HeatmapPreset) => {
+    onPreset(preset)
+    setPaletteOpen(false)
   }, [onPreset])
+
+  const [isPaletteOpen, setPaletteOpen] = useState(false)
 
   if (!isOpen) return null
 
@@ -101,28 +104,37 @@ export default function HeatmapPanel({
         </div>
       ) : (
         <div className="px-3.5 py-3 space-y-3">
-          {/* Color Preset Dropdown */}
+          {/* Color Palette Picker */}
           <div>
             <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
-              Renk Şeması
+              Renk Paleti
             </label>
-            <select
-              value={activePreset}
-              onChange={handlePresetChange}
-              className="w-full text-[10px] border border-zinc-200 rounded-md px-2 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-red-400 focus:border-red-400 bg-white"
-            >
-              {PRESET_OPTIONS.map((preset) => (
-                <option key={preset.id} value={preset.id}>{preset.label}</option>
-              ))}
-            </select>
-            {/* Color preview bar */}
-            {activeOption && (
-              <div className="mt-1.5 h-2.5 rounded-sm overflow-hidden flex">
-                {activeOption.colors.map((color, i) => (
-                  <div key={i} className="flex-1" style={{ backgroundColor: color }} />
-                ))}
-              </div>
-            )}
+            <div className="relative">
+              <button
+                onClick={() => setPaletteOpen((v) => !v)}
+                className="w-full border border-zinc-200 rounded-md px-2 py-1.5 bg-white flex items-center justify-between gap-2 hover:border-zinc-300 transition-colors focus:outline-hidden focus:ring-1 focus:ring-red-400"
+              >
+                {activeOption && (
+                  <div
+                    className="flex-1 h-4 rounded-sm"
+                    style={{ background: `linear-gradient(to right, ${activeOption.colors.join(', ')})` }}
+                  />
+                )}
+                <i className={`fa-solid fa-chevron-down text-[8px] text-zinc-400 transition-transform ${isPaletteOpen ? 'rotate-180' : ''}`}></i>
+              </button>
+              {isPaletteOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-zinc-200 rounded-md shadow-lg z-10 p-1.5 space-y-1 max-h-48 overflow-y-auto">
+                  {PRESET_OPTIONS.map((preset) => (
+                    <button
+                      key={preset.id}
+                      onClick={() => handlePresetChange(preset.id)}
+                      className={`w-full h-5 rounded-sm transition-all ${activePreset === preset.id ? 'ring-2 ring-red-400 ring-offset-1' : 'hover:ring-1 hover:ring-zinc-300 hover:ring-offset-1'}`}
+                      style={{ background: `linear-gradient(to right, ${preset.colors.join(', ')})` }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Weight Field */}

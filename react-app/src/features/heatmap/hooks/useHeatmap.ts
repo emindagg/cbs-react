@@ -54,7 +54,7 @@ export function useHeatmap() {
   const map = useMapStore((s) => s.mapInstance)
   const items = useDataManagementStore((s) => s.items)
   const importedItems = useMemo(
-    () => items.filter((i) => i.source === 'imported'),
+    () => items.filter((i) => i.source === 'imported' || i.source === 'drawn'),
     [items],
   )
 
