@@ -214,7 +214,7 @@ export default function GISToolsControl() {
   })
 
   return (
-    <div ref={containerRef} className="absolute top-3 right-3 z-10002 flex flex-col items-end">
+    <div ref={containerRef} className={`absolute top-3 right-3 z-10002 flex flex-col items-end ${toolsMenuMode === 'closed' ? 'pointer-events-none' : ''}`}>
       {/* Toggle Button */}
       <button
         id="toggle-gis-tools"
@@ -222,7 +222,7 @@ export default function GISToolsControl() {
           e.stopPropagation()
           toggleToolsMenu()
         }}
-        className={`w-9 h-9 flex items-center justify-center rounded-[12px] border-none cursor-pointer transition-colors ${
+        className={`w-9 h-9 flex items-center justify-center rounded-[12px] border-none cursor-pointer transition-colors pointer-events-auto ${
           toolsMenuMode === 'icons-only'
             ? 'bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.4)]'
             : isOpen
