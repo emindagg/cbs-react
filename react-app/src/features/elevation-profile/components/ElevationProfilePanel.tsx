@@ -220,7 +220,7 @@ function ChartContent({
     <div className="flex flex-col h-full min-h-0">
       {/* Grafik */}
       <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" debounce={50} minHeight={80}>
           <AreaChart
             data={elevationData}
             margin={{ top: 6, right: 14, left: 0, bottom: 2 }}
