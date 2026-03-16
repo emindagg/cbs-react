@@ -5,7 +5,7 @@ import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
 export default function DraggableNorthArrow() {
-  const { mapInstance, northArrowVisible, northArrowStyle, northArrowBearing } = useMapStore()
+  const { mapInstance, northArrowVisible, northArrowStyle, northArrowBearing, northArrowSize } = useMapStore()
   const { currentVisualization } = useVisualizationStore()
   const [pos, setPos] = useState(() => ({
     x: window.innerWidth - 80,
@@ -48,16 +48,16 @@ export default function DraggableNorthArrow() {
         cursor: 'grab',
         userSelect: 'none',
         touchAction: 'none',
-        width: 72,
-        height: 72,
+        width: northArrowSize,
+        height: northArrowSize,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
       <svg
-        width="72"
-        height="72"
+        width={northArrowSize}
+        height={northArrowSize}
         viewBox="-30 -30 60 60"
         overflow="visible"
         style={{ transform: `rotate(${northArrowBearing}deg)`, transition: 'transform 0.1s ease' }}
