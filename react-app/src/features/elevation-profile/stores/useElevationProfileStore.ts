@@ -11,8 +11,8 @@ const initialState = {
   error: null as string | null,
   elevationData: null as ElevationPoint[] | null,
   stats: null as ElevationStats | null,
-  hoverIndex: null as number | null,
-  pinnedIndex: null as number | null,
+  // Map-Chart Synchronization state
+  activePoint: null as ElevationPoint | null,
 }
 
 export const useElevationProfileStore = create<ElevationProfileState>((set) => ({
@@ -25,8 +25,7 @@ export const useElevationProfileStore = create<ElevationProfileState>((set) => (
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   setResult: (data, stats) => set({ elevationData: data, stats }),
-  setHoverIndex: (hoverIndex) => set({ hoverIndex }),
-  setPinnedIndex: (pinnedIndex) => set({ pinnedIndex }),
+  setActivePoint: (activePoint) => set({ activePoint }),
 
   reset: () => set({ ...initialState }),
 

@@ -25,8 +25,8 @@ export interface ElevationProfileState {
   error: string | null
   elevationData: ElevationPoint[] | null
   stats: ElevationStats | null
-  hoverIndex: number | null
-  pinnedIndex: number | null
+  // Map-Chart Synchronization: grafik hover noktasının koordinat datasını taşır
+  activePoint: ElevationPoint | null
   // actions
   addWaypoint: (point: [number, number]) => void
   setGhostPoint: (point: [number, number] | null) => void
@@ -35,8 +35,7 @@ export interface ElevationProfileState {
   setLoading: (v: boolean) => void
   setError: (msg: string | null) => void
   setResult: (data: ElevationPoint[], stats: ElevationStats) => void
-  setHoverIndex: (idx: number | null) => void
-  setPinnedIndex: (idx: number | null) => void
+  setActivePoint: (point: ElevationPoint | null) => void
   reset: () => void
   deactivate: () => void
 }

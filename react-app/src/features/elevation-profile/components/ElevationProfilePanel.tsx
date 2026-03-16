@@ -6,7 +6,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ReferenceLine,
   ResponsiveContainer,
 } from 'recharts'
 
@@ -51,9 +50,8 @@ interface Props {
   error: string | null
   onClose: () => void
   onDeactivate: () => void
-  onHoverIndex: (idx: number | null) => void
-  onClickIndex: (idx: number | null) => void
-  pinnedIndex: number | null
+  /** Map-Chart Sync: grafik hover noktası → haritadaki Tracking Marker */
+  onActivePoint: (point: ElevationPoint | null) => void
   onRunAnalysis: () => void
 }
 
@@ -96,9 +94,7 @@ export default function ElevationProfilePanel({
   error,
   onClose,
   onDeactivate,
-  onHoverIndex,
-  onClickIndex,
-  pinnedIndex,
+  onActivePoint,
   onRunAnalysis,
 }: Props) {
   if (!isOpen) return null
@@ -172,9 +168,7 @@ export default function ElevationProfilePanel({
           <ChartContent
             elevationData={elevationData}
             stats={stats}
-            onHoverIndex={onHoverIndex}
-            onClickIndex={onClickIndex}
-            pinnedIndex={pinnedIndex}
+            onActivePoint={onActivePoint}
           />
         )}
       </div>
@@ -186,15 +180,12 @@ export default function ElevationProfilePanel({
 function ChartContent({
   elevationData,
   stats,
-  onHoverIndex,
-  onClickIndex,
-  pinnedIndex,
+  onActivePoint,
 }: {
   elevationData: ElevationPoint[]
   stats: ElevationStats | null
-  onHoverIndex: (idx: number | null) => void
-  onClickIndex: (idx: number | null) => void
-  pinnedIndex: number | null
+  /** Map-Chart Sync: fare hareketi → aktif koordinat noktasını haritaya ilet */
+  onActivePoint: (point: ElevationPoint | null) => void
 }) {
   const yMin = stats?.minElevation ?? 0
   const yMax = stats?.maxElevation ?? 1
@@ -235,18 +226,11 @@ function ChartContent({
           <AreaChart
             data={elevationData}
             margin={{ top: 6, right: 14, left: 0, bottom: 2 }}
-            style={{ cursor: 'crosshair' }}
             onMouseMove={(data) => {
               const idx = data.activeTooltipIndex
-              if (typeof idx === 'number') onHoverIndex(idx)
+              if (typeof idx === 'number') onActivePoint(elevationData[idx] ?? null)
             }}
-            onMouseLeave={() => onHoverIndex(null)}
-            onClick={(data) => {
-              const idx = data?.activeTooltipIndex
-              if (typeof idx === 'number') {
-                onClickIndex(idx)
-              }
-            }}
+            onMouseLeave={() => onActivePoint(null)}
           >
             <defs>
               <linearGradient id="hypsGradient" x1="0" y1="0" x2="0" y2="1">
@@ -290,15 +274,6 @@ function ChartContent({
               content={<CustomTooltip />}
               cursor={{ stroke: '#d1d5db', strokeWidth: 1, strokeDasharray: '3 3' }}
             />
-
-            {pinnedIndex !== null && elevationData[pinnedIndex] && (
-              <ReferenceLine
-                x={elevationData[pinnedIndex].distance}
-                stroke="#f43f5e"
-                strokeWidth={1.5}
-                strokeDasharray="4 3"
-              />
-            )}
 
             <Area
               type="monotone"
