@@ -4,6 +4,7 @@ import type { GeoJSONSource } from 'maplibre-gl'
 import { useEffect, useRef } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
+import { useMapStore } from '@/stores/useMapStore'
 import { useToolStore } from '@/stores/useToolStore'
 
 import { useElevationProfile } from '../hooks/useElevationProfile'
@@ -285,21 +286,14 @@ export default function ElevationProfileTool() {
   }, [mapObj, store.elevationData])
 
   // ─── Map-Chart Sync: Tracking Marker ────────────────────────────────────
-  // Zustand subscribe ile React render döngüsü atlatılır — senkron güncelleme.
-  // mapRef aracılığıyla her zaman güncel map instance'ı kullanılır.
-  const mapRef = useRef<maplibregl.Map | null>(null)
+  // Zustand subscribe: React render döngüsü yok, senkron güncelleme.
+  // useMapStore.getState().mapInstance ile her zaman güncel map alınır.
   useEffect(() => {
-    mapRef.current = mapObj?.getMap() as maplibregl.Map | null ?? null
-  }, [mapObj])
-
-  useEffect(() => {
-    // Zustand subscribe: React render döngüsü yok, senkron güncelleme
-    // ensureSource/ensureLayer her seferinde çalışır — reset sonrası da güvenli
     let prev = useElevationProfileStore.getState().activePoint
     const unsub = useElevationProfileStore.subscribe((state) => {
       if (state.activePoint === prev) return
       prev = state.activePoint
-      const map = mapRef.current
+      const map = useMapStore.getState().mapInstance as maplibregl.Map | null
       if (!map) return
       if (!state.activePoint) {
         setSource(map, SRC_HOVER, EMPTY_FC as FeatureCollection<Point>)
