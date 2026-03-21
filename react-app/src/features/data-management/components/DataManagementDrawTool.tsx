@@ -233,102 +233,102 @@ export function DataManagementDrawTool() {
 
   return (
     <>
-    {/* Measurement tooltip — cursor'un 16px sağ-üstünde */}
-    {measurement && cursorPos && (
-      <div
-        style={{
-          position: 'absolute',
-          left: cursorPos.x + 16,
-          top:  cursorPos.y - 28,
-          pointerEvents: 'none',
-          zIndex: 10,
-          background: layerStyles.fillColor,
-          color: '#fff',
-          fontSize: '11px',
-          fontWeight: 600,
-          letterSpacing: '0.02em',
-          padding: '3px 7px',
-          borderRadius: '4px',
-          whiteSpace: 'nowrap',
-          userSelect: 'none',
-        }}
-      >
-        {measurement}
-      </div>
-    )}
+      {/* Measurement tooltip — cursor'un 16px sağ-üstünde */}
+      {measurement && cursorPos && (
+        <div
+          style={{
+            position: 'absolute',
+            left: cursorPos.x + 16,
+            top:  cursorPos.y - 28,
+            pointerEvents: 'none',
+            zIndex: 10,
+            background: layerStyles.fillColor,
+            color: '#fff',
+            fontSize: '11px',
+            fontWeight: 600,
+            letterSpacing: '0.02em',
+            padding: '3px 7px',
+            borderRadius: '4px',
+            whiteSpace: 'nowrap',
+            userSelect: 'none',
+          }}
+        >
+          {measurement}
+        </div>
+      )}
 
-    <Source id="draw-source" type="geojson" data={drawGeoJSON}>
+      <Source id="draw-source" type="geojson" data={drawGeoJSON}>
 
-      {/* Polygon fill — DataLayer ile aynı formül */}
-      <Layer
-        id="draw-fill"
-        type="fill"
-        filter={['==', '$type', 'Polygon']}
-        paint={{
-          'fill-color': lineColor,
-          'fill-color-transition': { duration: 0 },
-          'fill-opacity': fillOpacity,
-          'fill-opacity-transition': { duration: 0 },
-        }}
-      />
+        {/* Polygon fill — DataLayer ile aynı formül */}
+        <Layer
+          id="draw-fill"
+          type="fill"
+          filter={['==', '$type', 'Polygon']}
+          paint={{
+            'fill-color': lineColor,
+            'fill-color-transition': { duration: 0 },
+            'fill-opacity': fillOpacity,
+            'fill-opacity-transition': { duration: 0 },
+          }}
+        />
 
-      {/* Polygon outline */}
-      <Layer
-        id="draw-polygon-outline"
-        type="line"
-        filter={['==', '$type', 'Polygon']}
-        layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-        paint={{
-          'line-color': outlineColor,
-          'line-color-transition': { duration: 0 },
-          'line-width': strokeW,
-          'line-width-transition': { duration: 0 },
-          'line-opacity': layerStyles.opacity,
-          'line-opacity-transition': { duration: 0 },
-        }}
-      />
+        {/* Polygon outline */}
+        <Layer
+          id="draw-polygon-outline"
+          type="line"
+          filter={['==', '$type', 'Polygon']}
+          layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+          paint={{
+            'line-color': outlineColor,
+            'line-color-transition': { duration: 0 },
+            'line-width': strokeW,
+            'line-width-transition': { duration: 0 },
+            'line-opacity': layerStyles.opacity,
+            'line-opacity-transition': { duration: 0 },
+          }}
+        />
 
-      {/* Line */}
-      <Layer
-        id="draw-line"
-        type="line"
-        filter={['==', '$type', 'LineString']}
-        layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-        paint={{
-          'line-color': lineColor,
-          'line-color-transition': { duration: 0 },
-          'line-width': lineW,
-          'line-width-transition': { duration: 0 },
-          'line-opacity': layerStyles.opacity,
-          'line-opacity-transition': { duration: 0 },
-        }}
-      />
+        {/* Line */}
+        <Layer
+          id="draw-line"
+          type="line"
+          filter={['==', '$type', 'LineString']}
+          layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+          paint={{
+            'line-color': lineColor,
+            'line-color-transition': { duration: 0 },
+            'line-width': lineW,
+            'line-width-transition': { duration: 0 },
+            'line-opacity': layerStyles.opacity,
+            'line-opacity-transition': { duration: 0 },
+          }}
+        />
 
-      {/* Vertex noktaları — tüm transition'lar kapalı */}
-      <Layer
-        id="draw-point"
-        type="circle"
-        filter={['==', '$type', 'Point']}
-        paint={{
-          'circle-radius': [
-            'case',
-            ['==', ['get', 'type'], 'point'], layerStyles.width,
-            ['==', ['get', 'active'], 1], 7,
-            5,
-          ],
-          'circle-radius-transition': { duration: 0 },
-          'circle-color': VERTEX_BG,
-          'circle-color-transition': { duration: 0 },
-          'circle-stroke-width': strokeW,
-          'circle-stroke-width-transition': { duration: 0 },
-          'circle-stroke-color': outlineColor,
-          'circle-stroke-color-transition': { duration: 0 },
-          'circle-opacity': layerStyles.opacity,
-          'circle-opacity-transition': { duration: 0 },
-          'circle-pitch-alignment': 'map',
-        }}
-      />
-    </Source>
+        {/* Vertex noktaları — tüm transition'lar kapalı */}
+        <Layer
+          id="draw-point"
+          type="circle"
+          filter={['==', '$type', 'Point']}
+          paint={{
+            'circle-radius': [
+              'case',
+              ['==', ['get', 'type'], 'point'], layerStyles.width,
+              ['==', ['get', 'active'], 1], 7,
+              5,
+            ],
+            'circle-radius-transition': { duration: 0 },
+            'circle-color': VERTEX_BG,
+            'circle-color-transition': { duration: 0 },
+            'circle-stroke-width': strokeW,
+            'circle-stroke-width-transition': { duration: 0 },
+            'circle-stroke-color': outlineColor,
+            'circle-stroke-color-transition': { duration: 0 },
+            'circle-opacity': layerStyles.opacity,
+            'circle-opacity-transition': { duration: 0 },
+            'circle-pitch-alignment': 'map',
+          }}
+        />
+      </Source>
     </>
   )
 }

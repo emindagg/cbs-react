@@ -270,7 +270,14 @@ function ChartContent({
     const ticks: number[] = []
     for (let t = 0; t <= totalDist; t += step) ticks.push(Math.round(t))
     const last = Math.round(totalDist)
-    if (ticks[ticks.length - 1] !== last) ticks.push(last)
+    if (ticks[ticks.length - 1] !== last) {
+      // Son tick öncekiyle çakışacak kadar yakınsa onu yerinde güncelle
+      if (last - ticks[ticks.length - 1] < step * 0.99) {
+        ticks[ticks.length - 1] = last
+      } else {
+        ticks.push(last)
+      }
+    }
     return ticks
   }, [totalDist])
 

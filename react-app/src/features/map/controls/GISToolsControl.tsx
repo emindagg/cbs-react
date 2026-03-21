@@ -1,5 +1,3 @@
-import { useState, useRef, useEffect } from 'react'
-import { useMap } from 'react-map-gl/maplibre'
 import {
   Ruler,
   Disc,
@@ -16,7 +14,10 @@ import {
   TrendingUp,
   type LucideIcon,
 } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { useMap } from 'react-map-gl/maplibre'
 
+import { useDataManagementStore } from '@/features/data-management'
 import { useHeatmapStore } from '@/features/heatmap'
 import { useIsochroneStore } from '@/features/isochrone'
 import { useSpatialAnalysisStore } from '@/features/spatial-analysis'
@@ -26,7 +27,6 @@ import { useToolStore, type ToolType } from '@/stores/useToolStore'
 import { BufferModal } from './GISToolsControl.buffer'
 import { BufferOptionsControl } from './GISToolsControl.bufferOptions'
 import { useElevationProfileStore } from '../../elevation-profile/stores/useElevationProfileStore'
-import { useDataManagementStore } from '@/features/data-management'
 
 interface ToolDef {
   id: string
@@ -55,7 +55,7 @@ const TOOLS: ToolDef[] = [
   { id: 'nearest-points',   icon: Crosshair,     label: 'En Yakın Nokta',          activeColor: 'text-violet-600',  activeBg: 'bg-violet-50',  activeBorder: 'border-violet-200',  group: 'analysis' },
   { id: 'heatmap',          icon: Flame,         label: 'Isı Haritası',            activeColor: 'text-red-600',     activeBg: 'bg-red-50',     activeBorder: 'border-red-200',     group: 'analysis' },
   { id: 'isochrone',        icon: Network,       label: 'Erişilebilirlik Analizi', activeColor: 'text-cyan-600',    activeBg: 'bg-cyan-50',    activeBorder: 'border-cyan-200',    group: 'analysis' },
-  { id: 'elevation-profile', icon: TrendingUp,   label: 'Yükseklik Profili',       activeColor: 'text-teal-600',    activeBg: 'bg-teal-50',    activeBorder: 'border-teal-200',    group: 'analysis' },
+  { id: 'elevation-profile', icon: TrendingUp,   label: 'Yükselti Profili Analizi',       activeColor: 'text-teal-600',    activeBg: 'bg-teal-50',    activeBorder: 'border-teal-200',    group: 'analysis' },
   { id: 'screenshot',       icon: Camera,        label: 'Ekran Görüntüsü',         activeColor: 'text-zinc-700',    activeBg: 'bg-zinc-100',   activeBorder: 'border-zinc-300',    group: 'general' },
   { id: 'clean-visuals',    icon: Eraser,        label: 'Haritayı Temizle',        activeColor: 'text-zinc-700',    activeBg: 'bg-zinc-100',   activeBorder: 'border-zinc-300',    group: 'general' },
   { id: 'clear-data',       icon: Paintbrush,    label: 'Verileri Sıfırla',        activeColor: 'text-amber-600',   activeBg: 'bg-amber-50',   activeBorder: 'border-amber-200',   group: 'reset' },

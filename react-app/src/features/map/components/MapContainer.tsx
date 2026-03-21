@@ -120,43 +120,43 @@ export default function MapContainer() {
   return (
     <div className="relative w-full h-screen">
       {isGlobeMode && <SpaceBackground />}
-    <Map
-      mapLib={maplibregl}
-      attributionControl={false}
-      initialViewState={{
-        longitude: 35.2433,
-        latitude: 38.9637,
-        zoom: 6,
-      }}
-      style={{ width: '100%', height: '100vh', position: 'relative', zIndex: 1 }}
-      mapStyle={mapStyleObj as maplibregl.StyleSpecification}
-      onLoad={(e) => {
-        setLoaded(true)
-        setMapInstance(e.target)
-      }}
-    >
-      {/* Render Basemap Raster Layer if not NONE */}
-      {basemapSource && (
-        <Source id="basemap-source" {...(basemapSource as maplibregl.SourceSpecification)}>
-          <Layer
-            id="basemap-layer"
-            type="raster"
-            paint={{}}
-          />
-        </Source>
-      )}
+      <Map
+        mapLib={maplibregl}
+        attributionControl={false}
+        initialViewState={{
+          longitude: 35.2433,
+          latitude: 38.9637,
+          zoom: 6,
+        }}
+        style={{ width: '100%', height: '100vh', position: 'relative', zIndex: 1 }}
+        mapStyle={mapStyleObj as maplibregl.StyleSpecification}
+        onLoad={(e) => {
+          setLoaded(true)
+          setMapInstance(e.target)
+        }}
+      >
+        {/* Render Basemap Raster Layer if not NONE */}
+        {basemapSource && (
+          <Source id="basemap-source" {...(basemapSource as maplibregl.SourceSpecification)}>
+            <Layer
+              id="basemap-layer"
+              type="raster"
+              paint={{}}
+            />
+          </Source>
+        )}
 
 
-      <DistanceTool />
-      <ElevationProfileTool />
-      <DataManagementDrawTool />
-      <DataLayer />
-      <GISToolsControl />
-      <TimelineControl />
-    </Map>
-    <DraggableScaleControl />
-    <DraggableNorthArrow />
-    <MapCompass />
+        <DistanceTool />
+        <ElevationProfileTool />
+        <DataManagementDrawTool />
+        <DataLayer />
+        <GISToolsControl />
+        <TimelineControl />
+      </Map>
+      <DraggableScaleControl />
+      <DraggableNorthArrow />
+      <MapCompass />
     </div>
   )
 }

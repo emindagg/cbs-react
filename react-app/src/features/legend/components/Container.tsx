@@ -4,14 +4,14 @@
  */
 
 import { useCallback, useMemo } from 'react'
+import * as ss from 'simple-statistics'
 
 import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
+import { BUBBLE_DEFAULT_FILL_COLOR } from '@/features/visualization/bubble/constants'
 import { DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, calculateSmartDotValue } from '@/shared/visualization'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { calculateBreaks } from '@/utils/classification'
-import * as ss from 'simple-statistics'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
-import { BUBBLE_DEFAULT_FILL_COLOR } from '@/features/visualization/bubble/constants'
 
 import BubbleSizeLegend from './BubbleSizeLegend'
 import ColorLegend from './ColorLegend'
@@ -119,7 +119,7 @@ export default function Container() {
       const sizeBreaks = calculateBreaks(dataValues, vizSettings.classificationMethod, vizSettings.classCount)
       const classCount = sizeBreaks.length - 1
 
-  // Standard Deviation labels logic
+      // Standard Deviation labels logic
       const isStdDev = vizSettings.classificationMethod === 'stddev'
       const mean = isStdDev ? ss.mean(dataValues) : 0
       const stdDev = isStdDev ? ss.standardDeviation(dataValues) : 1
@@ -141,17 +141,17 @@ export default function Container() {
           const zMaxNum = parseFloat(zMax)
 
           if (isLowest && !isHighest) {
-            label = `< -0.5 Std. S. (Çok Düşük)`
+            label = '< -0.5 Std. S. (Çok Düşük)'
           } else if (isHighest && !isLowest) {
-            label = `> 1.5 Std. S. (Çok Yüksek)`
+            label = '> 1.5 Std. S. (Çok Yüksek)'
           } else {
             // Check inner ranges to apply specific labels
             if (zMinNum >= 0.5 && zMaxNum <= 1.5) {
-              label = `0.5 - 1.5 Std. S. (Yüksek)`
+              label = '0.5 - 1.5 Std. S. (Yüksek)'
             } else if (zMinNum >= -0.5 && zMaxNum <= 0.5) {
-              label = `-0.5 - 0.5 Std. S. (Ortalama)`
+              label = '-0.5 - 0.5 Std. S. (Ortalama)'
             } else if (zMinNum >= -1.5 && zMaxNum <= -0.5) {
-              label = `-1.5 - -0.5 Std. S. (Düşük)`
+              label = '-1.5 - -0.5 Std. S. (Düşük)'
             } else {
               // Fallback if bounds change
               label = `${zMin} - ${zMax} Std. S.`

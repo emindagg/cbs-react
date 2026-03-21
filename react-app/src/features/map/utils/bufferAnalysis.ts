@@ -38,7 +38,7 @@ function oneSidedLineBuffer(
   line: Feature<LineString>,
   distance: number,
   units: turf.Units,
-  side: 'left' | 'right'
+  side: 'left' | 'right',
 ): Feature<Polygon> | null {
   try {
     const offsetDist = side === 'right' ? distance : -distance
@@ -65,7 +65,7 @@ function toFeatures(geometry: Geometry): Feature[] {
 
 export function runBufferAnalysis(
   geometry: Geometry,
-  options: BufferOptions
+  options: BufferOptions,
 ): Geometry | null {
   if (!isBufferable(geometry)) return null
   const { distance, units, dissolve, sideType = 'full' } = options
@@ -84,7 +84,7 @@ export function runBufferAnalysis(
           f as Feature<LineString>,
           Math.abs(distance),
           units,
-          sideType
+          sideType,
         )
         if (oneSided?.geometry?.type === POLYGON) buffered.push(oneSided)
       } else {
@@ -115,7 +115,7 @@ export function runBufferAnalysis(
 export function runMultiRingBuffer(
   geometry: Geometry,
   distances: number[],
-  options: Omit<BufferOptions, 'distance'>
+  options: Omit<BufferOptions, 'distance'>,
 ): Geometry[] {
   const results: Geometry[] = []
   for (const d of distances) {
@@ -127,7 +127,7 @@ export function runMultiRingBuffer(
 
 export function runBufferAnalysisForMultipleGeometries(
   geometries: Geometry[],
-  options: BufferOptions
+  options: BufferOptions,
 ): Geometry | null {
   if (geometries.length === 0) return null
   if (geometries.length === 1) return runBufferAnalysis(geometries[0], options)
@@ -146,7 +146,7 @@ export function runBufferAnalysisForMultipleGeometries(
           f as Feature<LineString>,
           Math.abs(distance),
           units,
-          sideType
+          sideType,
         )
         if (oneSided?.geometry?.type === POLYGON) buffered.push(oneSided)
       } else {

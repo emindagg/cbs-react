@@ -49,11 +49,11 @@ export function useChoroplethTooltip() {
       popup
         .setLngLat(e.lngLat)
         .setHTML(
-          `<div style="font-family:system-ui,sans-serif;padding:2px 0">` +
+          '<div style="font-family:system-ui,sans-serif;padding:2px 0">' +
           `<div style="font-size:14px;font-weight:700;color:#0f172a">${name}</div>` +
           `<div style="margin-top:4px;font-size:11px;color:#64748b">${label}</div>` +
           `<div style="font-size:13px;font-weight:600;color:#1e293b">${value}</div>` +
-          `</div>`,
+          '</div>',
         )
         .addTo(map)
     }

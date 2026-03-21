@@ -250,87 +250,87 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
         </button>
 
         {showMapSettings && (
-        <div className="px-3 pb-3 pt-2 border-t border-zinc-100 space-y-2.5">
-        <label className="flex items-center justify-between cursor-pointer">
-          <div>
-            <span className="text-[10px] font-medium text-zinc-700">Sadece Veri Modu</span>
-            <p className="text-[9px] text-zinc-400 mt-0.5">Verisi olmayan il/ilçeleri gizler</p>
-          </div>
-          <input type="checkbox" checked={vizSettings.dataOnlyMode ?? false}
-            onChange={(e) => setVizSettings({ dataOnlyMode: e.target.checked })}
-            className="w-4 h-4 accent-zinc-800" />
-        </label>
+          <div className="px-3 pb-3 pt-2 border-t border-zinc-100 space-y-2.5">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-[10px] font-medium text-zinc-700">Sadece Veri Modu</span>
+                <p className="text-[9px] text-zinc-400 mt-0.5">Verisi olmayan il/ilçeleri gizler</p>
+              </div>
+              <input type="checkbox" checked={vizSettings.dataOnlyMode ?? false}
+                onChange={(e) => setVizSettings({ dataOnlyMode: e.target.checked })}
+                className="w-4 h-4 accent-zinc-800" />
+            </label>
 
-        <div className="border-t border-zinc-100" />
-
-        <label className="flex items-center justify-between cursor-pointer">
-          <div>
-            <span className="text-[10px] font-medium text-zinc-700">İl/İlçe İsimleri</span>
-            <p className="text-[9px] text-zinc-400 mt-0.5">
-              {vizSettings.dataOnlyMode ? 'Sadece verisi olan bölgelerin adları' : 'Tüm bölgelerin adları'}
-            </p>
-          </div>
-          <input type="checkbox" checked={vizSettings.showLabels ?? false}
-            onChange={(e) => setVizSettings({ showLabels: e.target.checked })}
-            className="w-4 h-4 accent-zinc-800" />
-        </label>
-
-        <div className="border-t border-zinc-100" />
-
-        <label className="flex items-center justify-between cursor-pointer">
-          <div>
-            <span className="text-[10px] font-medium text-zinc-700">Değerler</span>
-            <p className="text-[9px] text-zinc-400 mt-0.5">Sadece verisi olanlarda değer yazar</p>
-          </div>
-          <input type="checkbox" checked={vizSettings.showValues ?? false}
-            onChange={(e) => setVizSettings({ showValues: e.target.checked })}
-            className="w-4 h-4 accent-zinc-800" />
-        </label>
-
-        <div className="border-t border-zinc-100" />
-
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-medium text-zinc-700">Harita Dolgu Rengi</span>
-          </div>
-          <input
-            type="color"
-            value={vizSettings.noDataColor ?? '#e4e4e4'}
-            onChange={(e) => setVizSettings({ noDataColor: e.target.value })}
-            className="w-7 h-7 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
-          />
-        </div>
-
-        {vizSettings.type === 'choropleth' && (
-          <>
             <div className="border-t border-zinc-100" />
-            <SingleSlider
-              label="İl/İlçe Dolgu Şeffaflığı"
-              min={0}
-              max={1}
-              step={0.05}
-              value={vizSettings.choroplethOpacity ?? 1}
-              formatValue={(v) => `%${Math.round(v * 100)}`}
-              onChange={(v) => setVizSettings({ choroplethOpacity: v })}
-            />
-          </>
-        )}
 
-        {(vizSettings.type === 'dot' || vizSettings.type === 'bubble') && (
-          <>
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-[10px] font-medium text-zinc-700">İl/İlçe İsimleri</span>
+                <p className="text-[9px] text-zinc-400 mt-0.5">
+                  {vizSettings.dataOnlyMode ? 'Sadece verisi olan bölgelerin adları' : 'Tüm bölgelerin adları'}
+                </p>
+              </div>
+              <input type="checkbox" checked={vizSettings.showLabels ?? false}
+                onChange={(e) => setVizSettings({ showLabels: e.target.checked })}
+                className="w-4 h-4 accent-zinc-800" />
+            </label>
+
             <div className="border-t border-zinc-100" />
-            <SingleSlider
-              label="İl/İlçe Dolgu Şeffaflığı"
-              min={0}
-              max={1}
-              step={0.05}
-              value={vizSettings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY}
-              formatValue={(v) => `%${Math.round(v * 100)}`}
-              onChange={(v) => setVizSettings({ backdropFillOpacity: v })}
-            />
-          </>
-        )}
-        </div>
+
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-[10px] font-medium text-zinc-700">Değerler</span>
+                <p className="text-[9px] text-zinc-400 mt-0.5">Sadece verisi olanlarda değer yazar</p>
+              </div>
+              <input type="checkbox" checked={vizSettings.showValues ?? false}
+                onChange={(e) => setVizSettings({ showValues: e.target.checked })}
+                className="w-4 h-4 accent-zinc-800" />
+            </label>
+
+            <div className="border-t border-zinc-100" />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-medium text-zinc-700">Harita Dolgu Rengi</span>
+              </div>
+              <input
+                type="color"
+                value={vizSettings.noDataColor ?? '#e4e4e4'}
+                onChange={(e) => setVizSettings({ noDataColor: e.target.value })}
+                className="w-7 h-7 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
+              />
+            </div>
+
+            {vizSettings.type === 'choropleth' && (
+              <>
+                <div className="border-t border-zinc-100" />
+                <SingleSlider
+                  label="İl/İlçe Dolgu Şeffaflığı"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={vizSettings.choroplethOpacity ?? 1}
+                  formatValue={(v) => `%${Math.round(v * 100)}`}
+                  onChange={(v) => setVizSettings({ choroplethOpacity: v })}
+                />
+              </>
+            )}
+
+            {(vizSettings.type === 'dot' || vizSettings.type === 'bubble') && (
+              <>
+                <div className="border-t border-zinc-100" />
+                <SingleSlider
+                  label="İl/İlçe Dolgu Şeffaflığı"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={vizSettings.backdropFillOpacity ?? DEFAULT_BACKDROP_FILL_OPACITY}
+                  formatValue={(v) => `%${Math.round(v * 100)}`}
+                  onChange={(v) => setVizSettings({ backdropFillOpacity: v })}
+                />
+              </>
+            )}
+          </div>
         )}
       </div>
 

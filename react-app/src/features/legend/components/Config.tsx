@@ -2,11 +2,11 @@
  * Legend Configuration Panel
  */
 
-import type { LegendConfiguration } from '@/types/visualization'
-import { NORTH_ARROW_STYLES } from '@/shared/northArrowStyles'
-import { coerceNumberFormat, FORMAT_OPTIONS } from '@/utils/numberFormatter'
-import { useMapStore } from '@/stores/useMapStore'
 import { SingleSlider, SliderWithInput } from '@/components/ui'
+import { NORTH_ARROW_STYLES } from '@/shared/northArrowStyles'
+import { useMapStore } from '@/stores/useMapStore'
+import type { LegendConfiguration } from '@/types/visualization'
+import { coerceNumberFormat, FORMAT_OPTIONS } from '@/utils/numberFormatter'
 
 import { ConfigLabelsSection } from './ConfigLabelsSection'
 import { ConfigSizeSection } from './ConfigSizeSection'

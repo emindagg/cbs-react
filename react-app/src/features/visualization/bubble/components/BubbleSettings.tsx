@@ -4,6 +4,7 @@
 
 import { DualRangeSlider, SingleSlider } from '@/components/ui'
 import type { BubbleSizeMode, ClassificationMethod, SymbolScaling, VisualizationSettings } from '@/types/visualization'
+
 import { BUBBLE_DEFAULT_FILL_COLOR } from '../constants'
 
 /* ── Dual-handle range slider sabitleri ── */
@@ -67,7 +68,7 @@ export function BubbleSettings({
                 className={`flex-1 px-2 py-1 text-[10px] font-medium transition-colors ${active
                   ? 'bg-zinc-800 text-white'
                   : 'bg-white text-zinc-600 hover:bg-zinc-50'
-                  }`}
+                }`}
               >
                 {opt.label}
               </button>

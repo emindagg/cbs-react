@@ -2,12 +2,12 @@ import type { GeoJSONSource, MapMouseEvent } from 'maplibre-gl'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 
+import { useTimelineStore } from '@/features/timeline'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useMapStore } from '@/stores/useMapStore'
-import { useTimelineStore } from '@/features/timeline'
 
-import type { DataItem } from '../../data-management/types'
 import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
+import type { DataItem } from '../../data-management/types'
 
 function isPointType(item: DataItem): boolean {
   return item.type === 'point' || (!!item.geometry && (item.geometry.type === 'Point' || item.geometry.type === 'MultiPoint'))

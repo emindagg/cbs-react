@@ -116,7 +116,7 @@ export function CustomBreaksInput({ customBreaks, onChange }: CustomBreaksInputP
         onChange={(e) => handleChange(e.target.value)}
         placeholder="ör: 0, 100, 500, 1.000, 5.000"
         className={`w-full px-2.5 py-1.5 text-[11px] border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${error ? 'border-red-300' : 'border-zinc-200 hover:border-zinc-300'
-          }`}
+        }`}
       />
       {error && (
         <p className="text-[9px] text-red-500">{error}</p>

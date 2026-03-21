@@ -1,6 +1,6 @@
+import * as turf from '@turf/turf'
 import { describe, it, expect } from 'vitest'
 
-import * as turf from '@turf/turf'
 
 import {
   runBufferAnalysis,
@@ -32,7 +32,7 @@ describe('bufferAnalysis', () => {
   describe('runBufferAnalysis', () => {
     it('mesafe 0 ise null döner', () => {
       expect(
-        runBufferAnalysis(line.geometry, { ...baseOptions, distance: 0 })
+        runBufferAnalysis(line.geometry, { ...baseOptions, distance: 0 }),
       ).toBeNull()
     })
 
@@ -90,7 +90,7 @@ describe('bufferAnalysis', () => {
       const results = runMultiRingBuffer(
         line.geometry,
         [50, 100, 200],
-        baseOptions
+        baseOptions,
       )
       expect(results).toHaveLength(3)
       results.forEach(g => expect(g.type).toBe('Polygon'))
@@ -114,7 +114,7 @@ describe('bufferAnalysis', () => {
   describe('runBufferAnalysisForMultipleGeometries', () => {
     it('çoklu nokta (15 nokta) tek seferde buffer + dissolve ile poligon/multipolygon döner', () => {
       const points = Array.from({ length: 15 }, (_, i) =>
-        turf.point([i * 0.01, i * 0.01])
+        turf.point([i * 0.01, i * 0.01]),
       )
       const geometries = points.map(p => p.geometry)
       const result = runBufferAnalysisForMultipleGeometries(geometries, {

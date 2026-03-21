@@ -37,7 +37,8 @@
       "WebFetch(domain:eksisozluk.com)",
       "WebFetch(domain:cbs.csb.gov.tr)",
       "WebFetch(domain:icaci.org)",
-      "Bash(powershell -Command \"Select-String -Path 'C:\\\\Users\\\\MED\\\\.claude\\\\projects\\\\D--0GM-MEB-PROJELER-CBS-PROJELER-cbs-react-react-app\\\\e3ea9f2b-9a15-4f6e-9208-24ac5a09aec4.jsonl' -Pattern 'polygon|tik.*işaret|KUZEY|KD.*GD' | Select-Object -First 5 | ForEach-Object { $_.Line.Substring\\(0, [Math]::Min\\(500, $_.Line.Length\\)\\) }\")"
+      "Bash(powershell -Command \"Select-String -Path 'C:\\\\Users\\\\MED\\\\.claude\\\\projects\\\\D--0GM-MEB-PROJELER-CBS-PROJELER-cbs-react-react-app\\\\e3ea9f2b-9a15-4f6e-9208-24ac5a09aec4.jsonl' -Pattern 'polygon|tik.*işaret|KUZEY|KD.*GD' | Select-Object -First 5 | ForEach-Object { $_.Line.Substring\\(0, [Math]::Min\\(500, $_.Line.Length\\)\\) }\")",
+      "Bash(cd:*)"
     ]
   }
 }

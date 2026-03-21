@@ -1,6 +1,6 @@
-import { useEffect, useRef, useCallback } from 'react'
 import { Popup } from 'maplibre-gl'
 import type { MapMouseEvent } from 'maplibre-gl'
+import { useEffect, useRef, useCallback } from 'react'
 
 import { useMapStore } from '@/stores/useMapStore'
 
