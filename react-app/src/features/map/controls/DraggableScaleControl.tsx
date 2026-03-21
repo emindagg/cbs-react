@@ -86,21 +86,29 @@ export default function DraggableScaleControl() {
         cursor: 'grab',
         userSelect: 'none',
         touchAction: 'none',
-        // MapLibre ScaleControl stilini birebir taklit et
-        width: scale.width,
-        backgroundColor: '#fff',
-        border: '2px solid #333',
-        borderTop: 'none',
-        boxSizing: 'border-box',
+        display: 'inline-flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        fontFamily: '"Helvetica Neue", Arial, Helvetica, sans-serif',
         color: '#333',
         fontSize: '11px',
-        lineHeight: '18px',
-        padding: '0 5px',
-        whiteSpace: 'nowrap',
-        fontFamily: '"Helvetica Neue", Arial, Helvetica, sans-serif',
       }}
     >
-      {scale.label}
+      {/* Label */}
+      <span style={{ lineHeight: '14px', whiteSpace: 'nowrap', paddingLeft: 2 }}>
+        {scale.label}
+      </span>
+      {/* Bar */}
+      <div
+        style={{
+          width: scale.width,
+          height: 6,
+          backgroundColor: '#fff',
+          border: '2px solid #333',
+          borderTop: 'none',
+          boxSizing: 'border-box',
+        }}
+      />
     </div>
   )
 }
