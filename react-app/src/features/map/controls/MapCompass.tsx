@@ -48,9 +48,9 @@ export function MapCompass() {
       style={{
         position: 'fixed',
         top: 60,
-        right: 15,
-        width: 43,
-        height: 43,
+        right: 10,
+        width: 37,
+        height: 37,
         borderRadius: '50%',
         display: 'flex',
         alignItems: 'center',
