@@ -4,6 +4,8 @@ import type { HeatmapConfig } from '../types'
 
 const SOURCE_ID = 'heatmap-source'
 const LAYER_ID = 'heatmap-layer'
+const CIRCLE_LAYER_ID = 'heatmap-circles'
+const ZOOM_THRESHOLD = 14
 
 export class HeatmapRenderer {
   private map: Map
@@ -22,7 +24,7 @@ export class HeatmapRenderer {
 
     this.map.setPaintProperty(LAYER_ID, 'heatmap-radius', this.buildRadiusExpression(config.radius))
     this.map.setPaintProperty(LAYER_ID, 'heatmap-intensity', this.buildIntensityExpression(config.intensity))
-    this.map.setPaintProperty(LAYER_ID, 'heatmap-opacity', config.opacity)
+    this.map.setPaintProperty(LAYER_ID, 'heatmap-opacity', this.buildHeatmapOpacityExpression(config.opacity))
     this.map.setPaintProperty(LAYER_ID, 'heatmap-color', this.buildColorExpression(config))
 
     if (config.weightField) {
@@ -34,9 +36,19 @@ export class HeatmapRenderer {
     } else {
       this.map.setPaintProperty(LAYER_ID, 'heatmap-weight', 1)
     }
+
+    if (this.map.getLayer(CIRCLE_LAYER_ID)) {
+      const lastColor = config.colorStops[config.colorStops.length - 1][1]
+      this.map.setPaintProperty(CIRCLE_LAYER_ID, 'circle-color', lastColor)
+      this.map.setPaintProperty(CIRCLE_LAYER_ID, 'circle-opacity', this.buildCircleOpacityExpression(config.opacity))
+      this.map.setPaintProperty(CIRCLE_LAYER_ID, 'circle-stroke-opacity', this.buildCircleOpacityExpression(config.opacity))
+    }
   }
 
   remove(): void {
+    if (this.map.getLayer(CIRCLE_LAYER_ID)) {
+      this.map.removeLayer(CIRCLE_LAYER_ID)
+    }
     if (this.map.getLayer(LAYER_ID)) {
       this.map.removeLayer(LAYER_ID)
     }
@@ -46,7 +58,7 @@ export class HeatmapRenderer {
   }
 
   isActive(): boolean {
-    return Boolean(this.map.getLayer(LAYER_ID))
+    return Boolean(this.map.getLayer(LAYER_ID) || this.map.getLayer(CIRCLE_LAYER_ID))
   }
 
   private addOrUpdateSource(geojson: GeoJSON.FeatureCollection): void {
@@ -79,8 +91,31 @@ export class HeatmapRenderer {
         'heatmap-weight': weightProp as Parameters<Map['setPaintProperty']>[2],
         'heatmap-intensity': this.buildIntensityExpression(config.intensity) as Parameters<Map['setPaintProperty']>[2],
         'heatmap-radius': this.buildRadiusExpression(config.radius) as Parameters<Map['setPaintProperty']>[2],
-        'heatmap-opacity': config.opacity,
+        'heatmap-opacity': this.buildHeatmapOpacityExpression(config.opacity) as Parameters<Map['setPaintProperty']>[2],
         'heatmap-color': this.buildColorExpression(config) as Parameters<Map['setPaintProperty']>[2],
+      },
+    })
+
+    this.addCircleLayer(config)
+  }
+
+  private addCircleLayer(config: HeatmapConfig): void {
+    if (this.map.getLayer(CIRCLE_LAYER_ID)) return
+    const lastColor = config.colorStops[config.colorStops.length - 1][1]
+    this.map.addLayer({
+      id: CIRCLE_LAYER_ID,
+      type: 'circle',
+      source: SOURCE_ID,
+      paint: {
+        'circle-radius': ['interpolate', ['linear'], ['zoom'],
+          ZOOM_THRESHOLD, 3,
+          18, 8,
+        ] as Parameters<Map['setPaintProperty']>[2],
+        'circle-color': lastColor,
+        'circle-opacity': this.buildCircleOpacityExpression(config.opacity) as Parameters<Map['setPaintProperty']>[2],
+        'circle-stroke-width': 1,
+        'circle-stroke-color': 'rgba(255,255,255,0.6)',
+        'circle-stroke-opacity': this.buildCircleOpacityExpression(config.opacity) as Parameters<Map['setPaintProperty']>[2],
       },
     })
   }
@@ -88,18 +123,36 @@ export class HeatmapRenderer {
   private buildRadiusExpression(radius: number): unknown {
     return [
       'interpolate', ['linear'], ['zoom'],
-      0, Math.max(1, radius * 0.3),
+      0, radius * 1.6,
+      5, radius * 1.2,
       9, radius,
-      15, radius * 2.5,
+      15, radius * 0.6,
     ]
   }
 
   private buildIntensityExpression(intensity: number): unknown {
     return [
       'interpolate', ['linear'], ['zoom'],
-      0, 0,
+      0, intensity * 2,
+      5, intensity * 1.5,
       9, intensity,
       15, intensity * 3,
+    ]
+  }
+
+  private buildHeatmapOpacityExpression(opacity: number): unknown {
+    return [
+      'interpolate', ['linear'], ['zoom'],
+      ZOOM_THRESHOLD - 1, opacity,
+      ZOOM_THRESHOLD, 0,
+    ]
+  }
+
+  private buildCircleOpacityExpression(opacity: number): unknown {
+    return [
+      'interpolate', ['linear'], ['zoom'],
+      ZOOM_THRESHOLD - 1, 0,
+      ZOOM_THRESHOLD, opacity,
     ]
   }
 

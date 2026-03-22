@@ -19,6 +19,7 @@ export type HeatmapPreset =
   | 'forest'
   | 'sunset'
   | 'monochrome'
+  | 'heatmap1'
 
 export interface HeatmapStore {
   isActive: boolean

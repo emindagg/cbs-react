@@ -83,12 +83,27 @@ const PRESETS: Record<HeatmapPreset, HeatmapColorStop[]> = {
     [0.8, 'rgb(200,200,200)'],
     [1, 'rgb(255,255,255)'],
   ],
+  heatmap1: [
+    [0, 'rgba(133,193,200,0)'],
+    [0.08, 'rgb(144,161,190)'],
+    [0.17, 'rgb(156,129,132)'],
+    [0.25, 'rgb(167,97,170)'],
+    [0.33, 'rgb(175,73,128)'],
+    [0.42, 'rgb(184,48,85)'],
+    [0.5, 'rgb(192,24,42)'],
+    [0.58, 'rgb(200,0,0)'],
+    [0.67, 'rgb(211,51,0)'],
+    [0.75, 'rgb(222,102,0)'],
+    [0.83, 'rgb(233,153,0)'],
+    [0.92, 'rgb(244,204,0)'],
+    [1, 'rgb(255,255,0)'],
+  ],
 }
 
 export const HEATMAP_PRESETS = PRESETS
 
 const defaultConfig: HeatmapConfig = {
-  radius: 25,
+  radius: 15,
   intensity: 1,
   opacity: 0.8,
   weightField: null,

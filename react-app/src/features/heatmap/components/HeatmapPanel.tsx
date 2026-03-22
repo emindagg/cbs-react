@@ -31,6 +31,7 @@ const PRESET_OPTIONS: { id: HeatmapPreset; label: string; colors: string[] }[] =
   { id: 'forest', label: 'Orman', colors: ['#00300e', '#105e1d', '#31a354', '#78c679', '#d9f0a3', '#f7fcb1'] },
   { id: 'sunset', label: 'Gün Batımı', colors: ['#5e1780', '#ab3764', '#e55934', '#fda700', '#feae5a', '#fee65a'] },
   { id: 'monochrome', label: 'Mono (Siyah-Beyaz)', colors: ['#1e1e1e', '#505050', '#8c8c8c', '#c8c8c8', '#e6e6e6', '#ffffff'] },
+  { id: 'heatmap1', label: 'Heatmap 1', colors: ['#85c1c8', '#9c8184', '#a761aa', '#b83055', '#c0182a', '#c80000', '#de6600', '#f4cc00', '#ffff00'] },
 ]
 
 export default function HeatmapPanel({
