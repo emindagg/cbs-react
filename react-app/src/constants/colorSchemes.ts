@@ -244,6 +244,19 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#10B981',
     '#047857',
   ],
+
+  // Pembe Odaklı (Ayrık)
+  centeredPink: [
+    '#bbb8cc',
+    '#aa8ab2',
+    '#995c99',
+    '#9f2e74',
+    '#a6004e',
+    '#9f2e74',
+    '#995c99',
+    '#aa8ab2',
+    '#bbb8cc',
+  ],
 }
 
 /**
@@ -274,6 +287,7 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
   amber: { name: 'Altın', type: 'sequential' },
   redBlueDiverging: { name: 'Kırmızı-Mavi Ayrık', type: 'diverging' },
   redGreen: { name: 'Kırmızı-Yeşil', type: 'diverging' },
+  centeredPink: { name: 'Pembe Odaklı', type: 'diverging' },
 }
 
 /**
@@ -301,6 +315,7 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
   { value: 'redBlueDiverging', label: 'Kırmızı-Mavi Ayrık' },
   { value: 'redTeal', label: 'Kırmızı-Deniz' },
   { value: 'redGreen', label: 'Kırmızı-Yeşil' },
+  { value: 'centeredPink', label: 'Pembe Odaklı' },
 ]
 
 /**

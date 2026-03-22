@@ -46,6 +46,7 @@ export type ColorScheme =
   | 'amber'
   | 'redBlueDiverging'
   | 'redGreen'
+  | 'centeredPink'
 
 export type LegendType =
   | 'discrete'
