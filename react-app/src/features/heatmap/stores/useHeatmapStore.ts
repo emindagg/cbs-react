@@ -106,6 +106,7 @@ const defaultConfig: HeatmapConfig = {
   radius: 15,
   intensity: 1,
   opacity: 0.8,
+  minDensityRatio: 0,
   weightField: null,
   colorStops: PRESETS.classic,
 }

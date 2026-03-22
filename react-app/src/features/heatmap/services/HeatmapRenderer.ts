@@ -157,10 +157,18 @@ export class HeatmapRenderer {
   }
 
   private buildColorExpression(config: HeatmapConfig): unknown {
+    const minRatio = config.minDensityRatio ?? 0
     const stops: unknown[] = []
+
     for (const [value, color] of config.colorStops) {
-      stops.push(value, color)
+      const remapped = minRatio + value * (1 - minRatio)
+      stops.push(remapped, color)
     }
+
+    if (minRatio > 0) {
+      stops.unshift(0, 'rgba(0,0,0,0)')
+    }
+
     return ['interpolate', ['linear'], ['heatmap-density'], ...stops]
   }
 }

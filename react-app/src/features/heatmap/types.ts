@@ -4,6 +4,7 @@ export interface HeatmapConfig {
   radius: number
   intensity: number
   opacity: number
+  minDensityRatio: number
   weightField: string | null
   colorStops: HeatmapColorStop[]
 }

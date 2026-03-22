@@ -8,6 +8,7 @@ interface HeatmapPanelProps {
     radius: number
     intensity: number
     opacity: number
+    minDensityRatio: number
     weightField: string | null
   }
   activePreset: HeatmapPreset
@@ -56,6 +57,10 @@ export default function HeatmapPanel({
 
   const handleOpacityChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     onConfigChange({ opacity: Number(e.target.value) })
+  }, [onConfigChange])
+
+  const handleMinDensityChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onConfigChange({ minDensityRatio: Number(e.target.value) })
   }, [onConfigChange])
 
   const handleWeightChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -198,6 +203,28 @@ export default function HeatmapPanel({
               onChange={handleIntensityChange}
               className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
             />
+          </div>
+
+          {/* Min Density */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                Min. Yoğunluk
+              </label>
+              <span className="text-[9px] text-zinc-600 font-mono bg-zinc-50 px-1.5 py-0.5 rounded">
+                {Math.round(config.minDensityRatio * 100)}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={0.5}
+              step={0.01}
+              value={config.minDensityRatio}
+              onChange={handleMinDensityChange}
+              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+            />
+            <p className="text-[8px] text-zinc-400 mt-0.5">Seyrek alanları gizlemek için artırın</p>
           </div>
 
           {/* Opacity */}
