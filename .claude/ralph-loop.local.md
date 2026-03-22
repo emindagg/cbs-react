@@ -1,9 +1,0 @@
----
-active: true
-iteration: 1
-max_iterations: 50
-completion_promise: "COMPLETE"
-started_at: "2026-02-02T17:56:30Z"
----
-
-Migrate CBS/GIS Application to Modern Stack. Requirements: Migrate existing vanilla JavaScript CBS (Coğrafi Bilgi Sistemi) application to Vite + React 18 + TypeScript + TailwindCSS + shadcn/ui + Zustand stack. Current features to preserve: MapLibre GL JS integration for interactive maps, Spatial analysis tools (buffer, convex hull, voronoi, heatmap, clustering), Choropleth, bubble, and dot-density visualizations, Timeline with Web Worker support for temporal data, Measurement tools (distance and area), Geocoder with HGM Atlas API integration, Import/Export (Excel, CSV, GeoJSON, KMZ, Shapefile), Astronomy module (sun/moon positions, eclipses), FAB controls for map customization, Layer management and styling. Tech stack requirements: Use react-map-gl with MapLibre GL JS, Implement Zustand stores for state management (mapStore, layerStore, dataStore, visualizationStore), Use shadcn/ui components for UI (Dialog, Card, Button, Select, Tabs, Slider), Maintain Turf.js for spatial analysis, Keep Web Workers for performance-critical operations, Use @dnd-kit for drag and drop features, Implement TypeScript strict mode with proper types for GeoJSON, coordinates, and map features. Project structure: Feature-based folder structure (features/map, features/spatial-analysis, features/visualization, features/timeline, features/import-export), Shared components in components/ui (shadcn) and components/map, Zustand stores in stores/, TypeScript types in types/, Utils and helpers in lib/. Success criteria: All existing features working in new stack, TypeScript strict mode with no errors, No linter errors, Responsive design with TailwindCSS, Performance maintained or improved, Documentation updated for new architecture. Output (promise)COMPLETE(/promise) when done. bu promptta göre dönüşümü yap
