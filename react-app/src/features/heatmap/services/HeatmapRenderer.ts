@@ -69,6 +69,8 @@ export class HeatmapRenderer {
       this.map.addSource(SOURCE_ID, {
         type: 'geojson',
         data: geojson,
+        buffer: 0,    // nokta verisi için karo taşma payı gereksiz
+        maxzoom: 12,  // yüksek zoomlarda yeni tile hesabı durur, overzoom ile hız artar
       })
     }
   }
@@ -121,22 +123,29 @@ export class HeatmapRenderer {
   }
 
   private buildRadiusExpression(radius: number): unknown {
+    // ArcGIS referenceScale davranışı: zoom arttıkça noktalar piksel olarak
+    // birbirinden uzaklaşır, coğrafi tutarlılık için radius büyütülmeli.
+    // Düşük zoomlarda baz değer korunur; yakınlaştıkça üstel büyüme sağlanır.
     return [
       'interpolate', ['linear'], ['zoom'],
-      0, radius * 1.6,
-      5, radius * 1.2,
-      9, radius,
-      15, radius * 0.6,
+      0,  radius,
+      9,  radius * 1.5,
+      12, radius * 4,
+      15, radius * 10,
+      18, radius * 25,
     ]
   }
 
   private buildIntensityExpression(intensity: number): unknown {
+    // Düşük zoomda çok nokta üst üste biner → aşırı doygunluğu engellemek için
+    // intensity hafif baskılanır; yüksek zoomda seyrekleşen noktalar güçlendirilir.
     return [
       'interpolate', ['linear'], ['zoom'],
-      0, intensity * 2,
-      5, intensity * 1.5,
-      9, intensity,
-      15, intensity * 3,
+      0,  intensity * 0.4,
+      5,  intensity * 0.7,
+      9,  intensity,
+      12, intensity * 2,
+      15, intensity * 5,
     ]
   }
 
@@ -162,12 +171,16 @@ export class HeatmapRenderer {
 
     for (const [value, color] of config.colorStops) {
       const remapped = minRatio + value * (1 - minRatio)
-      stops.push(remapped, color)
+      // remapped === 0 olan stop'ları atla: aşağıda eklenen transparent 0-stop ile
+      // çakışır ve MapLibre "strictly ascending" hatasına neden olur
+      if (remapped > 0) {
+        stops.push(remapped, color)
+      }
     }
 
-    if (minRatio > 0) {
-      stops.unshift(0, 'rgba(0,0,0,0)')
-    }
+    // 0-stop her zaman transparent olmalı: aksi hâlde her noktanın etrafında
+    // kare sınır artifact'ı oluşur ve pürüzsüz blur efekti bozulur
+    stops.unshift(0, 'rgba(0,0,0,0)')
 
     return ['interpolate', ['linear'], ['heatmap-density'], ...stops]
   }
