@@ -1,7 +1,6 @@
 import {
   Ruler,
   Disc,
-  Layers,
   SquareDashed,
   LayoutGrid,
   Crosshair,
@@ -12,9 +11,8 @@ import {
   Paintbrush,
   Trash2,
   TrendingUp,
-  type LucideIcon,
 } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ComponentType } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
 import { useDataManagementStore } from '@/features/data-management'
@@ -28,15 +26,49 @@ import { BufferModal } from './GISToolsControl.buffer'
 import { BufferOptionsControl } from './GISToolsControl.bufferOptions'
 import { useElevationProfileStore } from '../../elevation-profile/stores/useElevationProfileStore'
 
+type IconComponent = ComponentType<{
+  size?: number | string
+  className?: string
+  strokeWidth?: number | string
+  color?: string
+}>
+
+// Noun Project tarzı ağ/küme ikonu — orijinal tasarım, telif hakkı içermez
+function ClusterNetworkIcon({ size = 24, className = '' }: { size?: number | string; className?: string; strokeWidth?: number | string; color?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+    >
+      <circle cx="10" cy="11" r="4" />
+      <circle cx="20" cy="4" r="2.5" />
+      <circle cx="3" cy="20" r="2.5" />
+      <circle cx="21" cy="15" r="1.8" />
+      <circle cx="4" cy="5" r="1.8" />
+      <circle cx="16" cy="22" r="1.5" />
+      <line x1="13.3" y1="8.7" x2="18.0" y2="5.4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      <line x1="7.5" y1="14.2" x2="4.5" y2="18.0" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      <line x1="13.8" y1="12.4" x2="19.3" y2="14.4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      <line x1="7.2" y1="8.2" x2="5.3" y2="6.3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      <line x1="11.9" y1="14.5" x2="15.3" y2="20.7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 interface ToolDef {
   id: string
-  icon: LucideIcon
+  icon: IconComponent
   label: string
   activeColor: string
   activeBg: string
   activeBorder: string
   disabled?: boolean
   group: string
+  noHoverPreview?: boolean // hover'da aktif renk gösterilmez (döngüsel araçlar için)
 }
 
 const TOOL_GROUPS: { key: string; label: string; divider?: boolean }[] = [
@@ -49,7 +81,7 @@ const TOOL_GROUPS: { key: string; label: string; divider?: boolean }[] = [
 const TOOLS: ToolDef[] = [
   { id: 'measure-distance', icon: Ruler,        label: 'Mesafe & Alan',           activeColor: 'text-indigo-600',  activeBg: 'bg-indigo-50',  activeBorder: 'border-indigo-200',  group: 'measure' },
   { id: 'buffer',           icon: Disc,          label: 'Etki Alanı Analizi',      activeColor: 'text-purple-600',  activeBg: 'bg-purple-50',  activeBorder: 'border-purple-200',  group: 'analysis' },
-  { id: 'clustering',       icon: Layers,        label: 'Nokta Kümeleri',          activeColor: 'text-blue-600',    activeBg: 'bg-blue-50',    activeBorder: 'border-blue-200',    group: 'analysis' },
+  { id: 'clustering',       icon: ClusterNetworkIcon, label: 'Nokta Kümeleri',          activeColor: 'text-blue-600',    activeBg: 'bg-blue-50',    activeBorder: 'border-blue-200',    group: 'analysis', noHoverPreview: true },
   { id: 'convex-hull',      icon: SquareDashed,  label: 'Dış Sınır',               activeColor: 'text-amber-600',   activeBg: 'bg-amber-50',   activeBorder: 'border-amber-200',   group: 'analysis' },
   { id: 'voronoi',          icon: LayoutGrid,    label: 'En Yakın Alanlar',        activeColor: 'text-emerald-600', activeBg: 'bg-emerald-50', activeBorder: 'border-emerald-200', group: 'analysis' },
   { id: 'nearest-points',   icon: Crosshair,     label: 'En Yakın Nokta',          activeColor: 'text-violet-600',  activeBg: 'bg-violet-50',  activeBorder: 'border-violet-200',  group: 'analysis' },
@@ -224,6 +256,17 @@ export default function GISToolsControl() {
     return tool.label
   }
 
+  const getEffectiveTool = (tool: ToolDef): ToolDef => {
+    if (tool.id !== 'clustering') return tool
+    if (clusterMode === 'hidden') return {
+      ...tool,
+      activeColor: 'text-amber-600',
+      activeBg: 'bg-amber-50',
+      activeBorder: 'border-amber-200',
+    }
+    return tool // 'clustered' → mavi (varsayılan)
+  }
+
   const enabledTools = TOOLS.filter((t) => {
     if (t.disabled) return false
     if (t.group === 'measure' && !showMeasurementTools) return false
@@ -265,7 +308,7 @@ export default function GISToolsControl() {
           {enabledTools.map((tool) => (
             <ToolIconButton
               key={tool.id}
-              tool={tool}
+              tool={getEffectiveTool(tool)}
               label={getToolLabel(tool)}
               active={isToolActive(tool.id)}
               onClick={() => handleToolSelect(tool.id)}
@@ -316,7 +359,7 @@ export default function GISToolsControl() {
                   {groupTools.map((tool) => (
                     <li key={tool.id}>
                       <ToolMenuItem
-                        tool={tool}
+                        tool={getEffectiveTool(tool)}
                         label={getToolLabel(tool)}
                         active={isToolActive(tool.id)}
                         onClick={() => handleToolSelect(tool.id)}
@@ -353,7 +396,7 @@ interface ToolIconButtonProps {
 function ToolIconButton({ tool, label, active, onClick }: ToolIconButtonProps) {
   const [hovered, setHovered] = useState(false)
   const Icon = tool.icon
-  const showActive = active || hovered
+  const showActive = active || (hovered && !tool.noHoverPreview)
 
   return (
     <button
@@ -363,7 +406,9 @@ function ToolIconButton({ tool, label, active, onClick }: ToolIconButtonProps) {
       className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 ${
         showActive
           ? `${tool.activeBg} ${tool.activeBorder} ring-1 ${active ? 'shadow-sm' : ''}`
-          : 'hover:scale-105'
+          : hovered && tool.noHoverPreview
+            ? 'ring-1 ring-zinc-800'
+            : 'hover:scale-105'
       }`}
       title={label}
     >
@@ -386,7 +431,7 @@ interface ToolMenuItemProps {
 function ToolMenuItem({ tool, label, active, onClick }: ToolMenuItemProps) {
   const [hovered, setHovered] = useState(false)
   const Icon = tool.icon
-  const showActive = active || hovered
+  const showActive = active || (hovered && !tool.noHoverPreview)
 
   return (
     <button
@@ -395,10 +440,10 @@ function ToolMenuItem({ tool, label, active, onClick }: ToolMenuItemProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={`w-full flex items-center gap-2 px-2 py-[5px] rounded-md transition-all duration-150 ${
-        active
+        showActive
           ? `${tool.activeBg} text-zinc-900`
           : hovered
-            ? `${tool.activeBg} text-zinc-900`
+            ? 'bg-zinc-100 text-zinc-700'
             : 'text-zinc-600'
       } ${tool.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
     >
