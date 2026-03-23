@@ -105,7 +105,7 @@ export const HEATMAP_PRESETS = PRESETS
 const defaultConfig: HeatmapConfig = {
   radius: 15,
   intensity: 1,
-  opacity: 0.8,
+  opacity: 1,
   minDensityRatio: 0,
   weightField: null,
   colorStops: PRESETS.classic,

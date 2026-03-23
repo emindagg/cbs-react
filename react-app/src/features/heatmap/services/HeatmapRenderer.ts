@@ -123,29 +123,29 @@ export class HeatmapRenderer {
   }
 
   private buildRadiusExpression(radius: number): unknown {
-    // ArcGIS referenceScale davranışı: zoom arttıkça noktalar piksel olarak
-    // birbirinden uzaklaşır, coğrafi tutarlılık için radius büyütülmeli.
-    // Düşük zoomlarda baz değer korunur; yakınlaştıkça üstel büyüme sağlanır.
+    // Esri referenceScale + Web Mercator üstel büyüme:
+    // zoom 5 (Türkiye görünümü) referans alınır; yakınlaştıkça coğrafi alan piksel
+    // olarak büyür, radius buna orantılı artarak tutarlılık sağlanır.
     return [
       'interpolate', ['linear'], ['zoom'],
-      0,  radius,
-      9,  radius * 1.5,
-      12, radius * 4,
-      15, radius * 10,
-      18, radius * 25,
+      0,  radius * 0.5,
+      5,  radius,
+      9,  radius * 2.5,
+      12, radius * 6,
+      15, radius * 14,
     ]
   }
 
   private buildIntensityExpression(intensity: number): unknown {
-    // Düşük zoomda çok nokta üst üste biner → aşırı doygunluğu engellemek için
-    // intensity hafif baskılanır; yüksek zoomda seyrekleşen noktalar güçlendirilir.
+    // Esri maxDensity yaklaşımı: düşük zoomda hafif baskı (aşırı doygunluk engeli),
+    // yüksek zoomda seyrekleşen noktaları güçlendirme.
     return [
       'interpolate', ['linear'], ['zoom'],
-      0,  intensity * 0.4,
-      5,  intensity * 0.7,
+      0,  intensity * 0.5,
+      5,  intensity * 0.8,
       9,  intensity,
       12, intensity * 2,
-      15, intensity * 5,
+      15, intensity * 4,
     ]
   }
 
