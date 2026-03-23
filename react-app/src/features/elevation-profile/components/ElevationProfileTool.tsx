@@ -7,6 +7,7 @@ import { useMap } from 'react-map-gl/maplibre'
 import { useToolStore } from '@/stores/useToolStore'
 
 import { useElevationProfile } from '../hooks/useElevationProfile'
+import { useElevationProfileStore } from '../stores/useElevationProfileStore'
 
 // ─── Sabit GeoJSON yapıları ───────────────────────────────────────────────────
 const EMPTY_FC: FeatureCollection = { type: 'FeatureCollection', features: [] }
@@ -50,9 +51,8 @@ const LYR_WAYPOINTS = 'elev-waypoints-circles'
 const LYR_ROUTE_GLOW = 'elev-route-glow'
 const LYR_ROUTE      = 'elev-route-line'
 
-// Hover dot: glow + nokta
-const LYR_HOVER_GLOW = 'elev-hover-glow'
-const LYR_HOVER_DOT  = 'elev-hover-dot'
+// Hover marker
+const LYR_HOVER_DOT = 'elev-hover-dot'
 
 
 // ─── Yardımcılar ─────────────────────────────────────────────────────────────
@@ -271,44 +271,44 @@ export default function ElevationProfileTool() {
   }, [mapObj, store.elevationData])
 
   // ─── Map-Chart Sync: Tracking Marker ────────────────────────────────────
-  // Drawing/route efektleriyle aynı pattern: [mapObj, store.activePoint] bağımlılığı.
+  // Performans: React render döngüsü yok — Zustand aboneliği ile MapLibre doğrudan güncellenir.
   useEffect(() => {
     const map = mapObj?.getMap() as maplibregl.Map | null ?? null
     if (!map) return
 
-    if (!store.activePoint) {
-      setSource(map, SRC_HOVER, EMPTY_FC as FeatureCollection<Point>)
-      return
+    // Hover kaynak/katmanlarını oluştur (idempotent — reset sonrası da yeniden oluşturur)
+    const ensureHoverLayers = () => {
+      ensureSource(map, SRC_HOVER)
+      // Nokta
+      ensureLayer(map, {
+        id: LYR_HOVER_DOT,
+        type: 'circle',
+        source: SRC_HOVER,
+        paint: {
+          'circle-radius': 4.5,
+          'circle-color': C_WHITE,
+          'circle-stroke-width': 2.5,
+          'circle-stroke-color': C_RED,
+          'circle-stroke-opacity': 1,
+          'circle-opacity': 1,
+        },
+      } as maplibregl.CircleLayerSpecification)
     }
 
-    ensureSource(map, SRC_HOVER)
-    ensureLayer(map, {
-      id: LYR_HOVER_GLOW,
-      type: 'circle',
-      source: SRC_HOVER,
-      paint: {
-        'circle-radius': 20,
-        'circle-color': C_RED,
-        'circle-opacity': 0.18,
-        'circle-stroke-width': 0,
-        'circle-blur': 0.5,
-      },
-    } as maplibregl.CircleLayerSpecification)
-    ensureLayer(map, {
-      id: LYR_HOVER_DOT,
-      type: 'circle',
-      source: SRC_HOVER,
-      paint: {
-        'circle-radius': 7,
-        'circle-color': C_WHITE,
-        'circle-stroke-width': 3,
-        'circle-stroke-color': C_RED,
-        'circle-stroke-opacity': 1,
-        'circle-opacity': 1,
-      },
-    } as maplibregl.CircleLayerSpecification)
-    setSource(map, SRC_HOVER, pointFC([[store.activePoint.lng, store.activePoint.lat]]))
-  }, [mapObj, store.activePoint])
+    // Doğrudan Zustand aboneliği — setActivePoint her çağrıldığında
+    // React render tetiklenmeden MapLibre source güncellenir
+    const unsub = useElevationProfileStore.subscribe((state, prev) => {
+      if (state.activePoint === prev.activePoint) return
+      if (!state.activePoint) {
+        setSource(map, SRC_HOVER, EMPTY_FC as FeatureCollection<Point>)
+        return
+      }
+      ensureHoverLayers()
+      setSource(map, SRC_HOVER, pointFC([[state.activePoint.lng, state.activePoint.lat]]))
+    })
+
+    return unsub
+  }, [mapObj])
 
   // ─── Reset ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -317,7 +317,7 @@ export default function ElevationProfileTool() {
     if (!map) return
     setSource(map, SRC_PREVIEW, EMPTY_FC as FeatureCollection<LineString>)
     setSource(map, SRC_WAYPOINTS, EMPTY_FC as FeatureCollection<Point>)
-    removeLayers(map, [LYR_ROUTE_GLOW, LYR_ROUTE, LYR_HOVER_GLOW, LYR_HOVER_DOT])
+    removeLayers(map, [LYR_ROUTE_GLOW, LYR_ROUTE, LYR_HOVER_DOT])
     removeSources(map, [SRC_ROUTE, SRC_HOVER])
   }, [mapObj, store.waypoints, store.elevationData])
 

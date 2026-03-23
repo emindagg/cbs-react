@@ -36,7 +36,8 @@ export function interpolatePoints(
     const dist = haversineMeters(a, b)
     const steps = Math.max(1, Math.ceil(dist / stepMeters))
 
-    for (let s = 0; s <= steps; s++) {
+    // s < steps: segment başını ekle, B'yi sonraki segment başına bırak
+    for (let s = 0; s < steps; s++) {
       const t = s / steps
       points.push([
         a[0] + (b[0] - a[0]) * t,
@@ -44,6 +45,8 @@ export function interpolatePoints(
       ])
     }
   }
+  // Son waypoint'i tek seferlik ekle
+  points.push(waypoints[waypoints.length - 1])
 
   // API nokta sınırını aşıyorsa basit decimation
   if (points.length > MAX_POINTS) {
@@ -52,6 +55,42 @@ export function interpolatePoints(
   }
 
   return points
+}
+
+/**
+ * Grafik cursor'unun tam distance (km) değerine karşılık gelen coğrafi konumu
+ * ElevationPoint dizisinden doğrusal interpolasyonla hesaplar.
+ * activePayload'ın diskrit snap davranışının yerine geçer.
+ */
+export function interpolateActivePoint(
+  data: ElevationPoint[],
+  exactDist: number,
+): ElevationPoint | null {
+  if (!data.length) return null
+  if (exactDist <= data[0].distance) return data[0]
+  if (exactDist >= data[data.length - 1].distance) return data[data.length - 1]
+
+  // Binary search: exactDist'e eşit veya küçük son indeks
+  let lo = 0
+  let hi = data.length - 1
+  while (lo < hi - 1) {
+    const mid = (lo + hi) >> 1
+    if (data[mid].distance <= exactDist) lo = mid
+    else hi = mid
+  }
+
+  const a = data[lo]
+  const b = data[hi]
+  const t = b.distance === a.distance
+    ? 0
+    : (exactDist - a.distance) / (b.distance - a.distance)
+
+  return {
+    distance: exactDist,
+    elevation: Math.round(a.elevation + (b.elevation - a.elevation) * t),
+    lng: a.lng + (b.lng - a.lng) * t,
+    lat: a.lat + (b.lat - a.lat) * t,
+  }
 }
 
 /** Koordinat dizisinden kümülatif mesafe + stats hesaplar */

@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 
+import { interpolateActivePoint } from '../services/elevationProfileApi'
 import type { ElevationPoint, ElevationStats } from '../types'
 
 // ─── Mutlak Hipsometrik Renk Skalası ───────────────────────────────────────
@@ -289,10 +290,21 @@ function ChartContent({
           <AreaChart
             data={elevationData}
             margin={{ top: 6, right: 14, left: 0, bottom: 2 }}
-            onMouseMove={(data) => {
-              const d = data as unknown as { activePayload?: Array<{ payload: ElevationPoint }> }
-              const point = d.activePayload?.[0]?.payload
-              if (point) onActivePoint(point)
+            onMouseMove={(_, event) => {
+              // Recharts v3: ham mouse konumunu DOM olayından al
+              const rect = event.currentTarget.getBoundingClientRect()
+              const chartX = event.clientX - rect.left
+              // Sol offset: YAxis genişliği (36px) + margin.left (0px)
+              // Sağ offset: margin.right (14px)
+              const Y_AXIS_W = 36
+              const MARGIN_RIGHT = 14
+              const plotWidth = rect.width - Y_AXIS_W - MARGIN_RIGHT
+              if (plotWidth <= 0) return
+              const exactDist = Math.max(0, Math.min(
+                totalDist,
+                ((chartX - Y_AXIS_W) / plotWidth) * Math.round(totalDist),
+              ))
+              onActivePoint(interpolateActivePoint(elevationData, exactDist))
             }}
             onMouseLeave={() => onActivePoint(null)}
           >
