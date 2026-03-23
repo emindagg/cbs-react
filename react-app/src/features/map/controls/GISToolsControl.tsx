@@ -15,11 +15,11 @@ import {
 import { useState, useRef, useEffect, type ComponentType } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
-import { useDataManagementStore } from '@/features/data-management'
-import { useHeatmapStore } from '@/features/heatmap'
-import { useIsochroneStore } from '@/features/isochrone'
-import { useSpatialAnalysisStore } from '@/features/spatial-analysis'
 import { useClusteringStore } from '@/stores/useClusteringStore'
+import { useDataManagementStore } from '@/stores/useDataManagementStore'
+import { useHeatmapStore } from '@/stores/useHeatmapStore'
+import { useIsochroneStore } from '@/stores/useIsochroneStore'
+import { useSpatialAnalysisStore } from '@/stores/useSpatialAnalysisStore'
 import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
 import { BufferModal } from './GISToolsControl.buffer'
