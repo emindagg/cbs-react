@@ -138,10 +138,6 @@ export default function GISToolsControl() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen, toolsMenuMode, closeToolsMenu])
 
-  const maybeClose = () => {
-    if (toolsMenuMode === 'full') closeToolsMenu()
-  }
-
   // Tıklanan araç dışındaki tüm aktif araçları kapat
   const deactivateOthers = (exceptToolId: string) => {
     if (exceptToolId !== 'buffer' && (showBufferModal || hasBufferAnalysisItems)) {
@@ -173,7 +169,6 @@ export default function GISToolsControl() {
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
-      maybeClose()
     } catch (e) {
       console.error('Screenshot error:', e)
     }
@@ -188,25 +183,18 @@ export default function GISToolsControl() {
       } else {
         setShowBufferModal(true)
       }
-      maybeClose()
     } else if (toolId === 'clustering') {
       cycleClustering()
-      maybeClose()
     } else if (toolId === 'heatmap') {
       toggleHeatmap()
-      maybeClose()
     } else if (toolId === 'isochrone') {
       toggleIsochrone()
-      maybeClose()
     } else if (toolId === 'convex-hull') {
       toggleSpatial('convex-hull')
-      maybeClose()
     } else if (toolId === 'voronoi') {
       toggleSpatial('voronoi')
-      maybeClose()
     } else if (toolId === 'nearest-points') {
       toggleSpatial('nearest-points')
-      maybeClose()
     } else if (toolId === 'elevation-profile') {
       if (activeTool === 'elevation-profile') {
         deactivateElevation()
@@ -215,22 +203,17 @@ export default function GISToolsControl() {
         setActiveTool('elevation-profile' as ToolType)
         setElevationPanelOpen(true)
       }
-      maybeClose()
     } else if (toolId === 'screenshot') {
       handleScreenshot()
     } else if (toolId === 'clean-visuals') {
       resetDistance()
       resetDraw()
-      maybeClose()
     } else if (toolId === 'clear-data') {
       clearAll()
-      maybeClose()
     } else if (toolId === 'clear-measurements') {
       resetDistance()
-      maybeClose()
     } else {
       setActiveTool(activeTool === toolId ? 'none' as ToolType : toolId as ToolType)
-      maybeClose()
     }
   }
 
