@@ -180,7 +180,7 @@ export default function HeatmapPanel({
               step={1}
               value={config.radius}
               onChange={handleRadiusChange}
-              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-red-500"
+              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer [accent-color:#27272a]"
             />
           </div>
 
@@ -201,7 +201,7 @@ export default function HeatmapPanel({
               step={0.1}
               value={config.intensity}
               onChange={handleIntensityChange}
-              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-orange-500"
+              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer [accent-color:#27272a]"
             />
           </div>
 
@@ -222,7 +222,7 @@ export default function HeatmapPanel({
               step={0.01}
               value={config.minDensityRatio}
               onChange={handleMinDensityChange}
-              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer [accent-color:#27272a]"
             />
             <p className="text-[8px] text-zinc-400 mt-0.5">Seyrek alanları gizlemek için artırın</p>
           </div>
@@ -231,7 +231,7 @@ export default function HeatmapPanel({
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                Opaklık
+                Şeffaflık
               </label>
               <span className="text-[9px] text-zinc-600 font-mono bg-zinc-50 px-1.5 py-0.5 rounded">
                 {Math.round(config.opacity * 100)}%
@@ -244,7 +244,7 @@ export default function HeatmapPanel({
               step={0.05}
               value={config.opacity}
               onChange={handleOpacityChange}
-              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer [accent-color:#27272a]"
             />
           </div>
 

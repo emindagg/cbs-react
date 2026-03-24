@@ -153,7 +153,7 @@ export function AstroPanel() {
                       : 'text-slate-500 hover:text-slate-700'
                     }`}
                   >
-                    {mode.toUpperCase()}
+                    {mode === 'local' ? 'YEREL' : mode.toUpperCase()}
                   </button>
                 ))}
               </div>
