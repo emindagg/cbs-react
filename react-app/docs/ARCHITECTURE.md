@@ -335,13 +335,25 @@ Step 2: Sütun Eşleme
   └── Eşleme sonuçları: successful | ambiguous | failed
 
 Step 3: Stil Konfigürasyonu
-  ├── Renk paleti seçimi (teal, viridis, plasma, vb.)
-  ├── Sınıflandırma: jenks | quantile | linear | logarithmic | rounded
-  ├── Sınıf sayısı (2-9)
-  ├── Renk uzayı: LAB | HCL | HSL | RGB
-  ├── Lejant konfigürasyonu
-  └── Render tetikleme
+  ├── Renk ölçeği tipi: steps | continuous
+  ├── Basamaklı sınıflandırma: jenks | equal | quantile | kmeans | custom
+  ├── Sürekli preset'ler: equidistant | quantiles-4 | quantiles-5 | quantiles-10 | natural-9
+  ├── Renk paleti ve özel aralık (min / center / max / outOfRangeMode)
+  ├── Lejant ve harita başlığı konfigürasyonu
+  └── useVizRender() üzerinden renderer tetikleme
 ```
+
+Step 3 içinde renk ölçeği panelleri görselleştirme tipine göre koşullu açılır:
+
+- `ColorScaleConfig` ve `ColorSchemePicker` yalnızca `choropleth` veya `bubble + colorColumn` senaryosunda görünür.
+- `StepsSection` yalnızca `scaleType === 'steps'` iken, `dot` modunda değilken ve bubble tek renkli fallback'te değilken görünür.
+- `CustomRangeConfig` ayrı bir kart olarak her tipte bulunur; alanlar toggle açıldığında aktifleşir.
+- `BubbleSettings` ve `DotDensitySettings` renk ölçeği panelinden ayrı akışlardır.
+- Akıllı öneri kartı pratikte yalnızca `choropleth` akışında görünür.
+
+Renk ölçeği için ana veri akışı şu zincir üzerinden ilerler:
+
+`steps/Step3/index.tsx` → `steps/Step3/useVizWizardStep3.ts` → `stores/useVisualizationStore.ts` → `hooks/useVizRender.ts` → `features/visualization/shared/VisualizationManager.ts` → renderer servisleri → `components/layout/AppLayout.tsx` içindeki `LegendContainer`
 
 ### Görselleştirme Tipleri
 
@@ -366,20 +378,51 @@ visualization/
 ### Renk İnterpolasyon Sistemi
 
 ```
-colorSchemes.ts (paletler)
-  └── colorInterpolation.ts (renk uzayı dönüşümü)
-        ├── LAB interpolation (varsayılan, perceptually uniform)
-        ├── HCL interpolation (cylindrical LAB)
-        ├── HSL interpolation (vibrant)
-        └── RGB interpolation (basit)
+Step3 UI
+  ├── ColorScale/Config.tsx
+  ├── Step3/components/StepsSection.tsx
+  ├── CustomRange/Config.tsx
+  └── shared/legend/index.ts -> LegendConfig
 
-classification.ts (sınıflandırma)
-  ├── Jenks Natural Breaks (Fisher-Jenks optimizasyonu)
-  ├── Quantile (eşit sayılı gruplar)
-  ├── Linear (eşit aralıklı)
-  ├── Logarithmic (üstel ölçek)
-  └── Rounded (yuvarlak sayılar)
+Store + type sözleşmesi
+  ├── types/visualization.ts
+  │     ├── ColorScaleType = steps | continuous
+  │     ├── ClassificationMethod = jenks | equal | quantile | kmeans | custom | stddev | continuous-*
+  │     └── CustomRange = min | center | max | outOfRangeMode
+  └── stores/useVisualizationStore.ts
+        ├── vizSettings.classificationMethod
+        ├── vizSettings.legendType
+        ├── colorConfig.scaleType
+        └── colorConfig.interpolation / customRange / legend
+
+Utility katmanı
+  ├── constants/colorSchemes.ts (paletler, interpolated palette üretimi)
+  ├── utils/classification.ts (stepped break hesaplama)
+  ├── utils/interpolation.ts (continuous preset bilgisi ve normalize etme)
+  ├── utils/colorInterpolation.ts (UI'nin doğrudan açmadığı geniş renk uzayı araçları)
+  └── utils/mapExpressions.ts (MapLibre step/interpolate expression üretimi)
+
+Render + overlay katmanı
+  ├── hooks/useVizRender.ts
+  ├── features/visualization/shared/VisualizationManager.ts
+  ├── choropleth/services/ChoroplethRenderer.ts
+  ├── bubble/services/BubbleRenderer.ts
+  ├── point/services/PointRenderer.ts
+  └── legend/components/Container.tsx
 ```
+
+Mimaride kritik ayrım şudur:
+
+- `steps` modu store'da `legendType = 'discrete'` ve stepped break hesaplarıyla ilerler.
+- `continuous` modu Step 3 tarafından `legendType = 'continuous'` ve `continuous-*` classification değerlerine map edilir.
+- Renderer seviyesi stepped/continuous ayrımını `legendType` üzerinden expression seçerek uygular.
+- Bubble görselleştirmede `colorColumn` yoksa renk ölçeği akışı render seviyesinde bypass edilir ve `symbolFillColor` veya varsayılan dolgu rengi kullanılır.
+- `LegendContainer` runtime'da `DynamicLegend`, `ColorLegend`, `BubbleSizeLegend` veya `DotDensityLegend` bileşenlerinden uygun olanı seçer.
+
+Bu konuda detaylı belge ayrımı korunur:
+
+- `docs/COLOR_SCALE_FEATURES.md`: hangi özelliklerin kullanıcıya açık olduğu
+- `docs/COLOR_SCALE_INTEGRATION.md`: Step 3 -> store -> renderer -> legend veri akışı
 
 ---
 
@@ -510,5 +553,5 @@ Cross-feature deep import'lar ESLint kuralları ile engellenir:
 
 ---
 
-**Son Güncelleme:** 22 Şubat 2026
-**Versiyon:** 2.0.0 (React mimarisine yeniden yazıldı)
+**Son Güncelleme:** 25 Mart 2026
+**Versiyon:** 2.0.1 (Görselleştirme ve renk ölçeği akışı güncellendi)

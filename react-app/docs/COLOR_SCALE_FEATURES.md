@@ -1,6 +1,6 @@
 # Renk Ölçeği ve Sınıflandırma Özellikleri
 
-Bu doküman, projedeki güncel renk ölçeği akışını kod tabanına göre özetler. Odak noktası `VizWizardStep3` içinde kullanılan renk paleti, sınıflandırma, sürekli ölçek, özel aralık ve legend entegrasyonudur.
+Bu doküman, projedeki güncel renk ölçeği akışını kod tabanına göre özetler. Odak noktası `VizWizardStep3` içinde kullanılan renk paleti, sınıflandırma, sürekli ölçek, özel aralık ve legend entegrasyonudur. Mimari zincir için `docs/COLOR_SCALE_INTEGRATION.md`, üst seviye sistem görünümü için `docs/ARCHITECTURE.md` dosyasına bakılmalıdır.
 
 ## Kapsam
 
@@ -8,7 +8,7 @@ Renk ölçeği akışı şu senaryolarda kullanılır:
 
 - **Koroplet harita**: ana renk ölçeği akışı doğrudan kullanılır.
 - **Bubble harita**: yalnızca `colorColumn` seçilmişse renk ölçeği paneli aktif biçimde kullanılır.
-- **Dot density**: ayrı renk/dot legend akışı vardır; bu dokümandaki stepped/continuous renk ölçeği paneli aynı şekilde kullanılmaz.
+- **Dot density**: ayrı nokta/dot legend akışı vardır; bu dokümandaki stepped/continuous renk ölçeği paneli kullanılmaz. Buna rağmen Step3 içindeki veri önizlemesi ve değer aralığı kartları veri varsa açılabilir.
 
 İlgili merkez dosya:
 
@@ -211,10 +211,23 @@ Legend üretimi:
 
 - continuous modda: LAB tabanlı 30 renkli gradyan örneklenir
 - steps modda: sınıf sayısı veya custom break sayısı kadar renk üretilir
+- bubble tek renk modunda renk legend'i yerine yalnızca boyut legend'i anlamlıdır
+- dot density modunda `DotDensityLegend` kullanılır; stepped/continuous renk legend'i devreye girmez
 
 ## Wizard Akışı
 
 Renk ölçeği davranışının ana orkestrasyonu `VizWizardStep3` içindedir.
+
+### Görünürlük özeti
+
+| UI parçası | Gösterim koşulu |
+|------------|------------------|
+| `ColorScaleConfig` | `choropleth` veya `bubble` + `colorColumn` |
+| `ColorSchemePicker` | `ColorScaleConfig` ile aynı |
+| `StepsSection` | `scaleType === 'steps'` ve `dot` değil ve tek renkli `bubble` değil |
+| `CustomRangeConfig` | her zaman kart olarak görünür; iç alanlar toggle ile açılır |
+| `DataDistributionPreview` | `showDataPreview === true` ve `dataValues.length > 0` |
+| Akıllı öneri paneli | yalnızca `choropleth` akışı |
 
 ### Sürekli moda geçiş
 
@@ -250,6 +263,8 @@ Renk ölçeğiyle ilgili ayarlar önce store'da tutulur, sonra render katmanına
 
 `useVizRender`, `colorConfig.customRange` değerini `VisualizationSettings` içine taşıyarak renderer'lara iletir.
 
+Renderer seviyesinde stepped/continuous ayrımı doğrudan `colorConfig.scaleType` ile değil, render settings içindeki `legendType` (`continuous` veya `discrete`) üzerinden yapılır. Bubble tek renk modunda (`colorColumn` yoksa) bu ayrım render seviyesinde bypass edilir.
+
 ## Renderer Davranışı
 
 ### Choropleth
@@ -261,7 +276,8 @@ Renk ölçeğiyle ilgili ayarlar önce store'da tutulur, sonra render katmanına
 - continuous renkte `normalizeValue(..., interpolation, values)` ile quantile/natural warping uygulanır
 - custom range açıksa değerler önce min/max aralığına clamp edilir
 - `gray` dış aralık modunda aralık dışı alanlar gri boyanır
-- `transparent` modunda aralık dışı davranış görünüm mantığına göre ayrı ele alınır
+- `transparent` modunda aralık dışı öğeler katman filtresiyle dışlanır
+- `classificationMethod = 'custom'` ise `customBreaks` doğrudan kullanılır; son break üstünü son renge sonsuza kadar boyamamak için ek `case` koruması uygulanır
 
 ### Bubble
 
@@ -271,6 +287,8 @@ Renk ölçeğiyle ilgili ayarlar önce store'da tutulur, sonra render katmanına
 - bivariate bubble modunda renk sütunu için aynı stepped/continuous akış devreye girer
 - continuous modda yine 16 duraklı LAB tabanlı interpolate ifadesi üretilir
 - color range clamp ve `outOfRangeMode` mantığı choropleth ile uyumludur
+- `customRange` yalnızca renk değerlerine uygulanır; boyut hesaplarına uygulanmaz
+- size legend'i proportional veya graduated bubble moduna göre ayrı üretilir
 
 ## Utility Düzeyi ile UI Düzeyi Arasındaki Fark
 
@@ -326,6 +344,7 @@ Not:
 - `src/utils/classificationMethods.ts` adlı bir dosya yoktur; gerçek ayrım `classification.ts`, `interpolation.ts` ve `dataStats.ts` üzerindedir.
 - Logaritmik, rounded veya kullanıcıya açık color-space seçimi bugün wizard UI'nin parçası değildir.
 - `customRange.center` alanı henüz renderer hesaplarına bağlanmamıştır.
+- `src/features/viz-wizard/components/StyleConfig.tsx` projede bulunsa da Step3'ün gerçek orkestrasyon kaynağı değildir; görünürlük kuralları `steps/Step3/index.tsx` üzerinden okunmalıdır.
 
 ## Başvuru Dosyaları
 
@@ -346,3 +365,5 @@ Not:
 - `src/features/legend/components/Container.tsx`
 - `src/features/visualization/choropleth/services/ChoroplethRenderer.ts`
 - `src/features/visualization/bubble/services/BubbleRenderer.ts`
+- `docs/COLOR_SCALE_INTEGRATION.md`
+- `docs/ARCHITECTURE.md`
