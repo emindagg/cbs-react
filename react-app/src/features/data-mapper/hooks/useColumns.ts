@@ -71,6 +71,7 @@ export function useColumns(
   const defaultColDef = useMemo((): ColDef => ({
     resizable: true,
     sortable: true,
+    cellDataType: false,
   }), [])
 
   return { columnDefs, defaultColDef }
