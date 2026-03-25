@@ -41,7 +41,7 @@ export function useLayerStyleSync() {
     // Point layer
     trySet('data-layer-point', 'circle-radius', layerStyles.width)
     trySet('data-layer-point', 'circle-color',
-      ['case', selected, '#f59e0b', customOrDefault('#ffffff')])
+      ['case', selected, '#f59e0b', customOrDefault(layerStyles.fillColor)])
     trySet('data-layer-point', 'circle-stroke-width', layerStyles.strokeWidth)
     trySet('data-layer-point', 'circle-stroke-color',
       ['case', selected, '#d97706', layerStyles.strokeColor])
@@ -63,7 +63,7 @@ export function useLayerStyleSync() {
     trySet('data-layer-line', 'line-color',
       ['case', selected, '#f59e0b', customOrDefault(layerStyles.fillColor)])
     trySet('data-layer-line', 'line-width',
-      ['case', selected, layerStyles.lineWidth + 1, layerStyles.lineWidth])
+      ['case', selected, layerStyles.width + 1, layerStyles.width])
     trySet('data-layer-line', 'line-opacity', layerStyles.opacity)
 
     // Label layers - textSize (layout) + textColor (paint)

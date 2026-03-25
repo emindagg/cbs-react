@@ -47,6 +47,10 @@ export default function DataLayer() {
   const activeItemId = useDataManagementStore(state => state.activeItemId)
   const labelField = useDataManagementStore(state => state.layerStyles.labelField)
   const defaultFillColor = useDataManagementStore(state => state.layerStyles.fillColor)
+  const layerOpacity = useDataManagementStore(state => state.layerStyles.opacity)
+  const layerWidth = useDataManagementStore(state => state.layerStyles.width)
+  const strokeWidth = useDataManagementStore(state => state.layerStyles.strokeWidth)
+  const strokeColor = useDataManagementStore(state => state.layerStyles.strokeColor)
   const { isEnabled: isClusteringEnabled, mode: clusterMode } = useClusteringStore()
 
   const timelineActive = useTimelineStore(s => s.isActive)
@@ -110,16 +114,16 @@ export default function DataLayer() {
           type="fill"
           paint={{
             'fill-color': fillColorExpression(defaultFillColor) as unknown as string,
-            'fill-opacity': 0.27,
+            'fill-opacity': layerOpacity * 0.3,
           }}
         />
         <Layer
           id="data-layer-polygon-outline"
           type="line"
           paint={{
-            'line-color': ['case', ['boolean', ['get', 'selected'], false], '#d97706', '#000000'],
-            'line-width': ['case', ['boolean', ['get', 'selected'], false], 2, 0.5],
-            'line-opacity': 0.9,
+            'line-color': ['case', ['boolean', ['get', 'selected'], false], '#d97706', strokeColor] as unknown as string,
+            'line-width': ['case', ['boolean', ['get', 'selected'], false], 2, strokeWidth] as unknown as number,
+            'line-opacity': layerOpacity,
           }}
         />
         <Layer
@@ -144,8 +148,8 @@ export default function DataLayer() {
           layout={{ 'line-join': 'round', 'line-cap': 'round' }}
           paint={{
             'line-color': fillColorExpression(defaultFillColor) as unknown as string,
-            'line-width': ['case', ['boolean', ['get', 'selected'], false], 4, 3],
-            'line-opacity': 0.9,
+            'line-width': ['case', ['boolean', ['get', 'selected'], false], layerWidth + 1, layerWidth] as unknown as number,
+            'line-opacity': layerOpacity,
           }}
         />
         <Layer
@@ -170,11 +174,11 @@ export default function DataLayer() {
             id="data-layer-point"
             type="circle"
             paint={{
-              'circle-radius': 3,
+              'circle-radius': layerWidth,
               'circle-color': fillColorExpression(defaultFillColor) as unknown as string,
-              'circle-stroke-width': 0.5,
-              'circle-stroke-color': '#000000',
-              'circle-opacity': 0.9,
+              'circle-stroke-width': strokeWidth,
+              'circle-stroke-color': ['case', ['boolean', ['get', 'selected'], false], '#d97706', strokeColor] as unknown as string,
+              'circle-opacity': layerOpacity,
             }}
           />
           <Layer
