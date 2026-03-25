@@ -436,8 +436,8 @@ body {
 }
 
 .floating-input:focus {
-    border-color: #10b981;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    border-color: #1c1c1e;
+    box-shadow: 0 0 0 2px rgba(28, 28, 30, 0.12);
     background-color: #ffffff;
 }
 
@@ -465,8 +465,8 @@ body {
 .floating-input:focus~.floating-label,
 .floating-input:not(:placeholder-shown)~.floating-label {
     transform: translate3d(0, -1.65rem, 0) scale(0.85);
-    color: #10b981;
-    font-weight: 500;
+    color: #1c1c1e;
+    font-weight: 400;
     background-color: #ffffff;
     padding: 0 0.25rem;
 }

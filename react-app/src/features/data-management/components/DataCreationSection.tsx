@@ -102,9 +102,12 @@ export function DataCreationSection() {
 
       {/* ── Başlık ── */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[9.5px] font-semibold tracking-[0.12em] uppercase text-slate-400 select-none">
-          Veri Oluşturma
-        </span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <i className="fa-solid fa-pen-ruler shrink-0 text-[#1c1c1e] text-[10px]" aria-hidden />
+          <span className="text-[9.5px] font-semibold tracking-[0.12em] uppercase text-[#1c1c1e] select-none truncate">
+            Veri Oluşturma
+          </span>
+        </div>
         {drawMode !== 'none' && (
           <button
             onClick={handleCancel}
