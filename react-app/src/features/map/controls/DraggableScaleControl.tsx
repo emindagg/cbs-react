@@ -10,12 +10,39 @@ const SCALE_STEPS_M = [
 ]
 const MAX_BAR_WIDTH = 100
 
+function haversineDistance(
+  lat1: number, lon1: number,
+  lat2: number, lon2: number,
+): number {
+  const R = 6_371_008.8
+  const toRad = (d: number) => (d * Math.PI) / 180
+  const dLat = toRad(lat2 - lat1)
+  const dLon = toRad(lon2 - lon1)
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
 function computeScale(map: maplibregl.Map) {
   const container = map.getContainer()
-  const y = container.clientHeight / 2
-  const left = map.unproject([0, y])
-  const right = map.unproject([MAX_BAR_WIDTH, y])
-  const maxMeters = left.distanceTo(right)
+  const cx = container.clientWidth / 2
+  const cy = container.clientHeight / 2
+
+  const center = map.unproject([cx, cy])
+  const right = map.unproject([cx + MAX_BAR_WIDTH / 2, cy])
+
+  if (
+    !Number.isFinite(center.lat) || !Number.isFinite(center.lng) ||
+    !Number.isFinite(right.lat) || !Number.isFinite(right.lng)
+  ) {
+    return null
+  }
+
+  const halfMeters = haversineDistance(center.lat, center.lng, right.lat, right.lng)
+  const maxMeters = halfMeters * 2
+
+  if (!Number.isFinite(maxMeters) || maxMeters <= 0) return null
 
   let step = SCALE_STEPS_M[0]
   for (const s of SCALE_STEPS_M) {
