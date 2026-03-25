@@ -3,6 +3,16 @@
 
 @theme {
   --font-sans: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  /* Marka renkleri: birincil = harita/krom (koyu nötr), ikincil = emerald vurgu */
+  --color-brand-chrome: #1c1c1e;
+  --color-brand-chrome-hover: #2a2a2c;
+  --color-brand-chrome-active: #2c2c2e;
+
+  --color-brand-secondary: #059669;
+  --color-brand-secondary-light: #10b981;
+  --color-brand-secondary-dark: #047857;
+  --color-brand-secondary-muted: #d1fae5;
 }
 
 /*
