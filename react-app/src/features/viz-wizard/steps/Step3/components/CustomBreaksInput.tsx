@@ -54,7 +54,7 @@ function parseBreaks(input: string): { breaks: number[]; error: string | null } 
   if (parts.length > MAX_CUSTOM_BREAK_VALUES) {
     return {
       breaks: [],
-      error: `En fazla ${MAX_CUSTOM_BREAK_VALUES} sınır değeri girilebilir (6 sınıf)`,
+      error: `En fazla ${MAX_CUSTOM_BREAK_VALUES} sınır değeri girilebilir (7 sınıf)`,
     }
   }
 
@@ -108,7 +108,7 @@ export function CustomBreaksInput({ customBreaks, onChange }: CustomBreaksInputP
     <div className="space-y-1.5">
       <label className="text-[10px] font-medium text-zinc-500">
         Sınır Değerleri
-        <span className="text-zinc-400 ml-1">(4-7 değer, virgülle ayırın)</span>
+        <span className="text-zinc-400 ml-1">(4-8 değer, virgülle ayırın)</span>
       </label>
       <input
         type="text"
