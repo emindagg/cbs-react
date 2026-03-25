@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react'
 
+import { useClusteringStore } from '@/stores/useClusteringStore'
+
 import type { HeatmapPreset } from '../types'
 
 interface HeatmapPanelProps {
@@ -67,12 +69,14 @@ export default function HeatmapPanel({
     onConfigChange({ weightField: e.target.value || null })
   }, [onConfigChange])
 
+  const [isPaletteOpen, setPaletteOpen] = useState(false)
+
+  const { mode: clusterMode, setMode: setClusterMode } = useClusteringStore()
+
   const handlePresetChange = useCallback((preset: HeatmapPreset) => {
     onPreset(preset)
     setPaletteOpen(false)
   }, [onPreset])
-
-  const [isPaletteOpen, setPaletteOpen] = useState(false)
 
   if (!isOpen) return null
 
@@ -110,6 +114,35 @@ export default function HeatmapPanel({
         </div>
       ) : (
         <div className="px-3.5 py-3 space-y-3">
+          {/* Point Display Mode */}
+          <div>
+            <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+              Nokta Görünümü
+            </label>
+            <div className="grid grid-cols-3 gap-1">
+              {([
+                { mode: 'normal', label: 'Normal', icon: 'fa-circle-dot' },
+                { mode: 'clustered', label: 'Kümeleme', icon: 'fa-circle-nodes' },
+                { mode: 'hidden', label: 'Gizle', icon: 'fa-eye-slash' },
+              ] as const).map(({ mode, label, icon }) => (
+                <button
+                  key={mode}
+                  onClick={() => setClusterMode(mode)}
+                  className={`flex flex-col items-center gap-0.5 py-1.5 rounded-md text-[9px] font-medium border transition-all ${
+                    clusterMode === mode
+                      ? mode === 'hidden'
+                        ? 'bg-amber-50 border-amber-300 text-amber-700'
+                        : 'bg-blue-50 border-blue-300 text-blue-700'
+                      : 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-700'
+                  }`}
+                >
+                  <i className={`fa-solid ${icon} text-[10px]`}></i>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Color Palette Picker */}
           <div>
             <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">

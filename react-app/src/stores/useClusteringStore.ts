@@ -7,6 +7,7 @@ interface ClusteringState {
   mode: ClusterMode
   toggle: () => void
   cycle: () => void
+  setMode: (mode: ClusterMode) => void
 }
 
 const MODE_CYCLE: Record<ClusterMode, ClusterMode> = {
@@ -33,5 +34,10 @@ export const useClusteringStore = create<ClusteringState>((set) => ({
       mode: next,
       isEnabled: next === 'clustered',
     }
+  }),
+
+  setMode: (mode) => set({
+    mode,
+    isEnabled: mode === 'clustered',
   }),
 }))
