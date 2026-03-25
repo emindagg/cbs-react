@@ -79,19 +79,19 @@ const TOOL_GROUPS: { key: string; label: string; divider?: boolean }[] = [
 ]
 
 const TOOLS: ToolDef[] = [
-  { id: 'measure-distance', icon: Ruler,        label: 'Mesafe & Alan',           activeColor: 'text-indigo-600',  activeBg: 'bg-indigo-50',  activeBorder: 'border-indigo-200',  group: 'measure' },
-  { id: 'buffer',           icon: Disc,          label: 'Etki Alanı Analizi',      activeColor: 'text-purple-600',  activeBg: 'bg-purple-50',  activeBorder: 'border-purple-200',  group: 'analysis' },
-  { id: 'clustering',       icon: ClusterNetworkIcon, label: 'Nokta Kümeleri',          activeColor: 'text-blue-600',    activeBg: 'bg-blue-50',    activeBorder: 'border-blue-200',    group: 'analysis', noHoverPreview: true },
-  { id: 'convex-hull',      icon: SquareDashed,  label: 'Dış Sınır',               activeColor: 'text-amber-600',   activeBg: 'bg-amber-50',   activeBorder: 'border-amber-200',   group: 'analysis' },
-  { id: 'voronoi',          icon: LayoutGrid,    label: 'En Yakın Alanlar',        activeColor: 'text-emerald-600', activeBg: 'bg-emerald-50', activeBorder: 'border-emerald-200', group: 'analysis' },
-  { id: 'nearest-points',   icon: Crosshair,     label: 'En Yakın Nokta',          activeColor: 'text-violet-600',  activeBg: 'bg-violet-50',  activeBorder: 'border-violet-200',  group: 'analysis' },
-  { id: 'heatmap',          icon: Flame,         label: 'Isı Haritası',            activeColor: 'text-red-600',     activeBg: 'bg-red-50',     activeBorder: 'border-red-200',     group: 'analysis' },
-  { id: 'isochrone',        icon: Network,       label: 'Erişilebilirlik Analizi', activeColor: 'text-cyan-600',    activeBg: 'bg-cyan-50',    activeBorder: 'border-cyan-200',    group: 'analysis' },
-  { id: 'elevation-profile', icon: TrendingUp,   label: 'Yükselti Profili Analizi',       activeColor: 'text-teal-600',    activeBg: 'bg-teal-50',    activeBorder: 'border-teal-200',    group: 'analysis' },
-  { id: 'screenshot',       icon: Camera,        label: 'Ekran Görüntüsü',         activeColor: 'text-zinc-700',    activeBg: 'bg-zinc-100',   activeBorder: 'border-zinc-300',    group: 'general' },
-  { id: 'clean-visuals',    icon: Eraser,        label: 'Haritayı Temizle',        activeColor: 'text-zinc-700',    activeBg: 'bg-zinc-100',   activeBorder: 'border-zinc-300',    group: 'general' },
-  { id: 'clear-data',       icon: Paintbrush,    label: 'Verileri Sıfırla',        activeColor: 'text-amber-600',   activeBg: 'bg-amber-50',   activeBorder: 'border-amber-200',   group: 'reset' },
-  { id: 'clear-measurements', icon: Trash2,      label: 'Ölçümleri Sil',           activeColor: 'text-red-600',     activeBg: 'bg-red-50',     activeBorder: 'border-red-200',     group: 'reset' },
+  { id: 'measure-distance', icon: Ruler, label: 'Mesafe & Alan', activeColor: 'text-indigo-600', activeBg: 'bg-indigo-50', activeBorder: 'border-indigo-200', group: 'measure' },
+  { id: 'buffer', icon: Disc, label: 'Etki Alanı Analizi', activeColor: 'text-purple-600', activeBg: 'bg-purple-50', activeBorder: 'border-purple-200', group: 'analysis' },
+  { id: 'clustering', icon: ClusterNetworkIcon, label: 'Nokta Kümeleri', activeColor: 'text-blue-600', activeBg: 'bg-blue-50', activeBorder: 'border-blue-200', group: 'analysis', noHoverPreview: true },
+  { id: 'convex-hull', icon: SquareDashed, label: 'Dış Sınır', activeColor: 'text-amber-600', activeBg: 'bg-amber-50', activeBorder: 'border-amber-200', group: 'analysis' },
+  { id: 'voronoi', icon: LayoutGrid, label: 'En Yakın Alanlar', activeColor: 'text-emerald-600', activeBg: 'bg-emerald-50', activeBorder: 'border-emerald-200', group: 'analysis' },
+  { id: 'nearest-points', icon: Crosshair, label: 'En Yakın Nokta', activeColor: 'text-violet-600', activeBg: 'bg-violet-50', activeBorder: 'border-violet-200', group: 'analysis' },
+  { id: 'heatmap', icon: Flame, label: 'Isı Haritası', activeColor: 'text-red-600', activeBg: 'bg-red-50', activeBorder: 'border-red-200', group: 'analysis' },
+  { id: 'isochrone', icon: Network, label: 'Erişilebilirlik Analizi', activeColor: 'text-cyan-600', activeBg: 'bg-cyan-50', activeBorder: 'border-cyan-200', group: 'analysis' },
+  { id: 'elevation-profile', icon: TrendingUp, label: 'Yükselti Profili Analizi', activeColor: 'text-teal-600', activeBg: 'bg-teal-50', activeBorder: 'border-teal-200', group: 'analysis' },
+  { id: 'screenshot', icon: Camera, label: 'Ekran Görüntüsü', activeColor: 'text-zinc-700', activeBg: 'bg-zinc-100', activeBorder: 'border-zinc-300', group: 'general' },
+  { id: 'clean-visuals', icon: Eraser, label: 'Haritayı Temizle', activeColor: 'text-zinc-700', activeBg: 'bg-zinc-100', activeBorder: 'border-zinc-300', group: 'general' },
+  { id: 'clear-data', icon: Paintbrush, label: 'Verileri Sıfırla', activeColor: 'text-amber-600', activeBg: 'bg-amber-50', activeBorder: 'border-amber-200', group: 'reset' },
+  { id: 'clear-measurements', icon: Trash2, label: 'Ölçümleri Sil', activeColor: 'text-red-600', activeBg: 'bg-red-50', activeBorder: 'border-red-200', group: 'reset' },
 ]
 
 export default function GISToolsControl() {
@@ -232,10 +232,11 @@ export default function GISToolsControl() {
     if (tool.id === 'clustering' && clusterMode === 'clustered') return 'Noktaları Gizle'
     if (tool.id === 'clustering' && clusterMode === 'hidden') return 'Normal Göster'
     if (tool.id === 'heatmap' && isHeatmapActive) return 'Isı Haritasını Kapat'
-    if (tool.id === 'isochrone' && isIsochroneActive) return 'İzokron Kapat'
+    if (tool.id === 'isochrone' && isIsochroneActive) return 'Analizi Kapat'
     if (tool.id === 'convex-hull' && activeAnalysis === 'convex-hull') return 'Dış Sınırı Kapat'
-    if (tool.id === 'voronoi' && activeAnalysis === 'voronoi') return "Voronoi'yi Kapat"
+    if (tool.id === 'voronoi' && activeAnalysis === 'voronoi') return 'En Yakın Alanları Kapat'
     if (tool.id === 'nearest-points' && activeAnalysis === 'nearest-points') return 'Analizi Kapat'
+    if (tool.id === 'elevation-profile' && activeTool === 'elevation-profile') return 'Analizi Kapat'
     return tool.label
   }
 
@@ -266,13 +267,12 @@ export default function GISToolsControl() {
           e.stopPropagation()
           toggleToolsMenu()
         }}
-        className={`w-9 h-9 flex items-center justify-center rounded-[12px] border-none cursor-pointer transition-colors pointer-events-auto ${
-          toolsMenuMode === 'icons-only'
+        className={`w-9 h-9 flex items-center justify-center rounded-[12px] border-none cursor-pointer transition-colors pointer-events-auto ${toolsMenuMode === 'icons-only'
             ? 'bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.4)]'
             : isOpen
               ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]'
               : 'bg-[#1c1c1e] hover:bg-[#2a2a2c] hover:text-white/70 active:bg-[#2c2c2e] text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
-        }`}
+          }`}
         title="CBS Araçları"
       >
         <i className={`fa-solid fa-screwdriver-wrench text-[13px] ${isOpen ? 'rotate-45' : ''} transition-transform duration-300`}></i>
@@ -302,11 +302,10 @@ export default function GISToolsControl() {
 
       {/* Full Mode Panel */}
       <div
-        className={`mt-2 w-[185px] bg-white/90 backdrop-blur-xl border border-zinc-200/80 rounded-xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.1)] flex flex-col max-h-[calc(100vh-120px)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          toolsMenuMode === 'full'
+        className={`mt-2 w-[185px] bg-white/90 backdrop-blur-xl border border-zinc-200/80 rounded-xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.1)] flex flex-col max-h-[calc(100vh-120px)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${toolsMenuMode === 'full'
             ? 'translate-y-0 opacity-100 scale-100'
             : '-translate-y-4 opacity-0 scale-95 pointer-events-none'
-        }`}
+          }`}
       >
         {/* Header */}
         <div className="flex items-center px-3 py-1.5 border-b border-zinc-100">
@@ -386,13 +385,12 @@ function ToolIconButton({ tool, label, active, onClick }: ToolIconButtonProps) {
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 ${
-        showActive
+      className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 ${showActive
           ? `${tool.activeBg} ${tool.activeBorder} ring-1 ${active ? 'shadow-sm' : ''}`
           : hovered && tool.noHoverPreview
             ? 'ring-1 ring-zinc-800'
             : 'hover:scale-105'
-      }`}
+        }`}
       title={label}
     >
       <Icon
@@ -422,18 +420,16 @@ function ToolMenuItem({ tool, label, active, onClick }: ToolMenuItemProps) {
       disabled={tool.disabled}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`w-full flex items-center gap-2 px-2 py-[5px] rounded-md transition-all duration-150 ${
-        showActive
+      className={`w-full flex items-center gap-2 px-2 py-[5px] rounded-md transition-all duration-150 ${showActive
           ? `${tool.activeBg} text-zinc-900`
           : hovered
             ? 'bg-zinc-100 text-zinc-700'
             : 'text-zinc-600'
-      } ${tool.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+        } ${tool.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       {/* Icon box */}
-      <div className={`flex shrink-0 items-center justify-center w-5 h-5 rounded-[4px] border transition-all duration-200 ${
-        showActive ? `${tool.activeBg} ${tool.activeBorder}` : 'bg-zinc-50 border-zinc-200/60'
-      }`}>
+      <div className={`flex shrink-0 items-center justify-center w-5 h-5 rounded-[4px] border transition-all duration-200 ${showActive ? `${tool.activeBg} ${tool.activeBorder}` : 'bg-zinc-50 border-zinc-200/60'
+        }`}>
         <Icon
           className={`transition-colors duration-200 ${showActive ? tool.activeColor : 'text-zinc-500'}`}
           size={11}

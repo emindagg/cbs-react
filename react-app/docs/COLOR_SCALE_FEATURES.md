@@ -1,299 +1,348 @@
-# Color Interpolation Features
+# Renk Ölçeği ve Sınıflandırma Özellikleri
 
-This document describes the advanced color interpolation and data classification features.
+Bu doküman, projedeki güncel renk ölçeği akışını kod tabanına göre özetler. Odak noktası `VizWizardStep3` içinde kullanılan renk paleti, sınıflandırma, sürekli ölçek, özel aralık ve legend entegrasyonudur.
 
-## Overview
+## Kapsam
 
-We've implemented a comprehensive color interpolation system that provides professional-grade data visualization capabilities. The system includes:
+Renk ölçeği akışı şu senaryolarda kullanılır:
 
-1. **Multiple Color Spaces** (RGB, HSL, LAB, HCL)
-2. **Advanced Classification Methods** (Quantile, Jenks, Linear, Logarithmic, Rounded)
-3. **Continuous and Classed Color Scales**
-4. **Data Distribution Preview**
-5. **Smart Classification Suggestions**
+- **Koroplet harita**: ana renk ölçeği akışı doğrudan kullanılır.
+- **Bubble harita**: yalnızca `colorColumn` seçilmişse renk ölçeği paneli aktif biçimde kullanılır.
+- **Dot density**: ayrı renk/dot legend akışı vardır; bu dokümandaki stepped/continuous renk ölçeği paneli aynı şekilde kullanılmaz.
 
-## Key Components
+İlgili merkez dosya:
 
-### 1. Color Interpolation Utilities (`src/utils/colorInterpolation.ts`)
+- `src/features/viz-wizard/steps/Step3/index.tsx`
 
-#### Color Spaces
+## Mevcut Özellik Özeti
 
-- **LAB** (Recommended): Perceptually uniform color space - produces the most natural-looking color transitions
-- **HCL**: Cylindrical LAB - provides smooth, controlled transitions
-- **HSL**: Hue-based - creates vibrant, saturated colors
-- **RGB**: Standard interpolation - simplest but can produce "muddy" intermediate colors
+### 1. İki ölçek türü
 
-#### Functions
+`ColorScaleConfig` iki temel ölçek türü sunar:
 
-```typescript
-// Generate smooth color scale
-generateColorScale(colors: string[], steps: number, colorSpace: ColorSpace): string[]
+- `steps`: sınıflı/basamaklı renkler
+- `continuous`: sürekli gradyan
 
-// Generate Bezier-interpolated scale (smoother)
-generateBezierColorScale(colors: string[], steps: number, colorSpace: ColorSpace): string[]
+UI bileşeni:
 
-// Get continuous color for normalized value (0-1)
-interpolateColor(hex1: string, hex2: string, t: number, colorSpace: ColorSpace): string
+- `src/features/viz-wizard/components/ColorScale/Config.tsx`
 
-// Generate diverging scales
-generateDivergingScale(start: string, mid: string, end: string, steps: number, colorSpace: ColorSpace): string[]
-```
+Store tipi:
 
-### 2. Classification Methods (`src/utils/classificationMethods.ts`)
+- `src/types/visualization.ts` içindeki `ColorScaleType = 'steps' | 'continuous'`
 
-#### Available Methods
+### 2. Basamaklı sınıflandırma yöntemleri
 
-1. **Linear (Equal Interval)**
-   - Divides data range into equal-width intervals
-   - Best for: Uniformly distributed data
-   - Example: 0-20, 20-40, 40-60, 60-80, 80-100
+Step3 içindeki `StepsSection` bugün şu yöntemleri gösterir:
 
-2. **Quantile (Equal Count)**
-   - Each class has approximately the same number of values
-   - Best for: Skewed distributions
-   - Ensures balanced visual representation
+- `jenks`
+- `equal`
+- `quantile`
+- `kmeans`
+- `custom`
 
-3. **Jenks (Natural Breaks)**
-   - Minimizes within-class variance
-   - Best for: Data with natural clusters
-   - Reveals patterns in the data
+İlgili dosyalar:
 
-4. **Rounded Values**
-   - Uses human-readable round numbers
-   - Best for: Public-facing visualizations
-   - Example: 0, 10, 25, 50, 100
+- `src/features/viz-wizard/steps/Step3/components/StepsSection.tsx`
+- `src/utils/classification.ts`
 
-5. **Logarithmic**
-   - Exponential scale
-   - Best for: Data with large range (e.g., population, income)
-   - Highlights differences in small values
+Notlar:
 
-#### Smart Suggestions
+- `custom` seçildiğinde sınır değerleri `CustomBreaksInput` ile elle girilir.
+- `stddev` desteği `src/utils/classification.ts` ve bazı legend akışlarında mevcut olsa da mevcut Step3 sınıflandırma açılır menüsünde sunulmaz.
 
-The system automatically analyzes data distribution and recommends the best classification method:
+### 3. Sürekli ölçek interpolasyon preset'leri
 
-```typescript
-const recommendation = suggestClassificationMethod(values)
-// Returns: { method, reason, emoji, warning }
-```
+Sürekli modda serbest renk uzayı seçimi değil, hazır interpolasyon preset'leri kullanılır:
 
-Factors considered:
-- **Coefficient of Variation (CV)**: Measures data heterogeneity
-- **Skewness**: Detects asymmetric distributions
-- **Outliers**: Identifies extreme values using IQR method
-- **Logarithmic range**: Determines if exponential scale is appropriate
+- `equidistant`
+- `quantiles-4`
+- `quantiles-5`
+- `quantiles-10`
+- `natural-9`
 
-### 3. React Components
+İlgili dosya:
 
-#### ColorScaleConfig
+- `src/utils/interpolation.ts`
 
-Advanced color scale configuration with:
-- Color space selector
-- Interpolation mode (Linear vs Bezier)
-- Real-time preview
-- Collapsible advanced settings
+Bu dosya şu görevleri üstlenir:
 
-```tsx
-<ColorScaleConfig
-  colorScheme="viridis"
-  classCount={5}
-  classificationMethod="quantile"
-  onColorSpaceChange={(space) => console.log(space)}
-  onInterpolationModeChange={(mode) => console.log(mode)}
-/>
-```
+- preset'e göre break hesaplama: `calculateBreaksFromInterpolation`
+- preset'e göre sınıf sayısı belirleme: `getClassCountFromInterpolation`
+- sürekli renkte 0-1 normalizasyonu: `normalizeValue`
+- UI açıklama metinleri: `INTERPOLATION_INFO`
 
-#### DataDistributionPreview
+### 4. Renk paletleri
 
-Shows data distribution with:
-- Histogram visualization
-- Color-coded bins
-- Statistical summary (min, max, mean, median, CV)
-- Method-specific explanations
-- Skewness and outlier warnings
+Paletler `src/constants/colorSchemes.ts` içinde tanımlıdır. UI tarafında kullanılan liste `COLOR_SCHEME_LIST` ile gelir.
 
-```tsx
-<DataDistributionPreview
-  values={dataValues}
-  colorScheme="viridis"
-  classCount={5}
-  classificationMethod="quantile"
-/>
-```
+Öne çıkan sıralı paletler:
 
-### 4. Enhanced Color Schemes (`src/constants/colorSchemes.ts`)
+- `greenBlue`
+- `teal`
+- `sunset`
+- `orange`
+- `amber`
+- `yellowGreen`
+- `pinkPurple`
+- `yellowBlue`
+- `rosePurple`
+- `slate`
+- `plasma`
+- `viridis`
 
-#### New Functions
+Ayrık paletler:
 
-```typescript
-// Get interpolated palette with advanced color space support
-getInterpolatedColorPalette(scheme: ColorScheme, count: number, space: ColorSpace): string[]
+- `brownTeal`
+- `pinkGreen`
+- `redBlue`
+- `redBlueDiverging`
+- `redTeal`
+- `redGreen`
+- `centeredPink`
 
-// Get continuous color for normalized value
-getContinuousColor(value: number, scheme: ColorScheme, space: ColorSpace): string
+Temel yardımcılar:
 
-// Get color with smooth interpolation
-getContinuousColorForValue(value: number, values: number[], scheme: ColorScheme, space: ColorSpace): string
-```
+- `getColorPalette`
+- `getInterpolatedColorPalette`
+- `getContinuousColor`
+- `getColorForValue`
+- `getContinuousColorForValue`
 
-## Usage Examples
+### 5. Özel aralık
 
-### Basic Usage
+Step3 içinde `CustomRangeConfig` her zaman görünür ve şu alanları içerir:
 
-```typescript
-import { generateColorScale } from '../utils/colorInterpolation'
-import { calculateBreaks } from '../utils/classificationMethods'
+- `min`
+- `center`
+- `max`
+- `outOfRangeMode`
 
-// Generate color scale
-const colors = ['#440154', '#21918c', '#fde725']
-const palette = generateColorScale(colors, 10, 'lab')
+İlgili dosyalar:
 
-// Calculate breaks
-const values = [10, 20, 25, 30, 50, 100, 150, 200]
-const breaks = calculateBreaks(values, 'quantile', 5)
-```
+- `src/features/viz-wizard/components/CustomRange/Config.tsx`
+- `src/features/viz-wizard/components/CustomRange/useCustomRange.ts`
+- `src/features/visualization/shared/customRange.ts`
 
-### Advanced Interpolation
+Gerçek render davranışı:
 
-```typescript
-import { generateBezierColorScale } from '../utils/colorInterpolation'
+- Render katmanı bugün yalnızca `min`, `max` ve `outOfRangeMode` değerlerini kullanır.
+- `center` alanı UI ve validasyon akışında vardır; mevcut renderer/legend hesaplarında aktif kullanılmaz.
+- `outOfRangeMode` seçenekleri:
+  - `gray`
+  - `transparent`
 
-// Smoother transitions with Bezier interpolation
-const smoothPalette = generateBezierColorScale(
-  ['#440154', '#21918c', '#fde725'],
-  20,
-  'lab'
-)
-```
+### 6. Veri dağılımı önizlemesi
 
-### Continuous Scales
+`DataDistributionPreview` bileşeni seçilen ölçeğin veriyi nasıl böleceğini özetler.
 
-```typescript
-import { getContinuousColor } from '../constants/colorSchemes'
+Gösterilen başlıca bilgiler:
 
-// Map value to continuous color
-const normalizedValue = (value - min) / (max - min)
-const color = getContinuousColor(normalizedValue, 'viridis', 'lab')
-```
+- minimum
+- maksimum
+- ortalama
+- medyan
+- CV
+- çarpıklık ve varyasyon uyarıları
+- yönteme göre açıklama metni
 
-### Smart Classification
+İlgili dosyalar:
 
-```typescript
-import { suggestClassificationMethod, calculateBreaks } from '../utils/classificationMethods'
+- `src/features/viz-wizard/components/ColorScale/DistributionPreview.tsx`
+- `src/utils/dataStats.ts`
 
-const values = [/* your data */]
-const suggestion = suggestClassificationMethod(values)
+`calculateDataStats` şu alanları hesaplar:
 
-console.log(`Recommended: ${suggestion.method}`)
-console.log(`Reason: ${suggestion.reason}`)
+- `min`
+- `max`
+- `mean`
+- `median`
+- `stdDev`
+- `cv`
+- `range`
+- `skewness`
+- `hasOutliers`
 
-if (suggestion.warning) {
-  console.warn(suggestion.warning)
-}
+### 7. Akıllı öneri
 
-const breaks = calculateBreaks(values, suggestion.method, 5)
-```
+Akıllı öneri akışı:
 
-## Integration with Visualization Wizard
+- `src/features/viz-wizard/hooks/useVizSuggestion.ts`
+- `src/utils/dataStats.ts`
 
-The features are integrated into `VizWizardStep4`:
+Bugünkü davranış:
 
-1. **Color Scheme Selection**: Choose from predefined palettes
-2. **Classification Method**: Select or accept smart suggestions
-3. **Advanced Settings**: Configure color space and interpolation mode
-4. **Data Preview**: View distribution and histogram before rendering
-5. **Real-time Preview**: See color scale changes immediately
+- öneri motoru pratikte `jenks` veya `quantile` önerir
+- karar verirken CV, çarpıklık ve aykırı değer sinyallerini kullanır
+- logaritmik veya rounded gibi yöntemler önerilmez, çünkü projede böyle bir UI akışı yoktur
 
-## Best Practices
+### 8. Legend entegrasyonu
 
-### When to Use Each Color Space
+Legend yapılandırması Step3 içinde ayrı bir panel olarak açılır:
 
-1. **LAB** (Default)
-   - Most situations
-   - Scientific visualizations
-   - Perceptually accurate colors
+- `src/shared/legend/index.ts`
+- `src/features/legend/components/Config.tsx`
+- `src/features/legend/components/Container.tsx`
 
-2. **HCL**
-   - Diverging color schemes
-   - Smooth gradients
-   - Maintaining constant brightness
+Desteklenen başlıca ayarlar:
 
-3. **HSL**
-   - Vibrant visualizations
-   - Rainbow gradients
-   - Marketing materials
+- görünürlük
+- boyut
+- yön: `horizontal | vertical`
+- etiket türü: `ruler | ranges | custom`
+- sayı formatı
+- başlık metni ve başlık font boyutu
+- hover vurgulama
+- sıralamayı ters çevirme
+- yön oku ayarları
 
-4. **RGB**
-   - Simple linear interpolation
-   - When color accuracy isn't critical
-   - Legacy compatibility
+Legend konum tipleri:
 
-### Classification Method Selection
+- `above`
+- `below`
+- `inside-left-top`
+- `inside-center-top`
+- `inside-right-top`
+- `inside-left-bottom`
+- `inside-center-bottom`
+- `inside-right-bottom`
 
-| Data Type | Recommended Method | Reason |
-|-----------|-------------------|---------|
-| Uniform distribution | Linear | Equal intervals make sense |
-| Skewed data | Quantile | Ensures visual balance |
-| Clustered data | Jenks | Reveals natural groups |
-| Large range (>100x) | Logarithmic | Shows detail in small values |
-| Public-facing | Rounded | Easy-to-read numbers |
+Legend üretimi:
 
-### Performance Considerations
+- continuous modda: LAB tabanlı 30 renkli gradyan örneklenir
+- steps modda: sınıf sayısı veya custom break sayısı kadar renk üretilir
 
-- **Classed scales**: Fast, simple, clear breaks
-- **Continuous scales**: Smooth but more computation
-- **Bezier interpolation**: Smoothest but slowest
+## Wizard Akışı
 
-For large datasets (>10,000 points), prefer classed scales with LAB color space.
+Renk ölçeği davranışının ana orkestrasyonu `VizWizardStep3` içindedir.
 
-## Turkish Localization
+### Sürekli moda geçiş
 
-All UI elements support Turkish language:
+`scaleType = 'continuous'` seçildiğinde Step3 şunları senkronize eder:
 
-- Renk Uzayı (Color Space)
-- Sınıflandırma (Classification)
-- Veri Dağılımı (Data Distribution)
-- Yüzdelik (Quantile)
-- Doğal Kırılma (Natural Breaks/Jenks)
-- Logaritmik (Logarithmic)
+- `classificationMethod = 'continuous-linear'`
+- `legendType = 'continuous'`
+- `interpolation = colorConfig.interpolation ?? 'equidistant'`
 
-## Technical Details
+Interpolasyon preset'i değiştiğinde Step3, bunu uygun sürekli sınıflandırma türüne map eder:
 
-### Color Space Conversion Accuracy
+- `equidistant` -> `continuous-linear`
+- `quantiles-4` / `quantiles-5` / `quantiles-10` -> `continuous-quantile`
+- `natural-9` -> `continuous-natural`
 
-- **RGB ↔ LAB**: Uses D65 illuminant, accurate for sRGB
-- **RGB ↔ HCL**: Cylindrical transformation of LAB
-- **RGB ↔ HSL**: Standard HSL conversion
+### Basamaklı moda dönüş
 
-### Jenks Algorithm
+`scaleType = 'steps'` seçildiğinde Step3 varsayılan olarak şunları kurar:
 
-Implements Fisher-Jenks Natural Breaks optimization:
-- O(n²k) time complexity where n = data points, k = classes
-- Dynamic programming approach
-- Minimizes within-class variance
-- Fallback to quantile for edge cases
+- `classificationMethod = 'equal'`
+- `legendType = 'discrete'`
 
-### Data Statistics
+### Render zinciri
 
-Comprehensive statistics calculated:
-- **CV (Coefficient of Variation)**: stdDev / mean × 100
-- **Skewness**: (mean - median) / range
-- **IQR**: Q3 - Q1 (for outlier detection)
-- **Outliers**: Values outside [Q1 - 1.5×IQR, Q3 + 1.5×IQR]
+Renk ölçeğiyle ilgili ayarlar önce store'da tutulur, sonra render katmanına taşınır:
 
-## Future Enhancements
+- store: `src/stores/useVisualizationStore.ts`
+- render köprüsü: `src/features/viz-wizard/hooks/useVizRender.ts`
+- render servisleri:
+  - `src/features/visualization/choropleth/services/ChoroplethRenderer.ts`
+  - `src/features/visualization/bubble/services/BubbleRenderer.ts`
+  - `src/features/visualization/point/services/PointRenderer.ts`
 
-Potential additions:
-- Custom color palette creator
-- Color-blind safe palette suggestions
-- Export color scales for other tools
-- A/B testing different classification methods
-- Animated transitions between scales
-- Multi-hue diverging scales
+`useVizRender`, `colorConfig.customRange` değerini `VisualizationSettings` içine taşıyarak renderer'lara iletir.
 
-## References
+## Renderer Davranışı
 
-- [CIE LAB & Color Interpolation](https://www.datawrapper.de/blog/interpolation-for-color-scales-and-maps)
-- [CIE LAB Color Space](https://en.wikipedia.org/wiki/CIELAB_color_space)
-- [Jenks Natural Breaks](https://en.wikipedia.org/wiki/Jenks_natural_breaks_optimization)
-- [ColorBrewer](https://colorbrewer2.org/)
+### Choropleth
+
+`ChoroplethRenderer` içinde:
+
+- steps modda `calculateBreaks` + `buildStepExpression` kullanılır
+- continuous modda 16 duraklı (`CONTINUOUS_STOPS = 16`) interpolate ifadesi üretilir
+- continuous renkte `normalizeValue(..., interpolation, values)` ile quantile/natural warping uygulanır
+- custom range açıksa değerler önce min/max aralığına clamp edilir
+- `gray` dış aralık modunda aralık dışı alanlar gri boyanır
+- `transparent` modunda aralık dışı davranış görünüm mantığına göre ayrı ele alınır
+
+### Bubble
+
+`BubbleRenderer` içinde:
+
+- tek renkli bubble modunda renk ölçeği yerine sabit `symbolFillColor` kullanılır
+- bivariate bubble modunda renk sütunu için aynı stepped/continuous akış devreye girer
+- continuous modda yine 16 duraklı LAB tabanlı interpolate ifadesi üretilir
+- color range clamp ve `outOfRangeMode` mantığı choropleth ile uyumludur
+
+## Utility Düzeyi ile UI Düzeyi Arasındaki Fark
+
+`src/utils/colorInterpolation.ts` utility düzeyinde şu yetenekleri sağlar:
+
+- renk uzayları: `rgb`, `hsl`, `lab`, `hcl`
+- `interpolateColor`
+- `generateColorScale`
+- `generateDivergingScale`
+- `bezierInterpolate`
+- `generateBezierColorScale`
+
+Ancak mevcut wizard UI bu yetenekleri doğrudan açmaz:
+
+- kullanıcıya açık bir **color space selector** yoktur
+- kullanıcıya açık bir **Bezier / Linear interpolation mode** anahtarı yoktur
+- render ve legend entegrasyonunun pratikte kullandığı renk uzayı çoğunlukla **LAB**'dır
+
+Bu nedenle utility katmanı, UI'nin sunduğundan daha geniş kapasiteye sahiptir.
+
+## Destek Matrisi
+
+| Alan | Gerçek destek | UI'de görünür mü? | Ana dosya |
+|------|---------------|-------------------|-----------|
+| Basamaklı sınıflandırma | `jenks`, `equal`, `quantile`, `kmeans`, `custom` | Evet | `src/features/viz-wizard/steps/Step3/components/StepsSection.tsx` |
+| Ek sınıflandırma | `stddev` | Hayır | `src/utils/classification.ts` |
+| Sürekli preset'ler | `equidistant`, `quantiles-4`, `quantiles-5`, `quantiles-10`, `natural-9` | Evet | `src/utils/interpolation.ts` |
+| Renk uzayları | `rgb`, `hsl`, `lab`, `hcl` | Hayır | `src/utils/colorInterpolation.ts` |
+| Bezier renk üretimi | Var | Hayır | `src/utils/colorInterpolation.ts` |
+| Custom range min/max | Var | Evet | `src/features/viz-wizard/components/CustomRange/*` |
+| Custom range center | Var | Evet | `src/features/viz-wizard/components/CustomRange/*` |
+| Render'da center kullanımı | Yok | Hayır | `src/features/visualization/shared/customRange.ts` ve renderer'lar |
+
+## Test Kapsamı
+
+Renk ölçeği akışını doğrudan destekleyen testler:
+
+- `src/utils/classification.test.ts`
+- `src/utils/interpolation.test.ts`
+- `src/constants/colorSchemes.test.ts`
+- `src/features/visualization/shared/customRange.test.ts`
+- `src/features/viz-wizard/steps/Step3/components/StepsSection.test.tsx`
+- `src/features/legend/components/BarContent.test.tsx`
+- `src/features/legend/components/LegendLabels.test.tsx`
+
+Not:
+
+- `src/utils/colorInterpolation.ts` için ayrı bir test dosyası bulunmaz.
+
+## Mevcut Kısıtlar
+
+- Step3 dokümantasyonunda bazen bahsedilen `VizWizardStep4` bu projede yoktur; renk ölçeği akışı Step3 içindedir.
+- `src/utils/classificationMethods.ts` adlı bir dosya yoktur; gerçek ayrım `classification.ts`, `interpolation.ts` ve `dataStats.ts` üzerindedir.
+- Logaritmik, rounded veya kullanıcıya açık color-space seçimi bugün wizard UI'nin parçası değildir.
+- `customRange.center` alanı henüz renderer hesaplarına bağlanmamıştır.
+
+## Başvuru Dosyaları
+
+- `src/types/visualization.ts`
+- `src/stores/useVisualizationStore.ts`
+- `src/utils/colorInterpolation.ts`
+- `src/utils/classification.ts`
+- `src/utils/interpolation.ts`
+- `src/utils/dataStats.ts`
+- `src/constants/colorSchemes.ts`
+- `src/features/viz-wizard/components/ColorScale/Config.tsx`
+- `src/features/viz-wizard/components/ColorScale/DistributionPreview.tsx`
+- `src/features/viz-wizard/components/CustomRange/Config.tsx`
+- `src/features/viz-wizard/hooks/useVizSuggestion.ts`
+- `src/features/viz-wizard/hooks/useVizRender.ts`
+- `src/features/viz-wizard/steps/Step3/index.tsx`
+- `src/features/legend/components/Config.tsx`
+- `src/features/legend/components/Container.tsx`
+- `src/features/visualization/choropleth/services/ChoroplethRenderer.ts`
+- `src/features/visualization/bubble/services/BubbleRenderer.ts`

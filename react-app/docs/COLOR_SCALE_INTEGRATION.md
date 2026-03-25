@@ -1,404 +1,453 @@
-# Renk İnterpolasyonu ve Legend Entegrasyonu
+# Renk Ölçeği Entegrasyonu
 
-Bu dokümantasyon, React projenize gelişmiş renk interpolasyonu ve legend özelliklerinin nasıl entegre edileceğini açıklar.
+Bu belge, renk ölçeği özelliğinin projede nasıl bağlandığını açıklar. `docs/COLOR_SCALE_FEATURES.md` hangi özelliklerin desteklendiğini anlatır; bu dosya ise o özelliklerin `Viz Wizard`, store, renderer ve lejant katmanları arasında nasıl aktığını gösterir.
 
-## 📦 Kurulum
+## Entegrasyon Zinciri
 
-Gerekli bağımlılıklar zaten yüklenmiştir:
+Mevcut akış şu sırayla çalışır:
 
-```bash
-npm install d3-scale d3-color d3-interpolate chroma-js simple-statistics
-```
+1. `src/features/viz-wizard/steps/Step3/index.tsx`
+2. `src/features/viz-wizard/steps/Step3/useVizWizardStep3.ts`
+3. `src/stores/useVisualizationStore.ts`
+4. `src/features/viz-wizard/hooks/useVizRender.ts`
+5. `src/shared/visualization/VisualizationManager.ts`
+6. Renderer sınıfları:
+   - `src/features/visualization/choropleth/services/ChoroplethRenderer.ts`
+   - `src/features/visualization/bubble/services/BubbleRenderer.ts`
+   - `src/features/visualization/point/services/PointRenderer.ts`
+7. Harita üstü lejant:
+   - `src/features/legend/components/Container.tsx`
+   - `src/components/layout/AppLayout.tsx`
 
-## 🏗️ Mimari
+Özet olarak:
 
-### Yeni Bileşenler
+- Step 3 kullanıcı ayarlarını toplar
+- Store bu ayarları `vizSettings` ve `colorConfig` içinde tutar
+- `useVizRender()` bu state'i render ayarına dönüştürür
+- `VisualizationManager` doğru renderer'ı çağırır
+- `LegendContainer` mevcut görselleştirme state'ine göre uygun lejantı seçer
 
-#### 1. `ColorScaleConfig.tsx` (Güncellenmiş)
-Renk skalası tipi (basamaklı/sürekli) ve interpolasyon metodu seçimi.
+## Step 3 Orkestrasyonu
+
+Ana orkestrasyon bileşeni `src/features/viz-wizard/steps/Step3/index.tsx` dosyasıdır.
+
+`useVizWizardStep3()` hook'u şu alanları bağlar:
+
+- `vizSettings`
+- `setVizSettings`
+- `colorConfig`
+- `setColorConfig`
+- `setCustomRange`
+- `setLegendConfig`
+- `mapTitle`
+- `setMapTitle`
+- `useVizSuggestion()` çıktıları
+- `useVizRender()` çıktıları
+- panel aç/kapat state'leri
+- `dataValues`
+
+### Görünürlük Kuralları
+
+Step 3 içinde renk ölçeğiyle ilgili paneller her durumda aynı görünmez:
+
+| UI parçası | Gösterim koşulu |
+|------------|------------------|
+| `ColorScaleConfig` | `choropleth` veya `bubble` + `colorColumn` |
+| `ColorSchemePicker` | `ColorScaleConfig` ile aynı |
+| `BubbleSettings` | sadece `bubble` |
+| `DotDensitySettings` | sadece `dot` |
+| `StepsSection` | `scaleType === 'steps'` ve `dot` değil ve tek renkli `bubble` değil |
+| Akıllı öneri paneli | sadece `choropleth` akışı |
+| `CustomRangeConfig` | ayrı “Değer Aralığı” kartında her zaman |
+| `LegendConfig` paneli | collapsible panel olarak kullanılabilir |
+| `DataDistributionPreview` | ayrı toggle ile açılır |
+
+### Ölçek Tipi Değiştiğinde
+
+`ColorScaleConfig.onScaleTypeChange` yalnızca UI state'i değil, render state'ini de günceller:
 
 ```tsx
-<ColorScaleConfig
-  colorScheme={vizSettings.colorScheme}
-  classCount={vizSettings.classCount}
-  scaleType={colorConfig.scaleType}
-  interpolation={colorConfig.interpolation}
-  onScaleTypeChange={(type) => setColorConfig({ scaleType: type })}
-  onInterpolationChange={(method) => setColorConfig({ interpolation: method })}
-/>
-```
+onScaleTypeChange={(type) => {
+  setColorConfig({ scaleType: type })
 
-#### 2. `CustomRangeConfig.tsx` (Yeni)
-Min, Center ve Max değerlerini manuel ayarlama.
-
-```tsx
-<CustomRangeConfig
-  customRange={colorConfig.customRange}
-  autoMin={autoMin}
-  autoMax={autoMax}
-  onChange={(range) => setCustomRange(range)}
-/>
-```
-
-#### 3. `Legend.tsx` (Yeni)
-Görselleştirme üzerinde gösterilecek lejant bileşeni.
-
-```tsx
-<Legend
-  config={colorConfig.legend}
-  breaks={breaks}
-  colors={colors}
-  scaleType={colorConfig.scaleType}
-  onHover={(index) => handleLegendHover(index)}
-/>
-```
-
-#### 4. `LegendConfig.tsx` (Yeni)
-Lejant ayarları paneli (pozisyon, boyut, format, vb.).
-
-```tsx
-<LegendConfig
-  config={colorConfig.legend}
-  onChange={(config) => setLegendConfig(config)}
-/>
-```
-
-#### 5. `StyleConfig.tsx` (Yeni)
-Tüm ayarları tek bir panelde birleştiren entegre bileşen.
-
-```tsx
-<StyleConfig dataValues={dataValues} />
-```
-
-### Yeni Utility Fonksiyonları
-
-#### `numberFormatter.ts`
-Gelişmiş sayı formatlama.
-
-```ts
-import { formatNumber } from '@/utils/numberFormatter'
-
-const formatted = formatNumber(1234.56, '1,000.00') // "1.234,56"
-```
-
-#### `classificationMethods.ts` (Güncellenmiş)
-Interpolasyon metodları eklendi:
-
-```ts
-import {
-  calculateBreaksFromInterpolation,
-  INTERPOLATION_INFO,
-  normalizeValue,
-} from '@/utils/classificationMethods'
-
-const breaks = calculateBreaksFromInterpolation(values, 'natural-9')
-```
-
-### Yeni Tipler
-
-`types/visualization.ts` dosyasına eklenen tipler:
-
-```ts
-export type InterpolationMethod =
-  | 'equidistant'      // Doğrusal
-  | 'quantiles-5'      // Çeyrekler (4 grup)
-  | 'quantiles-6'      // Beşlikler (5 grup)
-  | 'quantiles-11'     // Onluklar (10 grup)
-  | 'natural-9'        // Doğal kırılmalar (9 grup)
-
-export type ColorScaleType = 'steps' | 'continuous'
-
-export interface CustomRange {
-  enabled: boolean
-  min: number | null
-  center: number | null
-  max: number | null
-}
-
-export interface LegendConfiguration {
-  visible: boolean
-  position: LegendPosition
-  size: number
-  orientation: LegendOrientation
-  labels: {
-    type: LegendLabelType
-    customLabels?: string[]
+  if (type === 'continuous') {
+    setVizSettings({
+      classificationMethod: 'continuous-linear',
+      legendType: 'continuous',
+      interpolation: colorConfig.interpolation ?? 'equidistant',
+    })
+  } else {
+    setVizSettings({
+      classificationMethod: 'equal',
+      legendType: 'discrete',
+    })
   }
-  format: string
-  title?: {
-    show: boolean
-    text: string
-  }
-  highlightOnHover: boolean
-  reverseOrder: boolean
-}
+}}
+```
 
+### İnterpolasyon Değiştiğinde
+
+Sürekli modda seçilen preset, `vizSettings.classificationMethod` alanına map edilir:
+
+| İnterpolasyon | `classificationMethod` |
+|---------------|-------------------------|
+| `equidistant` | `continuous-linear` |
+| `quantiles-4` | `continuous-quantile` |
+| `quantiles-5` | `continuous-quantile` |
+| `quantiles-10` | `continuous-quantile` |
+| `natural-9` | `continuous-natural` |
+
+Bu mapping Step 3 içinde yapılır; renderer bu alanları doğrudan store'dan alır.
+
+## Store ve Type Sözleşmesi
+
+Renk ölçeği entegrasyonunda iki farklı state katmanı vardır:
+
+### `vizSettings`
+
+Renderer'a giden ana görselleştirme sözleşmesidir. `src/types/visualization.ts` içindeki `VisualizationSettings` üzerinden tanımlanır.
+
+Renk ölçeğiyle ilgili başlıca alanlar:
+
+- `classCount`
+- `classificationMethod`
+- `colorScheme`
+- `legendType`
+- `interpolation`
+- `customBreaks`
+- `customRange`
+- `colorColumn`
+- `noDataColor`
+- `dataOnlyMode`
+- `dataOnlyStyle`
+- `showLabels`
+- `showValues`
+
+Bubble ve dot density için de ek alanlar buradadır.
+
+### `colorConfig`
+
+Step 3 UI panelinin renk/lejant state'ini taşır:
+
+```ts
 export interface ColorConfiguration {
   column: string | null
   palette: ColorScheme
-  scaleType: ColorScaleType
+  scaleType: 'steps' | 'continuous'
   interpolation: InterpolationMethod
   customRange?: CustomRange
   legend: LegendConfiguration
 }
 ```
 
-### Store Güncellemeleri
+### Store Güncelleme Davranışı
 
-`useVisualizationStore.ts` içinde yeni state:
+`src/stores/useVisualizationStore.ts` içinde:
 
-```ts
+- `setVizSettings()` doğrudan merge yapmaz, önce `sanitizeVizSettings()` çalıştırır
+- `setColorConfig()` shallow merge yapar
+- `setLegendConfig()` nested `legend` merge yapar
+- `setCustomRange()` nested `customRange` merge yapar
+
+### Clamp ve Validasyon Kuralları
+
+`src/utils/legendClassCount.ts` ve `sanitizeVizSettings()` üzerinden:
+
+- `classCount`: minimum `3`, maksimum `7`
+- `bubbleLegendCount`: minimum `3`, maksimum `7`
+- `customBreaks.length`: minimum `4`, maksimum `8`
+- Geçerli `customBreaks` gelirse `classCount = customBreaks.length - 1` olacak şekilde normalize edilir
+- Geçersiz `customBreaks` store tarafından reddedilir
+
+## Veri Önizleme ve Öneri Entegrasyonu
+
+### `DataDistributionPreview`
+
+`src/features/viz-wizard/components/ColorScale/DistributionPreview.tsx`
+
+Bu bileşen:
+
+- stepped modda `calculateBreaks()`
+- continuous modda `calculateBreaksFromInterpolation()`
+- sınıf sayısı için `getClassCountFromInterpolation()`
+- istatistikler için `calculateDataStats()`
+
+kullanır.
+
+Gösterilen bilgiler:
+
+- min / max
+- ortalama / medyan
+- CV / skewness / outlier uyarıları
+- sınıf bazlı histogram benzeri dağılım görünümü
+
+### `useVizSuggestion`
+
+`src/features/viz-wizard/hooks/useVizSuggestion.ts`
+
+Bu hook:
+
+- eşleşmiş verilerden sayısal değerleri çıkarır
+- `suggestClassificationMethod()` çağırır
+- Step 3 içinde öneri panelini besler
+
+Mevcut implementasyonda öneri mekanizması yalnızca `quantile` veya `jenks` döndürür.
+
+## Özel Aralık Entegrasyonu
+
+### Step 3 Katmanı
+
+`CustomRangeConfig` Step 3 içinde ayrı bir “Değer Aralığı” kartı olarak bulunur:
+
+```tsx
+<CustomRangeConfig
+  customRange={colorConfig.customRange!}
+  autoMin={dataValues.length > 0 ? Math.min(...dataValues) : 0}
+  autoMax={dataValues.length > 0 ? Math.max(...dataValues) : 100}
+  onChange={(range) => setCustomRange(range)}
+/>
+```
+
+`src/features/viz-wizard/components/CustomRange/useCustomRange.ts` şu işlerden sorumludur:
+
+- Türkçe sayı formatı ile input yönetimi
+- `min < center < max` doğrulaması
+- toggle davranışı
+- `outOfRangeMode` korunumu
+
+### Renderer Katmanı
+
+Ortak çözümleyici `src/features/visualization/shared/customRange.ts` dosyasında yer alır.
+
+Önemli notlar:
+
+- renderer tarafında yalnızca `min` ve `max` uygulanır
+- `center` şu an render davranışını değiştirmez
+- varsayılan `outOfRangeMode` değeri `gray`'dir
+
+## Renderer Entegrasyonu
+
+### Choropleth
+
+`src/features/visualization/choropleth/services/ChoroplethRenderer.ts`
+
+Akış:
+
+1. sayısal değerleri çıkarır
+2. `customRange` varsa değerleri clamp eder
+3. `classificationMethod + classCount` ile break üretir
+4. `legendType === 'continuous'` ise 16 stop'lu `interpolate` ifadesi üretir
+5. aksi halde `step` ifadesi üretir
+6. `hasData`, `dataValue`, `displayName`, `inCustomRange` alanlarını feature'lara ekler
+
+Ek davranışlar:
+
+- `gray` modu aralık dışı bölgeleri gri boyar
+- `transparent` modu katman filtresiyle çalışır
+- `noDataColor` doğrudan no-data polygon renk ifadesine uygulanır
+- `dataOnlyMode` no-data bölgeleri gizleyebilir veya şeffaflaştırabilir
+
+### Bubble
+
+`src/features/visualization/bubble/services/BubbleRenderer.ts`
+
+Akış:
+
+- `colorColumn` varsa bivariate mod çalışır
+- yoksa kabarcıklar tek renk (`symbolFillColor` veya default) ile çizilir
+- renk tarafında stepped/continuous expression üretimi choropleth ile aynı mantıktadır
+- boyut tarafında `proportional` veya `graduated` radius hesaplanır
+
+Ek davranışlar:
+
+- backdrop polygon fill + outline katmanları ayrı source ile yönetilir
+- kabarcıklar centroid noktalara çevrilir
+- büyük kabarcıklar altta kalacak şekilde sıralanır
+- `customRange` renk değerlerine uygulanır, boyut değerlerine uygulanmaz
+- `noDataColor` kabarcıklara değil backdrop polygon katmanına uygulanır
+
+### Dot Density
+
+`src/features/visualization/point/services/PointRenderer.ts`
+
+Bu akış sınıflandırılmış renk ölçeği kullanmaz.
+
+Davranış:
+
+- tek renkli nokta render eder
+- `dotValue` ile nokta sayısını hesaplar
+- seeded PRNG ile polygon içine deterministik saçılım yapar
+- ayrı backdrop polygon katmanı kullanır
+- `gray` modu aralık dışı noktaları gri yapar
+- `transparent` modu aralık dışı noktaları filtreler
+- `noDataColor` yine backdrop polygon katmanına uygulanır
+
+## Render Tetikleme ve Paint-Only Güncellemeler
+
+`src/features/viz-wizard/hooks/useVizRender.ts`
+
+Bu hook iki ayrı güncelleme yolu kullanır:
+
+- tam render:
+  veri dağılımını etkileyen ayarlarda `VisualizationManager` yeniden çalışır
+- paint-only update:
+  yalnızca görünümü etkileyen ayarlarda `setPaintProperty()` kullanılır
+
+Bu ayrım özellikle şu alanlarda önemlidir:
+
+- `classificationMethod`
+- `classCount`
+- `colorScheme`
+- `legendType`
+- `interpolation`
+- `customRange`
+- `colorColumn`
+- `symbolScaling`
+- `symbolMinSize`
+- `symbolMaxSize`
+
+tam render tetiklerken;
+
+- opaklık
+- stroke
+- dot size / dot color
+
+gibi alanlar paint-only güncellenebilir.
+
+## Lejant Entegrasyonu
+
+### Konfigürasyon Paneli
+
+`src/shared/legend/index.ts` yalnızca ince bir facade'dır ve dışarıya `LegendConfig` re-export eder.
+
+Gerçek panel:
+
+- `src/features/legend/components/Config.tsx`
+
+Gerçek prop sözleşmesi:
+
+```tsx
+<LegendConfig
+  config={colorConfig.legend}
+  onChange={(config) => setLegendConfig(config)}
+  classCount={vizSettings.classCount}
+/>
+```
+
+Bu panel yalnızca lejant ayarlarını değil, aynı zamanda `useMapStore` üzerinden north arrow ayarlarını da yönetir.
+
+### Harita Üstü Lejant
+
+Harita üstü gerçek mount noktası:
+
+- `src/components/layout/AppLayout.tsx`
+
+```tsx
+<LegendContainer />
+```
+
+`src/features/legend/components/Container.tsx` mevcut görselleştirmeye göre şu bileşenlerden uygun olanı seçer:
+
+- `DynamicLegend`
+- `ColorLegend`
+- `BubbleSizeLegend`
+- `DotDensityLegend`
+
+Seçim şu state'lere göre yapılır:
+
+- `vizSettings.type`
+- `vizSettings.classificationMethod`
+- `vizSettings.colorColumn`
+- `vizSettings.bubbleSizeMode`
+- `colorConfig.scaleType`
+- `colorConfig.legend.orientation`
+
+Bu nedenle entegrasyon dokümanında hayali bir `Legend.tsx` overlay bileşeninden değil, `LegendContainer` ve onun seçici mantığından söz edilmelidir.
+
+## Sayı Formatı Entegrasyonu
+
+`src/utils/numberFormatter.ts` içindeki `NumberFormat` union, legend config tarafında kullanılır.
+
+Önemli notlar:
+
+- `LegendConfiguration.format` tipi `string` değil `NumberFormat`
+- UI select'i `FORMAT_OPTIONS` listesini kullanır
+- type düzeyinde bulunan `0o` ve `custom` formatları legend select içinde sunulmaz
+- geçersiz formatlar `coerceNumberFormat()` ile `1,000` değerine düşer
+
+## Gerçek Kullanım Örneği
+
+Step 3 içindeki gerçek entegrasyonun sadeleştirilmiş hali:
+
+```tsx
 const {
-  colorConfig,           // Tüm renk konfigürasyonu
-  setColorConfig,        // Genel ayarları güncelle
-  setLegendConfig,       // Lejant ayarlarını güncelle
-  setCustomRange,        // Özel aralığı güncelle
-} = useVisualizationStore()
+  vizSettings,
+  setVizSettings,
+  colorConfig,
+  setColorConfig,
+  setCustomRange,
+  setLegendConfig,
+  dataValues,
+} = useVizWizardStep3()
+
+{(vizSettings.type === 'choropleth' || (vizSettings.type === 'bubble' && vizSettings.colorColumn)) && (
+  <>
+    <ColorScaleConfig
+      colorScheme={vizSettings.colorScheme}
+      classCount={vizSettings.classCount}
+      scaleType={colorConfig.scaleType}
+      interpolation={colorConfig.interpolation}
+      onScaleTypeChange={(type) => { /* store sync */ }}
+      onInterpolationChange={(interpolation) => { /* mapping sync */ }}
+    />
+
+    <ColorSchemePicker
+      value={vizSettings.colorScheme}
+      onChange={(scheme) => setVizSettings({ colorScheme: scheme })}
+    />
+  </>
+)}
+
+<CustomRangeConfig
+  customRange={colorConfig.customRange!}
+  autoMin={dataValues.length > 0 ? Math.min(...dataValues) : 0}
+  autoMax={dataValues.length > 0 ? Math.max(...dataValues) : 100}
+  onChange={(range) => setCustomRange(range)}
+/>
+
+<LegendConfig
+  config={colorConfig.legend}
+  onChange={(config) => setLegendConfig(config)}
+  classCount={vizSettings.classCount}
+/>
 ```
 
-## 🎨 Kullanım Örnekleri
+## Dikkat Edilecek Noktalar
 
-### Örnek 1: Basit Entegrasyon
+- `docs/COLOR_SCALE_FEATURES.md` ile görev ayrımı korunmalı:
+  bu dosya entegrasyon akışını, diğeri feature setini anlatır
+- `classificationMethods.ts` diye bir dosya yoktur
+- `StyleConfig.tsx` projede bulunur ama Step 3'ün ana entegrasyon yolu değildir
+- `CustomRange.center` UI state'inde vardır ama renderer tarafında şu an kullanılmaz
+- Dot density renk ölçeği sınıflandırması kullanmaz
+- Bubble ve dot akışında `noDataColor` esasen backdrop polygon katmanına uygulanır
 
-```tsx
-import { StyleConfig } from '@/components/visualization'
+## İlgili Dosyalar
 
-function MyVisualizationPanel() {
-  const dataValues = [100, 250, 500, 750, 1000, 1500]
-
-  return (
-    <div>
-      <h2>Görselleştirme Ayarları</h2>
-      <StyleConfig dataValues={dataValues} />
-    </div>
-  )
-}
-```
-
-### Örnek 2: Adım Adım Kullanım
-
-```tsx
-import { useState } from 'react'
-import { useVisualizationStore } from '@/stores/useVisualizationStore'
-import {
-  ColorScaleConfig,
-  CustomRangeConfig,
-  LegendConfig,
-  Legend,
-} from '@/components/visualization'
-import { calculateBreaksFromInterpolation } from '@/utils/classificationMethods'
-
-function AdvancedVisualization() {
-  const {
-    colorConfig,
-    setColorConfig,
-    setLegendConfig,
-    setCustomRange,
-    vizSettings,
-  } = useVisualizationStore()
-
-  const dataValues = [100, 250, 500, 750, 1000, 1500]
-
-  // Min ve Max hesaplama
-  const autoMin = Math.min(...dataValues)
-  const autoMax = Math.max(...dataValues)
-
-  // Breaks hesaplama
-  const breaks = calculateBreaksFromInterpolation(
-    dataValues,
-    colorConfig.interpolation
-  )
-
-  // Renkleri al
-  const colors = getColorsForBreaks(breaks, vizSettings.colorScheme)
-
-  return (
-    <div className="space-y-6">
-      {/* Renk Skalası Ayarları */}
-      <section>
-        <h3>Renk Skalası</h3>
-        <ColorScaleConfig
-          colorScheme={vizSettings.colorScheme}
-          classCount={vizSettings.classCount}
-          scaleType={colorConfig.scaleType}
-          interpolation={colorConfig.interpolation}
-          onScaleTypeChange={(type) => setColorConfig({ scaleType: type })}
-          onInterpolationChange={(method) => setColorConfig({ interpolation: method })}
-        />
-      </section>
-
-      {/* Özel Aralık - Sadece continuous için */}
-      {colorConfig.scaleType === 'continuous' && (
-        <section>
-          <h3>Özel Aralık</h3>
-          <CustomRangeConfig
-            customRange={colorConfig.customRange!}
-            autoMin={autoMin}
-            autoMax={autoMax}
-            onChange={(range) => setCustomRange(range)}
-          />
-        </section>
-      )}
-
-      {/* Lejant Ayarları */}
-      <section>
-        <h3>Lejant Ayarları</h3>
-        <LegendConfig
-          config={colorConfig.legend}
-          onChange={(config) => setLegendConfig(config)}
-        />
-      </section>
-
-      {/* Harita Üzerinde Lejant */}
-      <div className="relative">
-        <div id="map" style={{ width: '100%', height: '500px' }}>
-          {/* Harita bileşeniniz */}
-        </div>
-
-        {/* Lejant overlay */}
-        <Legend
-          config={colorConfig.legend}
-          breaks={breaks}
-          colors={colors}
-          scaleType={colorConfig.scaleType}
-          onHover={(index) => {
-            console.log('Hovering legend item:', index)
-            // Harita üzerinde ilgili özellikleri vurgula
-          }}
-        />
-      </div>
-    </div>
-  )
-}
-```
-
-### Örnek 3: Renk Hesaplama
-
-```tsx
-import { getContinuousColorForValue, getColorForValue } from '@/constants/colorSchemes'
-import { calculateBreaksFromInterpolation } from '@/utils/classificationMethods'
-
-function calculateFeatureColor(value: number, dataValues: number[]) {
-  const { colorConfig, vizSettings } = useVisualizationStore()
-
-  if (colorConfig.scaleType === 'continuous') {
-    // Sürekli renk skalası
-    return getContinuousColorForValue(
-      value,
-      dataValues,
-      vizSettings.colorScheme
-    )
-  } else {
-    // Basamaklı renk skalası
-    const breaks = calculateBreaksFromInterpolation(
-      dataValues,
-      colorConfig.interpolation
-    )
-    const colors = getInterpolatedColorPalette(
-      vizSettings.colorScheme,
-      breaks.length - 1
-    )
-
-    return getColorForValue(value, breaks, colors)
-  }
-}
-```
-
-## 🎯 Özellikler
-
-### ✅ Renk Skalası Tipleri
-- **Basamaklı (Steps)**: Belirgin renk kırılmaları
-- **Sürekli (Continuous)**: Yumuşak gradyan geçişleri
-
-### ✅ İnterpolasyon Metodları
-- **Doğrusal (Equidistant)**: Eşit aralıklar
-- **Çeyrekler (Quartiles)**: 4 eşit grup
-- **Beşlikler (Quintiles)**: 5 eşit grup
-- **Onluklar (Deciles)**: 10 eşit grup
-- **Doğal Kırılmalar (Natural)**: Jenks algoritması ile 9 grup
-
-### ✅ Özel Aralık
-- Min, Center, Max manuel ayarlama
-- Farklı zaman dilimlerinde tutarlı renklendirme
-- Validasyon ve hata mesajları
-
-### ✅ Lejant Özellikleri
-- 8 farklı pozisyon seçeneği
-- Yatay/Dikey orientasyon
-- Özelleştirilebilir boyut
-- 16+ sayı formatı seçeneği
-- Başlık gösterme/gizleme
-- Hover vurgulama
-- Sıralama ters çevirme
-
-## 📊 Sayı Format Seçenekleri
-
-```ts
-'1,000'       // 1.234
-'1,000.0'     // 1.234,5
-'1,000.00'    // 1.234,56
-'0%'          // 12%
-'0.0%'        // 12,3%
-'0a'          // 1k, 123k
-'0.[0]a'      // 1k, 123,4k
-```
-
-## 🔧 Gelişmiş Kullanım
-
-### Custom Format İçin Formatter Genişletme
-
-```ts
-// numberFormatter.ts içinde custom format ekle
-export function formatNumber(value: number, format: NumberFormat): string {
-  // ... mevcut kodlar
-
-  if (format === 'custom') {
-    // Kendi custom formatınızı ekleyin
-    return customFormatter(value)
-  }
-}
-```
-
-### Legend Pozisyon CSS Özelleştirme
-
-```css
-/* globals.css veya styles.css */
-.legend.above {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.legend.inside-right-bottom {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-}
-```
-
-## 🐛 Sorun Giderme
-
-### Renk Gradyanı Görünmüyor
-- `colorInterpolation.ts` dosyasının doğru import edildiğinden emin olun
-- `chroma-js` kütüphanesinin yüklü olduğunu kontrol edin
-
-### Lejant Hover Çalışmıyor
-- `onHover` prop'unun `Legend` bileşenine geçildiğinden emin olun
-- `highlightOnHover` ayarının `true` olduğunu kontrol edin
-
-### Store Güncellenmiyor
-- `setColorConfig`, `setLegendConfig`, `setCustomRange` fonksiyonlarının doğru çağrıldığından emin olun
-- React DevTools ile store state'ini kontrol edin
-
-## 📚 Ek Kaynaklar
-
-- [D3 Scale Documentation](https://github.com/d3/d3-scale)
-- [Chroma.js Documentation](https://gka.github.io/chroma.js/)
-- [ColorBrewer Palettes](https://colorbrewer2.org/)
-
-## 🎉 Sonuç
-
-Artık projenizde profesyonel renk interpolasyonu ve lejant özellikleri kullanabilirsiniz!
-
-Herhangi bir sorunuz olursa lütfen dokümantasyonu inceleyin veya issue açın.
+- `src/features/viz-wizard/steps/Step3/index.tsx`
+- `src/features/viz-wizard/steps/Step3/useVizWizardStep3.ts`
+- `src/features/viz-wizard/hooks/useVizRender.ts`
+- `src/features/viz-wizard/hooks/useVizSuggestion.ts`
+- `src/features/viz-wizard/components/ColorScale/Config.tsx`
+- `src/features/viz-wizard/components/ColorScale/DistributionPreview.tsx`
+- `src/features/viz-wizard/components/CustomRange/Config.tsx`
+- `src/features/viz-wizard/components/CustomRange/useCustomRange.ts`
+- `src/stores/useVisualizationStore.ts`
+- `src/types/visualization.ts`
+- `src/features/visualization/choropleth/services/ChoroplethRenderer.ts`
+- `src/features/visualization/bubble/services/BubbleRenderer.ts`
+- `src/features/visualization/point/services/PointRenderer.ts`
+- `src/features/visualization/shared/customRange.ts`
+- `src/features/legend/components/Config.tsx`
+- `src/features/legend/components/Container.tsx`
+- `src/components/layout/AppLayout.tsx`
