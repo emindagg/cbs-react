@@ -131,7 +131,7 @@ export function DataCatalogSection() {
           visibleItems.map(item => {
             const rawStyle = item.properties.style
             const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
-            const currentFillColor = style.fillColor || '#3b82f6'
+            const currentFillColor = style.fillColor || '#1c1c1e'
             const iconColor = currentFillColor || '#94a3b8' // Fallback: gri renk
 
             return (
@@ -200,7 +200,7 @@ export function DataCatalogSection() {
         if (!item) return null
         const rawStyle = item.properties.style
         const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
-        const currentFillColor = style.fillColor || '#3b82f6'
+        const currentFillColor = style.fillColor || '#1c1c1e'
 
         return createPortal(
           <div
@@ -248,7 +248,7 @@ export function DataCatalogSection() {
                     }
                   }}
                   className="w-full px-2 py-1 text-xs border border-zinc-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="#3b82f6"
+                  placeholder="#1c1c1e"
                 />
               </div>
             </div>

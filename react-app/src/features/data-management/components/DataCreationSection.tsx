@@ -18,7 +18,6 @@ export function DataCreationSection() {
     drawPoints,
     resetDraw,
     addItem,
-    layerStyles,
   } = useDataManagementStore()
 
   const [name, setName] = useState('')
@@ -132,9 +131,10 @@ export function DataCreationSection() {
               className={[
                 'flex-1 flex items-center justify-center gap-1.5 py-[7px] text-[11.5px] font-medium transition-colors duration-150 select-none',
                 i > 0 ? 'border-l border-slate-200' : '',
-                active ? 'text-white' : 'bg-white text-slate-400 hover:text-slate-600 hover:bg-slate-50',
+                active
+                  ? 'bg-brand-chrome text-white hover:bg-brand-chrome-hover'
+                  : 'bg-white text-slate-400 hover:text-slate-600 hover:bg-slate-50',
               ].join(' ')}
-              style={active ? { background: layerStyles.fillColor } : undefined}
             >
               <i className={`fa-solid ${tool.icon} text-[11px]`} />
               {tool.label}
@@ -217,10 +217,7 @@ export function DataCreationSection() {
           {/* Ekle — koyu slate, düz ── */}
           <button
             onClick={handleAddData}
-            className="w-full flex items-center justify-center gap-2 py-[8px] rounded-md text-[12px] font-semibold text-white transition-all duration-150 active:scale-[0.98]"
-            style={{ background: layerStyles.fillColor }}
-            onMouseEnter={e => { e.currentTarget.style.background = layerStyles.fillColor }}
-            onMouseLeave={e => { e.currentTarget.style.background = layerStyles.fillColor }}
+            className="w-full flex items-center justify-center gap-2 py-[8px] rounded-md text-[12px] font-semibold text-white bg-brand-chrome hover:bg-brand-chrome-hover active:bg-brand-chrome-active transition-colors duration-150 active:scale-[0.98]"
           >
             <i className="fa-solid fa-plus text-[10px]" />
             Veri Ekle
