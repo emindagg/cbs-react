@@ -2,8 +2,8 @@ import type { FeatureCollection, Feature } from 'geojson'
 import { useMemo } from 'react'
 import { Source, Layer } from 'react-map-gl/maplibre'
 
-import { useTimelineStore } from '@/features/timeline'
 import { useClusteringStore } from '@/stores/useClusteringStore'
+import { useTimelineStore } from '@/stores/useTimelineStore'
 import { type StyleProperties, isStyleProperties } from '@/types/style'
 
 import type { DataItem } from '../../data-management'
