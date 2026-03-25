@@ -370,7 +370,7 @@ function ChartContent({
 
       {/* İstatistik satırı */}
       {stats && (
-        <div className="flex items-center gap-0 border-t border-zinc-100 shrink-0">
+        <div className="flex items-center justify-center gap-0 border-t border-zinc-100 shrink-0">
           <StatItem
             label="En Düşük"
             value={`${stats.minElevation.toLocaleString('tr-TR')} m`}
