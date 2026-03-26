@@ -5,7 +5,7 @@ import { coerceNumberFormat, formatNumber, parseFormattedNumber } from './number
 describe('numberFormatter', () => {
   it('coerces unknown format to fallback', () => {
     expect(coerceNumberFormat('0a')).toBe('0a')
-    expect(coerceNumberFormat('auto')).toBe('0a')
+    expect(coerceNumberFormat('auto', '0a')).toBe('0a')
     expect(coerceNumberFormat(undefined, '0.00')).toBe('0.00')
   })
 

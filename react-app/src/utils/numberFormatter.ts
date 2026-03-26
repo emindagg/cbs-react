@@ -151,7 +151,7 @@ function abbreviateNumber(value: number, decimals: number): string {
     { threshold: 1e12, suffix: 'T' },
     { threshold: 1e9, suffix: 'B' },
     { threshold: 1e6, suffix: 'M' },
-    { threshold: 1e3, suffix: 'B' },
+    { threshold: 1e3, suffix: 'k' },
   ]
 
   for (const { threshold, suffix } of abbrev) {

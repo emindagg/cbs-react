@@ -75,12 +75,12 @@ describe('GISToolsControl buffer toggle behavior', () => {
 
     const bufferButton = screen.getByTitle(/Etki Alan/i)
     fireEvent.click(bufferButton)
-    expect(screen.getByText(/Etki Alan/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /ptal/i })).toBeInTheDocument()
 
     fireEvent.click(bufferButton)
 
     await waitFor(() => {
-      expect(screen.queryByText(/Etki Alan/i)).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /ptal/i })).not.toBeInTheDocument()
     })
 
     const remainingIds = useDataManagementStore.getState().items.map(item => item.id)
@@ -106,12 +106,12 @@ describe('GISToolsControl buffer toggle behavior', () => {
     openIconsOnlyMenu(container)
 
     fireEvent.click(screen.getByTitle(/Etki Alan/i))
-    expect(screen.getByText(/Etki Alan/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /ptal/i })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: /ptal/i }))
 
     await waitFor(() => {
-      expect(screen.queryByText(/Etki Alan/i)).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /ptal/i })).not.toBeInTheDocument()
     })
 
     expect(useDataManagementStore.getState().items.map(item => item.id)).toEqual(['src-2'])
@@ -149,7 +149,7 @@ describe('GISToolsControl buffer toggle behavior', () => {
 
     fireEvent.click(screen.getByTitle(/Etki Alan/i))
 
-    expect(screen.queryByText(/Etki Alan/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /ptal/i })).not.toBeInTheDocument()
     expect(useDataManagementStore.getState().items.map(item => item.id)).toEqual(['src-3'])
   })
 
@@ -244,7 +244,7 @@ describe('GISToolsControl buffer toggle behavior', () => {
     fireEvent.click(screen.getByRole('button', { name: /statistiksel/i }))
     expect(screen.getByRole('button', { name: /Fark/i })).toHaveAttribute('aria-pressed', 'false')
     expect(screen.getByRole('button', { name: /statistiksel/i })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('heading', { name: /Etki Analizi/i })).toBeInTheDocument()
+    expect(screen.getByText(/Etki Analizi İstatistikleri/i)).toBeInTheDocument()
     expect(screen.getByText(/Toplam Alan/i)).toBeInTheDocument()
   })
 
@@ -305,13 +305,13 @@ describe('GISToolsControl buffer toggle behavior', () => {
     openIconsOnlyMenu(container)
 
     fireEvent.click(screen.getByTitle(/Etki Alan/i))
-    expect(screen.getByText(/Etki Alan/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /ptal/i })).toBeInTheDocument()
 
     fireEvent.click(screen.getByLabelText('Nokta 1'))
-    fireEvent.click(screen.getByRole('button', { name: /Analiz Yap/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Analizi Başlat/i }))
 
     await waitFor(() => {
-      expect(screen.queryByText(/Etki Alan/i)).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /ptal/i })).not.toBeInTheDocument()
     })
 
     const hasBufferResult = useDataManagementStore
@@ -323,7 +323,7 @@ describe('GISToolsControl buffer toggle behavior', () => {
 
     fireEvent.click(screen.getByTitle(/Etki Alan/i))
 
-    expect(screen.queryByText(/Etki Alan/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /ptal/i })).not.toBeInTheDocument()
     const hasBufferAfterClear = useDataManagementStore
       .getState()
       .items.some(item => item.properties.analysis === 'buffer')
