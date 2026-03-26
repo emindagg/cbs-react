@@ -699,6 +699,7 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
             <div className="grid grid-cols-2 gap-1">
               {primaryOptions.map(option => {
                 const isSelected = selectedOption === option
+                const dotColor = BUFFER_MODE_COLORS[option as keyof typeof BUFFER_MODE_COLORS]
                 return (
                   <button
                     key={option}
@@ -707,9 +708,10 @@ export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlP
                     onClick={() => handleOptionSelect(option)}
                     className={`w-full h-7 rounded-lg text-[11px] font-medium transition-all duration-150 ${
                       isSelected
-                        ? 'bg-zinc-900 text-white shadow-sm'
+                        ? 'text-white shadow-sm'
                         : 'bg-zinc-50 border border-zinc-200/70 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700'
                     }`}
+                    style={isSelected ? { backgroundColor: dotColor } : undefined}
                   >
                     {getOptionLabel(option)}
                   </button>
