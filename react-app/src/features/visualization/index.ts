@@ -1,5 +1,5 @@
 // Bubble visualization
-export { BubbleRenderer, BubbleSettings, useBubbleTooltip } from './bubble'
+export { BubbleRenderer, BubbleSettings, useBubbleTooltip, BUBBLE_DEFAULT_FILL_COLOR } from './bubble'
 
 // Choropleth visualization
 export { ChoroplethRenderer, useChoroplethTooltip } from './choropleth'
@@ -18,6 +18,7 @@ export {
   MAX_DOTS_PER_FEATURE,
   buildZoomRadius,
   calculateSmartDotValue,
+  DEFAULT_BACKDROP_FILL_OPACITY,
 } from './point'
 
 // Shared orchestrator

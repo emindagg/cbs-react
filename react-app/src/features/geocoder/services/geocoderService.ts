@@ -3,7 +3,7 @@
  * HGM Atlas API integration for place search
  */
 
-import type { Map } from 'maplibre-gl'
+import type { GeoJSONSource, Map } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 
 import type { AtlasGeocoderSDK } from '../types/atlasGeocoder'
@@ -330,7 +330,7 @@ export class GeocoderManager {
     const featureCollection = toFeatureCollection(results)
 
     // Update or add source
-    const source = this.map.getSource(this.searchResultsLayer) as import('maplibre-gl').GeoJSONSource | undefined
+    const source = this.map.getSource(this.searchResultsLayer) as GeoJSONSource | undefined
     if (source) {
       source.setData(featureCollection)
     } else {

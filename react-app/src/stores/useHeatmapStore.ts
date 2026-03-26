@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import type { HeatmapColorStop, HeatmapConfig, HeatmapPreset, HeatmapStore } from '@/features/heatmap/types'
+import type { HeatmapColorStop, HeatmapConfig, HeatmapPreset, HeatmapStore } from '@/features/heatmap'
 
 const PRESETS: Record<HeatmapPreset, HeatmapColorStop[]> = {
   classic: [

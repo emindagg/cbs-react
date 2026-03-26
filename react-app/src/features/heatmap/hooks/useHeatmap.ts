@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react'
 
-import { useDataManagementStore } from '@/features/data-management'
+import { useDataManagementStore } from '@/stores/useDataManagementStore'
 import { useMapStore } from '@/stores/useMapStore'
 
 import { HeatmapRenderer } from '../services/HeatmapRenderer'

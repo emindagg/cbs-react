@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import type { NearestPointsConfig, SpatialAnalysisState, SpatialLayerStyle } from '@/features/spatial-analysis/types'
+import type { NearestPointsConfig, SpatialAnalysisState, SpatialLayerStyle } from '@/features/spatial-analysis'
 
 const defaultConvexHullStyle: SpatialLayerStyle = {
   fillColor: '#f97316',

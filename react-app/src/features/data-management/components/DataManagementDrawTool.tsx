@@ -32,8 +32,6 @@ export function DataManagementDrawTool() {
     if (drawMode === 'none') {
       isDraggingRef.current    = false
       draggingIndexRef.current = null
-      setDraggingIndex(null)
-      setCursorPos(null)
     }
   }, [drawMode])
 

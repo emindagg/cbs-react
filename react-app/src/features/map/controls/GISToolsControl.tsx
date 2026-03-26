@@ -268,11 +268,11 @@ export default function GISToolsControl() {
           toggleToolsMenu()
         }}
         className={`w-9 h-9 flex items-center justify-center rounded-[12px] border-none cursor-pointer transition-colors pointer-events-auto ${toolsMenuMode === 'icons-only'
-            ? 'bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.4)]'
-            : isOpen
-              ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]'
-              : 'bg-[#1c1c1e] hover:bg-[#2a2a2c] hover:text-white/70 active:bg-[#2c2c2e] text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
-          }`}
+          ? 'bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.4)]'
+          : isOpen
+            ? 'bg-blue-600 text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]'
+            : 'bg-[#1c1c1e] hover:bg-[#2a2a2c] hover:text-white/70 active:bg-[#2c2c2e] text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+        }`}
         title="CBS Araçları"
       >
         <i className={`fa-solid fa-screwdriver-wrench text-[13px] ${isOpen ? 'rotate-45' : ''} transition-transform duration-300`}></i>
@@ -303,9 +303,9 @@ export default function GISToolsControl() {
       {/* Full Mode Panel */}
       <div
         className={`mt-2 w-[185px] bg-white/90 backdrop-blur-xl border border-zinc-200/80 rounded-xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.1)] flex flex-col max-h-[calc(100vh-120px)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${toolsMenuMode === 'full'
-            ? 'translate-y-0 opacity-100 scale-100'
-            : '-translate-y-4 opacity-0 scale-95 pointer-events-none'
-          }`}
+          ? 'translate-y-0 opacity-100 scale-100'
+          : '-translate-y-4 opacity-0 scale-95 pointer-events-none'
+        }`}
       >
         {/* Header */}
         <div className="flex items-center px-3 py-1.5 border-b border-zinc-100">
@@ -386,11 +386,11 @@ function ToolIconButton({ tool, label, active, onClick }: ToolIconButtonProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200 ${showActive
-          ? `${tool.activeBg} ${tool.activeBorder} ring-1 ${active ? 'shadow-sm' : ''}`
-          : hovered && tool.noHoverPreview
-            ? 'ring-1 ring-zinc-800'
-            : 'hover:scale-105'
-        }`}
+        ? `${tool.activeBg} ${tool.activeBorder} ring-1 ${active ? 'shadow-sm' : ''}`
+        : hovered && tool.noHoverPreview
+          ? 'ring-1 ring-zinc-800'
+          : 'hover:scale-105'
+      }`}
       title={label}
     >
       <Icon
@@ -421,15 +421,15 @@ function ToolMenuItem({ tool, label, active, onClick }: ToolMenuItemProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={`w-full flex items-center gap-2 px-2 py-[5px] rounded-md transition-all duration-150 ${showActive
-          ? `${tool.activeBg} text-zinc-900`
-          : hovered
-            ? 'bg-zinc-100 text-zinc-700'
-            : 'text-zinc-600'
-        } ${tool.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+        ? `${tool.activeBg} text-zinc-900`
+        : hovered
+          ? 'bg-zinc-100 text-zinc-700'
+          : 'text-zinc-600'
+      } ${tool.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       {/* Icon box */}
       <div className={`flex shrink-0 items-center justify-center w-5 h-5 rounded-[4px] border transition-all duration-200 ${showActive ? `${tool.activeBg} ${tool.activeBorder}` : 'bg-zinc-50 border-zinc-200/60'
-        }`}>
+      }`}>
         <Icon
           className={`transition-colors duration-200 ${showActive ? tool.activeColor : 'text-zinc-500'}`}
           size={11}

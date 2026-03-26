@@ -4,9 +4,8 @@
  */
 
 import { SingleSlider } from '@/components/ui'
-import { DEFAULT_BACKDROP_FILL_OPACITY } from '@/features/visualization/point/services/PointRenderer'
 import { LegendConfig } from '@/shared/legend'
-import { BubbleSettings, DotDensitySettings } from '@/shared/visualization'
+import { BubbleSettings, DEFAULT_BACKDROP_FILL_OPACITY, DotDensitySettings } from '@/shared/visualization'
 import type { ClassificationMethod, VizType } from '@/types/visualization'
 
 import { MapTitleSection } from './components/MapTitleSection'

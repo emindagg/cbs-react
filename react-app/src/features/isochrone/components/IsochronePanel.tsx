@@ -72,7 +72,7 @@ export default function IsochronePanel({
 
   const areaStats = isochroneData?.features
     ? isochroneData.features
-      .filter((f) => f.properties?.area != null)
+      .filter((f) => f.properties?.area !== null && f.properties?.area !== undefined)
       .sort((a, b) => (a.properties?.value ?? 0) - (b.properties?.value ?? 0))
     : []
 

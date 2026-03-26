@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { DataItem } from '../types'
+import { useDataManagementStore } from './useDataManagementStore'
 
 vi.mock('./indexedDbStorage', () => ({
   indexedDbStorage: {
@@ -9,8 +10,6 @@ vi.mock('./indexedDbStorage', () => ({
     removeItem: vi.fn(),
   },
 }))
-
-import { useDataManagementStore } from './useDataManagementStore'
 
 const pointGeometry: DataItem['geometry'] = {
   type: 'Point',

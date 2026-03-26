@@ -10,8 +10,8 @@ import type maplibregl from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { BUBBLE_DEFAULT_FILL_COLOR } from '@/features/visualization/bubble/constants'
 import {
+  BUBBLE_DEFAULT_FILL_COLOR,
   DEFAULT_DOT_COLOR,
   DEFAULT_DOT_OPACITY,
   DEFAULT_DOT_SIZE,

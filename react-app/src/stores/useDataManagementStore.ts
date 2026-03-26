@@ -1,10 +1,12 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
+import { indexedDbStorage } from '@/features/data-management'
+import type { DataItem, DataManagementStore, LayerStyles, NewDataItem } from '@/features/data-management'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 
-import type { DataManagementStore, LayerStyles, NewDataItem } from '@/features/data-management/types'
-import { indexedDbStorage } from '@/features/data-management/store/indexedDbStorage'
+export type { DataItem }
+
 
 const defaultLayerStyles: LayerStyles = {
   clusterEnabled: false,

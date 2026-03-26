@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import type { IsochroneStore, OrsProfile, RouteStats } from '@/features/isochrone/types'
+import type { IsochroneStore, OrsProfile, RouteStats } from '@/features/isochrone'
 
 const DEFAULT_TIMES = [5, 10, 15]
 

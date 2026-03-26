@@ -3,7 +3,7 @@
  * Controls: dot value (input), dot size (slider), dots-represent label
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { SingleSlider } from '@/components/ui'
 import type { VisualizationSettings } from '@/types/visualization'
@@ -55,11 +55,13 @@ export function DotDensitySettings({
     vizSettings.dotValue !== undefined ? vizSettings.dotValue.toLocaleString('tr-TR') : '',
   )
   const dotValueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [prevDotValue, setPrevDotValue] = useState(vizSettings.dotValue)
 
-  useEffect(() => {
-    if (vizSettings.dotValue === undefined) setInputStr('')
-    else setInputStr(vizSettings.dotValue.toLocaleString('tr-TR'))
-  }, [vizSettings.dotValue])
+  // Dışarıdan dotValue değişince inputStr'i senkronize et (React "store prev value" pattern)
+  if (prevDotValue !== vizSettings.dotValue) {
+    setPrevDotValue(vizSettings.dotValue)
+    setInputStr(vizSettings.dotValue !== undefined ? vizSettings.dotValue.toLocaleString('tr-TR') : '')
+  }
 
   const applyDotValue = useCallback(
     (raw: string) => {

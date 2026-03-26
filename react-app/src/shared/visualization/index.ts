@@ -11,4 +11,6 @@ export {
   BubbleSettings,
   useBubbleTooltip,
   useChoroplethTooltip,
+  BUBBLE_DEFAULT_FILL_COLOR,
+  DEFAULT_BACKDROP_FILL_OPACITY,
 } from '@/features/visualization'

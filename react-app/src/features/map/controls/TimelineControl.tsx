@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useRef, useMemo, useState } from 'react'
 
-import { useDataManagementStore } from '@/features/data-management'
-import {
-  useTimelineStore,
-  type FilterMode,
-  type TimeStep,
-} from '@/features/timeline'
+import { useDataManagementStore } from '@/stores/useDataManagementStore'
+import { useTimelineStore, type FilterMode, type TimeStep } from '@/stores/useTimelineStore'
 import { useToolStore } from '@/stores/useToolStore'
 
 const STEP_LABEL: Record<TimeStep, string> = { hour: 'Saat', day: 'Gün', week: 'Hafta', month: 'Ay', year: 'Yıl' }
