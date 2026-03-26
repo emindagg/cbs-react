@@ -1,24 +1,23 @@
-﻿# Görev: COLOR_SCALE dokümanlarını projeye göre güncelle
-Tarih: 2026-03-25
+﻿# Görev: README adını ve özetini güncelle
+Tarih: 2026-03-26
 
 ## Bağlam
-`docs/COLOR_SCALE_FEATURES.md` ve `docs/ARCHITECTURE.md` dosyaları mevcut React uygulamasındaki gerçek renk ölçeği akışını eksik veya kısmen eski şekilde anlatıyor.
-Özellikle Step3 görünürlük kuralları, stepped/continuous ayrımı, renderer ilişkisi ve architecture içindeki renk ölçeği zinciri kodla birebir hizalanmalı.
+`README.md` hâlâ eski proje adı ve eski feature sayısı üzerinden konuşuyor.
+README içeriğinin `OGM Materyal CBS` adıyla ve güncel 19 feature envanteriyle hizalanması gerekiyor; varsa yanlış ürün adı referansları kaldırılmalı.
 
 ## Plan
-- [x] Adım 1: Proje yapısını, ilgili docs dosyalarını ve renk ölçeğiyle ilgili kod yollarını incele
-- [x] Adım 2: Mevcut implementasyondaki gerçek feature setini ve mimari akışı çıkar, yanlış doküman iddialarını temizle
-- [x] Adım 3: `docs/COLOR_SCALE_FEATURES.md` dosyasını Türkçe, güncel ve kodla hizalı şekilde son doğrulamayla güncelle
-- [x] Adım 4: `docs/ARCHITECTURE.md` içindeki görselleştirme ve renk ölçeği bölümlerini gerçek state/render zincirine göre güncelle
-- [x] Adım 5: Diff ve ilgili test/okuma kontrolleriyle doğrula
+- [x] Adım 1: Mevcut README içeriğini ve proje adı referanslarını tara
+- [x] Adım 2: README başlığını ve ürün adını `OGM Materyal CBS` olacak şekilde güncelle
+- [x] Adım 3: README özetini, feature sayısını ve ana modül listesini güncel repo durumuna göre hizala
+- [x] Adım 4: Diff ve encoding kontrolleriyle değişikliği doğrula
 
 ## Doğrulama kriterleri
-- [x] Dokümanlarda geçen dosya yolları ve bileşen adları repo ile birebir eşleşmeli
-- [x] İki doküman da sadece gerçekten mevcut olan UI davranışlarını, store sözleşmelerini ve utility yeteneklerini anlatmalı
-- [x] Architecture dokümanı `vizSettings` / `colorConfig` ayrımını, renderer expression akışını ve bubble tek renk istisnasını doğru anlatmalı
+- [x] README başlığı `OGM Materyal CBS` olmalı
+- [x] README içindeki feature sayısı ve feature listesi güncel repo ile uyumlu olmalı
+- [x] Yanlış ürün adı referansları README içinde bulunmamalı
 - [x] Türkçe karakterler ve UTF-8 bütünlüğü korunmalı
 - [x] Değişiklik diff'i yalnızca gerekli dosyaları içermeli
 
 ## Sonuç
-`docs/COLOR_SCALE_FEATURES.md`, `docs/ARCHITECTURE.md` ve `tasks/todo.md` güncellendi.
-Doğrulama için `git diff --check`, hedefli dosya yolu aramaları, UTF-8 bozulma taraması ve diff kapsam kontrolü yapıldı.
+`README.md` proje adı ve özet akışı açısından güncellendi.
+Doğrulama için README taraması, feature klasör sayısı kontrolü ve `git diff --check -- README.md tasks/todo.md` kullanıldı.

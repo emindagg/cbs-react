@@ -1,579 +1,334 @@
-# Features Documentation
+﻿# Features Documentation
 
 **Project:** CBS React Map Visualization Platform
-**Last Updated:** 22 Şubat 2026
+**Last Updated:** 26 Mart 2026
 
 ---
 
-## Feature Overview
+## Genel Bakış
 
-Bu proje 13 ana feature'dan oluşmaktadır. Her feature kendi domain'inden sorumludur ve bağımsız olarak geliştirilebilir. Feature'lar Vertical Slice Architecture prensibiyle organize edilir ve dışarıya `index.ts` barrel export üzerinden public API açar.
+Bu repo artık `src/features/` altında **19 feature modülü** içeriyor. Eski dokümanlardaki `13 feature` ifadesi güncel durumu yansıtmıyor.
 
-### Feature List
+Feature'lar hâlâ Vertical Slice yaklaşımıyla organize ediliyor, ancak hepsi aynı ağırlıkta değil:
+- Bazıları tam feature paketi olarak `component + hook + service/renderer + store` içeriyor.
+- Bazıları store-first davranıyor ve UI'si başka feature içinde mount ediliyor.
+- Bazıları da tek bileşenli sunum feature'ı olarak çalışıyor.
 
-| Feature | Path | Description | Status |
-|---------|------|-------------|--------|
-| [Astronomy](#astronomy) | `src/features/astronomy/` | Güneş/Ay konum hesaplaması | Stable |
-| [Basemap](#basemap) | `src/features/basemap/` | Altlık harita değiştirme | Stable |
-| [Clustering](#clustering) | `src/features/clustering/` | Nokta kümeleme | Stable |
-| [Data Import](#data-import) | `src/features/data-import/` | Dosya içe aktarma & parse | Stable |
-| [Data Management](#data-management) | `src/features/data-management/` | Veri/katman yönetimi & çizim araçları | Stable |
-| [Data Mapper](#data-mapper) | `src/features/data-mapper/` | Sütun eşleme & veri düzenleme | Stable |
-| [Geocoder](#geocoder) | `src/features/geocoder/` | Adres arama & geocoding | Stable |
-| [Globe View](#globe-view) | `src/features/globe-view/` | 3D küre görünümü | Beta |
-| [Layers](#layers) | `src/features/layers/` | Overlay katman yönetimi | Stable |
-| [Legend](#legend) | `src/features/legend/` | Lejant bileşenleri | Stable |
-| [Map](#map) | `src/features/map/` | Çekirdek harita işlevselliği | Stable |
-| [Visualization](#visualization) | `src/features/visualization/` | Görselleştirme render'ları (choropleth, bubble, dot) | Stable |
-| [Viz Wizard](#viz-wizard) | `src/features/viz-wizard/` | Görselleştirme sihirbazı (3 adım) | Stable |
+Tüm feature'ların dışarı açtığı yüzey `index.ts` üzerinden tanımlanıyor. Bu doküman public API yüzeyini, gerçek runtime rolünü ve feature'lar arası güncel ilişkiyi kod tabanıyla hizalı şekilde özetler.
 
 ---
 
-## Feature Details
+## Uygulama Orkestrasyonu
+
+Güncel uygulama akışı:
+1. `src/main.tsx`
+   - Render öncesi `localStorage`, `sessionStorage`, `Cache Storage` ve mevcut `IndexedDB` verilerini temizler.
+   - Ardından `App` bileşenini başlatır.
+2. `src/App.tsx`
+   - `MapProvider` ve `react-hot-toast` `Toaster` ile uygulama kabuğunu kurar.
+   - `useGoogleAnalytics` hook'unu initialize eder.
+3. `src/components/layout/AppLayout.tsx`
+   - Uygulamanın gerçek orchestrator katmanıdır.
+   - `Sidebar`, `MapContainer`, `SearchContainer`, `LayersPanel`, `AstroPanel`, `MapTitle`, `HeatmapPanel`, `SpatialAnalysisPanel`, `IsochronePanel`, `ElevationProfilePanel`, `LegendContainer`, `ImportedDataManagerFab`, `CoordinateDisplay` ve `StorymapModal` bileşenlerini compose eder.
+
+Sidebar tarafında `VizWizardSidebar`, `DataMapperModal` ve `DataManagementSection` birlikte çalışır. Harita tarafında `MapContainer`, ölçüm araçları, veri katmanları, zaman çizelgesi ve ileri analiz araçlarının mount noktasıdır.
+
+---
+
+## Güncel Feature Envanteri
+
+| Feature | Path | Primary Public API | Güncel rol |
+|---------|------|--------------------|------------|
+| Astronomy | `src/features/astronomy/` | `AstroPanel`, `useAstroMap`, `useAstroStore`, astro utils | Güneş/Ay katmanları, astronomi paneli ve hesaplama yardımcıları |
+| Basemap | `src/features/basemap/` | `BasemapSwitcher` | Altlık seçim UI'ı; gerçek raster çözümü `MapContainer` içinde |
+| Clustering | `src/features/clustering/` | `useClusteringStore`, `useClustering` | Nokta kümelerini `normal / clustered / hidden` modlarında yönetir |
+| Data Import | `src/features/data-import/` | `DataImportSection`, import hook'ları, parser servisleri | İnce import paketi; tam veri yaşam döngüsünün kanonik yeri değildir |
+| Data Management | `src/features/data-management/` | `useDataManagementStore`, yönetim bileşenleri, import/export hook'ları | Çizim, imported data, persist, layer style ve tam export hattının ana feature'ı |
+| Data Mapper | `src/features/data-mapper/` | `DataMapper`, `DataEditor`, `DataMapperModal` | AG Grid tabanlı eşleme ve veri düzenleme UI modülü |
+| Elevation Profile | `src/features/elevation-profile/` | `ElevationProfilePanel`, `ElevationProfileTool`, `useElevationProfile` | Harita üzerinde rota/çizgi seçip yükselti profili üretir |
+| Geocoder | `src/features/geocoder/` | `SearchContainer`, `useGeocoder` | Üst kontrol alanına gömülü arama ve geocoding akışı |
+| Globe View | `src/features/globe-view/` | `useGlobeView`, `GlobeToggleButton` | Mercator/globe projeksiyon geçişi |
+| Heatmap | `src/features/heatmap/` | `HeatmapPanel`, `useHeatmap`, `useHeatmapStore`, `HeatmapRenderer` | Nokta verilerinden yoğunluk tabanlı ısı haritası üretir |
+| Isochrone | `src/features/isochrone/` | `IsochronePanel`, `useIsochrone`, `useIsochroneStore` | Erişilebilirlik analizi, isochrone ve rota akışı |
+| Layers | `src/features/layers/` | `LayersPanel`, `useOverlayLayers` | Hazır overlay katmanlarını yükler ve stillerini yönetir |
+| Legend | `src/features/legend/` | `LegendContainer`, `DynamicLegend`, `ColorLegend`, `BubbleSizeLegend`, `DotDensityLegend` | Görselleştirme tipine göre uygun legend bileşenini seçer |
+| Map | `src/features/map/` | `MapContainer`, `MapControlStack`, `DataLayer`, araç/controls export'ları | Çekirdek harita kabuğu, tool mount noktası ve veri katmanları |
+| Spatial Analysis | `src/features/spatial-analysis/` | `SpatialAnalysisPanel`, `useSpatialAnalysis`, renderer'lar | Convex hull, Voronoi ve nearest-points analizi |
+| Storymap Modal | `src/features/storymap-modal/` | `StorymapModal` | Storymap içeriğini iframe modal olarak gösterir |
+| Timeline | `src/features/timeline/` | `useTimelineStore`, `STEP_MS`, timeline tipleri | Zaman tabanlı filtreleme ve oynatma durumu; UI `map` feature içinde |
+| Visualization | `src/features/visualization/` | renderer'lar, tooltip hook'ları, `VisualizationManager`, `useVisualizationLayerPersistence` | Choropleth, bubble ve dot-density render orkestrasyonu |
+| Viz Wizard | `src/features/viz-wizard/` | `VizWizardStep1`, `VizWizardStep2`, `VizWizardStep3`, `VizWizardSidebar`, `MapTitle` | İçe aktarma, eşleme, render ve harita sunum ayarlarını yöneten sihirbaz |
+
+---
+
+## Feature Detayları
 
 ### Astronomy
 
 **Path:** `src/features/astronomy/`
-**Purpose:** Güneş ve Ay konumlarını harita üzerinde hesapla ve göster
+**Public API:** `AstroPanel`, `useAstroMap`, `useAstroStore`, `astroUtils`, `eclipseUtils`
 
-**Components:**
-- `AstroPanel` - Astronomi kontrol paneli
+Gerçek kapsam dokümanın eski sürümündekinden daha geniştir.
+- Bileşenler: `AstroPanel`, `MoonPhaseDisplay`
+- Hook'lar: `useAstroMap`, `useAstroLayers`, `useAstroInteraction`, `useAstroData`
+- Store: `useAstroStore`
+- Yardımcılar: `astroUtils`, `eclipseUtils`, `sunVisual`, `moonPhaseVisual`
 
-**Hooks:**
-- `useAstroMap` - Astronomi hesaplamaları ve harita entegrasyonu
-
-**Stores:**
-- `useAstroStore` - Astronomi state yönetimi
-
-**Utils:**
-- `astroUtils` - Astronomik hesaplama yardımcıları
-- `eclipseUtils` - Tutulma hesaplama yardımcıları
-
-**Dependencies:**
-- `astronomy-engine` - Astronomik hesaplamalar
-
-**Public API:**
-```typescript
-import { AstroPanel, useAstroMap, useAstroStore } from '@/features/astronomy'
-```
-
----
+Feature panel kontrollü Güneş/Ay görselleştirmelerini ve ilgili hesaplama yardımcılarını sağlar.
 
 ### Basemap
 
 **Path:** `src/features/basemap/`
-**Purpose:** Farklı altlık harita sağlayıcıları arasında geçiş
+**Public API:** `BasemapSwitcher`
 
-**Components:**
-- `BasemapSwitcher` - Altlık harita seçim UI
-
-**Basemap Seçenekleri:**
-- HGM Atlas: Temel, Uydu, Gece, Siyasi, Yükseklik
-- CartoDB: Light (varsayılan), Dark, Voyager
-- Esri: Satellite
-- None (boş arka plan)
-
-**Public API:**
-```typescript
-import { BasemapSwitcher } from '@/features/basemap'
-```
-
----
+Bu feature altlık seçim UI'ıdır; gerçek tile endpoint çözümü `src/features/map/components/MapContainer.tsx` içinde yapılır.
+- Görünür UI seçenekleri: `CARTO_LIGHT`, `ESRI_SATELLITE`, `TEMEL`, `UYDU`, `GECE`, `SIYASI`, `YUKSEKLIK`, `NONE`
+- Store ve `MapContainer` tarafında ek olarak `CARTO_DARK` ve `CARTO_VOYAGER` desteği vardır, ancak switcher UI'ında görünmez.
+- Seçim durumu `useMapStore` üzerinden tutulur.
 
 ### Clustering
 
 **Path:** `src/features/clustering/`
-**Purpose:** Harita üzerindeki noktaları kümeleme
+**Public API:** `useClusteringStore`, `ClusterMode`, `useClustering`
 
-**Hooks:**
-- `useClustering` - Kümeleme mantığı
-
-**Stores:**
-- `useClusteringStore` - Kümeleme state
-
-**Public API:**
-```typescript
-import { useClustering, useClusteringStore } from '@/features/clustering'
-```
-
----
+Bu feature yalnız bir toggle değildir.
+- Üç modlu davranış: `normal`, `clustered`, `hidden`
+- `useClustering` hook'u görünür nokta verilerini `data-management`, zaman filtresini `timeline`, map instance'ını `useMapStore` üzerinden okur.
+- Runtime'da `clustered-points-source`, `clusters-layer`, `cluster-count-layer` ve `unclustered-point-layer` oluşturur.
 
 ### Data Import
 
 **Path:** `src/features/data-import/`
-**Purpose:** Çeşitli dosya formatlarından veri içe aktarma
+**Public API:** `DataImportSection`, `ColumnMapperModal`, `ExportControls`, `UrlImporter`, `useFileImport`, `useUrlImport`, `useDataExport`, parser servisleri, mapper util'leri
 
-**Components:**
-- `DataImportSection` - Ana içe aktarma UI
-- `ColumnMapperModal` - Sütun eşleme modal'ı
-- `ExportControls` - Dışa aktarma kontrolleri
-- `UrlImporter` - URL tabanlı içe aktarma
-
-**Hooks:**
-- `useFileImport` - Dosya içe aktarma mantığı
-- `useUrlImport` - URL içe aktarma mantığı
-- `useDataExport` - Dışa aktarma mantığı
-
-**Services:**
-- `fileParser` - Dosya parse dispatcher
-- `geoJsonProcessor` - GeoJSON işleme
-- `excelProcessor` - Excel/CSV işleme (PapaParse + SheetJS)
-- `kmlProcessor` - KML işleme (@tmcw/togeojson)
-- `shapefileProcessor` - Shapefile işleme (shpjs)
-
-**Utils:**
-- `columnDetector` - Otomatik sütun tipi tespiti
-- `dataMapper` - Veriyi GeoJSON öğelerine dönüştürme
-
-**Constants:**
-- `formats` - Desteklenen formatlar, kabul desenleri, sütun desenleri
-
-**Desteklenen Formatlar:**
-- Excel (.xlsx, .xls)
-- CSV (.csv)
-- GeoJSON (.geojson, .json)
-- KML (.kml)
-- Shapefile (.zip)
-
-**Public API:**
-```typescript
-import {
-  DataImportSection,
-  ColumnMapperModal,
-  ExportControls,
-  UrlImporter,
-  useFileImport,
-  useUrlImport,
-  useDataExport,
-  parseFile,
-  detectColumns,
-  transformToGeoItems,
-} from '@/features/data-import'
-```
-
----
+Bu feature repoda hâlâ ayrı bir import paketi olarak duruyor, ancak veri yaşam döngüsünün kanonik alanı değildir.
+- Parser zinciri: `fileParser`, `geoJsonProcessor`, `excelProcessor`, `kmlProcessor`, `shapefileProcessor`
+- Yardımcılar: `detectColumns`, `transformToGeoItems`, format sabitleri
+- Hook'lar veri yazarken `useDataStore` kullanır; bu store bağımsız bir domain store değil, `useDataManagementStore` için compatibility bridge'dir.
+- `useDataExport` yüzeyi sınırlıdır; tam export kabiliyeti `data-management` tarafındadır.
 
 ### Data Management
 
 **Path:** `src/features/data-management/`
-**Purpose:** Veri öğelerini yönetme, katman stilleri ve çizim araçları
+**Public API:** `useDataManagementStore`, `DataCatalogSection`, `DataCreationSection`, `DataImportExportSection`, `DataManagementDrawTool`, `DataManagementSection`, `ImportedDataManagerFab`, `ImportedDataTableModal`, `ColumnMapperModal`, `ExportControls`, `UrlImporter`, `useDataExport`, `useFileImport`, `useLayerStyleSync`, `useUrlImport`
 
-**Components:**
-- `DataManagementSection` - Ana veri yönetimi paneli
-- `DataCatalogSection` - Veri kataloğu
-- `DataCreationSection` - Yeni veri oluşturma
-- `DataImportExportSection` - İçe/dışa aktarma bölümü
-- `ImportedDataManagerFab` - Floating action button
-- `ImportedDataTableModal` - İçe aktarılan veri tablosu modal'ı
-- `ColumnMapperModal` - Sütun eşleme modal'ı
-- `ExportControls` - Dışa aktarma kontrolleri
-- `UrlImporter` - URL tabanlı içe aktarma
-
-**Hooks:**
-- `useFileImport` - Dosya içe aktarma
-- `useUrlImport` - URL içe aktarma
-- `useDataExport` - Dışa aktarma
-- `useLayerStyleSync` - MapLibre paint property senkronizasyonu (INP optimizasyonu)
-
-**Store:**
-- `useDataManagementStore` - Veri öğeleri, çizim modu, katman stilleri, IndexedDB persist
-
-**Types:**
-- `DataItem`, `NewDataItem` - Veri öğe tipleri
-- `DrawMode` - Çizim modları (none, point, polygon, line)
-- `LayerStyles` - Katman stil konfigürasyonu
-- `ColumnMapping`, `ParseResult`, `MapperData` - Veri eşleme tipleri
-- `DataManagementStore` - Store interface
-
-**Public API:**
-```typescript
-import {
-  useDataManagementStore,
-  DataManagementSection,
-  ImportedDataManagerFab,
-  useFileImport,
-  useLayerStyleSync,
-} from '@/features/data-management'
-```
-
----
+Bu feature projenin kanonik veri domain'idir.
+- Store `src/stores/useDataManagementStore.ts` içinde tutulur; feature altındaki `store/useDataManagementStore.ts` sadece re-export yapar.
+- Imported/drawn item ayrımı, draw mode, selected item, imported source visibility, layer style ve FAB konumu burada yönetilir.
+- Persist katmanı `indexedDbStorage` üzerinden çalışır.
+- `useLayerStyleSync`, MapLibre paint/layout property güncellemelerini doğrudan uygular.
+- Export zinciri burada daha tamdır: GeoJSON, KML, SHP ve XLSX exporter servisleri bulunur.
 
 ### Data Mapper
 
 **Path:** `src/features/data-mapper/`
-**Purpose:** Sütun eşleme ve AG Grid ile veri düzenleme
+**Public API:** `DataMapper`, `DataEditor`, `DataMapperModal`
 
-**Components:**
-- `DataMapper` - Ana eşleme bileşeni
-- `DataEditor` - AG Grid tabanlı spreadsheet düzenleyici
-- `DataMapperModal` - Modal wrapper
+Bu feature bir hook/service paketi değil, interaktif bir veri eşleme ve düzenleme UI modülüdür.
+- AG Grid tabanlı editor/grid katmanı içerir.
+- İç bileşenler: `Editor`, `Grid`, `Modal`, `ModalToolbar`, `SidebarForm`, `CorrectionPanel`, `StatusCell`
+- İç hook: `useColumns`
+- Dışarı açılan public hook bulunmaz.
 
-**Hooks:**
-- `useDataMapper` - Eşleme mantığı
+### Elevation Profile
 
-**Özellikler:**
-- Sütun eşleme
-- AG Grid ile veri düzenleme
-- Gerçek zamanlı validasyon
-- Türkçe metin normalizasyonu
+**Path:** `src/features/elevation-profile/`
+**Public API:** `ElevationProfilePanel`, `ElevationProfileTool`, `useElevationProfile`, `useElevationProfileStore`, tipler
 
-**Public API:**
-```typescript
-import { DataMapper, DataEditor, DataMapperModal } from '@/features/data-mapper'
-```
-
----
+Feature iki parçalı çalışır.
+- `ElevationProfileTool`, `MapContainer` içinde mount edilir ve waypoint/çizgi etkileşimini yönetir.
+- `ElevationProfilePanel`, `AppLayout` içinde mount edilir.
+- `useElevationProfile` akışı yükseklik verisi, istatistik, aktif nokta ve finalize işlemlerini orkestre eder.
+- API katmanı `services/elevationProfileApi.ts` içindedir.
 
 ### Geocoder
 
 **Path:** `src/features/geocoder/`
-**Purpose:** Adres arama ve geocoding
+**Public API:** `SearchContainer`, `useGeocoder`
 
-**Components:**
-- `SearchContainer` - Arama UI
-
-**Hooks:**
-- `useGeocoder` - Geocoding mantığı
-
-**Services:**
-- `geocoderApi` - Geocoding API entegrasyonu
-
-**Types:**
-- `GeocoderResult` - Arama sonuç tipi
-
-**Public API:**
-```typescript
-import { SearchContainer, useGeocoder } from '@/features/geocoder'
-```
-
----
+Geocoder feature yalnızca bir arama kutusu değildir.
+- `SearchContainer`, `AppLayout` içinde üst kontrol alanında kullanılır.
+- `SearchResults`, `geocoderService`, `types/atlasGeocoder.ts` dosyaları feature'ın gerçek kapsamındadır.
+- Eski dokümandaki `geocoderApi` adı güncel değildir; gerçek servis adı `geocoderService`'dir.
+- Aynı alan globe toggle, layers panel durumu ve storymap açma davranışıyla entegredir.
 
 ### Globe View
 
 **Path:** `src/features/globe-view/`
-**Purpose:** 2D/3D projeksiyon geçişi
+**Public API:** `useGlobeView`, `GlobeToggleButton`
 
-**Components:**
-- `GlobeToggleButton` - Küre modu geçiş butonu
+Feature kendi başına harita sahnesi kurmaz; `map` feature ile birlikte çalışır.
+- `useGlobeView`, MapLibre `setProjection` ile `mercator / globe` geçişini yapar.
+- `GlobeToggleButton` toggle UI yüzeyidir.
+- Globe görünümündeki uzay arka planı ve koyu background layer uygulaması `MapContainer` içinde yapılır.
 
-**Hooks:**
-- `useGlobeView` - Küre görünüm mantığı
+### Heatmap
 
-**Public API:**
-```typescript
-import { GlobeToggleButton, useGlobeView } from '@/features/globe-view'
-```
+**Path:** `src/features/heatmap/`
+**Public API:** `HeatmapPanel`, `useHeatmap`, `useHeatmapStore`, `HeatmapRenderer`, tipler
 
----
+Feature imported/drawn nokta verilerinden yoğunluk haritası üretir.
+- `GISToolsControl` aktivasyonu tetikler.
+- `AppLayout` paneli mount eder.
+- `useHeatmap` sayısal alanlar, preset'ler ve görünür veri üzerinden konfigürasyonu yönetir.
+- `HeatmapRenderer` MapLibre katman üretiminden sorumludur.
+
+### Isochrone
+
+**Path:** `src/features/isochrone/`
+**Public API:** `IsochronePanel`, `useIsochrone`, `useIsochroneStore`, tipler
+
+Feature erişilebilirlik analizi akışını yönetir.
+- Servisler: `isochroneApi`, `IsochroneRenderer`, `RouteRenderer`
+- Panel `AppLayout` içinde mount edilir.
+- Aktivasyon `GISToolsControl` üzerinden yapılır.
+- Harita etkileşiminden başlangıç noktası alır, süre halkaları ve rota akışını yönetir.
 
 ### Layers
 
 **Path:** `src/features/layers/`
-**Purpose:** Overlay katman yönetimi (il/ilçe sınırları, özel katmanlar)
+**Public API:** `LayersPanel`, `useOverlayLayers`
 
-**Components:**
-- `LayersPanel` - Katman yönetim paneli
-
-**Hooks:**
-- `useOverlayLayers` - Overlay katman mantığı (toggle, opacity, color)
-
-**Public API:**
-```typescript
-import { LayersPanel, useOverlayLayers } from '@/features/layers'
-```
-
----
+Bu feature overlay layer yönetimi için iki parçalıdır.
+- `LayersPanel` sadece UI render eder.
+- Asıl yükleme ve stil yönetimi `useOverlayLayers` hook'unda bulunur.
+- Overlay seti config tabanlıdır ve şu an `akarsular`, `sular`, `ulasim`, `dfy` katmanlarını yönetir.
+- Hook, shapefile zip kaynaklarını `shpjs` ile alır ve `styledata` sonrası source/layer durumunu yeniden uygular.
 
 ### Legend
 
 **Path:** `src/features/legend/`
-**Purpose:** Tüm görselleştirme tipleri için lejant bileşenleri
+**Public API:** `DynamicLegend`, `DotDensityLegend`, `BubbleSizeLegend`, `ColorLegend`, `LegendBar`, `LegendLabels`, `SmartLabel`, `LegendConfig`, `LegendContainer`, `useLabelCollision`, tipler
 
-**Components:**
-- `DynamicLegend` - Genel lejant
-- `DotDensityLegend` - Nokta yoğunluğu lejantı
-- `BubbleSizeLegend` - Bubble boyut lejantı
-- `ColorLegend` - Gelişmiş renk lejantı
-- `LegendBar` - Lejant çubuğu
-- `LegendLabels` - Lejant etiketleri
-- `SmartLabel` - Akıllı etiket konumlandırma
-- `LegendConfig` - Konfigürasyon UI
-- `LegendContainer` - Store bağlayıcısı
-
-**Hooks:**
-- `useLabelCollision` - Etiket çakışma tespiti
-
-**Utils:**
-- `itemGenerators` - Lejant öğe üreteçleri
-
-**Types:**
-- `LegendConfiguration` - Lejant konfigürasyon tipi
-- `DynamicLegendProps`, `LegendBarProps`, `LegendLabelsProps`
-
-**Lejant Tipleri:**
-- Choropleth (renk skalası)
-- Bubble (boyut skalası)
-- Dot Density (1 nokta = X değer)
-
-**Public API:**
-```typescript
-import {
-  DynamicLegend,
-  DotDensityLegend,
-  BubbleSizeLegend,
-  ColorLegend,
-  LegendContainer,
-  LegendConfig,
-  useLabelCollision,
-} from '@/features/legend'
-```
-
----
+Legend feature yalnızca statik bileşen listesi değildir; seçim mantığı içerir.
+- `LegendContainer`, store durumuna ve viz tipine göre uygun legend bileşenini seçer.
+- Dot-density için `DotDensityLegend`, tek değişkenli bubble için çoğunlukla `BubbleSizeLegend`, choropleth ve bazı bubble senaryoları için `DynamicLegend` veya `ColorLegend` kullanılır.
+- `DynamicLegend` sürükle-bırak, başlık inline edit ve etiket çakışma yönetimi içerir.
+- Yardımcılar: `itemGenerators`, `collapseConsecutiveLabels`, `disambiguateBoundaryLabels`, `selectEvenlySpacedItems`
 
 ### Map
 
 **Path:** `src/features/map/`
-**Purpose:** Çekirdek harita işlevselliği, kontroller, katmanlar ve araçlar
+**Public API:** `MapContainer`, `MapControlStack`, `ZoomControls`, `GISToolsControl`, `CoordinateDisplay`, `GeolocationButton`, `useCoordinateDisplay`, `useGeolocation`, `DataLayer`, `DistanceTool`, `DrawTool`
 
-**Components:**
-- `MapContainer` - Ana harita container'ı (react-map-gl/MapLibre GL)
+Bu feature çekirdek harita kabuğudur.
+- `MapContainer` içinde raster basemap source/layer, `DistanceTool`, `ElevationProfileTool`, `DataManagementDrawTool`, `DataLayer`, `GISToolsControl` ve `TimelineControl` mount edilir.
+- Harita dışı yardımcı kontroller `DraggableScaleControl`, `DraggableNorthArrow` ve `MapCompass` ile tamamlanır.
+- `MapControlStack`, sidebar toggle, zoom, geolocation, injected basemap control ve astronomy toggle içerir.
+- `GISToolsControl` yalnız ölçüm değil; buffer, clustering, heatmap, isochrone, convex hull, voronoi, nearest points, elevation profile, screenshot ve temizleme aksiyonlarını tetikler.
 
-**Controls:**
-- `MapControlStack` - Kontrol yığını (hamburger, zoom, basemap, astro)
-- `ZoomControls` - Yakınlaştırma/uzaklaştırma
-- `GISToolsControl` - CBS araçları (buffer analizi, ölçüm)
+### Spatial Analysis
 
-**Layers:**
-- `DataLayer` - Veri görselleştirme katmanı
+**Path:** `src/features/spatial-analysis/`
+**Public API:** `SpatialAnalysisPanel`, `useSpatialAnalysis`, `useSpatialAnalysisStore`, `ConvexHullRenderer`, `VoronoiRenderer`, `NearestPointsRenderer`, tipler
 
-**Tools:**
-- `DistanceTool` - Mesafe ölçme aracı
-- `DrawTool` - Çizim aracı (nokta, çizgi, poligon)
+Feature ileri mekânsal analiz araçlarını toplar.
+- Panel `AppLayout` içinde mount edilir.
+- Aktivasyon `GISToolsControl` içindeki `convex-hull`, `voronoi`, `nearest-points` aksiyonlarıyla yapılır.
+- Analizler görünür veri noktalarından türetilir.
+- Renderer'lar sonuç katmanlarını haritaya uygular.
 
-**Public API:**
-```typescript
-import {
-  MapContainer,
-  MapControlStack,
-  ZoomControls,
-  GISToolsControl,
-  DataLayer,
-  DistanceTool,
-  DrawTool,
-} from '@/features/map'
-```
+### Storymap Modal
 
----
+**Path:** `src/features/storymap-modal/`
+**Public API:** `StorymapModal`
+
+Bu feature tek bileşenli bir sunum katmanıdır.
+- `AppLayout` içinde sürekli mount edilir.
+- Durum yönetimi `src/stores/useStorymapModalStore.ts` içindedir.
+- Storymap içeriğini iframe modal olarak açar; kapatma ve yeni sekmede açma akışlarını destekler.
+
+### Timeline
+
+**Path:** `src/features/timeline/`
+**Public API:** `useTimelineStore`, `STEP_MS`, `FilterMode`, `TimeStep`, `NumericFilter`, `TimelineState`
+
+Timeline store-first bir feature'dır.
+- Asıl mantık `src/features/timeline/stores/useTimelineStore.ts` içindedir.
+- Root store katmanındaki `src/stores/useTimelineStore.ts` yalnız re-export bridge'tir.
+- Görsel kontrol `src/features/map/controls/TimelineControl.tsx` içinde sunulur.
+- `DataLayer` ve `clustering` tarafı timeline filtresini tüketir.
 
 ### Visualization
 
 **Path:** `src/features/visualization/`
-**Purpose:** Tüm görselleştirme tiplerinin render mantığı
+**Public API:** `BubbleRenderer`, `BubbleSettings`, `useBubbleTooltip`, `ChoroplethRenderer`, `useChoroplethTooltip`, `PointRenderer`, `DotDensitySettings`, `DotColorPicker`, dot-density sabitleri/helper'ları, `VisualizationManager`, `useVisualizationLayerPersistence`
 
-**Alt Modüller:**
-
-**Choropleth** (`visualization/choropleth/`):
-- `ChoroplethRenderer` - Koreopleth render'ı
-- `ChoroplethSettings` - Stil ayarları
-- `useChoroplethTooltip` - Tooltip hook
-
-**Bubble** (`visualization/bubble/`):
-- `BubbleRenderer` - Bubble render'ı
-- `BubbleSettings` - Stil ayarları
-- `useBubbleTooltip` - Tooltip hook
-
-**Point / Dot Density** (`visualization/point/`):
-- `PointRenderer` - Nokta yoğunluğu render'ı
-- `DotDensitySettings` - Ayarlar
-- `DotColorPicker` - Nokta renk seçici
-- Sabitler: `DEFAULT_DOT_SIZE`, `DEFAULT_DOT_COLOR`, `TARGET_TOTAL_DOTS`, vb.
-- Yardımcılar: `buildZoomRadius`, `calculateSmartDotValue`
-
-**Shared** (`visualization/shared/`):
-- `VisualizationManager` - Orkestratör
-
-**Hooks:**
-- `useVisualizationLayerPersistence` - Basemap değişiminde katman koruma
-
-**Public API:**
-```typescript
-import {
-  ChoroplethRenderer, ChoroplethSettings, useChoroplethTooltip,
-  BubbleRenderer, BubbleSettings, useBubbleTooltip,
-  PointRenderer, DotDensitySettings, DotColorPicker,
-  VisualizationManager,
-  useVisualizationLayerPersistence,
-} from '@/features/visualization'
-```
-
----
+Visualization feature eski dokümandaki bazı iddialardan farklıdır.
+- `ChoroplethSettings` diye bir public bileşen yoktur.
+- `point` alt modülü fiilen dot-density odaklıdır.
+- `VisualizationManager`, il/ilçe GeoJSON yükleme, index oluşturma ve `choropleth / bubble / dot-density` yönlendirmesini yapar.
+- Önemli yardımcı dosyalar: `shared/labelLayers.ts`, `shared/customRange.ts`
+- `useVisualizationLayerPersistence`, style değişimlerinde katman geri yükleme akışını yönetir.
 
 ### Viz Wizard
 
 **Path:** `src/features/viz-wizard/`
-**Purpose:** 3 adımlı görselleştirme sihirbazı
+**Public API:** `VizWizardStep1`, `VizWizardStep2`, `VizWizardStep3`, `WizardProgress`, `MapTitle`, `VizWizardSidebar`
 
-**Steps:**
-- `VizWizardStep1` - Veri seçimi ve görselleştirme tipi
-- `VizWizardStep2` - Sütun eşleme
-- `VizWizardStep3` - Stil konfigürasyonu (renk, sınıflandırma, lejant)
-
-**Components:**
-- `WizardProgress` - İlerleme göstergesi
-- `MapTitle` - Harita başlığı bileşeni
-- `VizWizardSidebar` - Sidebar bölümü
-- `ColorScale/` - Renk skalası bileşenleri
-- `CustomRange/` - Özel aralık bileşenleri
-
-**Hooks:**
-- `useMatching` - Sütun eşleme mantığı (fuzzy matching)
-- `useVizRender` - Görselleştirme render tetikleme (full re-render vs paint-only)
-
-**Public API:**
-```typescript
-import {
-  VizWizardStep1,
-  VizWizardStep2,
-  VizWizardStep3,
-  WizardProgress,
-  MapTitle,
-  VizWizardSidebar,
-} from '@/features/viz-wizard'
-```
+Adım açıklamaları eski dokümandan farklıdır.
+- Step 1: Dosya yükleme ve ilk veri alma akışı
+- Step 2: GeoJSON matching ve `DataMapperModal` ile eşleme/düzenleme
+- Step 3: Görselleştirme tipi seçimi, render tetikleme, renk skalası, bubble/dot ayarları, custom breaks, custom range, map title ve legend ayarları
+- Önemli iç hook'lar: `useMatching`, `useVizRender`, `useVizSuggestion`, `steps/Step3/useVizWizardStep3`
+- Önemli iç modüller: `ColorScale`, `CustomRange`, `ColorSchemePicker`, `StyleConfig`, `MatchResults`
 
 ---
 
-## Feature Dependencies
+## Global Store ve Shared Altyapı
 
-### Dependency Graph
+### Global Store'lar
 
-```
-┌─────────────────────┐
-│     AppLayout       │ (Orchestrator)
-└──────────┬──────────┘
-           │
-  ┌────────┼────────┬──────────┬──────────┬──────────┐
-  │        │        │          │          │          │
-┌─▼──┐  ┌─▼──┐  ┌──▼───┐  ┌──▼───┐  ┌───▼──┐  ┌───▼────┐
-│Map │  │Viz │  │Data  │  │Legend│  │Geo   │  │Astro   │
-│    │  │Wiz │  │Mgmt  │  │      │  │coder │  │nomy    │
-└─┬──┘  └─┬──┘  └──┬───┘  └──┬───┘  └──────┘  └────────┘
-  │       │        │         │
-  │    ┌──▼──┐  ┌──▼───┐     │
-  │    │Vis  │  │Data  │     │
-  │    │     │  │Import│     │
-  │    └─────┘  └──────┘     │
-  │                          │
-┌─▼──────────────────────────▼──┐
-│   Shared (stores, utils,      │
-│   types, constants, hooks)    │
-└───────────────────────────────┘
-```
+`src/stores/` altında güncel olarak şu store yüzeyleri bulunur:
+- `useVisualizationStore`: görselleştirme konfigürasyonu, map title, legend ilişkileri
+- `useMapStore`: map instance, basemap, globe mode, yüklenme durumu
+- `useToolStore`: aktif araçlar ve tools menu durumu
+- `useDataManagementStore`: kanonik veri store'u
+- `useDataStore`: `useDataManagementStore` için compatibility alias
+- `useClusteringStore`: clustering modu
+- `useHeatmapStore`: heatmap durumu ve preset'leri
+- `useIsochroneStore`: isochrone durumu
+- `useSpatialAnalysisStore`: ileri analiz durumu
+- `useStorymapModalStore`: storymap modal açık/kapalı durumu
+- `useTimelineStore`: feature-level timeline store'u re-export eden bridge
 
-### Cross-Feature Dependencies
+Not: Her feature kendi local store'una sahip değildir. Özellikle `visualization`, `legend` ve `viz-wizard` omurgasını büyük ölçüde `useVisualizationStore` taşır.
 
-| Feature | Depends On | Used By |
-|---------|------------|---------|
-| Map | Shared | Tüm feature'lar |
-| Visualization | Shared | Viz Wizard, Legend |
-| Viz Wizard | Visualization, Shared | Sidebar |
-| Legend | Shared | AppLayout |
-| Data Management | Shared | Sidebar, Map |
-| Data Import | Shared | Data Management |
-| Data Mapper | Shared | Sidebar |
-| Layers | Shared | AppLayout |
-| Geocoder | Shared | AppLayout |
-| Astronomy | Shared | AppLayout |
-| Clustering | Shared | AppLayout |
-| Basemap | Shared | AppLayout (MapControlStack) |
-| Globe View | Shared | AppLayout (SearchContainer) |
+### Shared Modüller
 
-### Shared Infrastructure
-
-Tüm feature'lar şu shared modüllere bağımlıdır:
-
-| Modül | Path | İçerik |
-|-------|------|--------|
-| Global Stores | `src/stores/` | useVisualizationStore, useMapStore, useClusteringStore, useToolStore |
-| Utils | `src/utils/` | classification, colorInterpolation, normalization, numberFormatter, vb. |
-| Types | `src/types/` | visualization, geojson, maplibre-expressions, style |
-| Constants | `src/constants/` | colorSchemes, layout |
-| Shared Hooks | `src/hooks/` | useMediaQuery |
-| UI Components | `src/components/ui/` | Slider, vb. |
-| AG Grid | `src/shared/ag-grid/` | Locale, modules |
-| Analytics | `src/shared/analytics/` | Google Analytics |
+`src/shared/` altında güncel shared yüzeyler:
+- `src/shared/analytics/`: Google Analytics init ve tracking hook'ları
+- `src/shared/ag-grid/`: ortak AG Grid modül setleri ve Türkçe locale
+- `src/shared/visualization/index.ts`: feature sınırını koruyan visualization facade'ı
+- `src/shared/legend/index.ts`: legend facade'ı
+- `src/shared/northArrowStyles.tsx`: kuzey oku stilleri
 
 ---
 
-## Feature Status
+## Önemli Güncelleme Notları
 
-### Maturity Overview
-
-| Feature | Maturity | Documentation |
-|---------|----------|---------------|
-| Astronomy | Stable | Documented |
-| Basemap | Stable | Documented |
-| Clustering | Stable | Documented |
-| Data Import | Stable | Documented |
-| Data Management | Stable | Documented |
-| Data Mapper | Stable | Documented |
-| Geocoder | Stable | Documented |
-| Globe View | Beta | Documented |
-| Layers | Stable | Documented |
-| Legend | Stable | Documented |
-| Map | Stable | Documented |
-| Visualization | Stable | Documented |
-| Viz Wizard | Stable | Documented |
-
-**Overall:**
-- **Stable:** 12 features
-- **Beta:** 1 feature (Globe View)
-- **Total Feature Count:** 13
+Bu dokümanın önceki sürümüne göre düzeltilen başlıca noktalar:
+- Feature sayısı `13` değil `19`
+- `Map` feature kapsamı artık zaman çizelgesi, yükselti profili aracı ve geniş GIS tools menüsünü de içeriyor
+- `Layers` feature'ı genel “il/ilçe sınırları” anlatısından ziyade belirli overlay katalogları etrafında çalışıyor
+- `Data Import` ile `Data Management` artık ayrı sorumluluklarla belgeleniyor; kanonik veri yaşam döngüsü `data-management` tarafında
+- `Data Mapper` public hook açmıyor; esas olarak düzenleme/eşleme UI modülü
+- `Visualization` tarafında `ChoroplethSettings` public API'si yok
+- `Viz Wizard` adımlarının rolü değişmiş durumda; özellikle Step 3 yalnız stil ayarı değil, render ve sunum ayarlarının merkezi
+- `Geocoder` servis adı `geocoderApi` değil `geocoderService`
+- `Timeline` store-first bir feature; UI yüzeyi `map` feature içinde sunuluyor
 
 ---
 
-## Feature Guidelines
+## Referanslar
 
-### Yeni Feature Oluşturma
-
-Detaylı rehber: [CONTRIBUTING.md](./CONTRIBUTING.md#feature-development)
-
-**Hızlı Kontrol Listesi:**
-1. `src/features/<feature-name>/` klasörü oluştur
-2. Alt klasörler: `components/`, `hooks/`, `services/` (gerektiğinde)
-3. `index.ts` barrel export oluştur
-4. Feature mantığını implement et
-5. Bu dokümanı güncelle
-6. Dependency graph'ı güncelle
-
-### Feature Yapısı Şablonu
-
-```
-src/features/<feature-name>/
-├── components/          # React bileşenleri
-│   ├── MyComponent.tsx
-│   └── index.ts         # (opsiyonel) bileşen barrel export
-├── hooks/               # Custom hook'lar
-│   └── useMyFeature.ts
-├── services/            # API/iş mantığı servisleri
-├── stores/              # Feature-specific Zustand store
-├── utils/               # Yardımcı fonksiyonlar
-├── constants/           # Sabitler
-├── types.ts             # Tip tanımları
-└── index.ts             # Public API (barrel export)
-```
-
----
-
-## References
-
-- [Architecture Guide](./ARCHITECTURE.md)
-- [Contributing Guide](./CONTRIBUTING.md)
-- [Color Scale Features](./COLOR_SCALE_FEATURES.md)
-- [Color Scale Integration](./COLOR_SCALE_INTEGRATION.md)
+- `docs/ARCHITECTURE.md`
+- `docs/COLOR_SCALE_FEATURES.md`
+- `docs/COLOR_SCALE_INTEGRATION.md`
+- `docs/CONTRIBUTING.md`
+- `README.md`
 
 ---
 
 **Maintainers:** Development Team
-**Last Review:** 22 Şubat 2026
-**Next Review:** Monthly
+**Last Review:** 26 Mart 2026

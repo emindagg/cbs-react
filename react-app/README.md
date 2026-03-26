@@ -1,6 +1,8 @@
-# CBS React Map Platform
+# OGM Materyal CBS
 
-Feature-first (Vertical Slice) mimariye sahip bir React 19 + TypeScript 5 harita platformu. MapLibre GL üzerinde büyük veriyle çalışan görselleştirmeler (choropleth / dot density / bubble), çoklu dosya formatı içe aktarma, overlay katman yönetimi, CBS araçları ve performans odaklı stil güncellemeleri içerir. 13 bağımsız feature modülünden oluşur.
+`OGM Materyal CBS`, React 19 + TypeScript 5 ile geliştirilen feature-first bir harita uygulamasıdır. MapLibre GL üzerinde choropleth, bubble, dot-density, heatmap, isochrone, spatial analysis ve elevation profile gibi farklı CBS iş akışlarını tek uygulama kabuğunda toplar.
+
+Kod tabanı `src/features/` altında **19 feature modülü** içerir. Root orchestrator katmanı `src/components/layout/AppLayout.tsx` içinde sidebar, harita, arama, overlay panelleri, legend ve analiz panellerini compose eder.
 
 ## Başlangıç
 
@@ -11,19 +13,60 @@ npm run dev
 
 Varsayılan geliştirme adresi: `http://localhost:5173`
 
-## Kullanılan Teknolojiler
+## Teknoloji Yığını
 
-- **React 19** + **TypeScript 5.9** (strict mode)
-- **Vite 7** (build & dev server)
-- **MapLibre GL** + **react-map-gl** v8 (harita motoru)
-- **Zustand 5** (state management, IndexedDB persist)
-- **Tailwind CSS 4** (styling)
-- **AG Grid 35** (veri tablosu & düzenleme)
-- **Turf.js 7** (mekansal analiz)
-- **Vitest** + **Testing Library** (test)
-- **ESLint** (feature-boundary kuralları dahil)
-- **Framer Motion** (animasyon)
-- **chroma-js** + **d3** (renk interpolasyonu)
+- React 19
+- TypeScript 5.9
+- Vite 7
+- MapLibre GL + react-map-gl
+- Zustand
+- Tailwind CSS 4
+- AG Grid
+- Turf.js
+- Vitest + Testing Library
+- ESLint
+
+## Ana Modüller
+
+Uygulamadaki feature envanteri:
+- astronomy
+- basemap
+- clustering
+- data-import
+- data-management
+- data-mapper
+- elevation-profile
+- geocoder
+- globe-view
+- heatmap
+- isochrone
+- layers
+- legend
+- map
+- spatial-analysis
+- storymap-modal
+- timeline
+- visualization
+- viz-wizard
+
+Öne çıkan yetenekler:
+- Excel, CSV, GeoJSON, KML ve Shapefile içe aktarma
+- Choropleth, bubble ve dot-density görselleştirmeleri
+- Heatmap, isochrone, convex hull, Voronoi, nearest-points ve elevation profile analizleri
+- Çizim araçları, ölçüm araçları ve overlay layer yönetimi
+- Legend, map title ve visualization wizard akışları
+- IndexedDB persist ve performans odaklı style senkronizasyonu
+
+## Mimari
+
+Proje Vertical Slice Architecture yaklaşımını izler.
+
+- Root akış: `src/main.tsx` → `src/App.tsx` → `src/components/layout/AppLayout.tsx`
+- Feature public API yüzeyi `index.ts` dosyaları üzerinden açılır
+- Global store'lar `src/stores/` altında tutulur
+- Shared facade ve ortak yardımcı modüller `src/shared/` altında yer alır
+
+Harita kabuğu `src/features/map/` altında toplanır. Veri yaşam döngüsünün kanonik alanı `src/features/data-management/`, render orkestrasyonu `src/features/visualization/`, kullanıcı yönlendirmeli kurulum akışı ise `src/features/viz-wizard/` içindedir.
 
 ## Komutlar
 
@@ -46,74 +89,16 @@ npm run test:ui
 npm run test:watch
 ```
 
-## Mimari: Vertical Slice (Feature-First)
-
-Kod tabanı 13 bağımsız feature modülü olarak organize edilir. Her feature kendi `components/hooks/services/types` alt yapısını taşır ve dışarıya `index.ts` üzerinden public API açar.
-
-**Feature'lar:** astronomy, basemap, clustering, data-import, data-management, data-mapper, geocoder, globe-view, layers, legend, map, visualization, viz-wizard
-
-### Sınırlar
-
-- Root orchestrator katmanı (`AppLayout.tsx`) feature'ları public API üzerinden compose eder.
-- Feature içinden başka feature'a deep import yasaktır ve ESLint ile enforce edilir.
-- State paylaşımı yalnızca `src/stores/` altındaki global Zustand store'lar üzerinden yapılır.
-
-### Uygulama Akışı
-
-- Boot: `index.html` → `main.tsx` → `App.tsx` (MapProvider + Toaster)
-- Orkestrasyon: `AppLayout.tsx` (Sidebar + MapContainer + Controls + Overlays)
-- Harita: `MapContainer` → `DataLayer` → Visualization Layers
-
-## Dosya İçe Aktarma Pipeline
-
-Excel/CSV/GeoJSON/KML/Shapefile dosyaları `data-import` feature'ı üzerinden parse edilir.
-
-Pipeline:
-1. UI tetikleme → `DataImportSection` bileşeni
-2. Hook: `useFileImport` → dosya tipi algılama
-3. Dispatcher: `fileParser` → uzantıya göre işleyici seçimi
-4. İşleyiciler: `excelProcessor`, `geoJsonProcessor`, `kmlProcessor`, `shapefileProcessor`
-5. Sonuçlar: `useDataManagementStore.addItems()` ile store'a eklenir
-
-Desteklenen formatlar: GeoJSON, Excel (.xlsx/.xls), CSV, KML, Shapefile (.zip)
-
-## Harita Performansı: `startTransition` + GPU `setPaintProperty`
-
-Bu projede INP düşürmek için iki ana strateji birlikte kullanılır:
-
-### 1) React tarafında önceliklendirme (`startTransition`)
-
-Ağır UI/state güncellemeleri kullanıcı etkileşimlerini bloklamayacak şekilde transition olarak planlanır.
-
-### 2) Stil güncellemelerini veri yeniden üretiminden ayırma (GPU-side)
-
-Layer style değişimlerinde GeoJSON yeniden inşa edilmez. `useLayerStyleSync` hook'u doğrudan MapLibre `setPaintProperty` / `setLayoutProperty` API'sini kullanır.
-
-Bu sayede:
-- CPU tarafındaki veri dönüşümü azaltılır
-- Map katman güncellemeleri GPU pipeline'da daha hızlı işlenir
-- Etkileşim gecikmesi ciddi şekilde düşer
-
-Ek olarak `useVizRender` hook'u full re-render ile paint-only update arasında ayrım yapar. INP değeri yaklaşık **~16ms** seviyesindedir.
-
-## Test ve Kalite
-
-- Vitest `jsdom` ortamı
-- Coverage threshold: `%70` (line/function/branch/statement)
-- TypeScript strict mode
-- ESLint: import boundary kuralları dahil
-
-> Not: Güncel coverage durumu için `npm run test:coverage` çalıştırıp `coverage/index.html` dosyasını referans alın.
-
 ## Dokümantasyon
 
-Detaylı teknik dokümanlar:
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Mimari, katmanlar, state yönetimi
-- [docs/FEATURES.md](docs/FEATURES.md) - 13 feature'ın detaylı dökümü
-- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) - Geliştirme rehberi
-- [docs/COLOR_SCALE_FEATURES.md](docs/COLOR_SCALE_FEATURES.md) - Renk interpolasyonu & sınıflandırma
-- [docs/COLOR_SCALE_INTEGRATION.md](docs/COLOR_SCALE_INTEGRATION.md) - Gelişmiş renk skala entegrasyonu
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/FEATURES.md](docs/FEATURES.md)
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- [docs/COLOR_SCALE_FEATURES.md](docs/COLOR_SCALE_FEATURES.md)
+- [docs/COLOR_SCALE_INTEGRATION.md](docs/COLOR_SCALE_INTEGRATION.md)
 
-## Lisans
+## Notlar
 
-Proje lisans ve kullanım şartları için depo içi lisans/politika dosyalarını referans alın.
+- README içinde proje adı `OGM Materyal CBS` olarak kullanılır.
+- Ayrıntılı feature dökümü için `docs/FEATURES.md` referans alınmalıdır.
+- Teknik altlık, renderer ve servis ayrıntıları için ilgili dokümanlar README yerine `docs/` altında tutulur.
