@@ -149,9 +149,9 @@ function abbreviateNumber(value: number, decimals: number): string {
 
   const abbrev = [
     { threshold: 1e12, suffix: 'T' },
-    { threshold: 1e9, suffix: 'B' },
+    { threshold: 1e9, suffix: 'Mlr' },
     { threshold: 1e6, suffix: 'M' },
-    { threshold: 1e3, suffix: 'k' },
+    { threshold: 1e3, suffix: 'B' },
   ]
 
   for (const { threshold, suffix } of abbrev) {
@@ -192,8 +192,8 @@ export const FORMAT_OPTIONS: Array<{
   { value: '0.0%', label: '0.0%', example: '12.3%' },
   { value: '0.00%', label: '0.00%', example: '12.34%' },
   { value: '0,0', label: '0,0', example: '1,234' },
-  { value: '0a', label: '0a (kısa)', example: '1B, 123B' },
-  { value: '0.[0]a', label: '0.[0]a (kısa)', example: '1B, 123.4B' },
+  { value: '0a', label: '0a (kısa)', example: '1B, 123B, 1M' },
+  { value: '0.[0]a', label: '0.[0]a (kısa)', example: '1B, 123.4B, 1.2M' },
 ]
 
 /**
@@ -204,7 +204,7 @@ export function parseFormattedNumber(str: string): number | null {
 
   // Handle abbreviated numbers
   const trimmed = str.trim()
-  const abbrevMatch = trimmed.match(/^([\d.,]+)([kmbtB])$/i)
+  const abbrevMatch = trimmed.match(/^([\d.,]+)(Mlr|[kmbtBM])$/i)
   if (abbrevMatch) {
     let numericPart = abbrevMatch[1]
     if (numericPart.includes(',') && numericPart.includes('.')) {
@@ -224,6 +224,7 @@ export function parseFormattedNumber(str: string): number | null {
       k: 1e3,
       b: 1e3,
       m: 1e6,
+      mlr: 1e9,
       t: 1e12,
     }
     return num * (multipliers[suffix] || 1)

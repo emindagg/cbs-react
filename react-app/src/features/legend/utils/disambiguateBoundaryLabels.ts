@@ -4,12 +4,12 @@ interface DisambiguateBoundaryLabelsOptions {
   classificationMethod?: ClassificationMethod
 }
 
-type AbbreviationSuffix = 'k' | 'M' | 'B' | 'T'
+type AbbreviationSuffix = 'B' | 'M' | 'Mlr' | 'T'
 
 const ABBREVIATION_THRESHOLD: Record<AbbreviationSuffix, number> = {
-  k: 1e3,
+  B: 1e3,
   M: 1e6,
-  B: 1e9,
+  Mlr: 1e9,
   T: 1e12,
 }
 
@@ -55,7 +55,7 @@ function formatRawSafe(value: number): string {
 
 function detectAbbreviationSuffix(label: string): AbbreviationSuffix | null {
   const trimmed = label.trim()
-  if (trimmed.endsWith('k')) return 'k'
+  if (trimmed.endsWith('Mlr')) return 'Mlr'
   if (trimmed.endsWith('M')) return 'M'
   if (trimmed.endsWith('B')) return 'B'
   if (trimmed.endsWith('T')) return 'T'

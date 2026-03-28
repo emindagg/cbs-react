@@ -10,8 +10,8 @@ describe('numberFormatter', () => {
   })
 
   it('formats abbreviations and percentages', () => {
-    expect(formatNumber(1200, '0a')).toBe('1k')
-    expect(formatNumber(1250, '0.[0]a')).toBe('1.3k')
+    expect(formatNumber(1200, '0a')).toBe('1B')
+    expect(formatNumber(1250, '0.[0]a')).toBe('1.3B')
     expect(formatNumber(0.1234, '0.0%')).toBe('12.3%')
   })
 
