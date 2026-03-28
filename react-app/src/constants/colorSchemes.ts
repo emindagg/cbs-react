@@ -310,17 +310,17 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#ffffff',
   ],
 
-  // Tropikal Mutluluk (Kategorik)
+  // Boncuklu Pastel (Kategorik)
   tropicalBliss: [
-    '#fc3e5a',
-    '#fce138',
-    '#4c81cd',
-    '#f1983c',
-    '#48885c',
-    '#a553b7',
-    '#fff799',
-    '#6ecffc',
-    '#6af689',
+    '#e65154',
+    '#26b6ff',
+    '#67e6d1',
+    '#cd76d6',
+    '#ffca8c',
+    '#ff8cd9',
+    '#d99d5b',
+    '#c8f2a9',
+    '#d4b8ff',
   ],
 }
 
@@ -353,7 +353,7 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
   redBlueDiverging: { name: 'Kırmızı-Mavi Ayrık', type: 'diverging' },
   redGreen: { name: 'Kırmızı-Yeşil', type: 'diverging' },
   centeredPink: { name: 'Pembe Odaklı', type: 'diverging' },
-  tropicalBliss: { name: 'Tropikal Mutluluk', type: 'sequential' },
+  tropicalBliss: { name: 'Boncuklu Pastel', type: 'sequential' },
 
   // Yükseklik Paletleri
   elevationTerrain: { name: 'Yükseklik - Arazi', type: 'sequential' },
@@ -388,7 +388,7 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
   { value: 'redTeal', label: 'Kırmızı-Deniz' },
   { value: 'redGreen', label: 'Kırmızı-Yeşil' },
   { value: 'centeredPink', label: 'Pembe Odaklı' },
-  { value: 'tropicalBliss', label: 'Tropikal Mutluluk' },
+  { value: 'tropicalBliss', label: 'Boncuklu Pastel' },
 
   // Yükseklik Paletleri
   { value: 'elevationTerrain', label: 'Yükseklik - Arazi' },
