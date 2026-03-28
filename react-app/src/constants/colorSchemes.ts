@@ -258,6 +258,58 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#bbb8cc',
   ],
 
+  // Yükseklik - Klasik Hipsometrik (ESRI Terrain)
+  elevationTerrain: [
+    '#006994',
+    '#3a9e6f',
+    '#7dbf6a',
+    '#c8d96b',
+    '#e8c84a',
+    '#c89030',
+    '#8c5820',
+    '#6b3a18',
+    '#f0ece8',
+  ],
+
+  // Yükseklik - Sadece Kara
+  elevationLand: [
+    '#aad46f',
+    '#78c14a',
+    '#d4d96e',
+    '#e8c84a',
+    '#d4a030',
+    '#b07028',
+    '#8c5020',
+    '#6b3818',
+    '#d8d0c8',
+  ],
+
+  // Yükseklik - Analitik / DEM Screen
+  elevationAnalytic: [
+    '#1a9641',
+    '#a6d96a',
+    '#ffffbf',
+    '#fdae61',
+    '#d7191c',
+    '#a50026',
+    '#7b0015',
+    '#4d0009',
+    '#ffffff',
+  ],
+
+  // Yükseklik - Arktik / Kar Vurgulu
+  elevationArctic: [
+    '#2b5f8e',
+    '#4f9dba',
+    '#8ecae6',
+    '#a8dadc',
+    '#e9f5db',
+    '#ffffb3',
+    '#c8b560',
+    '#8b6914',
+    '#ffffff',
+  ],
+
   // Tropikal Mutluluk (Kategorik)
   tropicalBliss: [
     '#fc3e5a',
@@ -302,6 +354,12 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
   redGreen: { name: 'Kırmızı-Yeşil', type: 'diverging' },
   centeredPink: { name: 'Pembe Odaklı', type: 'diverging' },
   tropicalBliss: { name: 'Tropikal Mutluluk', type: 'sequential' },
+
+  // Yükseklik Paletleri
+  elevationTerrain: { name: 'Yükseklik - Arazi', type: 'sequential' },
+  elevationLand: { name: 'Yükseklik - Kara', type: 'sequential' },
+  elevationAnalytic: { name: 'Yükseklik - Analitik', type: 'sequential' },
+  elevationArctic: { name: 'Yükseklik - Arktik', type: 'sequential' },
 }
 
 /**
@@ -331,6 +389,12 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
   { value: 'redGreen', label: 'Kırmızı-Yeşil' },
   { value: 'centeredPink', label: 'Pembe Odaklı' },
   { value: 'tropicalBliss', label: 'Tropikal Mutluluk' },
+
+  // Yükseklik Paletleri
+  { value: 'elevationTerrain', label: 'Yükseklik - Arazi' },
+  { value: 'elevationLand', label: 'Yükseklik - Kara' },
+  { value: 'elevationAnalytic', label: 'Yükseklik - Analitik' },
+  { value: 'elevationArctic', label: 'Yükseklik - Arktik' },
 ]
 
 /**

@@ -48,6 +48,11 @@ export type ColorScheme =
   | 'redGreen'
   | 'centeredPink'
   | 'tropicalBliss'
+  // Yükseklik Paletleri
+  | 'elevationTerrain'
+  | 'elevationLand'
+  | 'elevationAnalytic'
+  | 'elevationArctic'
 
 export type LegendType =
   | 'discrete'
