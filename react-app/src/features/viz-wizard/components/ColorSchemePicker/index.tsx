@@ -86,13 +86,20 @@ export default function ColorSchemePicker({ value, onChange }: ColorSchemePicker
                 title={scheme.label}
                 onClick={() => select(scheme.value)}
                 className={[
-                  'mx-1 my-0.5 h-5 rounded cursor-pointer transition-all overflow-hidden',
+                  'mx-1 my-0.5 h-5 rounded cursor-pointer transition-all relative',
                   isSelected
-                    ? 'ring-1 ring-emerald-500'
-                    : 'hover:ring-1 hover:ring-zinc-300',
+                    ? 'ring-2 ring-emerald-500 ring-offset-1'
+                    : 'overflow-hidden hover:ring-1 hover:ring-zinc-300',
                 ].join(' ')}
               >
                 <GradientBar scheme={scheme.value} />
+                {isSelected && (
+                  <span className="absolute inset-y-0 right-1 flex items-center">
+                    <span className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-emerald-500 shadow">
+                      <i className="fa-solid fa-check text-white" style={{ fontSize: 7 }} />
+                    </span>
+                  </span>
+                )}
               </li>
             )
           })}
