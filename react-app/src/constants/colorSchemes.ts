@@ -206,6 +206,19 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#431407',
   ],
 
+  // Teal-Mor Ayrık (Purple and Green 1)
+  tealPurple: [
+    '#245d54',
+    '#4a8880',
+    '#92aeaa',
+    '#dbe4e3',
+    '#f0eeef',
+    '#e4deea',
+    '#ae9dc0',
+    '#856ba0',
+    '#5c3c82',
+  ],
+
   // Kırmızı-Mavi Ayrık
   redBlueDiverging: [
     '#7F1D1D',
@@ -375,6 +388,7 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
   teal: { name: 'Deniz Yeşili', type: 'sequential' },
   slate: { name: 'Arduvaz', type: 'sequential' },
   orange: { name: 'Turuncu', type: 'sequential' },
+  tealPurple: { name: 'Teal-Mor', type: 'diverging' },
   redBlueDiverging: { name: 'Kırmızı-Mavi Ayrık', type: 'diverging' },
   tropicalBliss: { name: 'Boncuklu Pastel', type: 'sequential' },
   colorblindSafe: { name: 'Renk Körü Güvenli', type: 'sequential' },
@@ -438,6 +452,9 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
   // Ayrık — Kırmızı ailesi
   { value: 'redBlue', label: 'Kırmızı-Mavi' },
   { value: 'redBlueDiverging', label: 'Kırmızı-Mavi Ayrık' },
+
+  // Ayrık — Teal/Mor ailesi
+  { value: 'tealPurple', label: 'Teal-Mor' },
 
   // Ayrık — Pembe ailesi
   { value: 'pinkGreen', label: 'Pembe-Yeşil' },

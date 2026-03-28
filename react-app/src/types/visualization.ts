@@ -45,6 +45,7 @@ export type ColorScheme =
   | 'orange'
   | 'amber'
   | 'redBlueDiverging'
+  | 'tealPurple'
   | 'tropicalBliss'
   // Tek-Renk Skalalar
   | 'blues'
