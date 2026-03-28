@@ -18,8 +18,6 @@ export { useFileImport } from './hooks/useFileImport'
 export { useLayerStyleSync } from './hooks/useLayerStyleSync'
 export { useUrlImport } from './hooks/useUrlImport'
 
-export { indexedDbStorage } from './store/indexedDbStorage'
-
 export type {
   ColumnMapping,
   DataItem,

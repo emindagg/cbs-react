@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
-import { indexedDbStorage } from '@/features/data-management'
 import type { DataItem, DataManagementStore, LayerStyles, NewDataItem } from '@/features/data-management'
 import { useClusteringStore } from '@/stores/useClusteringStore'
+import { indexedDbStorage } from '@/utils/indexedDbStorage'
 
 export type { DataItem }
 
