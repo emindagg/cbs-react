@@ -63,7 +63,7 @@ export function useLayerStyleSync() {
     trySet('data-layer-line', 'line-color',
       ['case', selected, '#f59e0b', customOrDefault(layerStyles.fillColor)])
     trySet('data-layer-line', 'line-width',
-      ['case', selected, layerStyles.width + 1, layerStyles.width])
+      ['case', selected, layerStyles.lineWidth + 1, layerStyles.lineWidth])
     trySet('data-layer-line', 'line-opacity', layerStyles.opacity)
 
     // Label layers - textSize (layout) + textColor (paint)

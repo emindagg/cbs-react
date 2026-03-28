@@ -49,6 +49,7 @@ export default function DataLayer() {
   const defaultFillColor = useDataManagementStore(state => state.layerStyles.fillColor)
   const layerOpacity = useDataManagementStore(state => state.layerStyles.opacity)
   const layerWidth = useDataManagementStore(state => state.layerStyles.width)
+  const lineWidth = useDataManagementStore(state => state.layerStyles.lineWidth)
   const strokeWidth = useDataManagementStore(state => state.layerStyles.strokeWidth)
   const strokeColor = useDataManagementStore(state => state.layerStyles.strokeColor)
   const { isEnabled: isClusteringEnabled, mode: clusterMode } = useClusteringStore()
@@ -148,7 +149,7 @@ export default function DataLayer() {
           layout={{ 'line-join': 'round', 'line-cap': 'round' }}
           paint={{
             'line-color': fillColorExpression(defaultFillColor) as unknown as string,
-            'line-width': ['case', ['boolean', ['get', 'selected'], false], layerWidth + 1, layerWidth] as unknown as number,
+            'line-width': ['case', ['boolean', ['get', 'selected'], false], lineWidth + 1, lineWidth] as unknown as number,
             'line-opacity': layerOpacity,
           }}
         />
