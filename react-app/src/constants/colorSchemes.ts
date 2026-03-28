@@ -267,11 +267,8 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#48885c',
     '#a553b7',
     '#fff799',
-    '#b1a9d0',
     '#6ecffc',
-    '#fc6f84',
     '#6af689',
-    '#fcd27e',
   ],
 }
 
