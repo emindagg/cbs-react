@@ -206,19 +206,6 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#431407',
   ],
 
-  // Altın/Amber
-  amber: [
-    '#FFFBEB',
-    '#FCD34D',
-    '#F59E0B',
-    '#D97706',
-    '#B45309',
-    '#92400E',
-    '#78350F',
-    '#451A03',
-    '#280F02',
-  ],
-
   // Kırmızı-Mavi Ayrık
   redBlueDiverging: [
     '#7F1D1D',
@@ -230,32 +217,6 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#3B82F6',
     '#1D4ED8',
     '#1E3A8A',
-  ],
-
-  // Kırmızı-Yeşil (Ayrık)
-  redGreen: [
-    '#7F1D1D',
-    '#B91C1C',
-    '#DC2626',
-    '#F87171',
-    '#FEF2F2',
-    '#D1FAE5',
-    '#6EE7B7',
-    '#10B981',
-    '#047857',
-  ],
-
-  // Pembe Odaklı (Ayrık)
-  centeredPink: [
-    '#bbb8cc',
-    '#aa8ab2',
-    '#995c99',
-    '#9f2e74',
-    '#a6004e',
-    '#9f2e74',
-    '#995c99',
-    '#aa8ab2',
-    '#bbb8cc',
   ],
 
   // Yükseklik - Klasik Hipsometrik (ESRI Terrain)
@@ -322,6 +283,71 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#c8f2a9',
     '#d4b8ff',
   ],
+
+  // Renk Körü Güvenli / Okabe-Ito (Kategorik)
+  colorblindSafe: [
+    '#E69F00',
+    '#56B4E9',
+    '#009E73',
+    '#F0E442',
+    '#0072B2',
+    '#D55E00',
+    '#CC79A7',
+    '#000000',
+    '#999999',
+  ],
+
+  // Maviler (ColorBrewer Blues)
+  blues: [
+    '#f7fbff',
+    '#deebf7',
+    '#c6dbef',
+    '#9ecae1',
+    '#6baed6',
+    '#4292c6',
+    '#2171b5',
+    '#08519c',
+    '#08306b',
+  ],
+
+  // Kırmızılar (ColorBrewer Reds)
+  reds: [
+    '#fff5f0',
+    '#fee0d2',
+    '#fcbba1',
+    '#fc9272',
+    '#fb6a4a',
+    '#ef3b2c',
+    '#cb181d',
+    '#a50f15',
+    '#67000d',
+  ],
+
+  // Yeşiller (ColorBrewer Greens)
+  greens: [
+    '#f7fcf5',
+    '#e5f5e0',
+    '#c7e9c0',
+    '#a1d99b',
+    '#74c476',
+    '#41ab5d',
+    '#238b45',
+    '#006d2c',
+    '#00441b',
+  ],
+
+  // Morlar (ColorBrewer Purples)
+  purples: [
+    '#fcfbfd',
+    '#efedf5',
+    '#dadaeb',
+    '#bcbddc',
+    '#9e9ac8',
+    '#807dba',
+    '#6a51a3',
+    '#54278f',
+    '#3f007d',
+  ],
 }
 
 /**
@@ -349,11 +375,15 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
   teal: { name: 'Deniz Yeşili', type: 'sequential' },
   slate: { name: 'Arduvaz', type: 'sequential' },
   orange: { name: 'Turuncu', type: 'sequential' },
-  amber: { name: 'Altın', type: 'sequential' },
   redBlueDiverging: { name: 'Kırmızı-Mavi Ayrık', type: 'diverging' },
-  redGreen: { name: 'Kırmızı-Yeşil', type: 'diverging' },
-  centeredPink: { name: 'Pembe Odaklı', type: 'diverging' },
   tropicalBliss: { name: 'Boncuklu Pastel', type: 'sequential' },
+  colorblindSafe: { name: 'Renk Körü Güvenli', type: 'sequential' },
+
+  // Tek-Renk Skalalar
+  blues: { name: 'Maviler', type: 'sequential' },
+  reds: { name: 'Kırmızılar', type: 'sequential' },
+  greens: { name: 'Yeşiller', type: 'sequential' },
+  purples: { name: 'Morlar', type: 'sequential' },
 
   // Yükseklik Paletleri
   elevationTerrain: { name: 'Yükseklik - Arazi', type: 'sequential' },
@@ -366,22 +396,27 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
  * Color scheme list for UI selectors (ordered by type and preference)
  */
 export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
+  // Sıralı — Tek-Renk (ColorBrewer)
+  { value: 'blues', label: 'Maviler' },
+  { value: 'reds', label: 'Kırmızılar' },
+  { value: 'greens', label: 'Yeşiller' },
+  { value: 'purples', label: 'Morlar' },
+
   // Sıralı — Mavi/Yeşil ailesi
   { value: 'greenBlue', label: 'Yeşil-Mavi' },
   { value: 'teal', label: 'Deniz Yeşili' },
   { value: 'yellowGreen', label: 'Sarı-Yeşil' },
   { value: 'yellowBlue', label: 'Sarı-Mavi' },
 
-  // Sıralı — Sıcak/Turuncu ailesi
+  // Sıralı — Sıcak ailesi
   { value: 'sunset', label: 'Gün Batımı' },
   { value: 'orange', label: 'Turuncu' },
-  { value: 'amber', label: 'Altın' },
 
   // Sıralı — Pembe/Mor ailesi
   { value: 'pinkPurple', label: 'Pembe-Mor' },
   { value: 'rosePurple', label: 'Gül-Mor' },
 
-  // Sıralı — Nötr/Bilimsel
+  // Sıralı — Bilimsel
   { value: 'slate', label: 'Arduvaz' },
   { value: 'plasma', label: 'Plazma' },
   { value: 'viridis', label: 'Viridis' },
@@ -394,6 +429,7 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
 
   // Kategorik
   { value: 'tropicalBliss', label: 'Boncuklu Pastel' },
+  { value: 'colorblindSafe', label: 'Renk Körü Güvenli' },
 
   // Ayrık — Deniz ailesi
   { value: 'brownTeal', label: 'Kahve-Deniz' },
@@ -402,11 +438,9 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
   // Ayrık — Kırmızı ailesi
   { value: 'redBlue', label: 'Kırmızı-Mavi' },
   { value: 'redBlueDiverging', label: 'Kırmızı-Mavi Ayrık' },
-  { value: 'redGreen', label: 'Kırmızı-Yeşil' },
 
   // Ayrık — Pembe ailesi
   { value: 'pinkGreen', label: 'Pembe-Yeşil' },
-  { value: 'centeredPink', label: 'Pembe Odaklı' },
 ]
 
 /**
