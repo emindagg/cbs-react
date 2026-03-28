@@ -148,7 +148,7 @@ export default function DataLayer() {
           type="line"
           layout={{ 'line-join': 'round', 'line-cap': 'round' }}
           paint={{
-            'line-color': fillColorExpression(defaultFillColor) as unknown as string,
+            'line-color': ['case', ['boolean', ['get', 'selected'], false], '#f59e0b', strokeColor] as unknown as string,
             'line-width': ['case', ['boolean', ['get', 'selected'], false], lineWidth + 1, lineWidth] as unknown as number,
             'line-opacity': layerOpacity,
           }}

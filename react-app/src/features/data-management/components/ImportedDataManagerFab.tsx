@@ -368,10 +368,38 @@ export function ImportedDataManagerFab() {
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
+                        <label htmlFor="dm-line-width" className="text-xs font-semibold text-slate-800">Çizgi Kalınlığı</label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={20}
+                          step={0.5}
+                          value={layerStyles.lineWidth}
+                          onChange={(event) => startTransition(() => updateLayerStyle({ lineWidth: Number(event.target.value), strokeWidth: Number(event.target.value) }))}
+                          className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
+                        />
+                      </div>
+                      <input
+                        id="dm-line-width"
+                        type="range"
+                        min={0}
+                        max={20}
+                        step={0.5}
+                        value={layerStyles.lineWidth}
+                        onChange={(event) => startTransition(() => updateLayerStyle({ lineWidth: Number(event.target.value), strokeWidth: Number(event.target.value) }))}
+                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
+                        style={{
+                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${(layerStyles.lineWidth / 20) * 100}%, #e2e8f0 ${(layerStyles.lineWidth / 20) * 100}%, #e2e8f0 100%)`,
+                        }}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
                         <label htmlFor="dm-width" className="text-xs font-semibold text-slate-800">Sembol Genişliği</label>
                         <input
                           type="number"
-                          min={0.5}
+                          min={0}
                           max={50}
                           step={0.5}
                           value={layerStyles.width}
@@ -405,34 +433,6 @@ export function ImportedDataManagerFab() {
                         />
                         <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wide">{layerStyles.fillColor}</span>
                       </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label htmlFor="dm-stroke-width" className="text-xs font-semibold text-slate-800">Çerçeve Kalınlığı</label>
-                        <input
-                          type="number"
-                          min={0}
-                          max={10}
-                          step={0.5}
-                          value={layerStyles.strokeWidth}
-                          onChange={(event) => startTransition(() => updateLayerStyle({ strokeWidth: Number(event.target.value) }))}
-                          className="w-14 h-7 border border-slate-300 rounded-lg bg-white text-[11px] text-slate-800 text-center font-medium shadow-sm focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
-                        />
-                      </div>
-                      <input
-                        id="dm-stroke-width"
-                        type="range"
-                        min={0}
-                        max={10}
-                        step={0.5}
-                        value={layerStyles.strokeWidth}
-                        onChange={(event) => startTransition(() => updateLayerStyle({ strokeWidth: Number(event.target.value) }))}
-                        className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-slate-900"
-                        style={{
-                          background: `linear-gradient(to right, #0f172a 0%, #0f172a ${(layerStyles.strokeWidth / 10) * 100}%, #e2e8f0 ${(layerStyles.strokeWidth / 10) * 100}%, #e2e8f0 100%)`,
-                        }}
-                      />
                     </div>
 
                     <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-slate-50/50 border border-slate-200/60">
