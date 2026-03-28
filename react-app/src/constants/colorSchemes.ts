@@ -257,6 +257,22 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#aa8ab2',
     '#bbb8cc',
   ],
+
+  // Tropikal Mutluluk (Kategorik)
+  tropicalBliss: [
+    '#fc3e5a',
+    '#fce138',
+    '#4c81cd',
+    '#f1983c',
+    '#48885c',
+    '#a553b7',
+    '#fff799',
+    '#b1a9d0',
+    '#6ecffc',
+    '#fc6f84',
+    '#6af689',
+    '#fcd27e',
+  ],
 }
 
 /**
@@ -288,6 +304,7 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
   redBlueDiverging: { name: 'Kırmızı-Mavi Ayrık', type: 'diverging' },
   redGreen: { name: 'Kırmızı-Yeşil', type: 'diverging' },
   centeredPink: { name: 'Pembe Odaklı', type: 'diverging' },
+  tropicalBliss: { name: 'Tropikal Mutluluk', type: 'sequential' },
 }
 
 /**
@@ -316,6 +333,7 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
   { value: 'redTeal', label: 'Kırmızı-Deniz' },
   { value: 'redGreen', label: 'Kırmızı-Yeşil' },
   { value: 'centeredPink', label: 'Pembe Odaklı' },
+  { value: 'tropicalBliss', label: 'Tropikal Mutluluk' },
 ]
 
 /**
