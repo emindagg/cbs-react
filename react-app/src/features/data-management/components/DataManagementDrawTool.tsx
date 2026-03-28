@@ -66,11 +66,14 @@ export function DataManagementDrawTool() {
     if (!isDrawing) return
     if (drawMode === 'line' || drawMode === 'polygon') {
       e.preventDefault()
+      // Çift tıklamada MapLibre iki click + bir dblclick üretir.
+      // İkinci click'in eklediği duplicate son noktayı temizle.
+      setDrawPoints(drawPoints.slice(0, -1))
       setIsDrawing(false)
       setDrawGhostPoint(null)
       if (map) map.getCanvas().style.cursor = 'grab'
     }
-  }, [isDrawing, drawMode, map, setIsDrawing, setDrawGhostPoint])
+  }, [isDrawing, drawMode, drawPoints, map, setDrawPoints, setIsDrawing, setDrawGhostPoint])
 
   const handleMouseUp = useCallback(() => {
     if (!isDraggingRef.current) return
