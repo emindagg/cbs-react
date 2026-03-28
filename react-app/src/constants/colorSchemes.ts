@@ -366,35 +366,47 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
  * Color scheme list for UI selectors (ordered by type and preference)
  */
 export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
-  // Sequential (Sıralı)
+  // Sıralı — Mavi/Yeşil ailesi
   { value: 'greenBlue', label: 'Yeşil-Mavi' },
   { value: 'teal', label: 'Deniz Yeşili' },
+  { value: 'yellowGreen', label: 'Sarı-Yeşil' },
+  { value: 'yellowBlue', label: 'Sarı-Mavi' },
+
+  // Sıralı — Sıcak/Turuncu ailesi
   { value: 'sunset', label: 'Gün Batımı' },
   { value: 'orange', label: 'Turuncu' },
   { value: 'amber', label: 'Altın' },
-  { value: 'yellowGreen', label: 'Sarı-Yeşil' },
+
+  // Sıralı — Pembe/Mor ailesi
   { value: 'pinkPurple', label: 'Pembe-Mor' },
-  { value: 'yellowBlue', label: 'Sarı-Mavi' },
   { value: 'rosePurple', label: 'Gül-Mor' },
+
+  // Sıralı — Nötr/Bilimsel
   { value: 'slate', label: 'Arduvaz' },
   { value: 'plasma', label: 'Plazma' },
   { value: 'viridis', label: 'Viridis' },
 
-  // Diverging (Ayrık)
-  { value: 'brownTeal', label: 'Kahve-Deniz' },
-  { value: 'pinkGreen', label: 'Pembe-Yeşil' },
-  { value: 'redBlue', label: 'Kırmızı-Mavi' },
-  { value: 'redBlueDiverging', label: 'Kırmızı-Mavi Ayrık' },
-  { value: 'redTeal', label: 'Kırmızı-Deniz' },
-  { value: 'redGreen', label: 'Kırmızı-Yeşil' },
-  { value: 'centeredPink', label: 'Pembe Odaklı' },
-  { value: 'tropicalBliss', label: 'Boncuklu Pastel' },
-
-  // Yükseklik Paletleri
+  // Sıralı — Yükseklik
   { value: 'elevationTerrain', label: 'Yükseklik - Arazi' },
   { value: 'elevationLand', label: 'Yükseklik - Kara' },
   { value: 'elevationAnalytic', label: 'Yükseklik - Analitik' },
   { value: 'elevationArctic', label: 'Yükseklik - Arktik' },
+
+  // Kategorik
+  { value: 'tropicalBliss', label: 'Boncuklu Pastel' },
+
+  // Ayrık — Deniz ailesi
+  { value: 'brownTeal', label: 'Kahve-Deniz' },
+  { value: 'redTeal', label: 'Kırmızı-Deniz' },
+
+  // Ayrık — Kırmızı ailesi
+  { value: 'redBlue', label: 'Kırmızı-Mavi' },
+  { value: 'redBlueDiverging', label: 'Kırmızı-Mavi Ayrık' },
+  { value: 'redGreen', label: 'Kırmızı-Yeşil' },
+
+  // Ayrık — Pembe ailesi
+  { value: 'pinkGreen', label: 'Pembe-Yeşil' },
+  { value: 'centeredPink', label: 'Pembe Odaklı' },
 ]
 
 /**
