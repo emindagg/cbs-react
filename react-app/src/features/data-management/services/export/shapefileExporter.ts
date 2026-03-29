@@ -6,7 +6,7 @@ import type { DataItem } from '../../types'
 export async function exportAsShapefileZip(items: DataItem[]): Promise<Blob> {
   const featureCollection = toFeatureCollection(items)
   const result = await shpwrite.zip<'uint8array'>(featureCollection, {
-    folder: 'layers',
+    folder: '',
     compression: 'STORE',
     outputType: 'uint8array',
   })
