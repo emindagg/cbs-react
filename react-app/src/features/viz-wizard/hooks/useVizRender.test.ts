@@ -72,6 +72,15 @@ const choroplethSettings: VisualizationSettings = {
   legendType: 'discrete',
 }
 
+const equalIntervalSettings: VisualizationSettings = {
+  type: 'choropleth',
+  classCount: 3,
+  classificationMethod: 'equal',
+  colorScheme: 'teal',
+  customBreaks: [0, 10, 20, 30],
+  legendType: 'discrete',
+}
+
 const bubbleSettings: VisualizationSettings = {
   type: 'bubble',
   classCount: 5,
@@ -131,6 +140,51 @@ describe('useVizRender regressions', () => {
     await waitFor(() => {
       expect(renderChoroplethMock).toHaveBeenCalledTimes(2)
     })
+  })
+
+  it('does not re-render when customBreaks change outside custom classification mode', async () => {
+    const map = createMapMock()
+
+    useVisualizationStore.getState().setVizSettings(equalIntervalSettings)
+
+    const initialProps = {
+      columnMapping: {
+        dataColumn: 'value',
+        locationLevel: 'province' as const,
+      },
+      map,
+      matchResults,
+      vizSettings: useVisualizationStore.getState().vizSettings,
+    }
+
+    const { result, rerender } = renderHook((props: typeof initialProps) => useVizRender(props), {
+      initialProps,
+    })
+
+    await act(async () => {
+      await result.current.handleRender()
+    })
+
+    await waitFor(() => {
+      expect(renderChoroplethMock).toHaveBeenCalledTimes(1)
+      expect(result.current.hasRendered).toBe(true)
+    })
+
+    act(() => {
+      useVisualizationStore.getState().setVizSettings({
+        customBreaks: [5, 15, 25, 35],
+      })
+      rerender({
+        ...initialProps,
+        vizSettings: useVisualizationStore.getState().vizSettings,
+      })
+    })
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+
+    expect(renderChoroplethMock).toHaveBeenCalledTimes(1)
   })
 
   it('keeps bivariate bubble color expressions intact during paint-only updates', async () => {

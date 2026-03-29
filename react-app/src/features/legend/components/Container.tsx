@@ -24,23 +24,46 @@ export default function Container() {
   // renderSettings null ise (ilk render öncesi) vizSettings fallback olur.
   const rs = currentVisualization.renderSettings ?? vizSettings
 
-  // Extract data values - ALWAYS call hooks before any conditional returns
+  // Renderer'ın createDataMap last-write-wins davranışını yansıtan tekilleştirme yardımcısı
+  const extractSnapshotValues = useCallback((
+    data: Record<string, unknown>[],
+    col: string,
+    locationLevel: 'province' | 'district' | null,
+  ): number[] => {
+    const seen = new Map<string, number>()
+    for (const row of data) {
+      const v = parseFloat(String(row[col]))
+      if (isNaN(v)) continue
+      const key = locationLevel === 'district' && row.province
+        ? `${String(row.province)}__${String(row.location ?? '')}`
+        : String(row.location ?? Object.values(row)[0] ?? '')
+      seen.set(key, v)
+    }
+    return Array.from(seen.values())
+  }, [])
+
+  // Legend, canlı matchResults yerine render anındaki snapshot'tan beslenmeli.
+  // currentVisualization.data null ise (render öncesi) matchResults fallback olur.
   const dataValues = useMemo(() => {
+    const snapshotData = currentVisualization.data
+    const col = currentVisualization.column
+    if (snapshotData && col) {
+      return extractSnapshotValues(snapshotData, col, currentVisualization.locationLevel)
+    }
     return matchResults.successful
       .map((result) => result.value)
       .filter((v): v is number => v !== undefined)
-  }, [matchResults])
+  }, [currentVisualization.data, currentVisualization.column, currentVisualization.locationLevel, matchResults.successful, extractSnapshotValues])
 
-  // Bivariate modda renk lejantı colorColumn'dan hesaplanmalı
+  // Bivariate modda renk lejantı colorColumn snapshot'ından hesaplanmalı
   const colorValues = useMemo(() => {
-    if (rs.colorColumn) {
-      const vals = matchResults.successful
-        .map((result) => parseFloat(String(result.originalData[rs.colorColumn!])))
-        .filter((v) => !isNaN(v))
+    const snapshotData = currentVisualization.data
+    if (rs.colorColumn && snapshotData) {
+      const vals = extractSnapshotValues(snapshotData, rs.colorColumn, currentVisualization.locationLevel)
       if (vals.length > 0) return vals
     }
     return dataValues
-  }, [matchResults, rs.colorColumn, dataValues])
+  }, [currentVisualization.data, currentVisualization.locationLevel, rs.colorColumn, dataValues, extractSnapshotValues])
 
   // Calculate breaks based on classification method
   const breaks = useMemo(() => {

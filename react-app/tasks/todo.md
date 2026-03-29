@@ -1,22 +1,22 @@
-# Görev: Veri görselleştirme testlerini güncelle
+# Görev: customBreaks otomatik rerender düzeltmesi
 Tarih: 2026-03-29
 
 ## Bağlam
-Veri görselleştirme modülünde aktif runtime akışında bulunan bazı hatalar için test kapsamı eksik.
-Amaç ürün kodunu değiştirmeden, bu açıkları görünür kılan ve aktif modülü hedefleyen regresyon testlerini eklemek.
+`useVizRender` içindeki `dataVizKey`, `customBreaks` içeriğini izlemediği için custom sınıf sınırları değişince tam rerender tetiklenmiyor.
+Amaç bu anahtarı kararlı biçimde güncelleyip mevcut regresyonu düzeltmek ve gereksiz rerender üretmediğini testle doğrulamak.
 
 ## Plan
-- [x] Adım 1: Mevcut görselleştirme testlerini ve hedef hook/renderer davranışlarını netleştir
-- [x] Adım 2: Eksik kalan senaryolar için test dosyalarını güncelle veya yeni testler ekle
-- [x] Adım 3: İlgili Vitest komutlarını çalıştırıp sonuçları ve varsa bilinen kırıkları doğrula
-- [x] Adım 4: Diff, encoding ve kapsam etkisini gözden geçirip sonucu raporla
+- [x] Adım 1: `useVizRender` içindeki `dataVizKey` hesaplamasını `customBreaks` içeriğini izleyecek şekilde güncelle
+- [x] Adım 2: `classificationMethod !== 'custom'` iken stale `customBreaks` değişimlerinin rerender tetiklemediğini testle güvenceye al
+- [x] Adım 3: Hedefli Vitest çalıştırması ile regresyonları doğrula
+- [x] Adım 4: Diff ve encoding kontrolü sonrası sonucu raporla
 
 ## Doğrulama kriterleri
-- [x] Yeni testler aktif `src/features/visualization` ve `src/features/viz-wizard` akışlarını hedeflemeli
-- [x] Testler raporlanan bug senaryolarını açık biçimde ifade etmeli
+- [x] `customBreaks` değerleri değişince `useVizRender` yeniden render tetiklemeli
+- [x] `classificationMethod !== 'custom'` iken `customBreaks` değişimi tek başına rerender tetiklememeli
+- [x] Hedefli `useVizRender` test dosyası yeşil geçmeli
 - [x] Türkçe karakterler ve UTF-8 bütünlüğü korunmalı
-- [x] Değişiklik diff'i test dosyaları ve görev kaydıyla sınırlı kalmalı
 
 ## Sonuç
-`useVizRender` ve legend akışı için yeni regresyon testleri eklendi.
-Hedefli Vitest çalıştırmasında `useVisualizationLayerPersistence` mevcut testleri geçti; yeni regresyon testlerinden üçü beklenen şekilde kırmızıya düştü ve raporlanan sorunları görünür kıldı.
+`dataVizKey` içine kararlı bir `customBreaks` anahtarı eklendi.
+Ek regresyon testiyle custom olmayan sınıflandırmalarda stale `customBreaks` değişiminin rerender üretmediği doğrulandı; hedefli `useVizRender` test dosyası yeşil geçti.

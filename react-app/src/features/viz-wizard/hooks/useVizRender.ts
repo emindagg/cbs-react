@@ -86,8 +86,12 @@ export function useVizRender({
   // The user must click the "Yeniden Görselleştir" button for the type change to take effect.
   const range = colorConfig.customRange
   const DEFAULT_BACKDROP_FILL_OPACITY = 1
+  const customBreaksKey = vizSettings.classificationMethod === 'custom'
+    ? (vizSettings.customBreaks?.length ? vizSettings.customBreaks.map(String).join('|') : 'custom-breaks:none')
+    : 'custom-breaks:inactive'
   const dataVizKey = [
     vizSettings.classificationMethod,
+    customBreaksKey,
     vizSettings.classCount,
     vizSettings.colorScheme,
     vizSettings.legendType || 'steps',
