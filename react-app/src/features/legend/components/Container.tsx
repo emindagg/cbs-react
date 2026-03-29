@@ -130,6 +130,11 @@ export default function Container() {
     })
   }, [colorConfig.legend.title?.show, setLegendConfig])
 
+  // Bivariate modda boyut lejantı başlığı bağımsız olarak güncellenir
+  const handleSizeTitleChange = useCallback((title: string) => {
+    setLegendConfig({ sizeLegendTitle: title })
+  }, [setLegendConfig])
+
   const bubbleSizeLegend = useMemo(() => {
     if (!isBubble || dataValues.length === 0) return null
 
@@ -212,6 +217,11 @@ export default function Container() {
       : maxR
     const circlesForGraduated = [{ value: maxVal, radius: graduatedMaxR }]
 
+    // Bivariate modda boyut başlığı sizeLegendTitle'dan, renk başlığı legend.title'dan bağımsız okunur
+    const sizeTitle = isBubbleBivariate
+      ? (colorConfig.legend.sizeLegendTitle ?? 'Boyut')
+      : (colorConfig.legend.title?.text || 'Lejant')
+
     return (
       <BubbleSizeLegend
         config={{
@@ -219,7 +229,7 @@ export default function Container() {
           title: {
             ...colorConfig.legend.title,
             show: colorConfig.legend.title?.show ?? true,
-            text: colorConfig.legend.title?.text || (isBubbleBivariate ? 'Boyut' : 'Lejant'),
+            text: sizeTitle,
           },
         }}
         circles={isGraduated ? circlesForGraduated : legendCircles}
@@ -228,10 +238,10 @@ export default function Container() {
         bubbleStrokeColor={rs.symbolStrokeColor || '#ffffff'}
         bubbleStrokeWidth={rs.symbolStrokeWidth ?? 0.5}
         graduatedClasses={graduatedClasses}
-        onTitleChange={handleTitleChange}
+        onTitleChange={isBubbleBivariate ? handleSizeTitleChange : handleTitleChange}
       />
     )
-  }, [isBubble, isBubbleBivariate, dataValues, rs, colorConfig.legend, handleTitleChange])
+  }, [isBubble, isBubbleBivariate, dataValues, rs, colorConfig.legend, handleTitleChange, handleSizeTitleChange])
 
   // NOW we can do conditional returns after all hooks are called
   if (!currentVisualization.type || !currentVisualization.data) {
@@ -278,11 +288,23 @@ export default function Container() {
     return <>{bubbleSizeLegend}</>
   }
 
+  // Bivariate modda renk lejantı "Renk", boyut lejantı "Boyut" varsayılan başlığını almalı
+  const colorLegendConfig = isBubbleBivariate
+    ? {
+        ...colorConfig.legend,
+        title: {
+          ...colorConfig.legend.title,
+          show: colorConfig.legend.title?.show ?? true,
+          text: colorConfig.legend.title?.text || 'Renk',
+        },
+      }
+    : colorConfig.legend
+
   if (colorConfig.legend.orientation === 'vertical') {
     return (
       <>
         <ColorLegend
-          config={colorConfig.legend}
+          config={colorLegendConfig}
           breaks={breaks}
           colors={colors}
           scaleType={colorConfig.scaleType}
@@ -297,7 +319,7 @@ export default function Container() {
   return (
     <>
       <DynamicLegend
-        config={colorConfig.legend}
+        config={colorLegendConfig}
         breaks={breaks}
         colors={colors}
         scaleType={colorConfig.scaleType}

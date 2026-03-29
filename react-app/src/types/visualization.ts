@@ -247,6 +247,8 @@ export interface LegendConfiguration {
   };
   highlightOnHover: boolean;
   reverseOrder: boolean;
+  /** Bivariate bubble modunda boyut lejantının bağımsız başlığı */
+  sizeLegendTitle?: string;
 }
 
 /**
