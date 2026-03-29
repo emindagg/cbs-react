@@ -1,4 +1,5 @@
 import { extractDateFromProperties } from '@/utils/dateParser'
+import { geometryTypeToItemType, parseGeometryString } from '@/utils/geometryParser'
 
 import type { ColumnMapping, GeoItem } from '../types'
 
@@ -6,54 +7,29 @@ export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping
   return jsonData.map((row: Record<string, unknown>, index: number) => {
     let geometry: GeoJSON.Geometry | null = null
 
-    // Parse geometry string if exists (format: "lat,lon;lat,lon")
     if (mapping.geometry && row[mapping.geometry]) {
-      try {
-        const geometryValue = String(row[mapping.geometry])
-        const points = geometryValue.split(';').map((p: string) => {
-          const [lat, lon] = p.split(',').map(Number)
-          if (!isNaN(lat) && !isNaN(lon)) return { lat, lon }
-          return null
-        }).filter((p): p is { lat: number; lon: number } => p !== null)
-
-        if (points.length > 0) {
-          const rawType = String(mapping.type ? row[mapping.type] : 'point').toLowerCase().trim()
-          if (rawType === 'polygon' || rawType === 'area' || rawType === 'alan') {
-            geometry = { type: 'Polygon', coordinates: [points.map((p) => [p.lon, p.lat])] }
-          } else if (rawType === 'line' || rawType === 'linestring' || rawType === 'route' || rawType === 'rota') {
-            geometry = { type: 'LineString', coordinates: points.map((p) => [p.lon, p.lat]) }
-          } else {
-            const firstPoint = points[0]
-            if (firstPoint) {
-              geometry = { type: 'Point', coordinates: [firstPoint.lon, firstPoint.lat] }
-            }
-          }
-        }
-      } catch (e) {
-        console.warn('Geometry parse error', e)
-      }
+      const typeHint = mapping.type ? String(row[mapping.type] ?? '') : undefined
+      geometry = parseGeometryString(String(row[mapping.geometry]), typeHint)
     }
 
-    // Fallback to basic point
-    if (!geometry) {
-      if (mapping.lat && mapping.lon) {
-        const lat = Number(row[mapping.lat])
-        const lon = Number(row[mapping.lon])
-        if (!isNaN(lat) && !isNaN(lon)) {
-          geometry = { type: 'Point', coordinates: [lon, lat] }
-        }
+    if (!geometry && mapping.lat && mapping.lon) {
+      const lat = Number(row[mapping.lat])
+      const lon = Number(row[mapping.lon])
+      if (Number.isFinite(lat) && Number.isFinite(lon)) {
+        geometry = { type: 'Point', coordinates: [lon, lat] }
       }
     }
 
     if (!geometry) return null
 
+    const itemType = geometry
+      ? geometryTypeToItemType(geometry.type)
+      : 'point'
+
     return {
       name: mapping.name ? String(row[mapping.name] ?? '') : `Item ${index + 1}`,
-      type: String(mapping.type ? row[mapping.type] : 'point')
-        ?.toLowerCase()
-        ?.replace('rota', 'line')
-        .replace('alan', 'polygon') || 'point',
-      geometry: geometry,
+      type: itemType,
+      geometry,
       properties: row,
       visible: true,
       date: extractDateFromProperties(row),

@@ -20,13 +20,14 @@ export function useUrlImport() {
       if (!response.ok) throw new Error('URL indirilemedi')
 
       let items: NewDataItem[] = []
-      const lowerUrl = urlInput.toLowerCase()
-      const sourceLabel = urlInput.split('/').pop()?.split('?')[0] || 'URL Import'
+      const parsedUrl = new URL(urlInput)
+      const pathname = parsedUrl.pathname.toLowerCase()
+      const sourceLabel = parsedUrl.pathname.split('/').pop() || 'URL Import'
 
-      if (lowerUrl.endsWith('.zip')) {
+      if (pathname.endsWith('.zip')) {
         const buffer = await response.arrayBuffer()
         items = await parseShapefile(buffer, 'URL Import')
-      } else if (lowerUrl.endsWith('.kml')) {
+      } else if (pathname.endsWith('.kml')) {
         const text = await response.text()
         items = await parseKML(text, 'URL Import')
       } else {

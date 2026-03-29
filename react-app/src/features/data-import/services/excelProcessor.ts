@@ -23,7 +23,7 @@ export async function parseExcel(file: File): Promise<ParseResult> {
   const mapping = detectColumns(headers)
 
   // Check if auto-detection failed for critical columns
-  if (!mapping.lat || !mapping.lon) {
+  if ((!mapping.lat || !mapping.lon) && !mapping.geometry) {
     return {
       needsMapping: true,
       data: jsonData,

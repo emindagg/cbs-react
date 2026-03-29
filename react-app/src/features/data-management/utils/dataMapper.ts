@@ -1,3 +1,5 @@
+import { geometryTypeToItemType, parseGeometryString } from '@/utils/geometryParser'
+
 import type { ColumnMapping, NewDataItem } from '../types'
 import { extractDateFromProperties } from './dateParser'
 
@@ -6,55 +8,30 @@ export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping
     let geometry: GeoJSON.Geometry | null = null
 
     if (mapping.geometry && row[mapping.geometry]) {
-      try {
-        const geometryValue = String(row[mapping.geometry])
-        const points = geometryValue.split(';').map((value) => {
-          const [lat, lon] = value.split(',').map(Number)
-          if (!Number.isNaN(lat) && !Number.isNaN(lon)) return { lat, lon }
-          return null
-        }).filter((point): point is { lat: number; lon: number } => point !== null)
-
-        if (points.length > 0) {
-          const typeValue = String(mapping.type ? row[mapping.type] : 'point').toLowerCase().trim()
-          if (typeValue === 'polygon' || typeValue === 'area' || typeValue === 'alan') {
-            geometry = { type: 'Polygon', coordinates: [points.map(point => [point.lon, point.lat])] }
-          } else if (typeValue === 'line' || typeValue === 'linestring' || typeValue === 'route' || typeValue === 'rota') {
-            geometry = { type: 'LineString', coordinates: points.map(point => [point.lon, point.lat]) }
-          } else {
-            const firstPoint = points[0]
-            geometry = { type: 'Point', coordinates: [firstPoint.lon, firstPoint.lat] }
-          }
-        }
-      } catch {
-        geometry = null
-      }
+      const typeHint = mapping.type ? String(row[mapping.type] ?? '') : undefined
+      geometry = parseGeometryString(String(row[mapping.geometry]), typeHint)
     }
 
     if (!geometry && mapping.lat && mapping.lon) {
       const lat = Number(row[mapping.lat])
       const lon = Number(row[mapping.lon])
-      if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
+      if (Number.isFinite(lat) && Number.isFinite(lon)) {
         geometry = { type: 'Point', coordinates: [lon, lat] }
       }
     }
 
     if (!geometry) return null
 
-    const rawType = String(mapping.type ? row[mapping.type] : 'point')
-      .toLowerCase()
-      .replace('rota', 'line')
-      .replace('alan', 'polygon')
-
-    const normalizedType: NewDataItem['type'] =
-      rawType === 'polygon' || rawType === 'line' ? rawType : 'point' // circle artık desteklenmiyor, fallback: point
+    const itemType = geometry
+      ? geometryTypeToItemType(geometry.type)
+      : 'point'
 
     return {
       name: mapping.name ? String(row[mapping.name] ?? '') : `Item ${index + 1}`,
-      type: normalizedType,
+      type: itemType,
       geometry,
       properties: row,
       date: extractDateFromProperties(row),
     } satisfies NewDataItem
   }).filter(Boolean) as NewDataItem[]
 }
-

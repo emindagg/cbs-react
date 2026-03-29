@@ -25,15 +25,15 @@ export function useUrlImport() {
       if (!response.ok) throw new Error('Dosya indirilemedi')
 
       let items: GeoItem[] = []
+      const pathname = new URL(urlInput).pathname.toLowerCase()
 
-      if (urlInput.endsWith('.zip')) {
+      if (pathname.endsWith('.zip')) {
         const buffer = await response.arrayBuffer()
         items = await parseShapefile(buffer, 'URL Import')
-      } else if (urlInput.endsWith('.kml')) {
+      } else if (pathname.endsWith('.kml')) {
         const text = await response.text()
         items = await parseKML(text, 'URL Import')
       } else {
-        // Assume GeoJSON/JSON for others
         const json = await response.json()
         items = parseGeoJSON(json, 'URL Import')
       }

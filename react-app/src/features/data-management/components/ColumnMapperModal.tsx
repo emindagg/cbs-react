@@ -25,11 +25,12 @@ export default function ColumnMapperModal({
     lon: initialMapping?.lon || '',
     name: initialMapping?.name || '',
     type: initialMapping?.type || '',
+    geometry: initialMapping?.geometry || '',
   })
 
-  const isValid = useMemo(() => (
-    mapping.lat !== '' && mapping.lon !== '' && mapping.lat !== mapping.lon
-  ), [mapping])
+  const hasLatLon = mapping.lat !== '' && mapping.lon !== '' && mapping.lat !== mapping.lon
+  const hasGeometry = mapping.geometry !== ''
+  const isValid = useMemo(() => hasLatLon || hasGeometry, [hasLatLon, hasGeometry])
 
   if (!isOpen) return null
 
@@ -52,15 +53,15 @@ export default function ColumnMapperModal({
             <div>
               <h4 className="text-xs font-semibold text-emerald-800">Dosya Okundu</h4>
               <p className="text-[10px] text-emerald-700 mt-0.5">
-                Enlem ve boylam sütunlarını seçerek eşleştirin.
+                Enlem/Boylam sütunlarını veya Geometri sütununu (WKT / GeoJSON) seçerek eşleştirin.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div>
               <label className="block text-xs font-medium text-zinc-700 mb-1">
-                Enlem (Latitude) <span className="text-red-500">*</span>
+                Enlem (Latitude) {!hasGeometry && <span className="text-red-500">*</span>}
               </label>
               <select
                 value={mapping.lat}
@@ -75,7 +76,7 @@ export default function ColumnMapperModal({
             </div>
             <div>
               <label className="block text-xs font-medium text-zinc-700 mb-1">
-                Boylam (Longitude) <span className="text-red-500">*</span>
+                Boylam (Longitude) {!hasGeometry && <span className="text-red-500">*</span>}
               </label>
               <select
                 value={mapping.lon}
@@ -120,6 +121,31 @@ export default function ColumnMapperModal({
             </div>
           </div>
 
+          {/* Geometry selector */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-1">
+              <label className="block text-xs font-medium text-zinc-700">
+                Geometri Sütunu (Opsiyonel) {!hasLatLon && <span className="text-red-500">*</span>}
+              </label>
+              <span className="text-[10px] text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">WKT / GeoJSON</span>
+            </div>
+            <select
+              value={mapping.geometry}
+              onChange={(e) => setMapping({ ...mapping, geometry: e.target.value })}
+              className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-hidden text-sm"
+            >
+              <option value="">Yok</option>
+              {headers.map(header => (
+                <option key={header} value={header}>{header}</option>
+              ))}
+            </select>
+            {!hasLatLon && !hasGeometry && (
+              <p className="text-[10px] text-amber-600 mt-1">
+                Enlem/Boylam veya Geometri sütunlarından en az birini seçmelisiniz.
+              </p>
+            )}
+          </div>
+
           <div>
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Veri Önizleme (İlk 5 Satır)</h4>
@@ -133,6 +159,7 @@ export default function ColumnMapperModal({
                         {header}
                         {header === mapping.lat && <span className="ml-1 text-[10px] text-emerald-600 bg-emerald-100 px-1 rounded-sm">Enlem</span>}
                         {header === mapping.lon && <span className="ml-1 text-[10px] text-blue-600 bg-blue-100 px-1 rounded-sm">Boylam</span>}
+                        {header === mapping.geometry && <span className="ml-1 text-[10px] text-purple-600 bg-purple-100 px-1 rounded-sm">Geometri</span>}
                       </th>
                     ))}
                   </tr>
@@ -141,7 +168,7 @@ export default function ColumnMapperModal({
                   {previewData.map((row, rowIndex) => (
                     <tr key={rowIndex} className="hover:bg-zinc-50">
                       {headers.map(header => (
-                        <td key={header} className="px-3 py-2 whitespace-nowrap text-zinc-600">
+                        <td key={header} className="px-3 py-2 whitespace-nowrap text-zinc-600 max-w-48 truncate">
                           {String(row[header] || '')}
                         </td>
                       ))}
@@ -177,4 +204,3 @@ export default function ColumnMapperModal({
     document.body,
   )
 }
-

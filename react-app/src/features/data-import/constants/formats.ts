@@ -23,5 +23,5 @@ export const COLUMN_PATTERNS = {
   lon: ['lon', 'lng', 'boylam', 'longitude', 'oylam'],
   name: ['name', 'ad', 'isim', 'sim', 'il', 'sehir', 'şehir', 'plaka'],
   type: ['type', 'tur', 'tür', 'tip'],
-  geometry: ['geometry', 'geometri'],
+  geometry: ['geometry', 'geometri', 'geom', 'the_geom', 'wkt', 'shape'],
 } as const

@@ -18,11 +18,12 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
     lon: initialMapping?.lon || '',
     name: initialMapping?.name || '',
     type: initialMapping?.type || '',
+    geometry: initialMapping?.geometry || '',
   })
 
-  const isValid = useMemo(() => {
-    return mapping.lat && mapping.lon && mapping.lat !== mapping.lon
-  }, [mapping])
+  const hasLatLon = mapping.lat !== '' && mapping.lon !== '' && mapping.lat !== mapping.lon
+  const hasGeometry = mapping.geometry !== ''
+  const isValid = useMemo(() => hasLatLon || hasGeometry, [hasLatLon, hasGeometry])
 
   if (!isOpen) return null
 
@@ -42,22 +43,22 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
 
         {/* Content */}
         <div className="p-5 overflow-y-auto min-h-0">
-          {/* Auto-detect status */}
+          {/* Info */}
           <div className="mb-5 bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-start gap-2.5">
             <i className="fa-solid fa-circle-check text-emerald-600 mt-0.5 text-sm"></i>
             <div>
               <h4 className="text-xs font-semibold text-emerald-800">Dosya Okundu</h4>
               <p className="text-[10px] text-emerald-700 mt-0.5">
-                Enlem ve boylam sütunlarını aşağıdan seçerek eşleştirin.
+                Enlem/Boylam sütunlarını veya Geometri sütununu (WKT / GeoJSON) seçerek eşleştirin.
               </p>
             </div>
           </div>
 
           {/* Selectors */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div>
               <label className="block text-xs font-medium text-zinc-700 mb-1">
-                Enlem (Latitude) <span className="text-red-500">*</span>
+                Enlem (Latitude) {!hasGeometry && <span className="text-red-500">*</span>}
               </label>
               <select
                 value={mapping.lat}
@@ -72,7 +73,7 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
             </div>
             <div>
               <label className="block text-xs font-medium text-zinc-700 mb-1">
-                Boylam (Longitude) <span className="text-red-500">*</span>
+                Boylam (Longitude) {!hasGeometry && <span className="text-red-500">*</span>}
               </label>
               <select
                 value={mapping.lon}
@@ -117,6 +118,31 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
             </div>
           </div>
 
+          {/* Geometry selector */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-1">
+              <label className="block text-xs font-medium text-zinc-700">
+                Geometri Sütunu (Opsiyonel) {!hasLatLon && <span className="text-red-500">*</span>}
+              </label>
+              <span className="text-[10px] text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded">WKT / GeoJSON</span>
+            </div>
+            <select
+              value={mapping.geometry}
+              onChange={(e) => setMapping({ ...mapping, geometry: e.target.value })}
+              className="w-full px-2.5 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-hidden text-sm"
+            >
+              <option value="">Yok</option>
+              {headers.map(h => (
+                <option key={h} value={h}>{h}</option>
+              ))}
+            </select>
+            {!hasLatLon && !hasGeometry && (
+              <p className="text-[10px] text-amber-600 mt-1">
+                Enlem/Boylam veya Geometri sütunlarından en az birini seçmelisiniz.
+              </p>
+            )}
+          </div>
+
           {/* Preview Table */}
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -131,6 +157,7 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
                         {h}
                         {h === mapping.lat && <span className="ml-1 text-[10px] text-emerald-600 bg-emerald-100 px-1 rounded-sm">Enlem</span>}
                         {h === mapping.lon && <span className="ml-1 text-[10px] text-blue-600 bg-blue-100 px-1 rounded-sm">Boylam</span>}
+                        {h === mapping.geometry && <span className="ml-1 text-[10px] text-purple-600 bg-purple-100 px-1 rounded-sm">Geometri</span>}
                       </th>
                     ))}
                   </tr>
@@ -139,7 +166,7 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
                   {previewData.map((row, idx) => (
                     <tr key={idx} className="hover:bg-zinc-50">
                       {headers.map(h => (
-                        <td key={h} className="px-3 py-2 whitespace-nowrap text-zinc-600">
+                        <td key={h} className="px-3 py-2 whitespace-nowrap text-zinc-600 max-w-48 truncate">
                           {String(row[h] || '')}
                         </td>
                       ))}
@@ -152,7 +179,6 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
         </div>
 
         {/* Footer */}
-        {/* Footer */}
         <div className="p-5 pt-0 flex items-center justify-end gap-2.5 shrink-0">
           <button
             onClick={onClose}
@@ -164,11 +190,11 @@ export default function ColumnMapperModal({ isOpen, onClose, onConfirm, headers,
             onClick={() => onConfirm(mapping)}
             disabled={!isValid}
             className={`
-                            px-4 py-1.5 text-xs text-white rounded-lg font-medium shadow-xs transition-all flex items-center
-                            ${isValid
-                              ? 'bg-emerald-600 hover:bg-emerald-700 hover:scale-105 active:scale-95'
-                              : 'bg-zinc-300 cursor-not-allowed'}
-                        `}
+              px-4 py-1.5 text-xs text-white rounded-lg font-medium shadow-xs transition-all flex items-center
+              ${isValid
+                ? 'bg-emerald-600 hover:bg-emerald-700 hover:scale-105 active:scale-95'
+                : 'bg-zinc-300 cursor-not-allowed'}
+            `}
           >
             <i className="fa-solid fa-check mr-1.5"></i>
             Onayla

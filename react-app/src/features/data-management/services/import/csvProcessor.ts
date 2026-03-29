@@ -22,7 +22,7 @@ export async function parseCsv(file: File): Promise<ParseResult> {
   const headers = result.meta.fields ?? Object.keys(jsonData[0] as object)
   const mapping = detectColumns(headers)
 
-  if (!mapping.lat || !mapping.lon) {
+  if ((!mapping.lat || !mapping.lon) && !mapping.geometry) {
     return {
       needsMapping: true,
       data: jsonData,

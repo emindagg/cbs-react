@@ -22,7 +22,6 @@ export function useFileImport() {
     if (!file) return
 
     setIsLoading(true)
-    const extension = file.name.split('.').pop()?.toLowerCase() || ''
 
     try {
       const result = await parseFile(file)
@@ -48,12 +47,9 @@ export function useFileImport() {
     } catch (error) {
       console.error('Import Error:', error)
       toast.error('Dosya yüklenirken hata oluştu: ' + (error instanceof Error ? error.message : String(error)))
+      if (fileInputRef.current) fileInputRef.current.value = ''
     } finally {
       setIsLoading(false)
-      // Keep file input if mapper is shown
-      if (fileInputRef.current && !showMapper && (extension !== 'xlsx' && extension !== 'xls' && extension !== 'csv')) {
-        fileInputRef.current.value = ''
-      }
     }
   }
 

@@ -43,7 +43,7 @@ export async function parseExcel(file: File): Promise<ParseResult> {
 
   const mapping = detectColumns(headers)
 
-  if (!mapping.lat || !mapping.lon) {
+  if ((!mapping.lat || !mapping.lon) && !mapping.geometry) {
     return {
       needsMapping: true,
       data: jsonData,
