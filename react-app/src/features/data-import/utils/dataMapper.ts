@@ -1,8 +1,7 @@
+import { extractDateFromProperties } from '@/utils/dateParser'
+
 import type { ColumnMapping, GeoItem } from '../types'
 
-/**
- * Transform raw JSON data to GeoItems using column mapping
- */
 export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping: ColumnMapping): GeoItem[] {
   return jsonData.map((row: Record<string, unknown>, index: number) => {
     let geometry: GeoJSON.Geometry | null = null
@@ -49,7 +48,7 @@ export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping
     if (!geometry) return null
 
     return {
-      name: mapping.name ? row[mapping.name] : `Item ${index + 1}`,
+      name: mapping.name ? String(row[mapping.name] ?? '') : `Item ${index + 1}`,
       type: String(mapping.type ? row[mapping.type] : 'point')
         ?.toLowerCase()
         ?.replace('rota', 'line')
@@ -57,7 +56,7 @@ export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping
       geometry: geometry,
       properties: row,
       visible: true,
-      date: new Date().toISOString(),
+      date: extractDateFromProperties(row),
     } as GeoItem
   }).filter(Boolean) as GeoItem[]
 }

@@ -7,7 +7,7 @@ export interface GeoItem {
   type: 'point' | 'line' | 'polygon';
   geometry: GeoJSON.Geometry;
   properties: Record<string, unknown>;
-  date: string;
+  date?: string;
   visible: boolean;
 }
 

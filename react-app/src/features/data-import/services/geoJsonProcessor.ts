@@ -1,3 +1,5 @@
+import { extractDateFromProperties } from '@/utils/dateParser'
+
 import type { GeoItem } from '../types'
 
 interface GeoJSONInput {
@@ -5,6 +7,7 @@ interface GeoJSONInput {
   features?: Array<GeoJSONFeature>
   geometries?: Array<Record<string, unknown>>
   geometry?: GeoJSON.Geometry
+  properties?: Record<string, unknown>
 }
 
 interface GeoJSONFeature {
@@ -23,7 +26,7 @@ export function parseGeoJSON(geojson: GeoJSONInput, fileName: string): GeoItem[]
   if (geojson.type === 'FeatureCollection' && geojson.features) {
     features = geojson.features
   } else if (geojson.type === 'Feature' && geojson.geometry) {
-    features = [{ type: 'Feature', geometry: geojson.geometry, properties: geojson as Record<string, unknown> }]
+    features = [{ type: 'Feature', geometry: geojson.geometry, properties: geojson.properties ?? {} }]
   } else if (geojson.type === 'GeometryCollection' && geojson.geometries) {
     features = geojson.geometries.map((geom) => ({
       type: 'Feature',
@@ -53,7 +56,7 @@ export function parseGeoJSON(geojson: GeoJSONInput, fileName: string): GeoItem[]
         geometry: feature.geometry,
         properties: feature.properties || {},
         visible: true,
-        date: new Date().toISOString(),
+        date: extractDateFromProperties(feature.properties),
       })
     }
   })
