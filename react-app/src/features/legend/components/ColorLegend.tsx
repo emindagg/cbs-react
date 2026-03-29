@@ -155,12 +155,14 @@ export default function ColorLegend({
               onKeyDown={handleTitleKeyDown}
               onClick={(e) => e.stopPropagation()}
               placeholder="Lejant ismi giriniz"
-              className="text-[16px] font-bold text-[#333333] bg-white px-2 py-1 rounded border-2 border-blue-500 outline-none min-w-[150px] text-center"
+              className="font-bold text-[#333333] bg-white px-2 py-1 rounded border-2 border-blue-500 outline-none min-w-[150px] text-center"
+              style={{ fontSize: `${config.title.fontSize ?? 16}px` }}
             />
           ) : (
             <div
               onClick={handleTitleClick}
-              className={`text-[16px] font-bold text-[#333333] ${onTitleChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}
+              className={`font-bold text-[#333333] ${onTitleChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}
+              style={{ fontSize: `${config.title.fontSize ?? 16}px` }}
             >
               {config.title.text || 'Lejant ismi giriniz'}
             </div>
