@@ -64,10 +64,10 @@ export class PointRenderer {
     settings: VisualizationSettings,
     locationLevel: 'province' | 'district' = 'province',
   ): Promise<void> {
-    // 1. Extract numeric values
+    // 1. Extract numeric values (0 geçerli veri değeridir, yalnızca NaN dışlanır)
     const values = userData
       .map((d) => parseFloat(String(d[dataColumn])))
-      .filter((v) => !isNaN(v) && v !== 0)
+      .filter((v) => !isNaN(v))
 
     if (values.length === 0) {
       console.warn('⚠️  No valid data for dot-density visualization')
@@ -109,7 +109,7 @@ export class PointRenderer {
       const dataValue = this.getDataValue(feature, dataMap, normalizedName, locationLevel)
       return {
         ...feature,
-        properties: { ...(feature.properties ?? {}), hasData: dataValue !== undefined && dataValue !== 0 },
+        properties: { ...(feature.properties ?? {}), hasData: dataValue !== undefined },
       } as GeoJSON.Feature
     })
 

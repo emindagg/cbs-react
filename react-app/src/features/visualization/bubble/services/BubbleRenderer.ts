@@ -68,16 +68,16 @@ export class BubbleRenderer {
     const colorColumn = settings.colorColumn || dataColumn
     const isBivariate = colorColumn !== dataColumn
 
-    // Extract size values
+    // Extract size values (0 geçerli veri değeridir, yalnızca NaN dışlanır)
     const sizeValues = normalizedData
       .map((d) => parseFloat(String(d[dataColumn])))
-      .filter((v) => !isNaN(v) && v !== 0)
+      .filter((v) => !isNaN(v))
 
     // Extract color values (may be from a different column in bivariate mode)
     const colorValues = isBivariate
       ? normalizedData
         .map((d) => parseFloat(String(d[colorColumn])))
-        .filter((v) => !isNaN(v) && v !== 0)
+        .filter((v) => !isNaN(v))
       : sizeValues
 
     if (sizeValues.length === 0) {
@@ -172,7 +172,7 @@ export class BubbleRenderer {
       const dataValue = this.getDataValue(feature, sizeDataMap, normalizedFeatureName, locationLevel)
       return {
         ...feature,
-        properties: { ...(feature.properties ?? {}), hasData: dataValue !== undefined && dataValue !== 0 },
+        properties: { ...(feature.properties ?? {}), hasData: dataValue !== undefined },
       } as GeoJSON.Feature
     })
 
@@ -291,8 +291,8 @@ export class BubbleRenderer {
       // Get size data value
       const dataValue = this.getDataValue(feature, sizeDataMap, normalizedFeatureName, locationLevel)
 
-      // Skip features without data
-      if (dataValue === undefined || dataValue === 0) return
+      // Skip features without data (0 geçerli değer; yalnızca tanımsız olanlar atlanır)
+      if (dataValue === undefined) return
 
       // Get color data value (same as size unless bivariate)
       const colorValue = isBivariate

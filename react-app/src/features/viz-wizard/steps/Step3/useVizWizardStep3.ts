@@ -51,7 +51,7 @@ export function useVizWizardStep3() {
 
   const dataValues = matchResults.successful
     .map((result) => result.value)
-    .filter((v): v is number => v !== undefined && v !== 0)
+    .filter((v): v is number => v !== undefined)
 
   const onApplySuggestion = () => {
     handleApplySuggestion((method) => {

@@ -32,10 +32,10 @@ export function useVizSuggestion({ matchResults, dataColumn }: UseVizSuggestionP
     }
 
     try {
-      // Extract values from successful matches
+      // Extract values from successful matches (0 geçerli veri değeridir, yalnızca NaN dışlanır)
       const values = matchResults.successful
         .map((m) => parseFloat(String(m.originalData[dataColumn])))
-        .filter((v) => !isNaN(v) && v !== 0)
+        .filter((v) => !isNaN(v))
 
       if (values.length === 0) {
         setTimeout(() => {

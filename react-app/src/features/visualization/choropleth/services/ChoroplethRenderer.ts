@@ -55,10 +55,10 @@ export class ChoroplethRenderer {
     settings: VisualizationSettings,
     locationLevel: 'province' | 'district' = 'province',
   ): Promise<void> {
-    // Extract values for classification
+    // Extract values for classification (0 geçerli veri değeridir, yalnızca NaN dışlanır)
     const values = userData
       .map((d) => parseFloat(String(d[dataColumn])))
-      .filter((v) => !isNaN(v) && v !== 0)
+      .filter((v) => !isNaN(v))
 
     if (values.length === 0) {
       console.warn('⚠️  No valid data for visualization')
