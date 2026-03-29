@@ -1,6 +1,7 @@
 /**
- * Pre-push git hook: Versiyonu güncelle ve commit et
- * Git push yapılmadan önce çalışır
+ * Release adımı için versiyon güncelleme scripti.
+ * Otomatik pre-push yerine manuel çalıştırılır:
+ *   pnpm run release:version
  */
 
 const { execSync } = require('child_process');
@@ -21,7 +22,7 @@ try {
   // Dosya yoksa, versiyon oluşturulacak
 }
 
-// Versiyonu güncelle (local HEAD'e göre, çünkü push yapıyoruz)
+// Versiyonu güncelle (local HEAD'e göre)
 try {
   execSync(`node "${versionScript}"`, { cwd: reactAppRoot, stdio: 'inherit' });
 } catch (error) {
@@ -55,14 +56,14 @@ if (currentVersion !== newVersion) {
       // Commit mesajı
       const commitMessage = `chore: versiyon güncellendi ${newVersion}`;
       
-      // Commit yap (--no-verify ile hook'ları bypass et, sonsuz döngüyü önle)
+      // Commit yap (--no-verify ile hook'ları bypass et)
       execSync(`git commit -m "${commitMessage}" --no-verify`, { 
         cwd: repoRoot, 
         stdio: 'inherit' 
       });
       
       console.log(`✅ Versiyon ${currentVersion} → ${newVersion} güncellendi ve commit edildi`);
-      console.log('ℹ️  Versiyon commit\'i push\'a dahil edildi. Push devam ediyor...');
+      console.log('ℹ️  Release aşaması için versiyon commit\'i hazır.');
     }
   } catch (error) {
     console.error('Versiyon commit hatası:', error.message);

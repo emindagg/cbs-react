@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "version:generate": "node scripts/version-from-git.cjs",
+    "release:version": "node scripts/pre-push-version.cjs",
     "prebuild": "node scripts/version-from-git.cjs",
     "dev": "start \"\" \"C:\\Program Files\\Google\\Chrome Dev\\Application\\chrome.exe\" --guest http://localhost:5173/cbs-react/ & vite",
     "build": "tsc -b && vite build",

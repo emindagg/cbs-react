@@ -20,6 +20,10 @@ import DynamicLegend from './DynamicLegend'
 export default function Container() {
   const { colorConfig, vizSettings, matchResults, currentVisualization, setLegendConfig } = useVisualizationStore()
 
+  // Legend aktif render'dan beslenmeli, draft wizard state'inden değil.
+  // renderSettings null ise (ilk render öncesi) vizSettings fallback olur.
+  const rs = currentVisualization.renderSettings ?? vizSettings
+
   // Extract data values - ALWAYS call hooks before any conditional returns
   const dataValues = useMemo(() => {
     return matchResults.successful
@@ -29,14 +33,14 @@ export default function Container() {
 
   // Bivariate modda renk lejantı colorColumn'dan hesaplanmalı
   const colorValues = useMemo(() => {
-    if (vizSettings.colorColumn) {
+    if (rs.colorColumn) {
       const vals = matchResults.successful
-        .map((result) => parseFloat(String(result.originalData[vizSettings.colorColumn!])))
+        .map((result) => parseFloat(String(result.originalData[rs.colorColumn!])))
         .filter((v) => !isNaN(v) && v !== 0)
       if (vals.length > 0) return vals
     }
     return dataValues
-  }, [matchResults, vizSettings.colorColumn, dataValues])
+  }, [matchResults, rs.colorColumn, dataValues])
 
   // Calculate breaks based on classification method
   const breaks = useMemo(() => {
@@ -55,8 +59,8 @@ export default function Container() {
       return [min, max]
     } else {
       // For steps: use custom breaks if available, otherwise calculate
-      if (vizSettings.classificationMethod === 'custom' && vizSettings.customBreaks?.length) {
-        return vizSettings.customBreaks
+      if (rs.classificationMethod === 'custom' && rs.customBreaks?.length) {
+        return rs.customBreaks
       }
 
       // Apply custom range clamp for steps mode too
@@ -69,29 +73,29 @@ export default function Container() {
 
       return calculateBreaks(
         values,
-        vizSettings.classificationMethod,
-        vizSettings.classCount,
+        rs.classificationMethod,
+        rs.classCount,
       )
     }
-  }, [colorValues, colorConfig, vizSettings])
+  }, [colorValues, colorConfig, rs])
 
   // Get colors based on scale type
   const colors = useMemo(() => {
     if (colorConfig.scaleType === 'continuous') {
       // For continuous, generate smooth gradient
-      return getInterpolatedColorPalette(vizSettings.colorScheme, 30, 'lab')
+      return getInterpolatedColorPalette(rs.colorScheme, 30, 'lab')
     } else {
       // For steps, get discrete colors — use custom breaks count if available
-      const count = vizSettings.classificationMethod === 'custom' && vizSettings.customBreaks?.length
-        ? vizSettings.customBreaks.length - 1
-        : vizSettings.classCount
-      return getInterpolatedColorPalette(vizSettings.colorScheme, count, 'lab')
+      const count = rs.classificationMethod === 'custom' && rs.customBreaks?.length
+        ? rs.customBreaks.length - 1
+        : rs.classCount
+      return getInterpolatedColorPalette(rs.colorScheme, count, 'lab')
     }
-  }, [colorConfig.scaleType, vizSettings.colorScheme, vizSettings.classCount, vizSettings.classificationMethod, vizSettings.customBreaks])
+  }, [colorConfig.scaleType, rs.colorScheme, rs.classCount, rs.classificationMethod, rs.customBreaks])
 
   // Derived values needed by hooks below
-  const isBubble = vizSettings.type === 'bubble'
-  const isBubbleBivariate = isBubble && !!vizSettings.colorColumn
+  const isBubble = rs.type === 'bubble'
+  const isBubbleBivariate = isBubble && !!rs.colorColumn
 
   // Hooks must all be declared before any conditional returns
   const handleTitleChange = useCallback((title: string) => {
@@ -108,18 +112,18 @@ export default function Container() {
 
     const minVal = Math.min(...dataValues)
     const maxVal = Math.max(...dataValues)
-    const minSize = vizSettings.symbolMinSize || 5
-    const maxSize = vizSettings.symbolMaxSize || 20
-    const scaling = vizSettings.symbolScaling || 'sqrt'
+    const minSize = rs.symbolMinSize || 5
+    const maxSize = rs.symbolMaxSize || 20
+    const scaling = rs.symbolScaling || 'sqrt'
 
     // Graduated mode: compute class info for the legend
-    const isGraduated = vizSettings.bubbleSizeMode === 'graduated'
+    const isGraduated = rs.bubbleSizeMode === 'graduated'
     const graduatedClasses = isGraduated ? (() => {
-      const sizeBreaks = calculateBreaks(dataValues, vizSettings.classificationMethod, vizSettings.classCount)
+      const sizeBreaks = calculateBreaks(dataValues, rs.classificationMethod, rs.classCount)
       const classCount = sizeBreaks.length - 1
 
       // Standard Deviation labels logic
-      const isStdDev = vizSettings.classificationMethod === 'stddev'
+      const isStdDev = rs.classificationMethod === 'stddev'
       const mean = isStdDev ? ss.mean(dataValues) : 0
       const stdDev = isStdDev ? ss.standardDeviation(dataValues) : 1
       const minDataVal = Math.min(...dataValues)
@@ -196,15 +200,15 @@ export default function Container() {
           },
         }}
         circles={isGraduated ? circlesForGraduated : legendCircles}
-        bubbleColor={!vizSettings.colorColumn ? (vizSettings.symbolFillColor || BUBBLE_DEFAULT_FILL_COLOR) : undefined}
-        bubbleOpacity={vizSettings.symbolOpacity ?? 0.6}
-        bubbleStrokeColor={vizSettings.symbolStrokeColor || '#ffffff'}
-        bubbleStrokeWidth={vizSettings.symbolStrokeWidth ?? 0.5}
+        bubbleColor={!rs.colorColumn ? (rs.symbolFillColor || BUBBLE_DEFAULT_FILL_COLOR) : undefined}
+        bubbleOpacity={rs.symbolOpacity ?? 0.6}
+        bubbleStrokeColor={rs.symbolStrokeColor || '#ffffff'}
+        bubbleStrokeWidth={rs.symbolStrokeWidth ?? 0.5}
         graduatedClasses={graduatedClasses}
         onTitleChange={handleTitleChange}
       />
     )
-  }, [isBubble, isBubbleBivariate, dataValues, vizSettings, colorConfig.legend, handleTitleChange])
+  }, [isBubble, isBubbleBivariate, dataValues, rs, colorConfig.legend, handleTitleChange])
 
   // NOW we can do conditional returns after all hooks are called
   if (!currentVisualization.type || !currentVisualization.data) {
@@ -216,10 +220,10 @@ export default function Container() {
   }
 
   // Dot density → "1 nokta = X" legend
-  if (vizSettings.type === 'dot') {
-    const dotValue = vizSettings.dotValue ?? calculateSmartDotValue(dataValues)
-    const dotColor = vizSettings.dotColor ?? DEFAULT_DOT_COLOR
-    const dotSize = vizSettings.dotSize ?? DEFAULT_DOT_SIZE
+  if (rs.type === 'dot') {
+    const dotValue = rs.dotValue ?? calculateSmartDotValue(dataValues)
+    const dotColor = rs.dotColor ?? DEFAULT_DOT_COLOR
+    const dotSize = rs.dotSize ?? DEFAULT_DOT_SIZE
 
     return (
       <DotDensityLegend
@@ -227,7 +231,7 @@ export default function Container() {
         dotColor={dotColor}
         dotSize={dotSize}
         dotValue={dotValue}
-        dotLabel={vizSettings.dotLabel}
+        dotLabel={rs.dotLabel}
         onTitleChange={handleTitleChange}
       />
     )
@@ -235,8 +239,8 @@ export default function Container() {
 
   // Proportional + non-bivariate: only show size legend (no color gradient legend)
   const isProportionalNonBivariate = isBubble
-    && (vizSettings.bubbleSizeMode || 'proportional') === 'proportional'
-    && !vizSettings.colorColumn
+    && (rs.bubbleSizeMode || 'proportional') === 'proportional'
+    && !rs.colorColumn
 
   if (isProportionalNonBivariate) {
     return <>{bubbleSizeLegend}</>
@@ -244,8 +248,8 @@ export default function Container() {
 
   // Graduated + non-bivariate: only show size legend (color legend is redundant)
   const isGraduatedNonBivariate = isBubble
-    && vizSettings.bubbleSizeMode === 'graduated'
-    && !vizSettings.colorColumn
+    && rs.bubbleSizeMode === 'graduated'
+    && !rs.colorColumn
 
   if (isGraduatedNonBivariate) {
     return <>{bubbleSizeLegend}</>
@@ -259,7 +263,7 @@ export default function Container() {
           breaks={breaks}
           colors={colors}
           scaleType={colorConfig.scaleType}
-          classificationMethod={vizSettings.classificationMethod}
+          classificationMethod={rs.classificationMethod}
           onTitleChange={handleTitleChange}
         />
         {bubbleSizeLegend}
@@ -274,7 +278,7 @@ export default function Container() {
         breaks={breaks}
         colors={colors}
         scaleType={colorConfig.scaleType}
-        classificationMethod={vizSettings.classificationMethod}
+        classificationMethod={rs.classificationMethod}
         onTitleChange={handleTitleChange}
       />
       {bubbleSizeLegend}
