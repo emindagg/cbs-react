@@ -17,10 +17,10 @@ export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping
         }).filter((p): p is { lat: number; lon: number } => p !== null)
 
         if (points.length > 0) {
-          const type = mapping.type ? row[mapping.type] : 'point'
-          if (type === 'polygon' || type === 'area' || type === 'alan') {
+          const rawType = String(mapping.type ? row[mapping.type] : 'point').toLowerCase().trim()
+          if (rawType === 'polygon' || rawType === 'area' || rawType === 'alan') {
             geometry = { type: 'Polygon', coordinates: [points.map((p) => [p.lon, p.lat])] }
-          } else if (type === 'line' || type === 'route' || type === 'rota') {
+          } else if (rawType === 'line' || rawType === 'linestring' || rawType === 'route' || rawType === 'rota') {
             geometry = { type: 'LineString', coordinates: points.map((p) => [p.lon, p.lat]) }
           } else {
             const firstPoint = points[0]

@@ -15,10 +15,10 @@ export function transformToGeoItems(jsonData: Record<string, unknown>[], mapping
         }).filter((point): point is { lat: number; lon: number } => point !== null)
 
         if (points.length > 0) {
-          const typeValue = mapping.type ? row[mapping.type] : 'point'
+          const typeValue = String(mapping.type ? row[mapping.type] : 'point').toLowerCase().trim()
           if (typeValue === 'polygon' || typeValue === 'area' || typeValue === 'alan') {
             geometry = { type: 'Polygon', coordinates: [points.map(point => [point.lon, point.lat])] }
-          } else if (typeValue === 'line' || typeValue === 'route' || typeValue === 'rota') {
+          } else if (typeValue === 'line' || typeValue === 'linestring' || typeValue === 'route' || typeValue === 'rota') {
             geometry = { type: 'LineString', coordinates: points.map(point => [point.lon, point.lat]) }
           } else {
             const firstPoint = points[0]
