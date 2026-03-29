@@ -1,4 +1,9 @@
-import { buildGeoJSONBlob } from '@/utils/geojsonExport'
+import { rewindFeatureCollection } from '@placemarkio/geojson-rewind'
+
+import {
+  buildDataItemsFeatureCollection,
+  featureCollectionToBlob,
+} from '@/utils/geojsonExport'
 import type { GeoJSONExportOptions } from '@/utils/geojsonExport'
 
 import type { DataItem } from '../../types'
@@ -6,5 +11,7 @@ import type { DataItem } from '../../types'
 export type { GeoJSONExportOptions }
 
 export function exportAsGeoJSON(items: DataItem[], opts?: GeoJSONExportOptions): Blob {
-  return buildGeoJSONBlob(items, opts)
+  const fc = buildDataItemsFeatureCollection(items)
+  const rewound = rewindFeatureCollection(fc)
+  return featureCollectionToBlob(rewound, opts)
 }

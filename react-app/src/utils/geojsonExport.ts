@@ -1,11 +1,14 @@
+import { rewindFeatureCollection } from '@placemarkio/geojson-rewind'
+import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson'
+
 import type { DataItem } from '@/stores/useDataStore'
 
 export interface GeoJSONExportOptions {
   minified?: boolean
 }
 
-export function buildGeoJSONBlob(items: DataItem[], opts?: GeoJSONExportOptions): Blob {
-  const featureCollection = {
+export function buildDataItemsFeatureCollection(items: DataItem[]): FeatureCollection {
+  return {
     type: 'FeatureCollection',
     features: items.map(item => ({
       type: 'Feature',
@@ -18,10 +21,22 @@ export function buildGeoJSONBlob(items: DataItem[], opts?: GeoJSONExportOptions)
       },
     })),
   }
+}
+
+export function featureCollectionToBlob(
+  fc: FeatureCollection<Geometry | null, GeoJsonProperties>,
+  opts?: GeoJSONExportOptions,
+): Blob {
   const indent = opts?.minified ? 0 : 2
-  return new Blob([JSON.stringify(featureCollection, null, indent)], {
+  return new Blob([JSON.stringify(fc, null, indent)], {
     type: 'application/geo+json',
   })
+}
+
+export function buildGeoJSONBlob(items: DataItem[], opts?: GeoJSONExportOptions): Blob {
+  const fc = buildDataItemsFeatureCollection(items)
+  const rewound = rewindFeatureCollection(fc)
+  return featureCollectionToBlob(rewound, opts)
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {
