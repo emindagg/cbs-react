@@ -85,6 +85,11 @@ export class BubbleRenderer {
       return
     }
 
+    if (isBivariate && colorValues.length === 0) {
+      console.warn('⚠️  Bivariate modda renk sütununda geçerli veri bulunamadı:', colorColumn)
+      return
+    }
+
     const resolvedRange = resolveCustomRange(settings.customRange, colorValues)
     const colorValuesForColor = resolvedRange
       ? colorValues.map((v) => clampToCustomRange(v, resolvedRange))
@@ -295,10 +300,13 @@ export class BubbleRenderer {
       if (dataValue === undefined) return
 
       // Get color data value (same as size unless bivariate)
+      // Bivariate'te renk verisi yoksa null bırakılır; MapLibre step fallback → transparent
       const colorValue = isBivariate
-        ? this.getDataValue(feature, colorDataMap, normalizedFeatureName, locationLevel) ?? dataValue
+        ? this.getDataValue(feature, colorDataMap, normalizedFeatureName, locationLevel)
         : dataValue
-      const inCustomRange = isValueInCustomRange(colorValue, resolvedRange ?? null)
+      const inCustomRange = colorValue !== undefined
+        ? isValueInCustomRange(colorValue, resolvedRange ?? null)
+        : false
 
       // Calculate centroid - only process Polygon/MultiPolygon geometries
       const geometry = feature.geometry
@@ -319,7 +327,7 @@ export class BubbleRenderer {
           name: displayName,
           value: dataValue,
           dataValue,
-          colorValue,
+          colorValue: colorValue ?? null,  // null → MapLibre step NO_DATA_COLOR fallback'i tetikler
           inCustomRange,
           radius,
           hasData: true,
