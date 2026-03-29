@@ -146,7 +146,7 @@ export class ChoroplethRenderer {
     ]
 
     // Render to map
-    this.renderToMap(allFeaturesGeoJSON, colorExpression, settings, resolvedRange)
+    this.renderToMap(allFeaturesGeoJSON, colorExpression, settings, resolvedRange, locationLevel)
   }
 
   /**
@@ -339,6 +339,7 @@ export class ChoroplethRenderer {
     colorExpression: unknown[],
     settings: VisualizationSettings,
     resolvedRange: ResolvedCustomRange | null,
+    locationLevel: 'province' | 'district' = 'province',
   ): void {
     const sourceId = 'choropleth-source'
     const choroplethOpacity = settings.choroplethOpacity ?? 1
@@ -423,15 +424,20 @@ export class ChoroplethRenderer {
       this.map.setPaintProperty('choropleth-outline', 'line-opacity', 0.8)
     }
 
-    const labelPoints = this.buildLabelPoints(geojson.features)
+    const labelPoints = this.buildLabelPoints(geojson.features, locationLevel)
     this.renderLabelLayers(settings, labelPoints)
   }
 
   /**
    * Build deduplicated centroid Point GeoJSON for label layers.
    * Features are already enriched (displayName, hasData, dataValue).
+   * İlçe seviyesinde aynı isimli ilçeler farklı iller altında olabilir;
+   * dedup anahtarı il__ilçe bileşiği ile oluşturulur.
    */
-  private buildLabelPoints(features: GeoJSONFeature[]): GeoJSON.FeatureCollection {
+  private buildLabelPoints(
+    features: GeoJSONFeature[],
+    locationLevel: 'province' | 'district' = 'province',
+  ): GeoJSON.FeatureCollection {
     const seen = new Set<string>()
     const pointFeatures: GeoJSON.Feature[] = []
 
@@ -440,8 +446,14 @@ export class ChoroplethRenderer {
       if (!isPolygonOrMultiPolygon(geometry)) return
 
       const displayName = String(feature.properties.displayName || '')
-      if (!displayName || seen.has(displayName)) return
-      seen.add(displayName)
+      if (!displayName) return
+
+      const provinceHint = locationLevel === 'district'
+        ? String(feature.properties.ADI || feature.properties.ILAD || feature.properties.IL_ADI || feature.properties.il_adi || '')
+        : ''
+      const dedupKey = provinceHint ? `${provinceHint}__${displayName}` : displayName
+      if (seen.has(dedupKey)) return
+      seen.add(dedupKey)
 
       const centroid = calculateCentroid(geometry)
       pointFeatures.push({

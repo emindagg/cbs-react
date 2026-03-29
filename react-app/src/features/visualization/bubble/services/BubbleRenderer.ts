@@ -485,8 +485,12 @@ export class BubbleRenderer {
         }
       }
 
-      if (seen.has(displayName)) return
-      seen.add(displayName)
+      const provinceHint = locationLevel === 'district'
+        ? String(feature.properties.ADI || feature.properties.ILAD || feature.properties.IL_ADI || feature.properties.il_adi || feature.properties.province || '')
+        : ''
+      const dedupKey = provinceHint ? `${provinceHint}__${displayName}` : displayName
+      if (seen.has(dedupKey)) return
+      seen.add(dedupKey)
 
       const normalizedFeatureName = normalizeTurkishText(featureName)
       const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
