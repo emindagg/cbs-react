@@ -13,9 +13,10 @@ interface GeoJSONFeature {
   properties?: Record<string, unknown>
 }
 
-/**
- * Process GeoJSON data into GeoItems
- */
+const BARE_GEOMETRY_TYPES = new Set([
+  'Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon',
+])
+
 export function parseGeoJSON(geojson: GeoJSONInput, fileName: string): GeoItem[] {
   let features: GeoJSONFeature[] = []
 
@@ -29,6 +30,8 @@ export function parseGeoJSON(geojson: GeoJSONInput, fileName: string): GeoItem[]
       geometry: geom as unknown as GeoJSON.Geometry,
       properties: {},
     }))
+  } else if (geojson.type && BARE_GEOMETRY_TYPES.has(geojson.type)) {
+    features = [{ type: 'Feature', geometry: geojson as unknown as GeoJSON.Geometry, properties: {} }]
   } else if (geojson.geometry) {
     features = [{ type: 'Feature', geometry: geojson.geometry, properties: {} }]
   }

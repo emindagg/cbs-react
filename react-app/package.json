@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@mapbox/shp-write": "0.4.3",
+    "@placemarkio/tokml": "^0.3.9",
     "@tmcw/togeojson": "^7.1.2",
     "@turf/turf": "^7.3.3",
     "@types/shpjs": "^3.4.7",
@@ -36,6 +37,7 @@
     "d3-interpolate": "^3.0.1",
     "d3-scale": "^4.0.2",
     "date-fns": "^4.1.0",
+    "fflate": "^0.8.2",
     "framer-motion": "^12.31.0",
     "fuse.js": "^7.1.0",
     "lucide-react": "^0.563.0",

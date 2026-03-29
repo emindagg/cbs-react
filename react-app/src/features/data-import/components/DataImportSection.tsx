@@ -42,6 +42,8 @@ export function DataImportSection() {
           onFormatChange={dataExport.setExportFormat}
           onExport={dataExport.handleExport}
           exportButtonLabel="Projeyi İndir"
+          geojsonMinified={dataExport.geojsonMinified}
+          onGeojsonMinifiedChange={dataExport.setGeojsonMinified}
         />
 
         <label

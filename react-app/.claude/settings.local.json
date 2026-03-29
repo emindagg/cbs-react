@@ -43,7 +43,12 @@
       "WebFetch(domain:www.geoapify.com)",
       "WebFetch(domain:svelte-maplibre.vercel.app)",
       "Bash(claude mcp:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(for file:*)",
+      "Bash(do)",
+      "Bash(echo \"=== $file ===\")",
+      "Read(//d/0GM/MEB PROJELER/CBS PROJELER/cbs-react/react-app/**)",
+      "Bash(done)"
     ]
   }
 }

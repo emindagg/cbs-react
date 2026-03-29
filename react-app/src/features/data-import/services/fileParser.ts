@@ -1,13 +1,10 @@
+import { parseCsv } from './csvProcessor'
 import { parseExcel } from './excelProcessor'
 import { parseGeoJSON } from './geoJsonProcessor'
 import { parseKML } from './kmlProcessor'
 import { parseShapefile } from './shapefileProcessor'
 import type { ParseResult } from '../types'
 
-/**
- * Main file parser dispatcher
- * Routes files to appropriate processor based on extension
- */
 export async function parseFile(file: File): Promise<ParseResult> {
   const fileName = file.name.split('.')[0]
   const extension = file.name.split('.').pop()?.toLowerCase() || ''
@@ -21,9 +18,11 @@ export async function parseFile(file: File): Promise<ParseResult> {
       return { items }
     }
 
+    case 'csv':
+      return await parseCsv(file)
+
     case 'xlsx':
     case 'xls':
-    case 'csv':
       return await parseExcel(file)
 
     case 'kml': {

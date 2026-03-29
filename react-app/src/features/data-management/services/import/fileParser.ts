@@ -1,4 +1,4 @@
-
+import { parseCsv } from './csvProcessor'
 import { parseExcel } from './excelProcessor'
 import { parseGeoJSON } from './geoJsonProcessor'
 import { parseKML } from './kmlProcessor'
@@ -18,9 +18,11 @@ export async function parseFile(file: File): Promise<ParseResult> {
       return { items }
     }
 
+    case 'csv':
+      return await parseCsv(file)
+
     case 'xlsx':
     case 'xls':
-    case 'csv':
       return await parseExcel(file)
 
     case 'kml': {

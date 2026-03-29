@@ -361,6 +361,19 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#54278f',
     '#3f007d',
   ],
+
+  // Kehribar
+  amber: [
+    '#fff8e1',
+    '#ffecb3',
+    '#ffe082',
+    '#ffd54f',
+    '#ffca28',
+    '#ffb300',
+    '#ff8f00',
+    '#e65100',
+    '#bf360c',
+  ],
 }
 
 /**
@@ -398,6 +411,7 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
   reds: { name: 'Kırmızılar', type: 'sequential' },
   greens: { name: 'Yeşiller', type: 'sequential' },
   purples: { name: 'Morlar', type: 'sequential' },
+  amber: { name: 'Kehribar', type: 'sequential' },
 
   // Yükseklik Paletleri
   elevationTerrain: { name: 'Yükseklik - Arazi', type: 'sequential' },
@@ -415,6 +429,7 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
   { value: 'reds', label: 'Kırmızılar' },
   { value: 'greens', label: 'Yeşiller' },
   { value: 'purples', label: 'Morlar' },
+  { value: 'amber', label: 'Kehribar' },
 
   // Sıralı — Mavi/Yeşil ailesi
   { value: 'greenBlue', label: 'Yeşil-Mavi' },

@@ -38,6 +38,8 @@ export function DataImportExportSection() {
           exportFormat={dataExport.exportFormat}
           onFormatChange={dataExport.setExportFormat}
           onExport={dataExport.handleExport}
+          geojsonMinified={dataExport.geojsonMinified}
+          onGeojsonMinifiedChange={dataExport.setGeojsonMinified}
         />
 
         <label

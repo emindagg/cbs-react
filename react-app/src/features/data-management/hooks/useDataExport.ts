@@ -12,6 +12,8 @@ import type { ExportFormat } from '../types'
 export function useDataExport() {
   const items = useDataManagementStore(state => state.items)
   const [exportFormat, setExportFormat] = useState<ExportFormat>('geojson')
+  const [isExporting, setIsExporting] = useState(false)
+  const [geojsonMinified, setGeojsonMinified] = useState(false)
 
   const handleExport = async () => {
     if (items.length === 0) {
@@ -19,12 +21,13 @@ export function useDataExport() {
       return
     }
 
+    setIsExporting(true)
     try {
       const datePart = new Date().toISOString().slice(0, 10)
       const baseName = `cbs-proje-${datePart}`
 
       if (exportFormat === 'geojson') {
-        const blob = exportAsGeoJSON(items)
+        const blob = exportAsGeoJSON(items, { minified: geojsonMinified })
         downloadFile(blob, `${baseName}.geojson`)
       } else if (exportFormat === 'kml') {
         const blob = exportAsKml(items)
@@ -41,6 +44,8 @@ export function useDataExport() {
     } catch (error) {
       console.error('Export error:', error)
       toast.error('Dışa aktarma sırasında hata oluştu.')
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -48,5 +53,8 @@ export function useDataExport() {
     exportFormat,
     setExportFormat,
     handleExport,
+    isExporting,
+    geojsonMinified,
+    setGeojsonMinified,
   }
 }

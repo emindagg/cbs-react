@@ -9,6 +9,8 @@ interface ExportControlsProps {
   onExport: () => void
   /** Örn. "Veri Yönetimi" / "Proje Yönetimi" bölümlerinde farklı metin */
   exportButtonLabel?: string
+  geojsonMinified?: boolean
+  onGeojsonMinifiedChange?: (v: boolean) => void
 }
 
 export function ExportControls({
@@ -16,6 +18,8 @@ export function ExportControls({
   onFormatChange,
   onExport,
   exportButtonLabel = 'Veriyi İndir',
+  geojsonMinified = false,
+  onGeojsonMinifiedChange,
 }: ExportControlsProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -86,6 +90,18 @@ export function ExportControls({
             </ul>
           )}
         </div>
+
+        {exportFormat === 'geojson' && onGeojsonMinifiedChange && (
+          <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={geojsonMinified}
+              onChange={e => onGeojsonMinifiedChange(e.target.checked)}
+              className="w-3.5 h-3.5 rounded accent-zinc-900"
+            />
+            <span className="text-xs text-zinc-600">Sıkıştır</span>
+          </label>
+        )}
       </div>
 
       <button

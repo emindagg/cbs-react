@@ -1,11 +1,10 @@
-import { toFeatureCollection } from './featureCollection'
+import { buildGeoJSONBlob } from '@/utils/geojsonExport'
+import type { GeoJSONExportOptions } from '@/utils/geojsonExport'
+
 import type { DataItem } from '../../types'
 
+export type { GeoJSONExportOptions }
 
-export function exportAsGeoJSON(items: DataItem[]): Blob {
-  const featureCollection = toFeatureCollection(items)
-  return new Blob([JSON.stringify(featureCollection, null, 2)], {
-    type: 'application/geo+json',
-  })
+export function exportAsGeoJSON(items: DataItem[], opts?: GeoJSONExportOptions): Blob {
+  return buildGeoJSONBlob(items, opts)
 }
-

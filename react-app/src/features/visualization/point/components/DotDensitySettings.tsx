@@ -3,7 +3,7 @@
  * Controls: dot value (input), dot size (slider), dots-represent label
  */
 
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { SingleSlider } from '@/components/ui'
 import type { VisualizationSettings } from '@/types/visualization'
