@@ -48,10 +48,16 @@ export function applyLabelLayers(map: Map, sourceId: string, settings: Visualiza
   const showValues = settings.showValues ?? false
   if (!showLabels && !showValues) return
 
-  const nameFilter: LayerFilter = (settings.dataOnlyMode
-    ? ['==', ['get', 'hasData'], true]
-    : ['all']) as LayerFilter
-  const valueFilter: LayerFilter = ['==', ['get', 'hasData'], true] as LayerFilter
+  const isTransparentOutOfRange = settings.customRange?.enabled
+    && settings.customRange?.outOfRangeMode === 'transparent'
+  const nameFilter: LayerFilter = isTransparentOutOfRange
+    ? ['==', ['get', 'inCustomRange'], true] as LayerFilter
+    : (settings.dataOnlyMode
+      ? ['==', ['get', 'hasData'], true]
+      : ['all']) as LayerFilter
+  const valueFilter: LayerFilter = isTransparentOutOfRange
+    ? ['all', ['==', ['get', 'hasData'], true], ['==', ['get', 'inCustomRange'], true]] as LayerFilter
+    : ['==', ['get', 'hasData'], true] as LayerFilter
 
   if (showLabels && showValues) {
     // Single layer: name + value in one format expression

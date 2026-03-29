@@ -163,7 +163,7 @@ export class BubbleRenderer {
     }
 
     // Build label polygons for name/value label layers
-    const labelPolygons = this.buildLabelPolygons(geojson.features, sizeDataMap, locationLevel)
+    const labelPolygons = this.buildLabelPolygons(geojson.features, sizeDataMap, locationLevel, resolvedRange)
 
     // Build backdrop with hasData so dataOnlyMode case expression works correctly
     const backdropFeatures = geojson.features.map((feature) => {
@@ -458,6 +458,7 @@ export class BubbleRenderer {
     features: GeoJSONFeature[],
     dataMap: Record<string, number>,
     locationLevel: 'province' | 'district',
+    resolvedRange: ResolvedCustomRange | null = null,
   ): GeoJSON.FeatureCollection {
     const seen = new Set<string>()
     const pointFeatures: GeoJSON.Feature[] = []
@@ -489,6 +490,7 @@ export class BubbleRenderer {
           displayName,
           dataValue: dataValue ?? 0,
           hasData: dataValue !== undefined,
+          inCustomRange: dataValue !== undefined ? isValueInCustomRange(dataValue, resolvedRange) : false,
         },
         geometry: { type: 'Point', coordinates: centroid },
       })

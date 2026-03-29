@@ -100,7 +100,7 @@ export class PointRenderer {
     )
 
     // Build label polygons for name/value label layers
-    const labelPolygons = this.buildLabelPolygons(geojson.features, dataMap, locationLevel)
+    const labelPolygons = this.buildLabelPolygons(geojson.features, dataMap, locationLevel, resolvedRange)
 
     // Build backdrop with hasData so dataOnlyMode case expression works correctly
     const backdropFeatures = geojson.features.map((feature) => {
@@ -429,6 +429,7 @@ export class PointRenderer {
     features: GeoJSONFeature[],
     dataMap: Record<string, number>,
     locationLevel: 'province' | 'district',
+    resolvedRange: ResolvedCustomRange | null = null,
   ): GeoJSON.FeatureCollection {
     const seen = new Set<string>()
     const pointFeatures: GeoJSON.Feature[] = []
@@ -460,6 +461,7 @@ export class PointRenderer {
           displayName,
           dataValue: dataValue ?? 0,
           hasData: dataValue !== undefined,
+          inCustomRange: dataValue !== undefined ? isValueInCustomRange(dataValue, resolvedRange) : false,
         },
         geometry: { type: 'Point', coordinates: centroid },
       })

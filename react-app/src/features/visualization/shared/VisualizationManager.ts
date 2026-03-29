@@ -416,9 +416,13 @@ export class VisualizationManager {
 
     // Choropleth: update fill/outline filter, opacity, and noDataColor
     if (this.map.getLayer('choropleth-fill')) {
+      const isTransparentOutOfRange = settings.customRange?.enabled
+        && settings.customRange?.outOfRangeMode === 'transparent'
       const layerFilter: LayerFilter = (settings.dataOnlyMode && settings.dataOnlyStyle !== 'transparent')
         ? ['==', ['get', 'hasData'], true] as LayerFilter
-        : ['any', ['==', 'hasData', true], ['==', 'hasData', false]] as LayerFilter
+        : isTransparentOutOfRange
+          ? ['any', ['==', ['get', 'hasData'], false], ['==', ['get', 'inCustomRange'], true]] as LayerFilter
+          : ['any', ['==', ['get', 'hasData'], true], ['==', ['get', 'hasData'], false]] as LayerFilter
       this.map.setFilter('choropleth-fill', layerFilter)
       this.map.setFilter('choropleth-outline', layerFilter)
 

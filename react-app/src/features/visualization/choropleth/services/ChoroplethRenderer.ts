@@ -349,9 +349,9 @@ export class ChoroplethRenderer {
     if (settings.dataOnlyMode && settings.dataOnlyStyle === 'hidden') {
       layerFilter = ['==', ['get', 'hasData'], true]
     } else if (resolvedRange?.outOfRangeMode === 'transparent') {
-      layerFilter = ['any', ['==', 'hasData', false], ['==', 'inCustomRange', true]]
+      layerFilter = ['any', ['==', ['get', 'hasData'], false], ['==', ['get', 'inCustomRange'], true]]
     } else {
-      layerFilter = ['any', ['==', 'hasData', true], ['==', 'hasData', false]]
+      layerFilter = ['any', ['==', ['get', 'hasData'], true], ['==', ['get', 'hasData'], false]]
     }
 
     // Convert to MapLibre-compatible GeoJSON
@@ -450,6 +450,7 @@ export class ChoroplethRenderer {
           displayName,
           dataValue: feature.properties.dataValue ?? 0,
           hasData: feature.properties.hasData ?? false,
+          inCustomRange: feature.properties.inCustomRange ?? true,
         },
         geometry: { type: 'Point', coordinates: centroid },
       })
