@@ -28,7 +28,7 @@ export default function Container() {
   const dataValues = useMemo(() => {
     return matchResults.successful
       .map((result) => result.value)
-      .filter((v): v is number => v !== undefined && v !== 0)
+      .filter((v): v is number => v !== undefined)
   }, [matchResults])
 
   // Bivariate modda renk lejantı colorColumn'dan hesaplanmalı
@@ -36,7 +36,7 @@ export default function Container() {
     if (rs.colorColumn) {
       const vals = matchResults.successful
         .map((result) => parseFloat(String(result.originalData[rs.colorColumn!])))
-        .filter((v) => !isNaN(v) && v !== 0)
+        .filter((v) => !isNaN(v))
       if (vals.length > 0) return vals
     }
     return dataValues
