@@ -1,3 +1,8 @@
+/**
+ * Git commit sayısından version.json üretir.
+ * predev'de çalıştırılmaz (her dev'de dosyayı değiştirip working tree'i kirletmemek için).
+ * Geliştirme sırasında güncel numara gerekiyorsa: pnpm run version:generate
+ */
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
