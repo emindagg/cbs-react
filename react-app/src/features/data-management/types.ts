@@ -2,7 +2,7 @@ import type { Geometry } from 'geojson'
 
 export type DrawMode = 'none' | 'point' | 'polygon' | 'line'
 export type DataItemType = 'point' | 'polygon' | 'line'
-export type ExportFormat = 'geojson' | 'kml' | 'shp' | 'xlsx'
+export type ExportFormat = 'geojson' | 'kml' | 'shp' | 'xlsx' | 'csv'
 export type DataItemSource = 'drawn' | 'imported'
 
 export interface LayerStyles {

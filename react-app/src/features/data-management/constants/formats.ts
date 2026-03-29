@@ -14,6 +14,7 @@ export const EXPORT_FORMATS = [
   { value: 'kml', label: 'KML (.kml)' },
   { value: 'shp', label: 'Shapefile (.zip)' },
   { value: 'xlsx', label: 'Excel (.xlsx)' },
+  { value: 'csv', label: 'CSV (.csv)' },
 ] as const
 
 export const FILE_ACCEPT_PATTERN = '.geojson,.json,.kml,.zip,.xlsx,.xls,.csv'

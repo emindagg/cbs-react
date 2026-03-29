@@ -1,46 +1,7 @@
-import type { Geometry } from 'geojson'
 import * as XLSX from 'xlsx'
 
 import type { DataItem } from '../../types'
-
-/** GeoJSON [lng, lat] — çizgi/alan için ilk köşe (temsilî); yoksa boş. */
-function representativeEnlemBoylam(geom: Geometry): { enlem: number; boylam: number } | null {
-  const pair = (c: number[]): { enlem: number; boylam: number } | null => {
-    if (c.length < 2 || typeof c[0] !== 'number' || typeof c[1] !== 'number') return null
-    return { boylam: c[0], enlem: c[1] }
-  }
-
-  switch (geom.type) {
-    case 'Point':
-      return pair(geom.coordinates as number[])
-    case 'MultiPoint':
-      return geom.coordinates.length ? pair(geom.coordinates[0] as number[]) : null
-    case 'LineString':
-      return geom.coordinates.length ? pair(geom.coordinates[0] as number[]) : null
-    case 'MultiLineString':
-      return geom.coordinates.length && geom.coordinates[0].length
-        ? pair(geom.coordinates[0][0] as number[])
-        : null
-    case 'Polygon':
-      return geom.coordinates.length && geom.coordinates[0].length
-        ? pair(geom.coordinates[0][0] as number[])
-        : null
-    case 'MultiPolygon':
-      return geom.coordinates.length &&
-        geom.coordinates[0].length &&
-        geom.coordinates[0][0].length
-        ? pair(geom.coordinates[0][0][0] as number[])
-        : null
-    case 'GeometryCollection':
-      for (const g of geom.geometries) {
-        const p = representativeEnlemBoylam(g)
-        if (p) return p
-      }
-      return null
-    default:
-      return null
-  }
-}
+import { representativeCoord } from './exportCoords'
 
 interface ExportRow {
   id: string
@@ -56,14 +17,14 @@ interface ExportRow {
 
 export function exportAsExcel(items: DataItem[]): Blob {
   const rows: ExportRow[] = items.map((item) => {
-    const ll = representativeEnlemBoylam(item.geometry)
+    const ll = representativeCoord(item.geometry)
     return {
       id: item.id,
       name: item.name,
       type: item.type,
       date: item.date ?? '',
-      enlem: ll?.enlem ?? '',
-      boylam: ll?.boylam ?? '',
+      enlem: ll?.lat ?? '',
+      boylam: ll?.lng ?? '',
       geometryType: item.geometry.type,
       geometry: JSON.stringify(item.geometry),
       properties: JSON.stringify(item.properties ?? {}),
@@ -83,4 +44,3 @@ export function exportAsExcel(items: DataItem[]): Blob {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   })
 }
-

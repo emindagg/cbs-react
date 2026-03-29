@@ -2,6 +2,7 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 
 import { downloadFile } from '../services/export/downloadFile'
+import { exportAsCsv } from '../services/export/csvExporter'
 import { exportAsExcel } from '../services/export/excelExporter'
 import { exportAsGeoJSON } from '../services/export/geojsonExporter'
 import { exportAsKml } from '../services/export/kmlExporter'
@@ -38,6 +39,9 @@ export function useDataExport() {
       } else if (exportFormat === 'xlsx') {
         const blob = exportAsExcel(items)
         downloadFile(blob, `${baseName}.xlsx`)
+      } else if (exportFormat === 'csv') {
+        const blob = exportAsCsv(items)
+        downloadFile(blob, `${baseName}.csv`)
       }
 
       toast.success(`Veri ${exportFormat.toUpperCase()} olarak indirildi.`)
