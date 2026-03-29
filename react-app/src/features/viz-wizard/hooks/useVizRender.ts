@@ -16,7 +16,7 @@ import {
   DEFAULT_DOT_OPACITY,
   DEFAULT_DOT_SIZE,
   buildZoomRadius,
-  VisualizationManager,
+  getVisualizationManager,
 } from '@/shared/visualization'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import type { PaintPropertyValue } from '@/types/maplibre-expressions'
@@ -156,13 +156,27 @@ export function useVizRender({
     }
     if (prevPaintVizKeyRef.current !== paintVizKey) {
       prevPaintVizKeyRef.current = paintVizKey
-      const { vizSettings: s } = useVisualizationStore.getState()
-      if (s.type === 'dot') {
-        updateDotPaintProperties(map, s)
-      } else if (s.type === 'choropleth') {
-        updateChoroplethPaintProperties(map, s)
-      } else if (s.type === 'bubble') {
-        updateBubblePaintProperties(map, s)
+      const { vizSettings: s, currentVisualization, setCurrentVisualization } = useVisualizationStore.getState()
+      const activeType = currentVisualization.type ?? s.type
+      const activeRenderSettings = currentVisualization.renderSettings ?? s
+      const nextRenderSettings: VisualizationSettings = {
+        ...activeRenderSettings,
+        ...s,
+        type: activeType,
+      }
+
+      if (activeType === 'dot') {
+        updateDotPaintProperties(map, nextRenderSettings)
+      } else if (activeType === 'choropleth') {
+        updateChoroplethPaintProperties(map, nextRenderSettings)
+      } else if (activeType === 'bubble') {
+        updateBubblePaintProperties(map, nextRenderSettings)
+      }
+
+      if (currentVisualization.type && currentVisualization.renderSettings) {
+        setCurrentVisualization({
+          renderSettings: nextRenderSettings,
+        })
       }
     }
   }, [paintVizKey, hasRendered, map])
@@ -176,9 +190,23 @@ export function useVizRender({
     }
     if (prevDisplayVizKeyRef.current !== displayVizKey) {
       prevDisplayVizKeyRef.current = displayVizKey
-      const { vizSettings: s } = useVisualizationStore.getState()
-      const vizManager = new VisualizationManager(map)
-      vizManager.updateDisplayOptions(s)
+      const { vizSettings: s, currentVisualization, setCurrentVisualization } = useVisualizationStore.getState()
+      const activeType = currentVisualization.type ?? s.type
+      const activeRenderSettings = currentVisualization.renderSettings ?? s
+      const nextRenderSettings: VisualizationSettings = {
+        ...activeRenderSettings,
+        ...s,
+        type: activeType,
+      }
+
+      const vizManager = getVisualizationManager(map)
+      vizManager.updateDisplayOptions(nextRenderSettings)
+
+      if (currentVisualization.type && currentVisualization.renderSettings) {
+        setCurrentVisualization({
+          renderSettings: nextRenderSettings,
+        })
+      }
     }
   }, [displayVizKey, hasRendered, map])
 
@@ -192,7 +220,7 @@ export function useVizRender({
     setVisualizationRenderInProgress(true)
 
     try {
-      const vizManager = new VisualizationManager(map)
+      const vizManager = getVisualizationManager(map)
 
       // Closure yerine anlık store değerlerini oku — stale closure sorununu önler
       const { vizSettings: currentVizSettings, colorConfig: currentColorConfig } =

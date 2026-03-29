@@ -26,7 +26,8 @@ vi.mock('@/shared/visualization', () => ({
   DEFAULT_DOT_OPACITY: 0.85,
   DEFAULT_DOT_SIZE: 2.4,
   buildZoomRadius: vi.fn((size: number) => size),
-  VisualizationManager: vi.fn().mockImplementation(() => ({
+  VisualizationManager: vi.fn(),
+  getVisualizationManager: vi.fn().mockImplementation(() => ({
     clearVisualization: clearVisualizationMock,
     renderBubble: renderBubbleMock,
     renderChoropleth: renderChoroplethMock,

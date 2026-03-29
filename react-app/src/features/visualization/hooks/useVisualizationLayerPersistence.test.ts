@@ -13,7 +13,8 @@ const renderPointMock = vi.fn()
 const renderBubbleMock = vi.fn()
 
 vi.mock('../shared/VisualizationManager', () => ({
-  VisualizationManager: vi.fn().mockImplementation(() => ({
+  VisualizationManager: vi.fn(),
+  getVisualizationManager: vi.fn().mockImplementation(() => ({
     renderChoropleth: renderChoroplethMock,
     renderPoint: renderPointMock,
     renderBubble: renderBubbleMock,

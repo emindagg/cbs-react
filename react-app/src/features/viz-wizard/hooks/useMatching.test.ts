@@ -3,7 +3,7 @@ import type maplibregl from 'maplibre-gl'
 import toast from 'react-hot-toast'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { VisualizationManager } from '@/shared/visualization'
+import { getVisualizationManager } from '@/shared/visualization'
 import { ColumnMapper } from '@/utils/columnMapper'
 
 import { useMatching } from './useMatching'
@@ -120,15 +120,15 @@ describe('useMatching', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Mock VisualizationManager
+    // Mock VisualizationManager accessor
     mockVizManager = {
       loadProvincesGeoJSON: vi.fn().mockResolvedValue(mockProvincesGeoJSON),
       loadDistrictsGeoJSON: vi.fn().mockResolvedValue(mockDistrictsGeoJSON),
       getProvinceIndex: vi.fn().mockReturnValue(mockProvinceIndex),
       getDistrictIndex: vi.fn().mockReturnValue(mockDistrictIndex),
     }
-    vi.mocked(VisualizationManager).mockImplementation(
-      (() => mockVizManager) as unknown as (...args: unknown[]) => VisualizationManager,
+    vi.mocked(getVisualizationManager).mockReturnValue(
+      mockVizManager as ReturnType<typeof getVisualizationManager>,
     )
 
     // Mock ColumnMapper

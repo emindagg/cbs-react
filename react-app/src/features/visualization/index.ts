@@ -22,5 +22,5 @@ export {
 } from './point'
 
 // Shared orchestrator
-export { VisualizationManager } from './shared/VisualizationManager'
+export { VisualizationManager, getVisualizationManager } from './shared/VisualizationManager'
 export { useVisualizationLayerPersistence } from './hooks/useVisualizationLayerPersistence'

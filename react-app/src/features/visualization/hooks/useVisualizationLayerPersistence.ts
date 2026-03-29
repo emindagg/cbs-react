@@ -5,7 +5,7 @@ import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import type { VizType } from '@/types/visualization'
 
-import { VisualizationManager } from '../shared/VisualizationManager'
+import { getVisualizationManager } from '../shared/VisualizationManager'
 
 const LAYER_BY_VIZ_TYPE: Record<VizType, string> = {
   choropleth: 'choropleth-fill',
@@ -29,7 +29,7 @@ async function rehydrateVisualization(map: maplibregl.Map): Promise<void> {
     return
   }
 
-  const vizManager = new VisualizationManager(map)
+  const vizManager = getVisualizationManager(map)
 
   switch (type) {
     case 'choropleth':

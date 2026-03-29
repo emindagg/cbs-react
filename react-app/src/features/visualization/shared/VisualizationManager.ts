@@ -467,3 +467,13 @@ export class VisualizationManager {
     return suggestClassificationMethod(values)
   }
 }
+
+const visualizationManagerByMap = new WeakMap<Map, VisualizationManager>()
+
+export function getVisualizationManager(map: Map): VisualizationManager {
+  const existing = visualizationManagerByMap.get(map)
+  if (existing) return existing
+  const created = new VisualizationManager(map)
+  visualizationManagerByMap.set(map, created)
+  return created
+}

@@ -7,7 +7,8 @@ import type maplibregl from 'maplibre-gl'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { VisualizationManager } from '@/shared/visualization'
+import { getVisualizationManager } from '@/shared/visualization'
+import type { VisualizationManager } from '@/shared/visualization'
 import type { DistrictInfo, LocationInfo } from '@/types/geojson'
 import type { MatchResults } from '@/types/visualization'
 import { ColumnMapper } from '@/utils/columnMapper'
@@ -101,7 +102,7 @@ export function useMatching({
     setIsMatching(true)
 
     try {
-      const vizManager = new VisualizationManager(map)
+      const vizManager = getVisualizationManager(map)
 
       let localProvinceIndex = provinceIndex
       let localDistrictIndex = districtIndex
