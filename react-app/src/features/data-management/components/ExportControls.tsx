@@ -7,9 +7,16 @@ interface ExportControlsProps {
   exportFormat: ExportFormat
   onFormatChange: (format: ExportFormat) => void
   onExport: () => void
+  /** Örn. "Veri Yönetimi" / "Proje Yönetimi" bölümlerinde farklı metin */
+  exportButtonLabel?: string
 }
 
-export function ExportControls({ exportFormat, onFormatChange, onExport }: ExportControlsProps) {
+export function ExportControls({
+  exportFormat,
+  onFormatChange,
+  onExport,
+  exportButtonLabel = 'Veriyi İndir',
+}: ExportControlsProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const selected = EXPORT_FORMATS.find(f => f.value === exportFormat)
@@ -82,10 +89,12 @@ export function ExportControls({ exportFormat, onFormatChange, onExport }: Expor
       </div>
 
       <button
+        type="button"
         onClick={onExport}
-        className="w-full h-8 bg-zinc-900 hover:bg-black text-white text-xs font-medium px-3 rounded-lg flex items-center justify-center mb-2"
+        className="w-full h-9 min-h-9 bg-zinc-900 hover:bg-black text-white text-xs font-medium px-3 rounded-lg flex items-center justify-center gap-1.5 shadow-sm mb-2"
       >
-        <i className="fa-solid fa-download mr-1.5 text-[10px]"></i>Veriyi İndir
+        <i className="fa-solid fa-download text-[11px]" aria-hidden />
+        {exportButtonLabel}
       </button>
     </>
   )

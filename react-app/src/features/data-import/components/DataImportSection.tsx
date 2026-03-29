@@ -1,8 +1,9 @@
+import { ExportControls } from '@/features/data-management'
+
 import ColumnMapperModal from './ColumnMapperModal'
-import { ExportControls } from './ExportControls'
 import { UrlImporter } from './UrlImporter'
 import { FILE_ACCEPT_PATTERN } from '../constants/formats'
-import { useDataExport } from '../hooks/useDataExport'
+import { useDataExport } from '@/features/data-management'
 import { useFileImport } from '../hooks/useFileImport'
 import { useUrlImport } from '../hooks/useUrlImport'
 
@@ -40,6 +41,7 @@ export function DataImportSection() {
           exportFormat={dataExport.exportFormat}
           onFormatChange={dataExport.setExportFormat}
           onExport={dataExport.handleExport}
+          exportButtonLabel="Projeyi İndir"
         />
 
         <label

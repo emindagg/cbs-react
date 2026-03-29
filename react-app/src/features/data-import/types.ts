@@ -35,4 +35,4 @@ export interface MapperData {
 }
 
 export type FileFormat = 'geojson' | 'excel' | 'kml' | 'shapefile'
-export type ExportFormat = 'geojson' | 'kml' | 'shp'
+export type ExportFormat = 'geojson' | 'kml' | 'shp' | 'xlsx'

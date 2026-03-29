@@ -13,7 +13,7 @@ export function useDataExport() {
   const items = useDataManagementStore(state => state.items)
   const [exportFormat, setExportFormat] = useState<ExportFormat>('geojson')
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (items.length === 0) {
       toast.error('Dışa aktarılacak veri bulunamadı.')
       return
@@ -30,7 +30,7 @@ export function useDataExport() {
         const blob = exportAsKml(items)
         downloadFile(blob, `${baseName}.kml`)
       } else if (exportFormat === 'shp') {
-        const blob = exportAsShapefileZip(items)
+        const blob = await exportAsShapefileZip(items)
         downloadFile(blob, `${baseName}.zip`)
       } else if (exportFormat === 'xlsx') {
         const blob = exportAsExcel(items)

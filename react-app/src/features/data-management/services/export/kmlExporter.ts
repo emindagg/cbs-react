@@ -63,7 +63,7 @@ function geometryToKml(geometry: Geometry): string {
 function descriptionForItem(item: DataItem): string {
   if (!item.properties || Object.keys(item.properties).length === 0) return ''
   return Object.entries(item.properties)
-    .map(([key, value]) => `${escapeXml(key)}: ${escapeXml(String(value ?? ''))}`)
+    .map(([key, value]) => `${key}: ${String(value ?? '')}`)
     .join('\n')
 }
 

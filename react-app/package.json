@@ -22,6 +22,7 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
+    "@mapbox/shp-write": "0.4.3",
     "@tmcw/togeojson": "^7.1.2",
     "@turf/turf": "^7.3.3",
     "@types/shpjs": "^3.4.7",
@@ -46,7 +47,6 @@
     "react-hot-toast": "^2.6.0",
     "react-map-gl": "^8.1.0",
     "recharts": "^3.8.0",
-    "shp-write": "^0.3.2",
     "shpjs": "^6.2.0",
     "simple-statistics": "^7.8.8",
     "tailwind-merge": "^3.4.0",

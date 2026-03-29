@@ -10,9 +10,10 @@ export const SUPPORTED_IMPORT_FORMATS = {
 } as const
 
 export const EXPORT_FORMATS = [
-  { value: 'geojson', label: 'GeoJSON - CBS uyumlu (.geojson)' },
-  { value: 'kml', label: 'KML - Google Earth (.kml) (Yakında)' },
-  { value: 'shp', label: 'Shapefile - GIS (.zip) (Yakında)' },
+  { value: 'geojson', label: 'GeoJSON (.geojson)' },
+  { value: 'kml', label: 'KML (.kml)' },
+  { value: 'shp', label: 'Shapefile (.zip)' },
+  { value: 'xlsx', label: 'Excel (.xlsx)' },
 ] as const
 
 export const FILE_ACCEPT_PATTERN = '.geojson,.json,.kml,.zip,.xlsx,.xls,.csv'
