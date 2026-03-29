@@ -3,7 +3,7 @@
  * Step3 bileşeni sadece bu hook + JSX kullanır.
  */
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
@@ -49,9 +49,18 @@ export function useVizWizardStep3() {
     map,
   })
 
-  const dataValues = matchResults.successful
-    .map((result) => result.value)
-    .filter((v): v is number => v !== undefined)
+  // Renderer'ın last-write-wins davranışını yansıt: aynı lokasyon anahtarı için son değeri kullan
+  const dataValues = useMemo(() => {
+    const seen = new Map<string, number>()
+    for (const result of matchResults.successful) {
+      if (result.value === undefined) continue
+      const key = columnMapping.locationLevel === 'district' && result.province
+        ? `${result.province}__${result.location ?? ''}`
+        : (result.location ?? String(result.rowIndex))
+      seen.set(key, result.value)
+    }
+    return Array.from(seen.values())
+  }, [matchResults.successful, columnMapping.locationLevel])
 
   const onApplySuggestion = () => {
     handleApplySuggestion((method) => {

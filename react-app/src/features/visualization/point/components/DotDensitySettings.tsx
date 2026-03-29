@@ -13,9 +13,11 @@ import {
   DEFAULT_DOT_COLOR,
   DEFAULT_DOT_OPACITY,
   DEFAULT_DOT_SIZE,
+  MAX_DOTS_PER_FEATURE,
   MAX_TOTAL_DOTS,
 } from '../constants/dot-density'
 import { calculateSmartDotValue } from '../utils/dot-density'
+import { isValueInCustomRange, resolveCustomRange } from '../../shared/customRange'
 
 
 /** Debounce süresi — dotValue ve dotSize için ortak */
@@ -33,10 +35,6 @@ export function DotDensitySettings({
   dataValues,
 }: DotDensitySettingsProps) {
   /* ── Memo'lu hesaplamalar ── */
-  const totalValue = useMemo(
-    () => dataValues.reduce((sum, v) => sum + Math.abs(v), 0),
-    [dataValues],
-  )
   const smartDotValue = useMemo(() => calculateSmartDotValue(dataValues), [dataValues])
 
   const effectiveDotValue = vizSettings.dotValue ?? smartDotValue
@@ -45,9 +43,22 @@ export function DotDensitySettings({
   const currentDotColor = vizSettings.dotColor ?? DEFAULT_DOT_COLOR
   const currentDotOpacity = vizSettings.dotOpacity ?? DEFAULT_DOT_OPACITY
 
+  // outOfRangeMode:'transparent' aktifse kapsam dışı değerleri dışla (renderer gizler)
+  const visibleValues = useMemo(() => {
+    const resolvedRange = resolveCustomRange(vizSettings.customRange, dataValues)
+    if (!resolvedRange || resolvedRange.outOfRangeMode !== 'transparent') return dataValues
+    return dataValues.filter((v) => isValueInCustomRange(v, resolvedRange))
+  }, [dataValues, vizSettings.customRange])
+
+  // Renderer ile aynı mantık: her değer tek tek yuvarlanıp toplanır
   const dotCount = useMemo(
-    () => effectiveDotValue > 0 ? Math.min(Math.round(totalValue / effectiveDotValue), MAX_TOTAL_DOTS) : 0,
-    [totalValue, effectiveDotValue],
+    () => effectiveDotValue > 0
+      ? Math.min(
+          visibleValues.reduce((sum, v) => sum + Math.min(Math.round(Math.abs(v) / effectiveDotValue), MAX_DOTS_PER_FEATURE), 0),
+          MAX_TOTAL_DOTS,
+        )
+      : 0,
+    [visibleValues, effectiveDotValue],
   )
 
   /* ── dotValue debounce (input) ── */

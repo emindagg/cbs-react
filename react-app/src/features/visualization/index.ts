@@ -14,7 +14,6 @@ export {
   DEFAULT_DOT_OPACITY,
   TARGET_TOTAL_DOTS,
   MAX_TOTAL_DOTS,
-  MIN_DOTS_PER_FEATURE,
   MAX_DOTS_PER_FEATURE,
   buildZoomRadius,
   calculateSmartDotValue,

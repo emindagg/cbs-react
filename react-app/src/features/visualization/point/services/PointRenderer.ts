@@ -19,7 +19,6 @@ import {
   DEFAULT_DOT_SIZE,
   MAX_DOTS_PER_FEATURE,
   MAX_TOTAL_DOTS,
-  MIN_DOTS_PER_FEATURE,
 } from '../constants/dot-density'
 import { buildZoomRadius, calculateSmartDotValue } from '../utils/dot-density'
 
@@ -192,9 +191,9 @@ export class PointRenderer {
       if (dataValue === undefined || dataValue === 0) continue
       const inCustomRange = isValueInCustomRange(dataValue, resolvedRange)
 
-      // How many dots for this feature?
-      let dotCount = Math.round(Math.abs(dataValue) / dotValue)
-      dotCount = Math.max(MIN_DOTS_PER_FEATURE, Math.min(dotCount, MAX_DOTS_PER_FEATURE))
+      // How many dots for this feature? (0'a yuvarlanırsa nokta yerleştirilmez — "1 nokta = X birim" vaadi korunur)
+      let dotCount = Math.min(Math.round(Math.abs(dataValue) / dotValue), MAX_DOTS_PER_FEATURE)
+      if (dotCount === 0) continue
 
       // Don't exceed global cap
       if (totalPlaced + dotCount > MAX_TOTAL_DOTS) {
