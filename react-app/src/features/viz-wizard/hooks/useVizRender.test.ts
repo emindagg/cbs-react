@@ -1,0 +1,205 @@
+import { act, renderHook, waitFor } from '@testing-library/react'
+import type maplibregl from 'maplibre-gl'
+import toast from 'react-hot-toast'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
+import type { MatchResults, VisualizationSettings } from '@/types/visualization'
+
+import { useVizRender } from './useVizRender'
+
+const clearVisualizationMock = vi.fn()
+const renderBubbleMock = vi.fn()
+const renderChoroplethMock = vi.fn()
+const renderPointMock = vi.fn()
+const updateDisplayOptionsMock = vi.fn()
+
+vi.mock('react-hot-toast', () => ({
+  default: {
+    error: vi.fn(),
+  },
+}))
+
+vi.mock('@/shared/visualization', () => ({
+  BUBBLE_DEFAULT_FILL_COLOR: '#3b82f6',
+  DEFAULT_DOT_COLOR: '#2d6a4f',
+  DEFAULT_DOT_OPACITY: 0.85,
+  DEFAULT_DOT_SIZE: 2.4,
+  buildZoomRadius: vi.fn((size: number) => size),
+  VisualizationManager: vi.fn().mockImplementation(() => ({
+    clearVisualization: clearVisualizationMock,
+    renderBubble: renderBubbleMock,
+    renderChoropleth: renderChoroplethMock,
+    renderPoint: renderPointMock,
+    updateDisplayOptions: updateDisplayOptionsMock,
+  })),
+}))
+
+function createMapMock() {
+  return {
+    getLayer: vi.fn(() => ({ id: 'layer' })),
+    setPaintProperty: vi.fn(),
+  } as unknown as maplibregl.Map
+}
+
+const matchResults: MatchResults = {
+  successful: [
+    {
+      rowIndex: 0,
+      matched: true,
+      ambiguous: false,
+      location: 'Ankara',
+      province: 'Ankara',
+      value: 10,
+      originalData: {
+        city: 'Ankara',
+        value: 10,
+        color_metric: 4,
+      },
+    },
+  ],
+  ambiguous: [],
+  failed: [],
+}
+
+const choroplethSettings: VisualizationSettings = {
+  type: 'choropleth',
+  classCount: 3,
+  classificationMethod: 'custom',
+  colorScheme: 'teal',
+  customBreaks: [0, 10, 20, 30],
+  legendType: 'discrete',
+}
+
+const bubbleSettings: VisualizationSettings = {
+  type: 'bubble',
+  classCount: 5,
+  classificationMethod: 'jenks',
+  colorScheme: 'teal',
+  colorColumn: 'color_metric',
+  legendType: 'discrete',
+  symbolOpacity: 0.7,
+  symbolStrokeColor: '#ffffff',
+  symbolStrokeWidth: 0.5,
+}
+
+describe('useVizRender regressions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useVisualizationStore.getState().reset()
+  })
+
+  it('re-renders when custom break values change after the first render', async () => {
+    const map = createMapMock()
+
+    useVisualizationStore.getState().setVizSettings(choroplethSettings)
+
+    const initialProps = {
+      columnMapping: {
+        dataColumn: 'value',
+        locationLevel: 'province' as const,
+      },
+      map,
+      matchResults,
+      vizSettings: useVisualizationStore.getState().vizSettings,
+    }
+
+    const { result, rerender } = renderHook((props: typeof initialProps) => useVizRender(props), {
+      initialProps,
+    })
+
+    await act(async () => {
+      await result.current.handleRender()
+    })
+
+    await waitFor(() => {
+      expect(renderChoroplethMock).toHaveBeenCalledTimes(1)
+      expect(result.current.hasRendered).toBe(true)
+    })
+
+    act(() => {
+      useVisualizationStore.getState().setVizSettings({
+        customBreaks: [0, 5, 25, 30],
+      })
+      rerender({
+        ...initialProps,
+        vizSettings: useVisualizationStore.getState().vizSettings,
+      })
+    })
+
+    await waitFor(() => {
+      expect(renderChoroplethMock).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  it('keeps bivariate bubble color expressions intact during paint-only updates', async () => {
+    const map = createMapMock()
+
+    useVisualizationStore.getState().setVizSettings(bubbleSettings)
+
+    const initialProps = {
+      columnMapping: {
+        dataColumn: 'value',
+        locationLevel: 'province' as const,
+      },
+      map,
+      matchResults,
+      vizSettings: useVisualizationStore.getState().vizSettings,
+    }
+
+    const { result, rerender } = renderHook((props: typeof initialProps) => useVizRender(props), {
+      initialProps,
+    })
+
+    await act(async () => {
+      await result.current.handleRender()
+    })
+
+    await waitFor(() => {
+      expect(renderBubbleMock).toHaveBeenCalledTimes(1)
+      expect(result.current.hasRendered).toBe(true)
+    })
+
+    act(() => {
+      useVisualizationStore.getState().setVizSettings({
+        symbolStrokeWidth: 2,
+      })
+      rerender({
+        ...initialProps,
+        vizSettings: useVisualizationStore.getState().vizSettings,
+      })
+    })
+
+    await waitFor(() => {
+      expect(map.setPaintProperty).toHaveBeenCalledWith('bubble-circles', 'circle-stroke-width', 2)
+    })
+
+    expect(map.setPaintProperty).not.toHaveBeenCalledWith(
+      'bubble-circles',
+      'circle-color',
+      expect.anything(),
+    )
+  })
+
+  it('surfaces a toast error when there is no map instance', async () => {
+    useVisualizationStore.getState().setVizSettings(choroplethSettings)
+
+    const { result } = renderHook(() =>
+      useVizRender({
+        columnMapping: {
+          dataColumn: 'value',
+          locationLevel: 'province',
+        },
+        map: null,
+        matchResults,
+        vizSettings: useVisualizationStore.getState().vizSettings,
+      }),
+    )
+
+    await act(async () => {
+      await result.current.handleRender()
+    })
+
+    expect(toast.error).toHaveBeenCalled()
+  })
+})

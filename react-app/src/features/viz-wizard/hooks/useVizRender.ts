@@ -56,9 +56,15 @@ function updateBubblePaintProperties(map: maplibregl.Map, settings: Visualizatio
   const opacity = settings.symbolOpacity ?? 1
   const strokeColor = settings.symbolStrokeColor || '#ffffff'
   const strokeWidth = settings.symbolStrokeWidth ?? 0.5
-  const fillColor = settings.symbolFillColor || BUBBLE_DEFAULT_FILL_COLOR
 
-  map.setPaintProperty('bubble-circles', 'circle-color', fillColor as PaintPropertyValue<string>)
+  // Bivariate modda circle-color veri güdümlü expression ile yönetilir;
+  // sabit renkle ezmemek için yalnızca tek-renk modunda güncelle.
+  const isBivariate = Boolean(settings.colorColumn)
+  if (!isBivariate) {
+    const fillColor = settings.symbolFillColor || BUBBLE_DEFAULT_FILL_COLOR
+    map.setPaintProperty('bubble-circles', 'circle-color', fillColor as PaintPropertyValue<string>)
+  }
+
   map.setPaintProperty('bubble-circles', 'circle-opacity', opacity as PaintPropertyValue<number>)
   map.setPaintProperty('bubble-circles', 'circle-stroke-color', strokeColor)
   map.setPaintProperty('bubble-circles', 'circle-stroke-width', strokeWidth as PaintPropertyValue<number>)
