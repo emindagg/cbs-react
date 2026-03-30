@@ -5,6 +5,8 @@ import type { VisualizationSettings } from '@/types/visualization'
 import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
 import { calculateBounds, calculateCentroid } from '@/utils/geometryUtils'
 import { hashString, mulberry32 } from '@/utils/prng'
+import { formatNumber } from '@/utils/numberFormatter'
+import type { NumberFormat } from '@/utils/numberFormatter'
 import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 import {
@@ -99,7 +101,7 @@ export class PointRenderer {
     )
 
     // Build label polygons for name/value label layers
-    const labelPolygons = this.buildLabelPolygons(geojson.features, dataMap, locationLevel, resolvedRange)
+    const labelPolygons = this.buildLabelPolygons(geojson.features, dataMap, locationLevel, resolvedRange, settings.valueLabelFormat ?? '1,000.0')
 
     // Build backdrop with hasData so dataOnlyMode case expression works correctly
     const backdropFeatures = geojson.features.map((feature) => {
@@ -429,6 +431,7 @@ export class PointRenderer {
     dataMap: Record<string, number>,
     locationLevel: 'province' | 'district',
     resolvedRange: ResolvedCustomRange | null = null,
+    valueLabelFormat: NumberFormat = '1,000.0',
   ): GeoJSON.FeatureCollection {
     const seen = new Set<string>()
     const pointFeatures: GeoJSON.Feature[] = []
@@ -463,6 +466,7 @@ export class PointRenderer {
         properties: {
           displayName,
           dataValue: dataValue ?? 0,
+          formattedValue: dataValue !== undefined ? formatNumber(dataValue, valueLabelFormat) : '',
           hasData: dataValue !== undefined,
           inCustomRange: dataValue !== undefined ? isValueInCustomRange(dataValue, resolvedRange) : false,
         },

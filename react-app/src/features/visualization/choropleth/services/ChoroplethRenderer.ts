@@ -14,6 +14,8 @@ import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
 import { calculateCentroid } from '@/utils/geometryUtils'
 import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
+import { formatNumber } from '@/utils/numberFormatter'
+import type { NumberFormat } from '@/utils/numberFormatter'
 import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 import {
@@ -424,7 +426,7 @@ export class ChoroplethRenderer {
       this.map.setPaintProperty('choropleth-outline', 'line-opacity', 0.8)
     }
 
-    const labelPoints = this.buildLabelPoints(geojson.features, locationLevel)
+    const labelPoints = this.buildLabelPoints(geojson.features, locationLevel, settings.valueLabelFormat ?? '1,000.0')
     this.renderLabelLayers(settings, labelPoints)
   }
 
@@ -437,6 +439,7 @@ export class ChoroplethRenderer {
   private buildLabelPoints(
     features: GeoJSONFeature[],
     locationLevel: 'province' | 'district' = 'province',
+    valueLabelFormat: NumberFormat = '1,000.0',
   ): GeoJSON.FeatureCollection {
     const seen = new Set<string>()
     const pointFeatures: GeoJSON.Feature[] = []
@@ -456,12 +459,15 @@ export class ChoroplethRenderer {
       seen.add(dedupKey)
 
       const centroid = calculateCentroid(geometry)
+      const dataVal = feature.properties.dataValue ?? 0
+      const hasData = feature.properties.hasData ?? false
       pointFeatures.push({
         type: 'Feature',
         properties: {
           displayName,
-          dataValue: feature.properties.dataValue ?? 0,
-          hasData: feature.properties.hasData ?? false,
+          dataValue: dataVal,
+          formattedValue: hasData ? formatNumber(dataVal, valueLabelFormat) : '',
+          hasData,
           inCustomRange: feature.properties.inCustomRange ?? true,
         },
         geometry: { type: 'Point', coordinates: centroid },

@@ -21,14 +21,14 @@ const valueSizeExpr: ExprVal = ['interpolate', ['linear'], ['zoom'], 5, 9, 7, 10
 
 // ── Text fields ─────────────────────────────────────────────────────────────
 const nameFieldExpr: ExprVal = ['get', 'displayName']
-const valueFieldExpr: ExprVal = ['to-string', ['get', 'dataValue']]
+const valueFieldExpr: ExprVal = ['get', 'formattedValue']
 
 // Combined: name (100%) + newline + value (85%) — value hidden for no-data features
 const combinedFieldExpr: ExprVal = [
   'format',
   ['get', 'displayName'], { 'font-scale': 1.0 },
   ['case', ['==', ['get', 'hasData'], true], '\n', ''], {},
-  ['case', ['==', ['get', 'hasData'], true], ['to-string', ['get', 'dataValue']], ''],
+  ['case', ['==', ['get', 'hasData'], true], ['get', 'formattedValue'], ''],
   { 'font-scale': 0.85 },
 ]
 

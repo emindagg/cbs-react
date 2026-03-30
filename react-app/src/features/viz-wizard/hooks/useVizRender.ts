@@ -21,6 +21,7 @@ import {
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import type { PaintPropertyValue } from '@/types/maplibre-expressions'
 import type { MatchResults, VisualizationSettings } from '@/types/visualization'
+import { coerceNumberFormat } from '@/utils/numberFormatter'
 
 interface UseVizRenderProps {
   matchResults: MatchResults
@@ -109,6 +110,7 @@ export function useVizRender({
     vizSettings.symbolScaling ?? 'sqrt',
     vizSettings.symbolMinSize ?? 'auto',
     vizSettings.symbolMaxSize ?? 'auto',
+    colorConfig.legend.format ?? '1,000',
   ].join('-')
   // Paint-only settings → setPaintProperty (no data recomputation)
   const paintVizKey = [
@@ -258,6 +260,7 @@ export function useVizRender({
       const renderSettings: VisualizationSettings = {
         ...currentVizSettings,
         customRange: currentColorConfig.customRange,
+        valueLabelFormat: coerceNumberFormat(currentColorConfig.legend.format),
       }
 
       switch (currentVizSettings.type) {

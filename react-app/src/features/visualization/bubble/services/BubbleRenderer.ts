@@ -16,6 +16,8 @@ import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
 import { applyNormalization } from '@/utils/normalization'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
+import { formatNumber } from '@/utils/numberFormatter'
+import type { NumberFormat } from '@/utils/numberFormatter'
 import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 import {
@@ -168,7 +170,7 @@ export class BubbleRenderer {
     }
 
     // Build label polygons for name/value label layers
-    const labelPolygons = this.buildLabelPolygons(geojson.features, sizeDataMap, locationLevel, resolvedRange)
+    const labelPolygons = this.buildLabelPolygons(geojson.features, sizeDataMap, locationLevel, resolvedRange, settings.valueLabelFormat ?? '1,000.0')
 
     // Build backdrop with hasData so dataOnlyMode case expression works correctly
     const backdropFeatures = geojson.features.map((feature) => {
@@ -467,6 +469,7 @@ export class BubbleRenderer {
     dataMap: Record<string, number>,
     locationLevel: 'province' | 'district',
     resolvedRange: ResolvedCustomRange | null = null,
+    valueLabelFormat: NumberFormat = '1,000.0',
   ): GeoJSON.FeatureCollection {
     const seen = new Set<string>()
     const pointFeatures: GeoJSON.Feature[] = []
@@ -501,6 +504,7 @@ export class BubbleRenderer {
         properties: {
           displayName,
           dataValue: dataValue ?? 0,
+          formattedValue: dataValue !== undefined ? formatNumber(dataValue, valueLabelFormat) : '',
           hasData: dataValue !== undefined,
           inCustomRange: dataValue !== undefined ? isValueInCustomRange(dataValue, resolvedRange) : false,
         },

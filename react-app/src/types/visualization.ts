@@ -156,6 +156,8 @@ export interface VisualizationSettings {
   showLabels?: boolean;
   /** Verisi olan bölgelerde değerleri harita üzerinde göster */
   showValues?: boolean;
+  /** Harita değer etiketlerinin sayı formatı. Varsayılan: '1,000.0' */
+  valueLabelFormat?: NumberFormat;
   /** Verisi olmayan il/ilçe dolgu rengi (hex). Varsayılan: #e4e4e4 */
   noDataColor?: string;
 }
