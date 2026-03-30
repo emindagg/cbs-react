@@ -27,13 +27,11 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
   // Yeşil-Mavi
   greenBlue: [
     '#f0f9e8',
-    '#c5e9c6',
-    '#96d6c0',
-    '#6bc0c6',
+    '#b6e3bb',
+    '#75c8c5',
     '#4ba8c9',
-    '#3291c0',
-    '#1a7ab5',
-    '#1162a5',
+    '#2989bd',
+    '#0a6aad',
     '#254b8c',
   ],
 
@@ -92,13 +90,11 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
   // Sarı-Mavi
   yellowBlue: [
     '#ffffcc',
-    '#dcf1bd',
-    '#b5e2b6',
-    '#88d1ba',
-    '#60c2c0',
-    '#3eafc3',
-    '#318dbb',
-    '#2963ab',
+    '#c7e9b4',
+    '#7fcdbb',
+    '#41b6c4',
+    '#2c7fb8',
+    '#225ea8',
     '#253494',
   ],
 
