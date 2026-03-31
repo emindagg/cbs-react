@@ -262,29 +262,57 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
 
             <div className="border-t border-zinc-100" />
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <div>
+            <div className="flex items-center justify-between">
+              <div
+                className="flex-1 cursor-pointer"
+                onClick={() => setVizSettings({ showLabels: !(vizSettings.showLabels ?? false) })}
+              >
                 <span className="text-[10px] font-medium text-zinc-700">İl/İlçe İsimleri</span>
                 <p className="text-[9px] text-zinc-400 mt-0.5">
                   {vizSettings.dataOnlyMode ? 'Sadece verisi olan bölgelerin adları' : 'Tüm bölgelerin adları'}
                 </p>
               </div>
-              <input type="checkbox" checked={vizSettings.showLabels ?? false}
-                onChange={(e) => setVizSettings({ showLabels: e.target.checked })}
-                className="w-4 h-4 accent-zinc-800" />
-            </label>
+              <div className="flex items-center gap-2">
+                {(vizSettings.showLabels ?? false) && (
+                  <input
+                    type="color"
+                    value={vizSettings.labelColor ?? '#000000'}
+                    onChange={(e) => setVizSettings({ labelColor: e.target.value })}
+                    className="w-5 h-5 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
+                    title="İsim etiket rengi"
+                  />
+                )}
+                <input type="checkbox" checked={vizSettings.showLabels ?? false}
+                  onChange={(e) => setVizSettings({ showLabels: e.target.checked })}
+                  className="w-4 h-4 accent-zinc-800" />
+              </div>
+            </div>
 
             <div className="border-t border-zinc-100" />
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <div>
+            <div className="flex items-center justify-between">
+              <div
+                className="flex-1 cursor-pointer"
+                onClick={() => setVizSettings({ showValues: !(vizSettings.showValues ?? false) })}
+              >
                 <span className="text-[10px] font-medium text-zinc-700">Değerler</span>
                 <p className="text-[9px] text-zinc-400 mt-0.5">Sadece verisi olanlarda değer yazar</p>
               </div>
-              <input type="checkbox" checked={vizSettings.showValues ?? false}
-                onChange={(e) => setVizSettings({ showValues: e.target.checked })}
-                className="w-4 h-4 accent-zinc-800" />
-            </label>
+              <div className="flex items-center gap-2">
+                {(vizSettings.showValues ?? false) && (
+                  <input
+                    type="color"
+                    value={vizSettings.valueColor ?? '#000000'}
+                    onChange={(e) => setVizSettings({ valueColor: e.target.value })}
+                    className="w-5 h-5 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
+                    title="Değer etiket rengi"
+                  />
+                )}
+                <input type="checkbox" checked={vizSettings.showValues ?? false}
+                  onChange={(e) => setVizSettings({ showValues: e.target.checked })}
+                  className="w-4 h-4 accent-zinc-800" />
+              </div>
+            </div>
 
             <div className="border-t border-zinc-100" />
 

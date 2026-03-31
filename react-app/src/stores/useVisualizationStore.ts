@@ -105,6 +105,8 @@ const defaultVizSettings: VisualizationSettings = {
   dataOnlyStyle: 'hidden',
   showLabels: false,
   showValues: false,
+  labelColor: '#000000',
+  valueColor: '#000000',
 }
 
 const defaultMatchResults: MatchResults = {

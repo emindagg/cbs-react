@@ -160,6 +160,10 @@ export interface VisualizationSettings {
   valueLabelFormat?: NumberFormat;
   /** Verisi olmayan il/ilçe dolgu rengi (hex). Varsayılan: #e4e4e4 */
   noDataColor?: string;
+  /** İl/İlçe isim etiketlerinin rengi (hex). Varsayılan: #000000 */
+  labelColor?: string;
+  /** Değer etiketlerinin rengi (hex). Varsayılan: #000000 */
+  valueColor?: string;
 }
 
 export interface CurrentVisualization {

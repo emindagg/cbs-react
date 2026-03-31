@@ -23,18 +23,15 @@ const valueSizeExpr: ExprVal = ['interpolate', ['linear'], ['zoom'], 5, 9, 7, 10
 const nameFieldExpr: ExprVal = ['get', 'displayName']
 const valueFieldExpr: ExprVal = ['get', 'formattedValue']
 
-// Combined: name (100%) + newline + value (85%) — value hidden for no-data features
-const combinedFieldExpr: ExprVal = [
-  'format',
-  ['get', 'displayName'], { 'font-scale': 1.0 },
-  ['case', ['==', ['get', 'hasData'], true], '\n', ''], {},
-  ['case', ['==', ['get', 'hasData'], true], ['get', 'formattedValue'], ''],
-  { 'font-scale': 0.85 },
-]
-
-// ── Shared paint ─────────────────────────────────────────────────────────────
-const COMMON_PAINT = {
-  'text-color': '#000000' as PaintVal,
+// Combined: name (100%) + newline + value (85%) — per-section text-color override
+function buildCombinedFieldExpr(labelColor: string, valueColor: string): ExprVal {
+  return [
+    'format',
+    ['get', 'displayName'], { 'font-scale': 1.0, 'text-color': labelColor },
+    ['case', ['==', ['get', 'hasData'], true], '\n', ''], {},
+    ['case', ['==', ['get', 'hasData'], true], ['get', 'formattedValue'], ''],
+    { 'font-scale': 0.85, 'text-color': valueColor },
+  ]
 }
 
 type LayerFilter = NonNullable<Parameters<Map['setFilter']>[1]>
@@ -48,6 +45,9 @@ export function applyLabelLayers(map: Map, sourceId: string, settings: Visualiza
   const showValues = settings.showValues ?? false
   if (!showLabels && !showValues) return
 
+  const labelColor = settings.labelColor ?? '#000000'
+  const valueColor = settings.valueColor ?? '#000000'
+
   const isTransparentOutOfRange = settings.customRange?.enabled
     && settings.customRange?.outOfRangeMode === 'transparent'
   const nameFilter: LayerFilter = isTransparentOutOfRange
@@ -60,20 +60,20 @@ export function applyLabelLayers(map: Map, sourceId: string, settings: Visualiza
     : ['==', ['get', 'hasData'], true] as LayerFilter
 
   if (showLabels && showValues) {
-    // Single layer: name + value in one format expression
+    // Single layer: name + value in one format expression, per-section colors
     map.addLayer({
       id: 'viz-name-labels',
       type: 'symbol',
       source: sourceId,
       filter: nameFilter,
       layout: {
-        'text-field': combinedFieldExpr as PaintVal,
+        'text-field': buildCombinedFieldExpr(labelColor, valueColor) as PaintVal,
         'text-size': nameSizeExpr as PaintVal,
         'text-anchor': 'center',
         'text-max-width': 8,
         'text-padding': 3,
       },
-      paint: COMMON_PAINT,
+      paint: { 'text-color': labelColor as PaintVal },
     })
     return
   }
@@ -91,7 +91,7 @@ export function applyLabelLayers(map: Map, sourceId: string, settings: Visualiza
         'text-max-width': 8,
         'text-padding': 3,
       },
-      paint: COMMON_PAINT,
+      paint: { 'text-color': labelColor as PaintVal },
     })
   }
 
@@ -107,7 +107,7 @@ export function applyLabelLayers(map: Map, sourceId: string, settings: Visualiza
         'text-anchor': 'center',
         'text-padding': 3,
       },
-      paint: COMMON_PAINT,
+      paint: { 'text-color': valueColor as PaintVal },
     })
   }
 }
