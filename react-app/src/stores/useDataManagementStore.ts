@@ -10,7 +10,8 @@ export type { DataItem }
 
 const defaultLayerStyles: LayerStyles = {
   clusterEnabled: false,
-  opacity: 0.9,
+  opacity: 0.5,
+  strokeOpacity: 1,
   width: 5,
   lineWidth: 2,
   fillColor: '#1c1c1e',

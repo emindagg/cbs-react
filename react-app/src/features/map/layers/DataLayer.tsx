@@ -48,6 +48,7 @@ export default function DataLayer() {
   const labelField = useDataManagementStore(state => state.layerStyles.labelField)
   const defaultFillColor = useDataManagementStore(state => state.layerStyles.fillColor)
   const layerOpacity = useDataManagementStore(state => state.layerStyles.opacity)
+  const strokeOpacity = useDataManagementStore(state => state.layerStyles.strokeOpacity)
   const layerWidth = useDataManagementStore(state => state.layerStyles.width)
   const lineWidth = useDataManagementStore(state => state.layerStyles.lineWidth)
   const strokeWidth = useDataManagementStore(state => state.layerStyles.strokeWidth)
@@ -115,7 +116,7 @@ export default function DataLayer() {
           type="fill"
           paint={{
             'fill-color': fillColorExpression(defaultFillColor) as unknown as string,
-            'fill-opacity': layerOpacity * 0.3,
+            'fill-opacity': layerOpacity,
           }}
         />
         <Layer
@@ -124,7 +125,7 @@ export default function DataLayer() {
           paint={{
             'line-color': ['case', ['boolean', ['get', 'selected'], false], '#d97706', strokeColor] as unknown as string,
             'line-width': ['case', ['boolean', ['get', 'selected'], false], 2, strokeWidth] as unknown as number,
-            'line-opacity': layerOpacity,
+            'line-opacity': strokeOpacity,
           }}
         />
         <Layer
@@ -150,7 +151,7 @@ export default function DataLayer() {
           paint={{
             'line-color': fillColorExpression(strokeColor) as unknown as string,
             'line-width': ['case', ['boolean', ['get', 'selected'], false], lineWidth + 1, lineWidth] as unknown as number,
-            'line-opacity': layerOpacity,
+            'line-opacity': strokeOpacity,
           }}
         />
         <Layer
@@ -180,6 +181,7 @@ export default function DataLayer() {
               'circle-stroke-width': strokeWidth,
               'circle-stroke-color': ['case', ['boolean', ['get', 'selected'], false], '#d97706', strokeColor] as unknown as string,
               'circle-opacity': layerOpacity,
+              'circle-stroke-opacity': strokeOpacity,
             }}
           />
           <Layer

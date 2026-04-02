@@ -228,7 +228,8 @@ export function DataManagementDrawTool() {
   // DataLayer ile birebir aynı formüller — kaydetme sonrası görünüm eşleşir
   const lineColor    = layerStyles.fillColor              // çizgi rengi
   const outlineColor = layerStyles.strokeColor            // polygon kenar rengi
-  const fillOpacity  = layerStyles.opacity * 0.3          // DataLayer: fill-opacity = opacity * 0.3
+  const fillOpacity  = layerStyles.opacity                // dolgu şeffaflığı
+  const strokeOpacity = layerStyles.strokeOpacity         // kenar şeffaflığı
   const lineW        = layerStyles.lineWidth               // çizgi kalınlığı
   const strokeW      = layerStyles.strokeWidth             // polygon kenar kalınlığı
 
@@ -284,7 +285,7 @@ export function DataManagementDrawTool() {
             'line-color-transition': { duration: 0 },
             'line-width': strokeW,
             'line-width-transition': { duration: 0 },
-            'line-opacity': layerStyles.opacity,
+            'line-opacity': strokeOpacity,
             'line-opacity-transition': { duration: 0 },
           }}
         />
@@ -300,7 +301,7 @@ export function DataManagementDrawTool() {
             'line-color-transition': { duration: 0 },
             'line-width': lineW,
             'line-width-transition': { duration: 0 },
-            'line-opacity': layerStyles.opacity,
+            'line-opacity': strokeOpacity,
             'line-opacity-transition': { duration: 0 },
           }}
         />

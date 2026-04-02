@@ -8,6 +8,7 @@ export type DataItemSource = 'drawn' | 'imported'
 export interface LayerStyles {
   clusterEnabled: boolean
   opacity: number
+  strokeOpacity: number
   width: number
   lineWidth: number
   fillColor: string
