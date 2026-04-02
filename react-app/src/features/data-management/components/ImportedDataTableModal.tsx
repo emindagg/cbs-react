@@ -8,6 +8,32 @@ import { agGridTurkishLocaleText } from '@/shared/ag-grid'
 
 import type { DataItem } from '../types'
 
+const COLUMN_HEADER_TR: Record<string, string> = {
+  name: 'Ad',
+  date: 'Tarih',
+  createdAt: 'Oluşturma Tarihi',
+  layerType: 'Katman Türü',
+  style: 'Stil',
+  type: 'Tür',
+  source: 'Kaynak',
+  sourceLabel: 'Kaynak Etiketi',
+  visible: 'Görünür',
+  description: 'Açıklama',
+  color: 'Renk',
+  fillColor: 'Dolgu Rengi',
+  strokeColor: 'Çerçeve Rengi',
+  opacity: 'Opaklık',
+  width: 'Genişlik',
+  height: 'Yükseklik',
+  area: 'Alan',
+  length: 'Uzunluk',
+  label: 'Etiket',
+  title: 'Başlık',
+  value: 'Değer',
+  category: 'Kategori',
+  id: 'ID',
+}
+
 interface ImportedDataTableModalProps {
   isOpen: boolean
   onClose: () => void
@@ -40,7 +66,7 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
     { field: '__geometry', headerName: 'Geometri', minWidth: 140 },
     ...propertyKeys.map(key => ({
       field: key,
-      headerName: key,
+      headerName: COLUMN_HEADER_TR[key] ?? key,
       minWidth: 140,
       sortable: true,
       filter: true,
