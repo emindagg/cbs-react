@@ -61,7 +61,7 @@ export function useLayerStyleSync() {
 
     // Line layer
     trySet('data-layer-line', 'line-color',
-      ['case', selected, '#f59e0b', layerStyles.strokeColor])
+      ['case', selected, '#f59e0b', customOrDefault(layerStyles.strokeColor)])
     trySet('data-layer-line', 'line-width',
       ['case', selected, layerStyles.lineWidth + 1, layerStyles.lineWidth])
     trySet('data-layer-line', 'line-opacity', layerStyles.opacity)
