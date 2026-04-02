@@ -12,6 +12,7 @@ const COLOR_PICKER_DOUBLE_CLICK_TIMEOUT_MS = 300
 export function DataCatalogSection() {
   const items = useDataManagementStore(state => state.items)
   const updateItemFillColor = useDataManagementStore(state => state.updateItemFillColor)
+  const toggleVisibility = useDataManagementStore(state => state.toggleVisibility)
   const [colorPickerItemId, setColorPickerItemId] = useState<string | null>(null)
   const [colorPickerPosition, setColorPickerPosition] = useState<{ top: number; left: number } | null>(null)
   const colorPickerRef = useRef<HTMLDivElement>(null)
@@ -144,7 +145,7 @@ export function DataCatalogSection() {
                 className="relative"
               >
                 <div
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-zinc-100 bg-white hover:bg-zinc-50 transition-colors cursor-pointer select-none"
+                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-zinc-100 bg-white hover:bg-zinc-50 transition-colors cursor-pointer select-none ${!item.visible ? 'opacity-40' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation()
                     if (lastClickItemIdRef.current === item.id && clickTimeoutRef.current) {
@@ -186,7 +187,17 @@ export function DataCatalogSection() {
                     title={`Renk: ${currentFillColor || 'Varsayılan'}`}
                   ></i>
                   <span className="text-xs text-zinc-700 font-medium truncate flex-1">{item.name}</span>
-                  {item.visible && <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleVisibility(item.id)
+                    }}
+                    className="ml-auto shrink-0 text-[10px] transition-colors"
+                    style={{ color: item.visible ? '#34d399' : '#d1d5db' }}
+                    title={item.visible ? 'Gizle' : 'Göster'}
+                  >
+                    <i className={item.visible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'}></i>
+                  </button>
                 </div>
               </div>
             )
