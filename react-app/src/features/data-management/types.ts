@@ -84,6 +84,7 @@ export interface DataManagementStore {
   setActiveItem: (id: string | null) => void
   updateLayerStyle: (styles: Partial<LayerStyles>) => void
   updateItemFillColor: (id: string, fillColor: string) => void
+  updateItemProperties: (id: string, properties: Record<string, unknown>) => void
   setFabPosition: (position: FabPosition) => void
   clearAll: () => void
   clearBufferAnalysisItems: () => void

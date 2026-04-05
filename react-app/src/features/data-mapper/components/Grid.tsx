@@ -3,6 +3,7 @@
  */
 
 import type { ColDef, CellValueChangedEvent } from 'ag-grid-community'
+import { themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import type { RefObject } from 'react'
 
@@ -58,6 +59,7 @@ export function Grid({
       ) : (
         <AgGridReact
           ref={gridRef}
+          theme={themeQuartz}
           rowData={rowData}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}

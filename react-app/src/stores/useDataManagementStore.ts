@@ -116,6 +116,14 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
       }
     }
   },
+  updateItemProperties: (id, properties) => set((state) => ({
+    items: state.items.map(item =>
+      item.id === id
+        ? { ...item, properties: { ...item.properties, ...properties } }
+        : item,
+    ),
+  })),
+
   updateItemFillColor: (id, fillColor) => set((state) => ({
     items: state.items.map(item =>
       item.id === id
