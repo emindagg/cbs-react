@@ -122,7 +122,7 @@ export default function DraggableScaleControl() {
       }}
     >
       {/* Label */}
-      <span style={{ lineHeight: '14px', whiteSpace: 'nowrap', paddingLeft: 2 }}>
+      <span style={{ lineHeight: '14px', whiteSpace: 'nowrap', paddingLeft: 2, fontWeight: 'bold' }}>
         {scale.label}
       </span>
       {/* Bar */}
