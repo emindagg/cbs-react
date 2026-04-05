@@ -41,7 +41,7 @@ The codebase is organized into **17 independent feature modules** under `src/fea
 
 1. **Cross-feature imports are forbidden.** Features may only import from `@/shared/`, `@/stores/`, `@/utils/`, `@/types/`, or `@/constants/`. They must never import `@/features/<other-feature>`.
 2. **No deep imports.** Consumers (including root orchestrators) must use the feature's public barrel: `@/features/<name>` — never `@/features/<name>/components/Foo`.
-3. **Root orchestration is centered in `AppLayout.tsx`.** `Sidebar.tsx` is a sectional orchestrator inside that layout, and some feature internals (notably the map shell) also perform local composition inside their own domain.
+3. **Root orchestration is centered in `AppLayout.tsx`.** `Sidebar.tsx` is a sectional orchestrator. `MapContainer` and its direct collaborators (`DataLayer`, `GISToolsControl`, `GISToolsControl.buffer`, `GISToolsControl.bufferOptions`) are **map-level orchestrators** — they compose `data-management` and `elevation-profile` onto the canvas and are ESLint-whitelisted to use `@/features/<name>` barrel imports.
 4. **`src/components/` (global UI)** may not import from `src/features/`.
 
 ### Application Flow

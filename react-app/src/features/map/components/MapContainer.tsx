@@ -2,11 +2,11 @@ import maplibregl from 'maplibre-gl'
 import { useMemo } from 'react'
 import Map, { Source, Layer } from 'react-map-gl/maplibre'
 
+import { DataManagementDrawTool } from '@/features/data-management'
+import { ElevationProfileTool } from '@/features/elevation-profile'
 import { useBubbleTooltip, useChoroplethTooltip } from '@/shared/visualization'
 import { useMapStore } from '@/stores/useMapStore'
 
-import { DataManagementDrawTool } from '@/features/data-management'
-import { ElevationProfileTool } from '@/features/elevation-profile'
 import DraggableNorthArrow from '../controls/DraggableNorthArrow'
 import DraggableScaleControl from '../controls/DraggableScaleControl'
 import GISToolsControl from '../controls/GISToolsControl'

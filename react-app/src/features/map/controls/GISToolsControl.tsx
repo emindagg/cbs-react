@@ -15,6 +15,7 @@ import {
 import { useState, useRef, useEffect, type ComponentType } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 
+import { useElevationProfileStore } from '@/features/elevation-profile'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useDataManagementStore } from '@/stores/useDataManagementStore'
 import { useHeatmapStore } from '@/stores/useHeatmapStore'
@@ -24,7 +25,6 @@ import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
 import { BufferModal } from './GISToolsControl.buffer'
 import { BufferOptionsControl } from './GISToolsControl.bufferOptions'
-import { useElevationProfileStore } from '@/features/elevation-profile'
 
 type IconComponent = ComponentType<{
   size?: number | string

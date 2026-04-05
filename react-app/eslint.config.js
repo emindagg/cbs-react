@@ -242,21 +242,6 @@ export default [
     },
   },
 
-  // Root orchestratorlar feature'lari sadece public API (index.ts) uzerinden tuketsin
-  {
-    files: ['src/components/layout/AppLayout.tsx', 'src/components/sidebar/Sidebar.tsx'],
-    rules: {
-      'no-restricted-imports': ['error', {
-        patterns: [
-          {
-            group: ['@/features/*/*'],
-            message: "Root orchestrators must import features only via public API: '@/features/<name>' (no deep feature imports).",
-          },
-        ],
-      }],
-    },
-  },
-
   // Feature-First KURAL 4: Feature'lar arası doğrudan import yasak (sadece public API)
   {
     files: ['src/features/**/*.{ts,tsx}'],
@@ -266,6 +251,30 @@ export default [
           {
             group: ['@/features/*'],
             message: "Files under 'src/features' cannot import from '@/features/*' (including own feature). Use relative imports inside the same feature, and use '@/shared/*' or root orchestration for cross-feature dependencies.",
+          },
+        ],
+      }],
+    },
+  },
+
+  // Root orchestratorlar ve map-level orchestratorlar: sadece barrel (index) import'una izin verilir
+  // Bu kural Feature-First KURAL 4'ün ardından geldiği için onun yerine geçer (flat config: son kural kazanır)
+  {
+    files: [
+      'src/components/layout/AppLayout.tsx',
+      'src/components/sidebar/Sidebar.tsx',
+      'src/features/map/components/MapContainer.tsx',
+      'src/features/map/layers/DataLayer.tsx',
+      'src/features/map/controls/GISToolsControl.tsx',
+      'src/features/map/controls/GISToolsControl.buffer.tsx',
+      'src/features/map/controls/GISToolsControl.bufferOptions.tsx',
+    ],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['@/features/*/*'],
+            message: "Root/map orchestrators must import features only via public barrel: '@/features/<name>' (no deep imports).",
           },
         ],
       }],

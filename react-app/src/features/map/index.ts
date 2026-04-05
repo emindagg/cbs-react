@@ -17,4 +17,4 @@ export { useGeolocation } from './hooks/useGeolocation'
 export { DataLayer } from './layers'
 
 // Tools
-export { DistanceTool, DrawTool } from './tools'
+export { DistanceTool } from './tools'
