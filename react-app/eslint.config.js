@@ -61,7 +61,7 @@ export default [
         groups: [
           'builtin',   // Node.js built-in modules
           'external',  // npm packages
-          'internal',  // @/ ile baÅŸlayanlar
+          'internal',  // @/ ile başlayanlar
           ['parent', 'sibling'],
           'index',
         ],
@@ -231,7 +231,7 @@ export default [
         patterns: [
           {
             group: ['**/components/visualization', '**/components/visualization/*'],
-            message: 'Feature-First: domain kodu src/features altÄ±ndadÄ±r.',
+            message: 'Feature-First: domain kodu src/features altındadır.',
           },
           {
             group: ['@/features/*', '@/features/*/*', '../features/*', '../features/*/*'],
@@ -257,7 +257,7 @@ export default [
     },
   },
 
-  // Feature-First KURAL 4: Feature'lar arasÄ± doÄŸrudan import yasak (sadece public API)
+  // Feature-First KURAL 4: Feature'lar arası doğrudan import yasak (sadece public API)
   {
     files: ['src/features/**/*.{ts,tsx}'],
     rules: {

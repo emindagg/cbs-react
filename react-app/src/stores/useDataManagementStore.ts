@@ -1,9 +1,7 @@
 import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
 
 import type { DataItem, DataManagementStore, LayerStyles, NewDataItem } from '@/features/data-management'
 import { useClusteringStore } from '@/stores/useClusteringStore'
-import { indexedDbStorage } from '@/utils/indexedDbStorage'
 
 export type { DataItem }
 
@@ -29,7 +27,7 @@ const createPersistedItem = (item: NewDataItem, source: 'drawn' | 'imported') =>
   source,
 })
 
-export const useDataManagementStore = create<DataManagementStore>()(persist((set, get) => ({
+export const useDataManagementStore = create<DataManagementStore>()((set, get) => ({
   items: [],
   activeItemId: null,
   hasImportedData: false,
@@ -185,26 +183,4 @@ export const useDataManagementStore = create<DataManagementStore>()(persist((set
     isDrawing: false,
     drawMode: 'none',
   }),
-}), {
-  name: 'data-management-store',
-  storage: createJSONStorage(() => indexedDbStorage),
-  partialize: (state) => ({
-    items: state.items,
-    activeItemId: state.activeItemId,
-    hasImportedData: state.hasImportedData,
-    importedLayerName: state.importedLayerName,
-    layerStyles: state.layerStyles,
-    fabPosition: state.fabPosition,
-  }),
-  onRehydrateStorage: () => (state) => {
-    if (!state) return
-    // Eski kayıtlarda lineWidth olmayabilir, varsayılan değeri ata
-    if (state.layerStyles.lineWidth === undefined) {
-      state.layerStyles.lineWidth = 3
-    }
-    const clusteringEnabled = useClusteringStore.getState().isEnabled
-    if (state.layerStyles.clusterEnabled !== clusteringEnabled) {
-      useClusteringStore.getState().toggle()
-    }
-  },
 }))

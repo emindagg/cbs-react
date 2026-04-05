@@ -48,7 +48,9 @@
       "Bash(do)",
       "Bash(echo \"=== $file ===\")",
       "Read(//d/0GM/MEB PROJELER/CBS PROJELER/cbs-react/react-app/**)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(ls \"D:\\\\0GM\\\\MEB PROJELER\\\\CBS PROJELER\\\\cbs-react\"\" 2>&1 && ls \"D:0GMMEB PROJELERCBS PROJELERcbs-reactreact-app\"\")",
+      "Bash(gh api:*)"
     ]
   }
 }
