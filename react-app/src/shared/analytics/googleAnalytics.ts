@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-const GA_MEASUREMENT_ID = 'UA-114103913-1'
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID
 
 /**
  * Google Analytics script'ini dinamik olarak yükler

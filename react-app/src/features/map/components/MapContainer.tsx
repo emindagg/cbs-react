@@ -63,15 +63,11 @@ export default function MapContainer() {
   useBubbleTooltip()
   useChoroplethTooltip()
 
-  // HGM Atlas API Key
-  const apiKey = 'ESqJcw5RWSD5Unw0CVYL2z8oP8gOqIUC'
+  const apiKey = import.meta.env.VITE_HGM_API_KEY
 
   // Define tile URLs based on selection
   const basemapSource = useMemo(() => {
     if (activeBasemap === 'NONE') return null
-
-    // HGM Atlas API Key
-    // const apiKey = 'ESqJcw5RWSD5Unw0CVYL2z8oP8gOqIUC'
 
     const endpoints: Record<string, string> = {
       'TEMEL': `https://atlas.harita.gov.tr/webservis/harita/hgm_harita/{z}/{x}/{y}.png?apikey=${apiKey}`,
