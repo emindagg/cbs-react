@@ -6,8 +6,8 @@ import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useTimelineStore } from '@/stores/useTimelineStore'
 import { type StyleProperties, isStyleProperties } from '@/types/style'
 
-import type { DataItem } from '../../data-management'
-import { useDataManagementStore } from '../../data-management/store/useDataManagementStore'
+import { useDataManagementStore } from '@/features/data-management'
+import type { DataItem } from '@/features/data-management'
 
 // Pure function - renk/boyut style'ları hariç, sadece geometri + kimlik + etiket
 // Renk/opaklık güncellemeleri useLayerStyleSync hook'u tarafından setPaintProperty ile yapılır

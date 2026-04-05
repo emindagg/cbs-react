@@ -24,7 +24,7 @@ import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
 import { BufferModal } from './GISToolsControl.buffer'
 import { BufferOptionsControl } from './GISToolsControl.bufferOptions'
-import { useElevationProfileStore } from '../../elevation-profile/stores/useElevationProfileStore'
+import { useElevationProfileStore } from '@/features/elevation-profile'
 
 type IconComponent = ComponentType<{
   size?: number | string

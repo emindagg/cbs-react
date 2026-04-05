@@ -5,7 +5,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
 import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
-import { useDataManagementStore, type DataItem } from '../../data-management'
+import { useDataManagementStore } from '@/features/data-management'
+import type { DataItem } from '@/features/data-management'
 
 
 type BufferOption = 'normal' | 'combined' | 'intersection' | 'difference' | 'summary'

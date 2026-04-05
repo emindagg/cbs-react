@@ -31,7 +31,7 @@ Güncel uygulama akışı:
    - Uygulamanın gerçek orchestrator katmanıdır.
    - `Sidebar`, `MapContainer`, `SearchContainer`, `LayersPanel`, `AstroPanel`, `MapTitle`, `HeatmapPanel`, `SpatialAnalysisPanel`, `IsochronePanel`, `ElevationProfilePanel`, `LegendContainer`, `ImportedDataManagerFab`, `CoordinateDisplay` ve `StorymapModal` bileşenlerini compose eder.
 
-Sidebar tarafında `VizWizardSidebar`, `DataMapperModal` ve `DataManagementSection` birlikte çalışır. Harita tarafında `MapContainer`, ölçüm araçları, veri katmanları, zaman çizelgesi ve ileri analiz araçlarının mount noktasıdır.
+`AppLayout` tek root orchestrator'dür; ancak tüm composition burada bitmez. Sidebar tarafında `Sidebar.tsx`, `VizWizardSidebar`, `DataMapperModal`, `DataManagementSection`, `ProjectExportSection` ve `DataImportSection` akışlarını kendi alanında birleştirir. Harita tarafında `MapContainer`, ölçüm araçları, veri katmanları, zaman çizelgesi ve ileri analiz araçlarının mount noktasıdır; ayrıca `data-management` ve `elevation-profile` gibi feature'lardan gelen parçaları da doğrudan compose eder.
 
 ---
 
@@ -52,7 +52,7 @@ Sidebar tarafında `VizWizardSidebar`, `DataMapperModal` ve `DataManagementSecti
 | Isochrone | `src/features/isochrone/` | `IsochronePanel`, `useIsochrone`, `useIsochroneStore` | Erişilebilirlik analizi, isochrone ve rota akışı |
 | Layers | `src/features/layers/` | `LayersPanel`, `useOverlayLayers` | Hazır overlay katmanlarını yükler ve stillerini yönetir |
 | Legend | `src/features/legend/` | `LegendContainer`, `DynamicLegend`, `ColorLegend`, `BubbleSizeLegend`, `DotDensityLegend` | Görselleştirme tipine göre uygun legend bileşenini seçer |
-| Map | `src/features/map/` | `MapContainer`, `MapControlStack`, `DataLayer`, araç/controls export'ları | Çekirdek harita kabuğu, tool mount noktası ve veri katmanları |
+| Map | `src/features/map/` | `MapContainer`, `MapControlStack`, `DataLayer`, araç/controls export'ları | Çekirdek harita kabuğu, tool mount noktası, veri katmanları ve harita domain'i içinde ikincil orchestration katmanı |
 | Spatial Analysis | `src/features/spatial-analysis/` | `SpatialAnalysisPanel`, `useSpatialAnalysis`, renderer'lar | Convex hull, Voronoi ve nearest-points analizi |
 | Storymap Modal | `src/features/storymap-modal/` | `StorymapModal` | Storymap içeriğini iframe modal olarak gösterir |
 | Timeline | `src/features/timeline/` | `useTimelineStore`, `STEP_MS`, timeline tipleri | Zaman tabanlı filtreleme ve oynatma durumu; UI `map` feature içinde |

@@ -41,16 +41,18 @@ The codebase is organized into **17 independent feature modules** under `src/fea
 
 1. **Cross-feature imports are forbidden.** Features may only import from `@/shared/`, `@/stores/`, `@/utils/`, `@/types/`, or `@/constants/`. They must never import `@/features/<other-feature>`.
 2. **No deep imports.** Consumers (including root orchestrators) must use the feature's public barrel: `@/features/<name>` — never `@/features/<name>/components/Foo`.
-3. **Root orchestrators** (`AppLayout.tsx`, `Sidebar.tsx`) compose features only via their public APIs.
+3. **Root orchestration is centered in `AppLayout.tsx`.** `Sidebar.tsx` is a sectional orchestrator inside that layout, and some feature internals (notably the map shell) also perform local composition inside their own domain.
 4. **`src/components/` (global UI)** may not import from `src/features/`.
 
 ### Application Flow
 
 ```
 index.html → main.tsx → App.tsx (MapProvider + Toaster)
-  → AppLayout.tsx  ← root orchestrator, composes all features
-      → Sidebar.tsx
-      → MapContainer (map feature)
+  → AppLayout.tsx  ← single root orchestrator
+      → Sidebar.tsx            ← sidebar-level composition
+      → MapContainer           ← map-domain composition / mount point
+          → DataManagementDrawTool
+          → ElevationProfileTool
           → DataLayer → VisualizationManager
               → ChoroplethRenderer | BubbleRenderer | PointRenderer
 ```

@@ -45,3 +45,26 @@ Amaç, varsayım yapmadan mevcut dosyalardan hareketle kısa ama teknik olarak g
 ## Sonuç
 Proje stack'i, root orchestration akışı, feature-first modül sınırları, shared/store katmanları ve doğrulama yüzeyi dosya referanslarıyla analiz edildi.
 `npm run test:run` başarılı, `npm run build` başarılı, `npm run lint` ise özellikle feature sınırı ve import sırası ihlalleri nedeniyle başarısız bulundu; ayrıca persistence temizliği ve hardcoded anahtarlar gibi dikkat gerektiren noktalar tespit edildi.
+
+---
+
+# Görev: mimari doküman hizalama
+Tarih: 2026-04-05
+
+## Bağlam
+Kod tabanı ile mevcut mimari dokümanlar arasında uyumsuzluk var. Özellikle `map` feature'ın başka feature'ları doğrudan tüketmesine rağmen bazı dokümanlar sadece `AppLayout.tsx` ve `Sidebar.tsx` dosyalarını orchestrator gibi tarif ediyor veya feature'ların birbirini bilmediğini söylüyor.
+
+## Plan
+- [x] Adım 1: `CLAUDE.md`, `docs/ARCHITECTURE.md` ve `docs/FEATURES.md` içindeki hatalı mimari ifadeleri kod tabanına göre netleştir
+- [x] Adım 2: Yalnızca dokümanlarda, root orchestration ile feature-içi/domain orchestration ayrımını doğru anlatacak metin güncellemelerini yap
+- [x] Adım 3: Diff kontrolüyle sadece dokümanların değiştiğini doğrula ve kullanıcıya özetle
+
+## Doğrulama kriterleri
+- [x] Güncel metin `AppLayout`'ı tek root orchestrator olarak tanımlamalı
+- [x] Güncel metin `Sidebar` ve `map` alanındaki compose rolünü root olmayan orchestration olarak açıklamalı
+- [x] "Feature'lar birbirini bilmez" gibi kodla çelişen ifadeler düzeltilmiş olmalı
+- [x] Kod dosyaları değil yalnızca doküman dosyaları değişmiş olmalı
+
+## Sonuç
+`CLAUDE.md`, `docs/ARCHITECTURE.md` ve `docs/FEATURES.md` güncellenerek `AppLayout` tek root orchestrator olarak korundu; `Sidebar` ile `map` feature içindeki compose davranışları ise root olmayan alan bazlı orchestration olarak belgelendi.
+Kod tabanıyla çelişen "feature'lar birbirini bilmez" ve "root orchestrators = AppLayout + Sidebar" ifadeleri kaldırıldı; yalnızca doküman dosyaları ve görev kaydı değiştirildi.

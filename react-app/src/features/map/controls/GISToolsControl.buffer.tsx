@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import toast from 'react-hot-toast'
 
 import { BUFFER_MODE_COLORS } from './GISToolsControl.bufferColors'
-import { useDataManagementStore } from '../../data-management'
+import { useDataManagementStore } from '@/features/data-management'
 import {
   runBufferAnalysis,
   runBufferAnalysisForMultipleGeometries,

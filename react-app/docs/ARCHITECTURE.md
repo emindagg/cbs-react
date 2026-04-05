@@ -517,7 +517,9 @@ export { DistanceTool, DrawTool } from './tools'
 
 ### Orchestrator Pattern
 
-`AppLayout.tsx` tüm feature'ları compose eder. Feature'lar birbirini bilmez, sadece shared store'lar üzerinden iletişim kurar.
+`AppLayout.tsx` uygulamanın tek root orchestrator'üdür ve üst seviye feature mount düzenini belirler.
+Ancak mevcut kod tabanında tüm composition bununla sınırlı değildir: `Sidebar.tsx` kendi alanında feature public API'lerini birleştirir, `map` feature içindeki `MapContainer`, `DataLayer` ve `GISToolsControl` gibi parçalar da harita domain'i içinde başka feature'lardan gelen UI/store davranışlarını compose eder.
+Bu nedenle pratikte mimari, "tek root orchestrator + alan bazlı ikincil orchestrator'ler" şeklindedir; feature'lar bazı yerlerde birbirini doğrudan bilir.
 
 ### Hook Composition
 
