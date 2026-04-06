@@ -3,7 +3,7 @@
  * Combines column mapping + AG Grid spreadsheet + real-time validation
  */
 
-import type { CellValueChangedEvent } from 'ag-grid-community'
+import type { CellValueChangedEvent, ColDef, ICellRendererParams } from 'ag-grid-community'
 import type { AgGridReact } from 'ag-grid-react'
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
@@ -27,6 +27,7 @@ interface DataMapperProps {
 interface RowWithStatus {
   __rowIndex: number
   __status: 'matched' | 'unmatched'
+  __excluded: boolean
   [key: string]: unknown
 }
 
@@ -37,6 +38,8 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
     columnMapping,
     setColumnMapping,
     setRawData,
+    excludedRows,
+    toggleExcludedRow,
   } = useVisualizationStore()
 
   const gridRef = useRef<AgGridReact>(null)
@@ -55,13 +58,25 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
   // Numeric columns detection
   const numericColumns = useMemo(() => {
     if (!rawData || rawData.length === 0) return []
+    const looksNumeric = (value: unknown): boolean => {
+      if (value === null || value === undefined || value === '') return false
+      if (typeof value === 'number') return true
+      const str = String(value).trim()
+      if (!str) return false
+      let cleaned = str.replace(/[₺$€£%\s]/g, '')
+      cleaned = cleaned.replace(/[,.](?=\d{3}(?:[,.]|$))/g, '')
+      cleaned = cleaned.replace(',', '.')
+      return /^-?\d+(?:\.\d+)?$/.test(cleaned)
+    }
     return columns.filter((col) => {
       const sample = rawData.slice(0, Math.min(10, rawData.length))
-      const numericCount = sample.filter((row) => {
-        const value = row[col]
-        return typeof value === 'number' || !isNaN(Number(value))
-      }).length
-      return numericCount / sample.length > 0.8
+      const nonEmpty = sample.filter((row) => {
+        const v = row[col]
+        return v !== null && v !== undefined && v !== ''
+      })
+      if (nonEmpty.length === 0) return false
+      const numericCount = nonEmpty.filter((row) => looksNumeric(row[col])).length
+      return numericCount / nonEmpty.length > 0.6
     })
   }, [rawData, columns])
 
@@ -99,12 +114,14 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
   // Build row data with status
   const buildRowData = useCallback((): RowWithStatus[] => {
     if (!rawData) return []
+    const excludedSet = new Set(excludedRows)
     return rawData.map((row, i) => ({
       ...row,
       __rowIndex: i,
       __status: validateRow(row),
+      __excluded: excludedSet.has(i),
     }))
-  }, [rawData, validateRow])
+  }, [rawData, validateRow, excludedRows])
 
   // Rebuild rows when mapping or keys change
   useEffect(() => {
@@ -152,6 +169,39 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
 
   const { columnDefs, defaultColDef } = useColumns(columns)
 
+  const exclusionColDef = useMemo((): ColDef => ({
+    field: '__excluded',
+    headerName: '',
+    width: 36,
+    minWidth: 36,
+    maxWidth: 36,
+    pinned: 'left',
+    editable: false,
+    sortable: false,
+    suppressMovable: true,
+    cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
+    cellRenderer: (params: ICellRendererParams) => {
+      const isExcluded = params.data?.__excluded === true
+      return (
+        <button
+          onClick={() => toggleExcludedRow(params.data.__rowIndex as number)}
+          title={isExcluded ? 'Göster' : 'Gizle'}
+          style={{ border: 'none', background: 'none', cursor: 'pointer', lineHeight: 1 }}
+        >
+          <i
+            className={`fa-solid ${isExcluded ? 'fa-eye-slash' : 'fa-eye'}`}
+            style={{ fontSize: 11, color: isExcluded ? '#d1d5db' : '#9ca3af' }}
+          />
+        </button>
+      )
+    },
+  }), [toggleExcludedRow])
+
+  const allColumnDefs = useMemo(
+    () => [exclusionColDef, ...columnDefs],
+    [exclusionColDef, columnDefs],
+  )
+
   const applyCorrection = useCallback(
     (_originalValue: string, newValue: string, rowIndices: number[]) => {
       if (!rawData || !selectedProvince) return
@@ -195,9 +245,10 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
     locationLevel,
   }), [selectedProvince, selectedDistrict, selectedData, locationLevel])
 
-  // Match counts
-  const matchCount = useMemo(() => rowData.filter((r) => r.__status === 'matched').length, [rowData])
-  const totalCount = rowData.length
+  // Match counts (excluded rows are not counted)
+  const activeRowData = useMemo(() => rowData.filter((r) => !r.__excluded), [rowData])
+  const matchCount = useMemo(() => activeRowData.filter((r) => r.__status === 'matched').length, [activeRowData])
+  const totalCount = activeRowData.length
 
   const isModal = variant === 'modal'
 
@@ -229,7 +280,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
         <Grid
           gridRef={gridRef}
           rowData={rowData}
-          columnDefs={columnDefs}
+          columnDefs={allColumnDefs}
           defaultColDef={defaultColDef}
           onCellValueChanged={onCellValueChanged}
           isLoading={isLoading}
@@ -257,7 +308,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
       <Grid
         gridRef={gridRef}
         rowData={rowData}
-        columnDefs={columnDefs}
+        columnDefs={allColumnDefs}
         defaultColDef={defaultColDef}
         onCellValueChanged={onCellValueChanged}
         isLoading={isLoading}

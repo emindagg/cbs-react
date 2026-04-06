@@ -12,6 +12,7 @@ import type { VisualizationManager } from '@/shared/visualization'
 import type { DistrictInfo, LocationInfo } from '@/types/geojson'
 import type { MatchResults } from '@/types/visualization'
 import { ColumnMapper } from '@/utils/columnMapper'
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
 interface UseMatchingProps {
   rawData: Record<string, unknown>[] | null
@@ -93,7 +94,10 @@ export function useMatching({
   }
 
   const performMatching = async (dataOverride?: Record<string, unknown>[]): Promise<MatchResults | null> => {
-    const dataToUse = dataOverride || rawData
+    const { excludedRows } = useVisualizationStore.getState()
+    const excludedSet = new Set(excludedRows)
+    const rawDataToUse = dataOverride || rawData
+    const dataToUse = rawDataToUse?.filter((_, i) => !excludedSet.has(i)) ?? null
 
     if (!dataToUse || !map) {
       return null

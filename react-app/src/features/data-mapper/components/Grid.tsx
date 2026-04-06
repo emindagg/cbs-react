@@ -65,6 +65,11 @@ export function Grid({
           defaultColDef={defaultColDef}
           onCellValueChanged={onCellValueChanged}
           getRowId={(params) => String(params.data.__rowIndex)}
+          getRowStyle={(params) =>
+            params.data?.__excluded
+              ? { opacity: '0.35', background: '#f9fafb', textDecoration: 'line-through' }
+              : undefined
+          }
           headerHeight={headerHeight}
           rowHeight={rowHeight}
           context={gridContext}

@@ -45,22 +45,20 @@ export function ModalToolbar({
         <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Seviye</span>
         <div className="inline-flex rounded-md border border-zinc-200 overflow-hidden">
           <label
-            className={`flex items-center gap-1.5 px-3 py-2 cursor-pointer text-[11px] font-semibold transition-all ${
-              locationLevel === 'province'
+            className={`flex items-center gap-1.5 px-3 py-2 cursor-pointer text-[11px] font-semibold transition-all ${locationLevel === 'province'
                 ? 'bg-[#1e2330] text-white'
                 : 'bg-white text-zinc-500 hover:bg-zinc-50'
-            }`}
+              }`}
           >
             <input type="radio" name="dm-level-m" value="province" checked={locationLevel === 'province'} onChange={() => setLocationLevel('province')} className="sr-only" />
             <i className={`fa-solid fa-map-location-dot text-[9px] ${locationLevel === 'province' ? 'text-emerald-400' : 'text-zinc-400'}`} />
             İl
           </label>
           <label
-            className={`flex items-center gap-1.5 px-3 py-2 cursor-pointer text-[11px] font-semibold transition-all border-l border-zinc-200 ${
-              locationLevel === 'mixed'
+            className={`flex items-center gap-1.5 px-3 py-2 cursor-pointer text-[11px] font-semibold transition-all border-l border-zinc-200 ${locationLevel === 'mixed'
                 ? 'bg-[#1e2330] text-white'
                 : 'bg-white text-zinc-500 hover:bg-zinc-50'
-            }`}
+              }`}
           >
             <input type="radio" name="dm-level-m" value="mixed" checked={locationLevel === 'mixed'} onChange={() => setLocationLevel('mixed')} className="sr-only" />
             <i className={`fa-solid fa-layer-group text-[9px] ${locationLevel === 'mixed' ? 'text-emerald-400' : 'text-zinc-400'}`} />
@@ -110,7 +108,17 @@ export function ModalToolbar({
             className="text-[11px] border border-zinc-200 rounded-md px-2 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-700 font-medium min-w-[90px]"
           >
             <option value="">Seçin...</option>
-            {numericColumns.map((col) => <option key={col} value={col}>{col}</option>)}
+            {numericColumns.length > 0 && numericColumns.length < columns.length ? (
+              <>
+                {numericColumns.map((col) => <option key={col} value={col}>{col}</option>)}
+                <option disabled>──────</option>
+                {columns.filter((c) => !numericColumns.includes(c)).map((col) => (
+                  <option key={col} value={col}>{col}</option>
+                ))}
+              </>
+            ) : (
+              columns.map((col) => <option key={col} value={col}>{col}</option>)
+            )}
           </select>
         </div>
       </div>

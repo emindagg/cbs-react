@@ -98,9 +98,19 @@ export function SidebarForm({
             className="w-full text-[11px] border border-zinc-200 rounded-md px-2.5 py-1.5 focus:outline-hidden focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
           >
             <option value="">Seçin...</option>
-            {numericColumns.map((col) => <option key={col} value={col}>{col}</option>)}
+            {numericColumns.length > 0 && numericColumns.length < columns.length ? (
+              <>
+                {numericColumns.map((col) => <option key={col} value={col}>{col}</option>)}
+                <option disabled>──────</option>
+                {columns.filter((c) => !numericColumns.includes(c)).map((col) => (
+                  <option key={col} value={col}>{col}</option>
+                ))}
+              </>
+            ) : (
+              columns.map((col) => <option key={col} value={col}>{col}</option>)
+            )}
           </select>
-          <p className="text-[10px] text-zinc-400 mt-0.5">Sadece sayısal sütunlar</p>
+          <p className="text-[10px] text-zinc-400 mt-0.5">Sayısal sütunlar öncelikli</p>
         </div>
       </div>
     </div>

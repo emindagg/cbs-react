@@ -16,6 +16,7 @@ import {
   NumberEditorModule,
   CellStyleModule,
   RenderApiModule,
+  RowStyleModule,
   ModuleRegistry,
 } from 'ag-grid-community'
 
@@ -36,6 +37,7 @@ export const editorModules = [
   NumberEditorModule,
   CellStyleModule,
   RenderApiModule,
+  RowStyleModule,
 ]
 
 export const devModules = [

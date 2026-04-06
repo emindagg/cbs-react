@@ -88,6 +88,11 @@ interface VisualizationStore {
   mapTitle: MapTitleConfiguration
   setMapTitle: (config: Partial<MapTitleConfiguration>) => void
 
+  // Row exclusion
+  excludedRows: number[]
+  toggleExcludedRow: (rowIndex: number) => void
+  clearExcludedRows: () => void
+
   // Reset everything
   reset: () => void
 }
@@ -297,12 +302,23 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
       mapTitle: { ...state.mapTitle, ...config },
     })),
 
+  // Row exclusion
+  excludedRows: [],
+  toggleExcludedRow: (rowIndex) =>
+    set((state) => ({
+      excludedRows: state.excludedRows.includes(rowIndex)
+        ? state.excludedRows.filter((i) => i !== rowIndex)
+        : [...state.excludedRows, rowIndex],
+    })),
+  clearExcludedRows: () => set({ excludedRows: [] }),
+
   // Reset everything
   reset: () =>
     set({
       currentStep: 1,
       pendingExcel: null,
       rawData: null,
+      excludedRows: [],
       columns: [],
       columnMapping: defaultColumnMapping,
       matchResults: defaultMatchResults,
