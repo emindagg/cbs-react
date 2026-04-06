@@ -3,17 +3,78 @@
  * Handles Excel/CSV file reading and column mapping with Turkish province/district data
  */
 
-import * as XLSX from 'xlsx'
-
 import type { ColumnMapping, MatchResults } from '../types/visualization'
 import { detectColumns } from './columnMapper/columnDetector'
 import { parseCSV } from './columnMapper/csvParser'
 import { matchData } from './columnMapper/dataMatcher'
-import type { ColumnDetectionResult, ColumnMapperIndexes, FileInfo, RawDataRow } from './columnMapper/types'
+import { analyzeExcelArrayBuffer, finalizeExcelSelection } from './columnMapper/excelParser'
+import type {
+  ColumnDetectionResult,
+  ColumnMapperIndexes,
+  ExcelSelectionMode,
+  ExcelSelectionPreview,
+  FileLoadResult,
+  ExcelWorkerOutput,
+  FileInfo,
+  ParsedExcelResult,
+  PendingExcelSelection,
+  RawDataRow,
+} from './columnMapper/types'
+
+function toFileInfo(result: ParsedExcelResult): FileInfo {
+  return {
+    rowCount: result.rows.length,
+    columns: result.columns,
+    preview: result.preview,
+    warnings: result.warnings,
+    stats: result.stats,
+  }
+}
+
+async function parseExcelWithWorker(
+  file: File,
+): Promise<PendingExcelSelection & { preview: ExcelSelectionPreview }> {
+  const buffer = await file.arrayBuffer()
+
+  if (typeof Worker === 'undefined') {
+    return analyzeExcelArrayBuffer(buffer)
+  }
+
+  return await new Promise((resolve, reject) => {
+    const worker = new Worker(
+      new URL('./columnMapper/excelWorker.ts', import.meta.url),
+      { type: 'module' },
+    )
+
+    worker.onmessage = (event: MessageEvent<ExcelWorkerOutput>) => {
+      worker.terminate()
+      if (event.data.success) {
+        resolve(event.data.result)
+      } else {
+        const error = new Error(event.data.error.message)
+        if (event.data.error.code) {
+          Object.assign(error, {
+            code: event.data.error.code,
+            meta: event.data.error.meta,
+          })
+        }
+        reject(error)
+      }
+    }
+
+    worker.onerror = () => {
+      worker.terminate()
+      reject(new Error('Excel çalışma sayfası işlenirken beklenmeyen bir hata oluştu.'))
+    }
+
+    worker.postMessage({ buffer }, [buffer])
+  })
+}
 
 export class ColumnMapper {
   rawData: RawDataRow[] | null = null
   columns: string[] = []
+  private pendingExcelSelection: PendingExcelSelection | null = null
   columnMapping: ColumnMapping = {
     locationColumn: null,
     districtColumn: null,
@@ -43,58 +104,72 @@ export class ColumnMapper {
   /**
    * Load Excel/CSV file and parse it
    */
-  async loadFile(file: File): Promise<FileInfo> {
-    return new Promise((resolve, reject) => {
-      const fileName = file.name.toLowerCase()
-      const isCSV = fileName.endsWith('.csv')
+  async loadFile(file: File): Promise<FileLoadResult> {
+    const fileName = file.name.toLowerCase()
+    const isCSV = fileName.endsWith('.csv')
 
-      const reader = new FileReader()
-
-      reader.onload = (e) => {
-        try {
-          let jsonData: RawDataRow[]
-
-          if (isCSV) {
-            const text = e.target?.result as string
-            jsonData = parseCSV(text)
-          } else {
-            const data = new Uint8Array(e.target?.result as ArrayBuffer)
-            const workbook = XLSX.read(data, { type: 'array' })
-            const firstSheetName = workbook.SheetNames[0]
-            const worksheet = workbook.Sheets[firstSheetName]
-            jsonData = XLSX.utils.sheet_to_json(worksheet) as RawDataRow[]
-          }
-
-          if (!jsonData || jsonData.length === 0) {
-            reject(new Error('Dosyada veri bulunamadı'))
-            return
-          }
-
-          this.rawData = jsonData
-          this.columns = Object.keys(jsonData[0])
-
-          console.debug('✅ File loaded:', jsonData.length, 'rows')
-          console.debug('📊 Columns:', this.columns)
-
-          resolve({
-            rowCount: jsonData.length,
-            columns: this.columns,
-            preview: jsonData.slice(0, 3),
-          })
-        } catch (error) {
-          console.error('File read error:', error)
-          reject(error)
-        }
-      }
-
-      reader.onerror = () => reject(new Error('Dosya okunamadı'))
+    try {
+      let jsonData: RawDataRow[]
 
       if (isCSV) {
-        reader.readAsText(file)
+        const text = await file.text()
+        jsonData = parseCSV(text)
+
+        if (!jsonData || jsonData.length === 0) {
+          throw new Error('Dosyada veri bulunamadı')
+        }
+
+        this.rawData = jsonData
+        this.columns = Object.keys(jsonData[0])
+        this.pendingExcelSelection = null
+        const fileInfo: FileInfo = {
+          rowCount: jsonData.length,
+          columns: this.columns,
+          preview: jsonData.slice(0, 3),
+        }
+        return { kind: 'ready', fileInfo }
       } else {
-        reader.readAsArrayBuffer(file)
+        const result = await parseExcelWithWorker(file)
+        this.rawData = null
+        this.columns = []
+        this.pendingExcelSelection = {
+          matrix: result.matrix,
+          firstNonEmptyRow: result.firstNonEmptyRow,
+          lastNonEmptyRow: result.lastNonEmptyRow,
+          suggestedHeaderRowIndex: result.suggestedHeaderRowIndex,
+        }
+
+        return {
+          kind: 'needs-header-selection',
+          preview: result.preview,
+        }
       }
-    })
+    } catch (error) {
+      console.error('File read error:', error)
+      throw error
+    }
+  }
+
+  finalizeExcelSelection(mode: ExcelSelectionMode, selectedRowIndex: number): FileInfo {
+    if (!this.pendingExcelSelection) {
+      throw new Error('Excel önizlemesi hazır değil')
+    }
+
+    const result = finalizeExcelSelection(this.pendingExcelSelection, mode, selectedRowIndex)
+    const jsonData = result.rows
+
+    if (!jsonData || jsonData.length === 0) {
+      throw new Error('Dosyada veri bulunamadı')
+    }
+
+    this.rawData = jsonData
+    this.columns = result.columns
+    this.pendingExcelSelection = null
+
+    console.debug('✅ Excel finalized:', jsonData.length, 'rows')
+    console.debug('📊 Columns:', this.columns)
+
+    return toFileInfo(result)
   }
 
   /**
