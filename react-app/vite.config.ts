@@ -91,7 +91,7 @@ export default defineConfig({
           // Feature chunks
           if (id.includes('src/features/astronomy')) return 'astronomy'
           if (id.includes('src/features/viz-wizard')) return 'viz-wizard'
-          if (id.includes('src/features/data-import')) return 'data-import'
+          if (id.includes('src/features/data-management')) return 'data-management'
         },
       },
     },

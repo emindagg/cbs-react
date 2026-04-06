@@ -171,6 +171,39 @@ describe('useFileImport', () => {
       })
     })
 
+    it('should call addItems in chunks when item count exceeds 2000', async () => {
+      const { result } = renderHook(() => useFileImport())
+
+      const bigItems = Array.from({ length: 2500 }, (_, i) => ({
+        id: String(i),
+        name: `Item ${i}`,
+        type: 'point' as const,
+        geometry: { type: 'Point' as const, coordinates: [28.0, 41.0] },
+        properties: {},
+        date: new Date().toISOString(),
+        visible: true,
+      }))
+
+      mockParseFile.mockResolvedValue({ needsMapping: false, items: bigItems })
+
+      const mockFile = new File(['{}'], 'big.geojson', { type: 'application/json' })
+      const mockEvent = {
+        target: { files: [mockFile] },
+      } as unknown as FileImportChangeEvent
+
+      await act(async () => {
+        await result.current.handleFileImport(mockEvent)
+      })
+
+      await waitFor(() => {
+        // 2500 items split into 2 chunks: [0..1999] and [2000..2499]
+        expect(mockAddItems).toHaveBeenCalledTimes(2)
+        expect(mockAddItems.mock.calls[0][0]).toHaveLength(2000)
+        expect(mockAddItems.mock.calls[1][0]).toHaveLength(500)
+        expect(mockAddItems.mock.calls[0][0][0]).toMatchObject({ sourceLabel: 'big.geojson' })
+      })
+    })
+
     it('should handle parse error', async () => {
       const { result } = renderHook(() => useFileImport())
 

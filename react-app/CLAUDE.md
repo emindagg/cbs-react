@@ -35,7 +35,7 @@ npx vitest run src/utils/classification.test.ts
 
 The codebase is organized into **17 independent feature modules** under `src/features/`. Each feature is fully self-contained with its own `components/`, `hooks/`, `services/`, `types`, and a public `index.ts` barrel.
 
-**Features:** `astronomy`, `basemap`, `clustering`, `data-import`, `data-management`, `data-mapper`, `geocoder`, `globe-view`, `heatmap`, `layers`, `legend`, `map`, `spatial-analysis`, `storymap-modal`, `timeline`, `visualization`, `viz-wizard`
+**Features:** `astronomy`, `basemap`, `clustering`, `data-management`, `data-mapper`, `geocoder`, `globe-view`, `heatmap`, `layers`, `legend`, `map`, `spatial-analysis`, `storymap-modal`, `timeline`, `visualization`, `viz-wizard`
 
 ### Import Boundaries (ESLint-enforced)
 

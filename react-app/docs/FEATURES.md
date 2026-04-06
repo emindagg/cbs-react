@@ -110,7 +110,7 @@ Bu feature repoda hâlâ ayrı bir import paketi olarak duruyor, ancak veri yaş
 ### Data Management
 
 **Path:** `src/features/data-management/`
-**Public API:** `useDataManagementStore`, `DataCatalogSection`, `DataCreationSection`, `DataImportExportSection`, `DataManagementDrawTool`, `DataManagementSection`, `ImportedDataManagerFab`, `ImportedDataTableModal`, `ColumnMapperModal`, `ExportControls`, `UrlImporter`, `useDataExport`, `useFileImport`, `useLayerStyleSync`, `useUrlImport`
+**Public API:** `useDataManagementStore`, `DataCatalogSection`, `DataCreationSection`, `DataImportSection`, `DataManagementDrawTool`, `DataManagementSection`, `ImportedDataManagerFab`, `ImportedDataTableModal`, `ColumnMapperModal`, `ExportControls`, `UrlImporter`, `ProjectExportSection`, `useDataExport`, `useFileImport`, `useLayerStyleSync`, `useUrlImport`
 
 Bu feature projenin kanonik veri domain'idir.
 - Store `src/stores/useDataManagementStore.ts` içinde tutulur; feature altındaki `store/useDataManagementStore.ts` sadece re-export yapar.
