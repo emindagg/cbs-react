@@ -9,7 +9,6 @@ import toast from 'react-hot-toast'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { ColumnMapper } from '@/utils/columnMapper'
 import type {
-  ExcelSelectionMode,
   ExcelSelectionPreview,
   FileInfo,
 } from '@/utils/columnMapper/types'
@@ -20,8 +19,8 @@ interface VizWizardStep1Props {
 
 interface PendingExcelSelectionState {
   preview: ExcelSelectionPreview
-  mode: ExcelSelectionMode
-  selectedRowIndex: number
+  headerRowIndex: number | null
+  dataStartRowIndex: number
 }
 
 function buildWarningSummary(fileInfo: FileInfo): string | null {
@@ -56,65 +55,56 @@ function buildWarningSummary(fileInfo: FileInfo): string | null {
 
 function PreviewTable({
   pending,
-  onModeChange,
-  onRowSelect,
+  onHeaderRowChange,
+  onDataStartChange,
   onConfirm,
 }: {
   pending: PendingExcelSelectionState
-  onModeChange: (mode: ExcelSelectionMode) => void
-  onRowSelect: (rowIndex: number) => void
+  onHeaderRowChange: (rowIndex: number | null) => void
+  onDataStartChange: (rowIndex: number) => void
   onConfirm: () => void
 }) {
-  const selectionLabel = pending.mode === 'header-row' ? 'Başlık' : 'Veri başlangıcı'
+  const hasHeader = pending.headerRowIndex !== null
+  const isValid = pending.headerRowIndex === null || pending.dataStartRowIndex > pending.headerRowIndex
+  const maxCols = Math.max(...pending.preview.previewRows.map((r) => r.length), 0)
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white">
-      <div className="border-b border-zinc-100 px-3 py-2">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h4 className="text-[11px] font-semibold text-zinc-800">Excel Önizleme</h4>
-            <p className="mt-0.5 text-[10px] text-zinc-500">
-              {pending.preview.hasReliableHeaderSuggestion
-                ? `Önerilen başlık satırı: ${pending.preview.suggestedHeaderRowIndex + 1}`
-                : 'Başlık satırı otomatik olarak güvenle belirlenemedi. Satırı siz seçin.'}
-            </p>
-          </div>
-          <div className="flex rounded-md border border-zinc-200 p-0.5 text-[10px]">
-            <button
-              type="button"
-              onClick={() => onModeChange('header-row')}
-              className={`rounded px-2.5 py-1 font-medium transition-colors ${
-                pending.mode === 'header-row'
-                  ? 'bg-zinc-900 text-white'
-                  : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              Başlık var
-            </button>
-            <button
-              type="button"
-              onClick={() => onModeChange('no-header')}
-              className={`rounded px-2.5 py-1 font-medium transition-colors ${
-                pending.mode === 'no-header'
-                  ? 'bg-zinc-900 text-white'
-                  : 'text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              Başlık yok
-            </button>
-          </div>
+      <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-3 py-2">
+        <div>
+          <h4 className="text-[11px] font-semibold text-zinc-800">Excel Önizleme</h4>
+          <p className="mt-0.5 text-[10px] text-zinc-500">
+            Başlık satırını ve veri başlangıcını ayrı ayrı seçin.
+          </p>
         </div>
+        <label className="flex shrink-0 cursor-pointer select-none items-center gap-1.5">
+          <input
+            type="checkbox"
+            checked={!hasHeader}
+            onChange={(e) =>
+              onHeaderRowChange(
+                e.target.checked ? null : pending.preview.suggestedHeaderRowIndex,
+              )
+            }
+          />
+          <span className="text-[10px] font-medium text-zinc-600">Başlık yok</span>
+        </label>
       </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-[10px]">
           <thead className="bg-zinc-50 text-zinc-500">
             <tr>
-              <th className="border-b border-r border-zinc-100 px-2 py-2 text-left font-medium">Seç</th>
-              <th className="border-b border-r border-zinc-100 px-2 py-2 text-left font-medium">Satır</th>
-              {Array.from({ length: Math.max(...pending.preview.previewRows.map((row) => row.length), 0) }).map((_, index) => (
-                <th key={index} className="border-b border-zinc-100 px-2 py-2 text-left font-medium">
-                  {String.fromCharCode(65 + index)}
+              <th className="w-8 border-b border-r border-zinc-100 px-2 py-1.5 text-center font-medium">#</th>
+              <th className="w-14 border-b border-r border-zinc-100 px-2 py-1.5 text-center font-semibold text-blue-600">
+                Başlık
+              </th>
+              <th className="w-20 border-b border-r border-zinc-100 px-2 py-1.5 text-center font-semibold text-emerald-600">
+                Veri<br />Başlangıcı
+              </th>
+              {Array.from({ length: maxCols }).map((_, i) => (
+                <th key={i} className="border-b border-zinc-100 px-2 py-1.5 text-left font-medium">
+                  {String.fromCharCode(65 + i)}
                 </th>
               ))}
             </tr>
@@ -122,33 +112,54 @@ function PreviewTable({
           <tbody>
             {pending.preview.previewRows.map((row, rowOffset) => {
               const rowIndex = pending.preview.previewRowIndices[rowOffset]
-              const isSelected = rowIndex === pending.selectedRowIndex
+              const isHeader = rowIndex === pending.headerRowIndex
+              const isDataStart = rowIndex === pending.dataStartRowIndex
               const isSuggested = rowIndex === pending.preview.suggestedHeaderRowIndex
+
+              let rowBg = 'bg-white hover:bg-zinc-50/60'
+              if (isHeader && isDataStart) rowBg = 'bg-amber-50'
+              else if (isHeader) rowBg = 'bg-blue-50'
+              else if (isDataStart) rowBg = 'bg-emerald-50'
+
               return (
-                <tr
-                  key={rowIndex}
-                  className={isSelected ? 'bg-emerald-50/70' : isSuggested ? 'bg-amber-50/60' : 'bg-white'}
-                >
-                  <td className="border-b border-r border-zinc-100 px-2 py-1.5">
-                    <input
-                      type="radio"
-                      name="excel-row-selection"
-                      checked={isSelected}
-                      onChange={() => onRowSelect(rowIndex)}
-                      aria-label={`${selectionLabel} satırı ${rowIndex + 1}`}
-                    />
-                  </td>
-                  <td className="border-b border-r border-zinc-100 px-2 py-1.5 font-medium text-zinc-600">
+                <tr key={rowIndex} className={`transition-colors ${rowBg}`}>
+                  <td className="border-b border-r border-zinc-100 px-2 py-1.5 text-center font-medium text-zinc-400">
                     {rowIndex + 1}
-                    {isSuggested && (
-                      <span className="ml-1 rounded bg-amber-100 px-1 py-0.5 text-[9px] text-amber-700">
-                        Öneri
-                      </span>
+                    {isSuggested && !isHeader && (
+                      <div className="text-[8px] leading-none text-amber-500">öneri</div>
                     )}
                   </td>
+                  <td className="border-b border-r border-zinc-100 px-2 py-1.5 text-center">
+                    {hasHeader ? (
+                      <input
+                        type="radio"
+                        name="header-row-select"
+                        checked={isHeader}
+                        onChange={() => onHeaderRowChange(rowIndex)}
+                        aria-label={`Başlık satırı ${rowIndex + 1}`}
+                      />
+                    ) : (
+                      <span className="text-zinc-300">—</span>
+                    )}
+                  </td>
+                  <td className="border-b border-r border-zinc-100 px-2 py-1.5 text-center">
+                    <input
+                      type="radio"
+                      name="data-start-row-select"
+                      checked={isDataStart}
+                      onChange={() => onDataStartChange(rowIndex)}
+                      aria-label={`Veri başlangıcı ${rowIndex + 1}`}
+                    />
+                  </td>
                   {row.map((cell, cellIndex) => (
-                    <td key={cellIndex} className="max-w-40 border-b border-zinc-100 px-2 py-1.5 text-zinc-700">
-                      <span className="block truncate">{cell || <span className="text-zinc-300">boş</span>}</span>
+                    <td
+                      key={cellIndex}
+                      className={`max-w-40 border-b border-zinc-100 px-2 py-1.5 ${isHeader ? 'font-semibold text-blue-800' : 'text-zinc-700'
+                        }`}
+                    >
+                      <span className="block truncate">
+                        {cell || <span className="text-zinc-300">boş</span>}
+                      </span>
                     </td>
                   ))}
                 </tr>
@@ -159,17 +170,29 @@ function PreviewTable({
       </div>
 
       <div className="flex items-center justify-between gap-3 border-t border-zinc-100 px-3 py-2">
-        <p className="text-[10px] text-zinc-500">
-          {pending.mode === 'header-row'
-            ? 'Seçilen satır başlık kabul edilir, altındaki satırlar veri olur.'
-            : 'Seçilen satırdan itibaren veri okunur, sütun adları otomatik üretilir.'}
+        <p className="text-[10px] leading-relaxed text-zinc-500">
+          {!isValid ? (
+            <span className="font-medium text-red-500">Veri başlangıcı başlık satırından sonra olmalıdır.</span>
+          ) : hasHeader ? (
+            <>
+              Satır{' '}<strong className="text-blue-700">{pending.headerRowIndex! + 1}</strong>{' '}başlık
+              {' · '}
+              Satır{' '}<strong className="text-emerald-700">{pending.dataStartRowIndex + 1}</strong>'den itibaren veri okunacak.
+            </>
+          ) : (
+            <>
+              Satır{' '}<strong className="text-emerald-700">{pending.dataStartRowIndex + 1}</strong>'den
+              {' '}itibaren veri okunacak · Sütun adları otomatik oluşturulacak.
+            </>
+          )}
         </p>
         <button
           type="button"
           onClick={onConfirm}
-          className="rounded-md bg-emerald-600 px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-emerald-700"
+          disabled={!isValid}
+          className="shrink-0 rounded-md bg-emerald-600 px-3 py-1.5 text-[10px] font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {pending.mode === 'header-row' ? 'Başlığı Onayla' : 'Veri Başlangıcını Onayla'}
+          Onayla
         </button>
       </div>
     </div>
@@ -228,10 +251,14 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
       if (result.kind === 'ready') {
         applyParsedData(mapper, result.fileInfo)
       } else {
+        const suggestedHeader = result.preview.suggestedHeaderRowIndex
+        const suggestedDataStart = suggestedHeader + 1 <= result.preview.lastNonEmptyRow
+          ? suggestedHeader + 1
+          : suggestedHeader
         setPendingExcel({
           preview: result.preview,
-          mode: 'header-row',
-          selectedRowIndex: result.preview.suggestedHeaderRowIndex,
+          headerRowIndex: suggestedHeader,
+          dataStartRowIndex: suggestedDataStart,
         })
       }
     } catch (error: unknown) {
@@ -242,17 +269,19 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
     }
   }
 
-  const handleModeChange = (mode: ExcelSelectionMode) => {
+  const handleHeaderRowChange = (rowIndex: number | null) => {
     setPendingExcel((current) => {
       if (!current) return current
-      return {
-        ...current,
-        mode,
-        selectedRowIndex: mode === 'header-row'
-          ? current.preview.suggestedHeaderRowIndex
-          : current.preview.firstNonEmptyRow,
-      }
+      if (rowIndex === null) return { ...current, headerRowIndex: null }
+      const newDataStart = current.dataStartRowIndex <= rowIndex
+        ? Math.min(rowIndex + 1, current.preview.lastNonEmptyRow)
+        : current.dataStartRowIndex
+      return { ...current, headerRowIndex: rowIndex, dataStartRowIndex: newDataStart }
     })
+  }
+
+  const handleDataStartChange = (rowIndex: number) => {
+    setPendingExcel((current) => current ? { ...current, dataStartRowIndex: rowIndex } : current)
   }
 
   const handleExcelConfirm = async () => {
@@ -260,7 +289,10 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
 
     setIsLoading(true)
     try {
-      const result = mapperRef.current.finalizeExcelSelection(pendingExcel.mode, pendingExcel.selectedRowIndex)
+      const result = mapperRef.current.finalizeExcelSelection(
+        pendingExcel.headerRowIndex,
+        pendingExcel.dataStartRowIndex,
+      )
       applyParsedData(mapperRef.current, result)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
@@ -307,8 +339,8 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
       {pendingExcel && !isLoading && (
         <PreviewTable
           pending={pendingExcel}
-          onModeChange={handleModeChange}
-          onRowSelect={(rowIndex) => setPendingExcel((current) => current ? { ...current, selectedRowIndex: rowIndex } : current)}
+          onHeaderRowChange={handleHeaderRowChange}
+          onDataStartChange={handleDataStartChange}
           onConfirm={handleExcelConfirm}
         />
       )}

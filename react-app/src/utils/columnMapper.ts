@@ -11,7 +11,6 @@ import { analyzeExcelArrayBuffer, finalizeExcelSelection } from './columnMapper/
 import type {
   ColumnDetectionResult,
   ColumnMapperIndexes,
-  ExcelSelectionMode,
   ExcelSelectionPreview,
   FileLoadResult,
   ExcelWorkerOutput,
@@ -150,12 +149,12 @@ export class ColumnMapper {
     }
   }
 
-  finalizeExcelSelection(mode: ExcelSelectionMode, selectedRowIndex: number): FileInfo {
+  finalizeExcelSelection(headerRowIndex: number | null, dataStartRowIndex: number): FileInfo {
     if (!this.pendingExcelSelection) {
       throw new Error('Excel önizlemesi hazır değil')
     }
 
-    const result = finalizeExcelSelection(this.pendingExcelSelection, mode, selectedRowIndex)
+    const result = finalizeExcelSelection(this.pendingExcelSelection, headerRowIndex, dataStartRowIndex)
     const jsonData = result.rows
 
     if (!jsonData || jsonData.length === 0) {

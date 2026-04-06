@@ -371,20 +371,22 @@ export function analyzeWorksheetForSelection(sheet: WorkSheet): PendingExcelSele
 
 export function finalizeExcelSelection(
   selection: PendingExcelSelection,
-  mode: ExcelSelectionMode,
-  selectedRowIndex: number,
+  headerRowIndex: number | null,
+  dataStartRowIndex: number,
 ): ParsedExcelResult {
   const { matrix, firstNonEmptyRow, lastNonEmptyRow } = selection
+  const mode: ExcelSelectionMode = headerRowIndex !== null ? 'header-row' : 'no-header'
 
-  if (selectedRowIndex < firstNonEmptyRow || selectedRowIndex > lastNonEmptyRow) {
-    throw new ExcelParseError('HEADER_NOT_FOUND', 'Seçilen satır geçerli veri aralığının dışında.')
+  if (dataStartRowIndex < firstNonEmptyRow || dataStartRowIndex > lastNonEmptyRow) {
+    throw new ExcelParseError('HEADER_NOT_FOUND', 'Seçilen veri başlangıç satırı geçerli veri aralığının dışında.')
   }
 
-  const headerRowIndex = mode === 'header-row' ? selectedRowIndex : -1
-  const dataStartRowIndex = mode === 'header-row' ? selectedRowIndex + 1 : selectedRowIndex
+  if (headerRowIndex !== null && (headerRowIndex < firstNonEmptyRow || headerRowIndex > lastNonEmptyRow)) {
+    throw new ExcelParseError('HEADER_NOT_FOUND', 'Seçilen başlık satırı geçerli veri aralığının dışında.')
+  }
 
-  if (dataStartRowIndex > lastNonEmptyRow) {
-    throw new ExcelParseError('NO_DATA_ROWS_AFTER_HEADER', 'Seçilen satırdan sonra veri bulunamadı.')
+  if (headerRowIndex !== null && dataStartRowIndex <= headerRowIndex) {
+    throw new ExcelParseError('NO_DATA_ROWS_AFTER_HEADER', 'Veri başlangıcı başlık satırından sonra olmalıdır.')
   }
 
   const activeColumnIndices = buildActiveColumnIndices(matrix, dataStartRowIndex, lastNonEmptyRow)
@@ -393,9 +395,9 @@ export function finalizeExcelSelection(
   }
 
   const headerWarnings: ParsedExcelWarning[] = []
-  const columns = mode === 'header-row'
+  const columns = headerRowIndex !== null
     ? (() => {
-      const { columns: sanitized, warnings } = sanitizeHeaders(matrix[selectedRowIndex] ?? [], activeColumnIndices)
+      const { columns: sanitized, warnings } = sanitizeHeaders(matrix[headerRowIndex] ?? [], activeColumnIndices)
       headerWarnings.push(...warnings)
       return sanitized
     })()
@@ -416,10 +418,10 @@ export function finalizeExcelSelection(
   const maxColumnCount = matrix.reduce((max, row) => Math.max(max, row.length), 0)
   const stats: ParsedExcelStats = {
     mode,
-    headerRowIndex,
+    headerRowIndex: headerRowIndex ?? -1,
     dataStartRowIndex,
     leadingEmptyRowsSkipped: firstNonEmptyRow,
-    titleRowsSkipped: Math.max(0, selectedRowIndex - firstNonEmptyRow),
+    titleRowsSkipped: headerRowIndex !== null ? Math.max(0, headerRowIndex - firstNonEmptyRow) : 0,
     emptyRowsRemoved,
     emptyColumnsRemoved: Math.max(0, maxColumnCount - activeColumnIndices.length),
     sourceRowCount: Math.max(0, lastNonEmptyRow - firstNonEmptyRow + 1),
@@ -440,7 +442,11 @@ export function parseWorksheetToTable(sheet: WorkSheet): ParsedExcelResult {
   if (!selection.preview.hasReliableHeaderSuggestion) {
     throw new ExcelParseError('HEADER_NOT_FOUND', 'Excel içinde güvenilir bir başlık satırı bulunamadı.')
   }
-  return finalizeExcelSelection(selection, 'header-row', selection.suggestedHeaderRowIndex)
+  return finalizeExcelSelection(
+    selection,
+    selection.suggestedHeaderRowIndex,
+    selection.suggestedHeaderRowIndex + 1,
+  )
 }
 
 export function analyzeExcelArrayBuffer(buffer: ArrayBuffer): PendingExcelSelection & { preview: ExcelSelectionPreview } {
@@ -461,5 +467,9 @@ export function analyzeExcelArrayBuffer(buffer: ArrayBuffer): PendingExcelSelect
 
 export function parseExcelArrayBuffer(buffer: ArrayBuffer): ParsedExcelResult {
   const selection = analyzeExcelArrayBuffer(buffer)
-  return finalizeExcelSelection(selection, 'header-row', selection.suggestedHeaderRowIndex)
+  return finalizeExcelSelection(
+    selection,
+    selection.suggestedHeaderRowIndex,
+    selection.suggestedHeaderRowIndex + 1,
+  )
 }
