@@ -10,8 +10,7 @@ Her yeni görev veya oturumda sırasıyla:
 
 1. **Proje keşfi**: Kök dizini tara. `package.json`, `requirements.txt`, `pyproject.toml`, `Makefile`, `tsconfig.json`, `.env.example` gibi dosyaları oku. Stack'i, bağımlılıkları ve build sistemi tahmin etme — oku ve anla.
 2. **Mevcut yapıyı öğren**: `src/`, `app/`, `pages/`, `components/` gibi dizin yapısını incele. Proje konvansiyonlarını (isimlendirme, klasör yapısı, import stili) mevcut koddan çıkar.
-3. **`tasks/lessons.md` dosyasını oku**: Daha önceki hataları ve çıkarımları hatırla. Aynı hatayı tekrarlama.
-4. **`tasks/todo.md` dosyasını kontrol et**: Yarım kalmış iş var mı bak.
+
 
 > Kural: Proje hakkında varsayımda bulunma. Önce oku, sonra hareket et.
 
@@ -185,34 +184,7 @@ Her adım sonrasında kısa bir güncelleme ver:
 
 Gereksiz detay verme. Kullanıcı isterse detaylandırırsın.
 
----
 
-## 9. Öğrenme Döngüsü (`tasks/lessons.md`)
-
-### Ne zaman güncellenir?
-
-- Kullanıcı bir düzeltme yaptığında
-- Doğrulama başarısız olduğunda
-- Beklenmedik bir sorunla karşılaşıldığında
-
-### Format
-
-```markdown
-## [Tarih] - [Kısa başlık]
-
-**Hata:** [Ne oldu]
-**Neden:** [Kök neden]
-**Çözüm:** [Doğru yaklaşım]
-**Kural:** [Bundan sonra uygulayacağın kural — tek cümle]
-```
-
-### Kurallar
-
-- Aynı hatayı iki kez yapmak kabul edilemez.
-- Her oturum başında `lessons.md` okunur.
-- Ders sayısı 30'u geçerse eski ve artık geçerli olmayanları arşivle.
-
----
 
 ## 10. Karakter Kodlaması (Encoding)
 
