@@ -3,7 +3,7 @@ export { useDataManagementStore } from './store/useDataManagementStore'
 export {
   DataCatalogSection,
   DataCreationSection,
-  DataImportExportSection,
+  DataImportSection,
   ImportedDataManagerFab,
   ImportedDataTableModal,
   DataManagementDrawTool,

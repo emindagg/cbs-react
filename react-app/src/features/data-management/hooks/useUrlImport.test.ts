@@ -2,19 +2,19 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 import toast from 'react-hot-toast'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { useDataStore } from '@/stores/useDataStore'
-
+import { parseGeoJSON } from '../services/import/geoJsonProcessor'
+import { parseKML } from '../services/import/kmlProcessor'
+import { parseShapefile } from '../services/import/shapefileProcessor'
+import { useDataManagementStore } from '../store/useDataManagementStore'
+import type { DataManagementStore } from '../types'
 import { useUrlImport } from './useUrlImport'
-import { parseGeoJSON } from '../services/geoJsonProcessor'
-import { parseKML } from '../services/kmlProcessor'
-import { parseShapefile } from '../services/shapefileProcessor'
 
 // Mock dependencies
 vi.mock('react-hot-toast')
-vi.mock('@/stores/useDataStore')
-vi.mock('../services/geoJsonProcessor')
-vi.mock('../services/kmlProcessor')
-vi.mock('../services/shapefileProcessor')
+vi.mock('../store/useDataManagementStore')
+vi.mock('../services/import/geoJsonProcessor')
+vi.mock('../services/import/kmlProcessor')
+vi.mock('../services/import/shapefileProcessor')
 
 // Mock global fetch
 global.fetch = vi.fn()
@@ -48,14 +48,10 @@ describe('useUrlImport', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(useDataStore).mockReturnValue({
-      addItems: mockAddItems,
-      items: [],
-      setItems: vi.fn(),
-      clearItems: vi.fn(),
-    } as unknown as ReturnType<typeof useDataStore>)
+    vi.mocked(useDataManagementStore).mockImplementation(
+      (selector => selector({ addItems: mockAddItems } as unknown as DataManagementStore)) as typeof useDataManagementStore,
+    )
 
-    // Default mock implementations
     mockParseGeoJSON.mockReturnValue(mockGeoItems)
     mockParseKML.mockResolvedValue(mockGeoItems)
     mockParseShapefile.mockResolvedValue(mockGeoItems)
@@ -82,7 +78,7 @@ describe('useUrlImport', () => {
       expect(onSuccess).not.toHaveBeenCalled()
     })
 
-    it('should fetch and parse GeoJSON from URL', async () => {
+    it('should fetch and parse GeoJSON from URL, stamping sourceLabel', async () => {
       const { result } = renderHook(() => useUrlImport())
       const onSuccess = vi.fn()
       const url = 'https://example.com/data.geojson'
@@ -110,8 +106,10 @@ describe('useUrlImport', () => {
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(url)
         expect(mockParseGeoJSON).toHaveBeenCalledWith(mockGeoJSON, 'URL Import')
-        expect(mockAddItems).toHaveBeenCalledWith(mockGeoItems)
-        expect(mockToast.success).toHaveBeenCalledWith('2 adet veri URL\'den yüklendi.')
+        expect(mockAddItems).toHaveBeenCalledWith(
+          mockGeoItems.map(item => ({ ...item, sourceLabel: 'data.geojson' })),
+        )
+        expect(mockToast.success).toHaveBeenCalledWith('2 veri URL uzerinden yuklendi.')
         expect(onSuccess).toHaveBeenCalled()
         expect(result.current.isLoading).toBe(false)
       })
@@ -122,10 +120,7 @@ describe('useUrlImport', () => {
       const onSuccess = vi.fn()
       const url = 'https://example.com/data.json'
 
-      const mockJSON = {
-        type: 'FeatureCollection',
-        features: [],
-      }
+      const mockJSON = { type: 'FeatureCollection', features: [] }
 
       mockFetch.mockResolvedValue({
         ok: true,
@@ -162,8 +157,10 @@ describe('useUrlImport', () => {
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(url)
         expect(mockParseKML).toHaveBeenCalledWith(mockKMLText, 'URL Import')
-        expect(mockAddItems).toHaveBeenCalledWith(mockGeoItems)
-        expect(mockToast.success).toHaveBeenCalledWith('2 adet veri URL\'den yüklendi.')
+        expect(mockAddItems).toHaveBeenCalledWith(
+          mockGeoItems.map(item => ({ ...item, sourceLabel: 'data.kml' })),
+        )
+        expect(mockToast.success).toHaveBeenCalledWith('2 veri URL uzerinden yuklendi.')
         expect(onSuccess).toHaveBeenCalled()
       })
     })
@@ -187,13 +184,15 @@ describe('useUrlImport', () => {
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(url)
         expect(mockParseShapefile).toHaveBeenCalledWith(mockArrayBuffer, 'URL Import')
-        expect(mockAddItems).toHaveBeenCalledWith(mockGeoItems)
-        expect(mockToast.success).toHaveBeenCalledWith('2 adet veri URL\'den yüklendi.')
+        expect(mockAddItems).toHaveBeenCalledWith(
+          mockGeoItems.map(item => ({ ...item, sourceLabel: 'data.zip' })),
+        )
+        expect(mockToast.success).toHaveBeenCalledWith('2 veri URL uzerinden yuklendi.')
         expect(onSuccess).toHaveBeenCalled()
       })
     })
 
-    it('should handle fetch error', async () => {
+    it('should handle fetch error (non-ok response)', async () => {
       const { result } = renderHook(() => useUrlImport())
       const onSuccess = vi.fn()
       const url = 'https://example.com/data.geojson'
@@ -209,7 +208,7 @@ describe('useUrlImport', () => {
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith(
-          'URL yüklenirken hata oluştu. CORS kısıtlamaları veya geçersiz URL olabilir.',
+          'URL yuklemede hata olustu. CORS veya format kontrol edin.',
         )
         expect(mockAddItems).not.toHaveBeenCalled()
         expect(onSuccess).not.toHaveBeenCalled()
@@ -230,7 +229,7 @@ describe('useUrlImport', () => {
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith(
-          'URL yüklenirken hata oluştu. CORS kısıtlamaları veya geçersiz URL olabilir.',
+          'URL yuklemede hata olustu. CORS veya format kontrol edin.',
         )
         expect(mockAddItems).not.toHaveBeenCalled()
         expect(onSuccess).not.toHaveBeenCalled()
@@ -258,7 +257,7 @@ describe('useUrlImport', () => {
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith(
-          'URL yüklenirken hata oluştu. CORS kısıtlamaları veya geçersiz URL olabilir.',
+          'URL yuklemede hata olustu. CORS veya format kontrol edin.',
         )
         expect(mockAddItems).not.toHaveBeenCalled()
         expect(onSuccess).not.toHaveBeenCalled()
@@ -266,7 +265,7 @@ describe('useUrlImport', () => {
       })
     })
 
-    it('should not add items if parse returns empty array', async () => {
+    it('should show error toast and still call onSuccess when parse returns empty array', async () => {
       const { result } = renderHook(() => useUrlImport())
       const onSuccess = vi.fn()
       const url = 'https://example.com/data.geojson'
@@ -284,7 +283,7 @@ describe('useUrlImport', () => {
 
       await waitFor(() => {
         expect(mockAddItems).not.toHaveBeenCalled()
-        expect(mockToast.success).not.toHaveBeenCalled()
+        expect(mockToast.error).toHaveBeenCalledWith('URL iceriginde aktarilabilir veri bulunamadi.')
         expect(onSuccess).toHaveBeenCalled()
         expect(result.current.isLoading).toBe(false)
       })
@@ -295,27 +294,26 @@ describe('useUrlImport', () => {
       const onSuccess = vi.fn()
       const url = 'https://example.com/data.geojson'
 
-      mockFetch.mockImplementation(() =>
-        new Promise(resolve => {
-          setTimeout(() => {
-            resolve({
-              ok: true,
-              json: vi.fn().mockResolvedValue({ type: 'FeatureCollection', features: [] }),
-            } as unknown as Response)
-          }, 100)
-        }),
+      mockFetch.mockImplementation(
+        () =>
+          new Promise(resolve => {
+            setTimeout(() => {
+              resolve({
+                ok: true,
+                json: vi.fn().mockResolvedValue({ type: 'FeatureCollection', features: [] }),
+              } as unknown as Response)
+            }, 100)
+          }),
       )
 
       act(() => {
         result.current.handleUrlImport(url, onSuccess)
       })
 
-      // Should be loading immediately
       await waitFor(() => {
         expect(result.current.isLoading).toBe(true)
       })
 
-      // Wait for completion
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false)
       }, { timeout: 3000 })
@@ -339,7 +337,7 @@ describe('useUrlImport', () => {
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith(
-          'URL yüklenirken hata oluştu. CORS kısıtlamaları veya geçersiz URL olabilir.',
+          'URL yuklemede hata olustu. CORS veya format kontrol edin.',
         )
         expect(onSuccess).not.toHaveBeenCalled()
       })
@@ -363,7 +361,7 @@ describe('useUrlImport', () => {
 
       await waitFor(() => {
         expect(mockToast.error).toHaveBeenCalledWith(
-          'URL yüklenirken hata oluştu. CORS kısıtlamaları veya geçersiz URL olabilir.',
+          'URL yuklemede hata olustu. CORS veya format kontrol edin.',
         )
         expect(onSuccess).not.toHaveBeenCalled()
       })

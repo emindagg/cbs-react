@@ -1,7 +1,7 @@
 import { rewindFeatureCollection } from '@placemarkio/geojson-rewind'
 import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson'
 
-import type { DataItem } from '@/stores/useDataStore'
+import type { DataItem } from '@/features/data-management'
 
 export interface GeoJSONExportOptions {
   minified?: boolean

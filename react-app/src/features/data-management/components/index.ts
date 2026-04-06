@@ -1,6 +1,6 @@
 export { DataCatalogSection } from './DataCatalogSection'
 export { DataCreationSection } from './DataCreationSection'
-export { DataImportExportSection } from './DataImportExportSection'
+export { DataImportSection } from './DataImportSection'
 export { DataManagementDrawTool } from './DataManagementDrawTool'
 export { DataManagementSection } from './DataManagementSection'
 export { ImportedDataManagerFab } from './ImportedDataManagerFab'

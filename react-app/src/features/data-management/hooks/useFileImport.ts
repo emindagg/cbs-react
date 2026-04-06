@@ -50,8 +50,8 @@ export function useFileImport() {
     } catch (error) {
       console.error('File import error:', error)
       toast.error(error instanceof Error ? error.message : 'Dosya yuklenemedi.')
-      if (fileInputRef.current) fileInputRef.current.value = ''
     } finally {
+      if (fileInputRef.current) fileInputRef.current.value = ''
       setIsLoading(false)
     }
   }

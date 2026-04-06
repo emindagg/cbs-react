@@ -1,3 +1,5 @@
+import { Loader2, Upload } from 'lucide-react'
+
 import ColumnMapperModal from './ColumnMapperModal'
 import { UrlImporter } from './UrlImporter'
 import { FILE_ACCEPT_PATTERN } from '../constants/formats'
@@ -25,14 +27,17 @@ export function DataImportSection() {
   return (
     <>
       <label
-        htmlFor="file-upload"
-        className="w-full px-2.5 py-2 bg-zinc-900 hover:bg-black text-white font-medium text-xs rounded-lg transition-all flex items-center justify-center mt-2 cursor-pointer transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        htmlFor="dm-file-upload"
+        className="w-full px-2.5 py-2 bg-zinc-900 hover:bg-black text-white font-medium text-xs rounded-lg transition-all flex items-center justify-center gap-1.5 mt-2 cursor-pointer transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         aria-disabled={isLoading}
       >
-        {isLoading ? 'Yükleniyor...' : 'Yükle'}
+        {isLoading
+          ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+          : <Upload className="w-3.5 h-3.5" aria-hidden="true" />}
+        <span>{isLoading ? 'Yükleniyor...' : 'Dosya Yükle'}</span>
         <input
           ref={fileInputRef}
-          id="file-upload"
+          id="dm-file-upload"
           type="file"
           className="hidden"
           accept={FILE_ACCEPT_PATTERN}

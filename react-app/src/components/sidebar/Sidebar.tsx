@@ -1,5 +1,4 @@
-import { DataImportSection } from '@/features/data-import'
-import { DataManagementSection, ProjectExportSection } from '@/features/data-management'
+import { DataImportSection, DataManagementSection, ProjectExportSection } from '@/features/data-management'
 import { DataMapperModal } from '@/features/data-mapper'
 import { VizWizardSidebar } from '@/features/viz-wizard'
 
