@@ -1,12 +1,15 @@
 /**
  * DataMapper Modal
- * Opens the DataMapper (AG Grid spreadsheet + column mapping) in a centered modal
+ * Opens the DataMapper (AG Grid spreadsheet + column mapping) in a centered modal.
+ * If an Excel file needs header selection (pendingExcel), shows ExcelHeaderPanel first.
  */
- 
 
 import { createPortal } from 'react-dom'
 
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
+
 import DataMapper from '../DataMapper'
+import { ExcelHeaderPanel } from './ExcelHeaderPanel'
 
 interface DataMapperModalProps {
   isOpen: boolean
@@ -16,20 +19,24 @@ interface DataMapperModalProps {
 }
 
 export default function DataMapperModal({ isOpen, onClose, geoJsonKeys, isLoading }: DataMapperModalProps) {
+  const { pendingExcel, rawData } = useVisualizationStore()
+
   if (!isOpen) return null
+
+  const showExcelPanel = pendingExcel !== null && rawData === null
+  const title = showExcelPanel ? 'Excel Yapılandırması' : 'Veri Eşleştirme'
+  const icon = showExcelPanel ? 'fa-file-excel' : 'fa-table-columns'
 
   return createPortal(
     <div className="fixed inset-0 z-99999 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
       <div className="bg-white rounded-xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25)] w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden">
-        {/* Header — refined, not heavy */}
+        {/* Header */}
         <div className="bg-[#1e2330] text-white px-5 py-2.5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center">
-              <i className="fa-solid fa-table-columns text-[11px] text-emerald-400"></i>
+              <i className={`fa-solid ${icon} text-[11px] text-emerald-400`}></i>
             </div>
-            <div>
-              <h2 className="text-[13px] font-semibold tracking-[-0.01em]">Veri Eslestirme</h2>
-            </div>
+            <h2 className="text-[13px] font-semibold tracking-[-0.01em]">{title}</h2>
           </div>
           <button
             onClick={onClose}
@@ -39,21 +46,27 @@ export default function DataMapperModal({ isOpen, onClose, geoJsonKeys, isLoadin
           </button>
         </div>
 
-        {/* Content — DataMapper fills remaining space */}
+        {/* Content */}
         <div className="flex-1 min-h-0 flex flex-col">
-          <DataMapper geoJsonKeys={geoJsonKeys} isLoading={isLoading} variant="modal" />
+          {showExcelPanel ? (
+            <ExcelHeaderPanel pending={pendingExcel} />
+          ) : (
+            <DataMapper geoJsonKeys={geoJsonKeys} isLoading={isLoading} variant="modal" />
+          )}
         </div>
 
-        {/* Footer — minimal, integrated */}
-        <div className="px-4 py-2 border-t border-zinc-100 flex items-center justify-end shrink-0 bg-[#fafbfc]">
-          <button
-            onClick={onClose}
-            className="px-5 py-1.5 text-[11px] text-white bg-[#1e2330] hover:bg-[#2a3040] rounded-lg font-semibold transition-all flex items-center gap-1.5 shadow-sm"
-          >
-            <i className="fa-solid fa-check text-emerald-400 text-[10px]"></i>
-            Tamam
-          </button>
-        </div>
+        {/* Footer — only shown in DataMapper mode; ExcelHeaderPanel has its own footer */}
+        {!showExcelPanel && (
+          <div className="px-4 py-2 border-t border-zinc-100 flex items-center justify-end shrink-0 bg-[#fafbfc]">
+            <button
+              onClick={onClose}
+              className="px-5 py-1.5 text-[11px] text-white bg-[#1e2330] hover:bg-[#2a3040] rounded-lg font-semibold transition-all flex items-center gap-1.5 shadow-sm"
+            >
+              <i className="fa-solid fa-check text-emerald-400 text-[10px]"></i>
+              Tamam
+            </button>
+          </div>
+        )}
       </div>
     </div>,
     document.body,

@@ -75,7 +75,7 @@ export interface PendingExcelSelection {
 
 export type FileLoadResult =
   | { kind: 'ready'; fileInfo: FileInfo }
-  | { kind: 'needs-header-selection'; preview: ExcelSelectionPreview }
+  | { kind: 'needs-header-selection'; pending: PendingExcelSelection & { preview: ExcelSelectionPreview } }
 
 export interface ExcelWorkerInput {
   buffer: ArrayBuffer

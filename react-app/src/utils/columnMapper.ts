@@ -140,7 +140,7 @@ export class ColumnMapper {
 
         return {
           kind: 'needs-header-selection',
-          preview: result.preview,
+          pending: result,
         }
       }
     } catch (error) {

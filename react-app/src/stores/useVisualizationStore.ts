@@ -10,6 +10,8 @@ import {
   isValidCustomBreaksLength,
 } from '@/utils/legendClassCount'
 
+import type { ExcelSelectionPreview, PendingExcelSelection } from '@/utils/columnMapper/types'
+
 import type {
   ColumnMapping,
   MatchResults,
@@ -21,11 +23,17 @@ import type {
   MapTitleConfiguration,
 } from '../types/visualization'
 
+type PendingExcel = PendingExcelSelection & { preview: ExcelSelectionPreview }
+
 interface VisualizationStore {
   // Wizard state
   currentStep: number
   setCurrentStep: (step: number) => void
   goToStep: (step: number) => void
+
+  // Pending Excel header selection
+  pendingExcel: PendingExcel | null
+  setPendingExcel: (data: PendingExcel | null) => void
 
   // File data
   rawData: Record<string, unknown>[] | null
@@ -204,6 +212,10 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
   setCurrentStep: (step) => set({ currentStep: step }),
   goToStep: (step) => set({ currentStep: step }),
 
+  // Pending Excel
+  pendingExcel: null,
+  setPendingExcel: (data) => set({ pendingExcel: data }),
+
   // File data
   rawData: null,
   columns: [],
@@ -289,6 +301,7 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
   reset: () =>
     set({
       currentStep: 1,
+      pendingExcel: null,
       rawData: null,
       columns: [],
       columnMapping: defaultColumnMapping,
