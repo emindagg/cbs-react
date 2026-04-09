@@ -90,6 +90,14 @@ body {
     z-index: 1001 !important;
 }
 
+.feature-info-popup .maplibregl-popup-content {
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
 .maplibregl-popup {
     z-index: 2000 !important;
 }

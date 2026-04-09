@@ -7,11 +7,13 @@ import { ElevationProfileTool } from '@/features/elevation-profile'
 import { useBubbleTooltip, useChoroplethTooltip } from '@/shared/visualization'
 import { useMapStore } from '@/stores/useMapStore'
 
+import { FeaturePopup } from './FeaturePopup'
 import DraggableNorthArrow from '../controls/DraggableNorthArrow'
 import DraggableScaleControl from '../controls/DraggableScaleControl'
 import GISToolsControl from '../controls/GISToolsControl'
 import { MapCompass } from '../controls/MapCompass'
 import TimelineControl from '../controls/TimelineControl'
+import { useFeaturePopup } from '../hooks/useFeaturePopup'
 import DataLayer from '../layers/DataLayer'
 import DistanceTool from '../tools/DistanceTool'
 
@@ -62,6 +64,8 @@ export default function MapContainer() {
   // Bubble haritası tooltip hook'u
   useBubbleTooltip()
   useChoroplethTooltip()
+
+  const { popup, close, selectItem } = useFeaturePopup()
 
   const apiKey = import.meta.env.VITE_HGM_API_KEY
 
@@ -149,6 +153,9 @@ export default function MapContainer() {
         <DataLayer />
         <GISToolsControl />
         <TimelineControl />
+        {popup && (
+          <FeaturePopup popup={popup} onClose={close} onSelect={selectItem} />
+        )}
       </Map>
       <DraggableScaleControl />
       <DraggableNorthArrow />
