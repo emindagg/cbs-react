@@ -74,6 +74,7 @@ export function Grid({
           rowHeight={rowHeight}
           context={gridContext}
           suppressMovableColumns
+          suppressFieldDotNotation
           animateRows={false}
           localeText={agGridTurkishLocaleText}
         />

@@ -151,12 +151,13 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
   // Handle cell edit
   const onCellValueChanged = useCallback(
     (event: CellValueChangedEvent) => {
-      if (!rawData) return
+      const currentRawData = useVisualizationStore.getState().rawData
+      if (!currentRawData) return
       const field = event.colDef.field
       if (!field || field.startsWith('__')) return
 
       const rowIndex = event.data.__rowIndex as number
-      const updated = [...rawData]
+      const updated = [...currentRawData]
       updated[rowIndex] = { ...updated[rowIndex], [field]: event.newValue }
       setRawData(updated)
 
@@ -164,7 +165,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
       event.data.__status = newStatus
       event.api.refreshCells({ rowNodes: [event.node!], force: true })
     },
-    [rawData, setRawData, validateRow],
+    [setRawData, validateRow],
   )
 
   const { columnDefs, defaultColDef } = useColumns(columns)
@@ -204,20 +205,22 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
 
   const applyCorrection = useCallback(
     (_originalValue: string, newValue: string, rowIndices: number[]) => {
-      if (!rawData || !selectedProvince) return
-      const updated = [...rawData]
+      const currentRawData = useVisualizationStore.getState().rawData
+      if (!currentRawData || !selectedProvince) return
+      const updated = [...currentRawData]
       for (const idx of rowIndices) {
         updated[idx] = { ...updated[idx], [selectedProvince]: newValue }
       }
       setRawData(updated)
     },
-    [rawData, selectedProvince, setRawData],
+    [selectedProvince, setRawData],
   )
 
   const applyAllCorrections = useCallback(
     (corrections: Array<{ original: string; suggestion: string; rowIndices: number[] }>) => {
-      if (!rawData || !selectedProvince) return
-      const updated = [...rawData]
+      const currentRawData = useVisualizationStore.getState().rawData
+      if (!currentRawData || !selectedProvince) return
+      const updated = [...currentRawData]
       for (const c of corrections) {
         for (const idx of c.rowIndices) {
           updated[idx] = { ...updated[idx], [selectedProvince]: c.suggestion }
@@ -225,7 +228,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
       }
       setRawData(updated)
     },
-    [rawData, selectedProvince, setRawData],
+    [selectedProvince, setRawData],
   )
 
   const matchedKeysSet = useMemo(() => {
