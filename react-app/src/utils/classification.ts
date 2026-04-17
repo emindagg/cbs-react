@@ -74,8 +74,18 @@ export function calculateBreaks(
     const minVal = sorted[0]
     const maxVal = sorted[sorted.length - 1]
 
-    // Generate Standard Deviation breaks at 1.0 intervals
-    for (let k = 0.5; k <= 1.5; k += 1.0) {
+    // classCount için gerekli iç break sayısı; tek ise mean de bir break olur (asimetriyi giderir).
+    // Çift iç break → k={0.5, 1.5, ...}; tek iç break → mean + k={1.0, 2.0, ...}
+    const interiorBreaks = Math.max(0, classCount - 1)
+    const pairs = Math.floor(interiorBreaks / 2)
+    const needsMean = interiorBreaks % 2 === 1
+    const kStart = needsMean ? 1.0 : 0.5
+
+    if (needsMean && mean > minVal && mean < maxVal) {
+      breaksSet.add(mean)
+    }
+    for (let p = 0; p < pairs; p++) {
+      const k = kStart + p
       const b1 = mean + k * stdDev
       const b2 = mean - k * stdDev
 

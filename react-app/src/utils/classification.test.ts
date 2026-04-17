@@ -129,6 +129,68 @@ describe('classification', () => {
       })
     })
 
+    describe('stddev', () => {
+      // Uniform [-100, 99] — spread ~±1.73σ; ±0.5σ ve ±1.5σ break'leri aralığa sığar.
+      const uniform = Array.from({ length: 200 }, (_, i) => i - 100)
+      // Ağır kuyruklu örnek — ±2.5σ break'lerinin de aralığa sığmasını sağlar.
+      const heavyTailed = [
+        -2000, -1500, -1000, -800, -600,
+        -400, -300, -200, -150, -100,
+        -50, -30, -20, -15, -10,
+        -5, 0, 5, 10, 15,
+        20, 30, 50, 100, 150,
+        200, 300, 400, 600, 800,
+        1000, 1500, 2000,
+      ]
+
+      it('classCount=5 should produce 5 classes (±0.5σ, ±1.5σ)', () => {
+        const breaks = calculateBreaks(uniform, 'stddev', 5)
+        expect(breaks).toHaveLength(6)
+      })
+
+      it('classCount=3 should produce 3 classes (±0.5σ)', () => {
+        const breaks = calculateBreaks(uniform, 'stddev', 3)
+        expect(breaks).toHaveLength(4)
+      })
+
+      it('classCount=4 should produce 4 classes (mean ± σ)', () => {
+        const breaks = calculateBreaks(uniform, 'stddev', 4)
+        expect(breaks).toHaveLength(5)
+      })
+
+      it('classCount=7 should produce more classes than classCount=5 when data supports ±2.5σ', () => {
+        // Eski sabit davranışta (k=0.5, 1.5 sabit) breaks7.length === breaks5.length olurdu.
+        // classCount dinamik hale gelince ±2.5σ eklenir — veri o aralıkta nokta içerdikçe break'ler hayatta kalır.
+        const breaks5 = calculateBreaks(heavyTailed, 'stddev', 5)
+        const breaks7 = calculateBreaks(heavyTailed, 'stddev', 7)
+        expect(breaks7.length).toBeGreaterThan(breaks5.length)
+      })
+
+      it('should degrade gracefully when data does not extend to requested σ range', () => {
+        // Uniform veri ±1.73σ'da bitiyor — ±2.5σ break'leri aralık dışı, filtrelenir.
+        const breaks = calculateBreaks(uniform, 'stddev', 9)
+        expect(breaks.length).toBeLessThanOrEqual(10)
+        expect(breaks.length).toBeGreaterThanOrEqual(2)
+      })
+
+      it('should degrade gracefully when stdDev is 0', () => {
+        const constant = [5, 5, 5, 5, 5]
+        const breaks = calculateBreaks(constant, 'stddev', 5)
+        expect(breaks).toHaveLength(2)
+        expect(breaks[0]).toBe(5)
+        expect(breaks[1]).toBe(5)
+      })
+
+      it('should return sorted breaks with min as first and max as last', () => {
+        const breaks = calculateBreaks(heavyTailed, 'stddev', 7)
+        expect(breaks[0]).toBe(-2000)
+        expect(breaks[breaks.length - 1]).toBe(2000)
+        for (let i = 1; i < breaks.length; i++) {
+          expect(breaks[i]).toBeGreaterThan(breaks[i - 1])
+        }
+      })
+    })
+
     describe('continuous method mapping', () => {
       it('should map continuous-linear to equal', () => {
         const values = [10, 20, 30, 40, 50]

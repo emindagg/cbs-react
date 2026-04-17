@@ -77,7 +77,9 @@ export class ChoroplethRenderer {
     const breaks = isCustom
       ? settings.customBreaks!
       : calculateBreaks(valuesForColor, settings.classificationMethod, settings.classCount)
-    const effectiveClassCount = isCustom ? breaks.length - 1 : settings.classCount
+    // Palette boyutunu her zaman gerçek break sayısına bağla — jenks/kmeans/stddev unique
+    // değer yetersizse beklenenden daha az sınıf üretebilir; aksi halde legend'da ziyan renkler kalır.
+    const effectiveClassCount = breaks.length - 1
     const colorPalette = getColorPalette(settings.colorScheme, effectiveClassCount)
     const isContinuous = settings.legendType === 'continuous'
 
