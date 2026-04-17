@@ -32,13 +32,21 @@ export type StepExpression = [
   ...Array<number | string>,
 ]
 
+// Case expression — evaluates conditions sequentially, returns first match's output
+// Format: ['case', condition1, output1, condition2, output2, ..., fallback]
+export type CaseExpression = [
+  'case',
+  ...Array<unknown>,
+]
+
 // Literal value wrapper
 export type LiteralExpression = ['literal', unknown]
 
 // Base expression types
-export type MapLibreExpression = 
+export type MapLibreExpression =
   | InterpolateExpression
   | StepExpression
+  | CaseExpression
   | GetExpression
   | LiteralExpression
   | number
