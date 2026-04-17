@@ -140,10 +140,14 @@ export function calculateSymbolSize(
       break
 
     case 'log': {
-      const logMin = Math.log(minValue + 1)
-      const logMax = Math.log(maxValue + 1)
-      const logValue = Math.log(value + 1)
-      normalizedValue = (logValue - logMin) / (logMax - logMin)
+      // Shift domain into the strictly-positive range so Math.log never
+      // receives a non-positive argument (NaN / -Infinity for value <= -1).
+      const offset = minValue <= 0 ? -minValue + 1 : 1
+      const logMin = Math.log(minValue + offset)
+      const logMax = Math.log(maxValue + offset)
+      const logValue = Math.log(value + offset)
+      const denom = logMax - logMin
+      normalizedValue = denom === 0 ? 0.5 : (logValue - logMin) / denom
       break
     }
 

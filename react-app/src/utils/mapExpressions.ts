@@ -55,16 +55,32 @@ export function buildStepExpression(
  * MapLibre interpolates colors on the GPU between the provided stops.
  *
  * Output: ['interpolate', ['linear'], ['get', property], stop0, color0, stop1, color1, ...]
+ *
+ * When `nullColor` is provided, the result is wrapped in a `case` expression
+ * that returns `nullColor` whenever the property is null. Without this guard,
+ * MapLibre's `interpolate` silently coerces null → 0 and yields an unpredictable
+ * color — symmetric to the null handling in `buildStepExpression`.
  */
 export function buildInterpolateExpression(
   property: string,
   colorStops: [number, string][],
-): InterpolateExpression {
+  nullColor?: string,
+): InterpolateExpression | CaseExpression {
   const expr: unknown[] = ['interpolate', ['linear'], ['get', property]]
 
   for (const [stop, color] of colorStops) {
     expr.push(stop, color)
   }
 
-  return expr as InterpolateExpression
+  const interpolate = expr as InterpolateExpression
+
+  if (nullColor !== undefined) {
+    return [
+      'case',
+      ['==', ['get', property], null], nullColor,
+      interpolate,
+    ] as CaseExpression
+  }
+
+  return interpolate
 }

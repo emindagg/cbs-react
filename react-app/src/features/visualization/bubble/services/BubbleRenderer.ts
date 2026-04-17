@@ -14,7 +14,7 @@ import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
 import { calculateCentroid } from '@/utils/geometryUtils'
 import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
-import { applyNormalization } from '@/utils/normalization'
+import { applyNormalizationMulti } from '@/utils/normalization'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
 import { formatNumber } from '@/utils/numberFormatter'
 import type { NumberFormat } from '@/utils/numberFormatter'
@@ -65,17 +65,17 @@ export class BubbleRenderer {
       type: settings.normalization || 'none' as const,
       divisionField: settings.normalizationField,
     }
-    const normalizedData = applyNormalization(userData, dataColumn, normOpts)
 
     // Bivariate: renk sütunu ayrıysa colorColumn kullan, yoksa dataColumn
     const colorColumn = settings.colorColumn || dataColumn
     const isBivariate = colorColumn !== dataColumn
 
-    // Bivariate modda colorColumn da normalize edilmeli — aksi hâlde boyut % cinsinden,
-    // renk ham değerle sınıflandırılır (percent-of-total / field normalizasyonunda anlamsız karışım).
-    const fullyNormalizedData = isBivariate
-      ? applyNormalization(normalizedData, colorColumn, normOpts)
-      : normalizedData
+    // Bivariate modda hem boyut hem renk sütununu aynı girdiden normalize et — aksi
+    // halde boyut % cinsinden, renk ham değerle sınıflandırılabilir. Tek geçişli
+    // multi-column varyant, divisionField normalize edilen sütunlardan biriyle
+    // çakıştığında ikinci geçişin bozuk payda okumasını da engeller.
+    const normalizeColumns = isBivariate ? [dataColumn, colorColumn] : [dataColumn]
+    const fullyNormalizedData = applyNormalizationMulti(userData, normalizeColumns, normOpts)
 
     // Extract size values (0 geçerli veri değeridir, yalnızca NaN dışlanır)
     const sizeValues = fullyNormalizedData
@@ -170,6 +170,9 @@ export class BubbleRenderer {
         settings,
         colorProperty,
         resolvedRange ? { min: resolvedRange.min, max: resolvedRange.max } : undefined,
+        // Bivariate: colorValue nullable → null'u NO_DATA_COLOR'a çöz (aksi hâlde
+        // MapLibre interpolate null → 0 olarak değerlendirir ve öngörüsüz renk verir).
+        isBivariate ? NO_DATA_COLOR : undefined,
       )
     } else {
       colorExpression = buildStepExpression(colorProperty, breaks, colorPalette, NO_DATA_COLOR)
@@ -184,8 +187,18 @@ export class BubbleRenderer {
       ]
     }
 
-    // Build label polygons for name/value label layers
-    const labelPolygons = this.buildLabelPolygons(geojson.features, sizeDataMap, locationLevel, resolvedRange, settings.valueLabelFormat ?? '1,000.0')
+    // Build label polygons for name/value label layers. In bivariate mode the
+    // label's `inCustomRange` must be derived from the COLOR value (same source
+    // as the bubble's inCustomRange) so transparent-out-of-range filtering
+    // keeps symbol and label in sync.
+    const labelPolygons = this.buildLabelPolygons(
+      geojson.features,
+      sizeDataMap,
+      colorDataMap,
+      locationLevel,
+      resolvedRange,
+      settings.valueLabelFormat ?? '1,000.0',
+    )
 
     // Build backdrop with hasData so dataOnlyMode case expression works correctly
     const backdropFeatures = geojson.features.map((feature) => {
@@ -221,6 +234,7 @@ export class BubbleRenderer {
     settings: VisualizationSettings,
     propertyName: string = 'dataValue',
     domain?: { min: number; max: number },
+    nullColor?: string,
   ): unknown[] {
     const min = domain?.min ?? Math.min(...domainValues)
     const max = domain?.max ?? Math.max(...domainValues)
@@ -239,7 +253,7 @@ export class BubbleRenderer {
       colorStops.push([dataVal, color])
     }
 
-    return buildInterpolateExpression(propertyName, colorStops)
+    return buildInterpolateExpression(propertyName, colorStops, nullColor)
   }
 
   /**
@@ -494,7 +508,8 @@ export class BubbleRenderer {
    */
   private buildLabelPolygons(
     features: GeoJSONFeature[],
-    dataMap: Record<string, number>,
+    sizeDataMap: Record<string, number>,
+    colorDataMap: Record<string, number>,
     locationLevel: 'province' | 'district',
     resolvedRange: ResolvedCustomRange | null = null,
     valueLabelFormat: NumberFormat = '1,000.0',
@@ -524,7 +539,10 @@ export class BubbleRenderer {
       seen.add(dedupKey)
 
       const normalizedFeatureName = normalizeTurkishText(featureName)
-      const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
+      const dataValue = this.getDataValue(feature, sizeDataMap, normalizedFeatureName, locationLevel)
+      // inCustomRange must mirror the BUBBLE's computation (colorValue-based) so
+      // transparent-out-of-range label filters stay in sync with symbol filters.
+      const colorValue = this.getDataValue(feature, colorDataMap, normalizedFeatureName, locationLevel)
       const centroid = calculateCentroid(geometry)
 
       pointFeatures.push({
@@ -534,7 +552,7 @@ export class BubbleRenderer {
           dataValue: dataValue ?? 0,
           formattedValue: dataValue !== undefined ? formatNumber(dataValue, valueLabelFormat) : '',
           hasData: dataValue !== undefined,
-          inCustomRange: dataValue !== undefined ? isValueInCustomRange(dataValue, resolvedRange) : false,
+          inCustomRange: colorValue !== undefined ? isValueInCustomRange(colorValue, resolvedRange) : false,
         },
         geometry: { type: 'Point', coordinates: centroid },
       })
