@@ -24,15 +24,15 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#fde725',
   ],
 
-  // Yeşil-Mavi
+  // Yeşil-Mavi (ColorBrewer YlGnBu 7-sınıf)
   greenBlue: [
     '#ffffcc',
-    '#bbe4b8',
-    '#71c7be',
-    '#3aa4c0',
-    '#2e7fb6',
-    '#295aa6',
-    '#253494',
+    '#c7e9b4',
+    '#7fcdbb',
+    '#41b6c4',
+    '#1d91c0',
+    '#225ea8',
+    '#0c2c84',
   ],
 
   // Gün Batımı
