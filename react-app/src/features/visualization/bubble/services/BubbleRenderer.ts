@@ -222,9 +222,8 @@ export class BubbleRenderer {
     propertyName: string = 'dataValue',
     domain?: { min: number; max: number },
   ): unknown[] {
-    const sorted = [...domainValues].sort((a, b) => a - b)
-    const min = domain?.min ?? sorted[0]
-    const max = domain?.max ?? sorted[sorted.length - 1]
+    const min = domain?.min ?? Math.min(...domainValues)
+    const max = domain?.max ?? Math.max(...domainValues)
     if (max === min) {
       return ['literal', getContinuousColor(0.5, settings.colorScheme, 'lab')]
     }
@@ -264,6 +263,7 @@ export class BubbleRenderer {
           const provinceNormalized = normalizeTurkishText(provinceName)
           const compositeKey = `${provinceNormalized}_${normalizedKey}`
           const value = parseFloat(String(d[dataColumn]))
+          if (isNaN(value)) return
           dataMap[compositeKey] = value
 
           // Also store plate-code-based key (e.g. "27_sehitkamil")
@@ -272,7 +272,8 @@ export class BubbleRenderer {
             dataMap[`${plateCode}_${normalizedKey}`] = value
           }
         } else {
-          dataMap[normalizedKey] = parseFloat(String(d[dataColumn]))
+          const value = parseFloat(String(d[dataColumn]))
+          if (!isNaN(value)) dataMap[normalizedKey] = value
         }
       }
     })
@@ -431,9 +432,9 @@ export class BubbleRenderer {
     const props = feature.properties
 
     if (locationLevel === 'province') {
-      return props.ADI || props.ILAD || props.name || props.NAME || props.IL_ADI || 'Bilinmiyor'
+      return String(props.ADI || props.ILAD || props.name || props.NAME || props.IL_ADI || 'Bilinmiyor')
     } else {
-      return props.ILCEAD || props.ILCE_ADI || props.name || props.NAME || 'Bilinmiyor'
+      return String(props.ILCEAD || props.ILCE_ADI || props.name || props.NAME || 'Bilinmiyor')
     }
   }
 

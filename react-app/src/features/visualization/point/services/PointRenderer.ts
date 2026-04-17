@@ -148,6 +148,7 @@ export class PointRenderer {
           const provinceNormalized = normalizeTurkishText(provinceName)
           const compositeKey = `${provinceNormalized}_${normalizedKey}`
           const value = parseFloat(String(d[dataColumn]))
+          if (isNaN(value)) return
           dataMap[compositeKey] = value
 
           const plateCode = getPlateCodeByName(provinceName)
@@ -155,7 +156,8 @@ export class PointRenderer {
             dataMap[`${plateCode}_${normalizedKey}`] = value
           }
         } else {
-          dataMap[normalizedKey] = parseFloat(String(d[dataColumn]))
+          const value = parseFloat(String(d[dataColumn]))
+          if (!isNaN(value)) dataMap[normalizedKey] = value
         }
       }
     })
@@ -369,9 +371,9 @@ export class PointRenderer {
     const props = feature.properties
 
     if (locationLevel === 'province') {
-      return props.ADI || props.ILAD || props.name || props.NAME || props.IL_ADI || 'Bilinmiyor'
+      return String(props.ADI || props.ILAD || props.name || props.NAME || props.IL_ADI || 'Bilinmiyor')
     } else {
-      return props.ILCEAD || props.ILCE_ADI || props.name || props.NAME || 'Bilinmiyor'
+      return String(props.ILCEAD || props.ILCE_ADI || props.name || props.NAME || 'Bilinmiyor')
     }
   }
 
