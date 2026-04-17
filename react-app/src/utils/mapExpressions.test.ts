@@ -27,9 +27,12 @@ describe('mapExpressions', () => {
       const expr = buildStepExpression(property, breaks, colors, defaultColor)
 
       expect(expr[0]).toBe('case')
-      // First branch: value < breaks[0] → defaultColor
-      expect(expr[1]).toEqual(['<', ['get', 'value'], 0])
+      // [1,2]: null guard → defaultColor
+      expect(expr[1]).toEqual(['==', ['get', 'value'], null])
       expect(expr[2]).toBe('#ccc')
+      // [3,4]: value < breaks[0] → defaultColor
+      expect(expr[3]).toEqual(['<', ['get', 'value'], 0])
+      expect(expr[4]).toBe('#ccc')
     })
 
     it('should include all breaks and colors', () => {
@@ -77,8 +80,8 @@ describe('mapExpressions', () => {
       const expr = buildStepExpression(property, breaks, colors, defaultColor)
 
       expect(expr[0]).toBe('case')
-      // case: 1 (op) + 1 (below-min cond) + 1 (defaultColor) + 10 classes × 2 + 1 fallback = 24
-      expect(expr.length).toBe(24)
+      // 1 (op) + 2 (null guard) + 2 (below-min) + 10 classes × 2 + 1 fallback = 26
+      expect(expr.length).toBe(26)
     })
 
     it('should use last color if colors array is shorter', () => {
@@ -106,8 +109,9 @@ describe('mapExpressions', () => {
 
       properties.forEach((property) => {
         const expr = buildStepExpression(property, [0, 10], ['#fff'], '#000')
-        // First condition references the property
-        expect(expr[1]).toEqual(['<', ['get', property], 0])
+        // [1]: null guard; [3]: below-min < condition (both reference the property)
+        expect(expr[1]).toEqual(['==', ['get', property], null])
+        expect(expr[3]).toEqual(['<', ['get', property], 0])
       })
     })
 
@@ -126,15 +130,19 @@ describe('mapExpressions', () => {
     })
 
     describe('GIS-convention boundary semantics', () => {
-      // Evaluate a case expression against a numeric value (mirrors MapLibre runtime)
+      // Evaluate a case expression against a numeric value (mirrors MapLibre runtime for numbers)
       function evaluate(expr: unknown[], value: number): string {
         // expr = ['case', cond1, out1, cond2, out2, ..., fallback]
         for (let i = 1; i < expr.length - 1; i += 2) {
-          const cond = expr[i] as [string, ['get', string], number]
-          const [op, , threshold] = cond
+          const cond = expr[i] as unknown[]
+          const [op] = cond
+          // null guard: ['==', prop, null] — always false for valid numbers; skip
+          if (op === '==') continue
+          // single-break: ['!=', prop, null] — always true for valid numbers
+          if (op === '!=') return expr[i + 1] as string
+          const threshold = cond[2] as number
           if (op === '<' && value < threshold) return expr[i + 1] as string
           if (op === '<=' && value <= threshold) return expr[i + 1] as string
-          if (op === '!=' && value !== null) return expr[i + 1] as string
         }
         return expr[expr.length - 1] as string
       }
@@ -182,6 +190,15 @@ describe('mapExpressions', () => {
         expect(evaluate(expr, -50)).toBe('#a')
         expect(evaluate(expr, -49.9)).toBe('#b')
         expect(evaluate(expr, 0)).toBe('#b')
+      })
+
+      it('null property value returns defaultColor (bivariate no-color-data guard)', () => {
+        // MapLibre returns null for missing/null properties; case expression must not fall
+        // through to the last-class fallback color.
+        const expr = buildStepExpression('colorValue', [10, 20, 30], ['#a', '#b'], '#def')
+        // Simulate null: the null-guard condition ['==', prop, null] fires first
+        expect(expr[1]).toEqual(['==', ['get', 'colorValue'], null])
+        expect(expr[2]).toBe('#def')
       })
     })
   })
@@ -381,7 +398,9 @@ describe('mapExpressions', () => {
       const stepExpr = buildStepExpression(property, [0, 1000], ['#fff'], '#000')
       const interpExpr = buildInterpolateExpression(property, [[0, '#fff'], [1000, '#000']])
 
-      expect(stepExpr[1]).toEqual(['<', ['get', property], 0])
+      // [1]: null guard; [3]: below-min condition
+      expect(stepExpr[1]).toEqual(['==', ['get', property], null])
+      expect(stepExpr[3]).toEqual(['<', ['get', property], 0])
       expect(interpExpr[2]).toEqual(['get', property])
     })
   })

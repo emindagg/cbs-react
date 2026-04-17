@@ -34,7 +34,11 @@ export function buildStepExpression(
     return ['case', ['!=', ['get', property], null], color, defaultColor] as CaseExpression
   }
 
-  const expr: unknown[] = ['case', ['<', ['get', property], breaks[0]], defaultColor]
+  const expr: unknown[] = [
+    'case',
+    ['==', ['get', property], null], defaultColor,
+    ['<', ['get', property], breaks[0]], defaultColor,
+  ]
 
   for (let i = 1; i < breaks.length; i++) {
     const color = colors[i - 1] ?? colors[colors.length - 1] ?? defaultColor

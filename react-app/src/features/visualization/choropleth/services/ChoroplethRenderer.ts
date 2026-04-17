@@ -111,6 +111,7 @@ export class ChoroplethRenderer {
     if (isContinuous) {
       colorExpression = this.buildContinuousExpression(
         valuesForColor,
+        values,
         settings,
         resolvedRange ? { min: resolvedRange.min, max: resolvedRange.max } : undefined,
       )
@@ -154,14 +155,18 @@ export class ChoroplethRenderer {
   }
 
   /**
-   * Build continuous interpolate expression by sampling color stops from the Chroma scale
+   * Build continuous interpolate expression by sampling color stops from the Chroma scale.
+   * domainValues: clamped/filtered values used for min/max domain (linear mapping).
+   * warpingValues: original unclamped values used for quantile/natural-break warping so
+   * that custom-range clamping does not distort the perceived distribution.
    */
   private buildContinuousExpression(
-    values: number[],
+    domainValues: number[],
+    warpingValues: number[],
     settings: VisualizationSettings,
     domain?: { min: number; max: number },
   ): unknown[] {
-    const sorted = [...values].sort((a, b) => a - b)
+    const sorted = [...domainValues].sort((a, b) => a - b)
     const min = domain?.min ?? sorted[0]
     const max = domain?.max ?? sorted[sorted.length - 1]
     if (max === min) {
@@ -173,10 +178,8 @@ export class ChoroplethRenderer {
 
     for (let i = 0; i < CONTINUOUS_STOPS; i++) {
       const t = i / (CONTINUOUS_STOPS - 1)
-      // Map t (0-1) back to data domain
       const dataVal = min + t * (max - min)
-      // Normalize using the interpolation method (handles quantile/natural warping)
-      const normalized = normalizeValue(dataVal, min, max, interpolation, values)
+      const normalized = normalizeValue(dataVal, min, max, interpolation, warpingValues)
       const color = getContinuousColor(normalized, settings.colorScheme, 'lab')
       colorStops.push([dataVal, color])
     }

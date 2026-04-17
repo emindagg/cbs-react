@@ -61,23 +61,30 @@ export class BubbleRenderer {
     locationLevel: 'province' | 'district' = 'province',
   ): Promise<void> {
     // Apply normalization if configured
-    const normalizedData = applyNormalization(userData, dataColumn, {
-      type: settings.normalization || 'none',
+    const normOpts = {
+      type: settings.normalization || 'none' as const,
       divisionField: settings.normalizationField,
-    })
+    }
+    const normalizedData = applyNormalization(userData, dataColumn, normOpts)
 
     // Bivariate: renk sütunu ayrıysa colorColumn kullan, yoksa dataColumn
     const colorColumn = settings.colorColumn || dataColumn
     const isBivariate = colorColumn !== dataColumn
 
+    // Bivariate modda colorColumn da normalize edilmeli — aksi hâlde boyut % cinsinden,
+    // renk ham değerle sınıflandırılır (percent-of-total / field normalizasyonunda anlamsız karışım).
+    const fullyNormalizedData = isBivariate
+      ? applyNormalization(normalizedData, colorColumn, normOpts)
+      : normalizedData
+
     // Extract size values (0 geçerli veri değeridir, yalnızca NaN dışlanır)
-    const sizeValues = normalizedData
+    const sizeValues = fullyNormalizedData
       .map((d) => parseFloat(String(d[dataColumn])))
       .filter((v) => !isNaN(v))
 
     // Extract color values (may be from a different column in bivariate mode)
     const colorValues = isBivariate
-      ? normalizedData
+      ? fullyNormalizedData
         .map((d) => parseFloat(String(d[colorColumn])))
         .filter((v) => !isNaN(v))
       : sizeValues
@@ -119,12 +126,16 @@ export class BubbleRenderer {
       : undefined
 
     // Create data maps
-    const sizeDataMap = this.createDataMap(normalizedData, dataColumn, locationLevel)
+    const sizeDataMap = this.createDataMap(fullyNormalizedData, dataColumn, locationLevel)
     const colorDataMap = isBivariate
-      ? this.createDataMap(normalizedData, colorColumn, locationLevel)
+      ? this.createDataMap(fullyNormalizedData, colorColumn, locationLevel)
       : sizeDataMap
 
     // Process features and convert to bubbles
+    // Custom break modunda sınır dışı kalan feature'lar (value < breaks[0] veya > breaks[last])
+    // renk olarak NO_DATA_COLOR alacak ama boyut hesabı devam eder → görünmez baloncuk.
+    // colorBreaks sadece isCustom=true'da geçilir; auto-breaks her zaman tüm veriyi kapsar.
+    const colorBreaksForFilter = isCustom ? breaks : undefined
     const bubblesGeoJSON = this.processFeatures(
       geojson.features,
       sizeDataMap,
@@ -136,6 +147,7 @@ export class BubbleRenderer {
       isBivariate,
       sizeBreaks,
       resolvedRange,
+      colorBreaksForFilter,
     )
 
     console.debug(
@@ -154,6 +166,7 @@ export class BubbleRenderer {
     } else if (isContinuous) {
       colorExpression = this.buildContinuousExpression(
         colorValuesForColor,
+        colorValues,
         settings,
         colorProperty,
         resolvedRange ? { min: resolvedRange.min, max: resolvedRange.max } : undefined,
@@ -197,15 +210,19 @@ export class BubbleRenderer {
   }
 
   /**
-   * Build continuous interpolate expression by sampling color stops from the Chroma scale
+   * Build continuous interpolate expression by sampling color stops from the Chroma scale.
+   * domainValues: clamped/filtered values used for min/max domain (linear mapping).
+   * warpingValues: original unclamped values used for quantile/natural-break warping so
+   * that custom-range clamping does not distort the perceived distribution.
    */
   private buildContinuousExpression(
-    values: number[],
+    domainValues: number[],
+    warpingValues: number[],
     settings: VisualizationSettings,
     propertyName: string = 'dataValue',
     domain?: { min: number; max: number },
   ): unknown[] {
-    const sorted = [...values].sort((a, b) => a - b)
+    const sorted = [...domainValues].sort((a, b) => a - b)
     const min = domain?.min ?? sorted[0]
     const max = domain?.max ?? sorted[sorted.length - 1]
     if (max === min) {
@@ -218,7 +235,7 @@ export class BubbleRenderer {
     for (let i = 0; i < CONTINUOUS_STOPS; i++) {
       const t = i / (CONTINUOUS_STOPS - 1)
       const dataVal = min + t * (max - min)
-      const normalized = normalizeValue(dataVal, min, max, interpolation, values)
+      const normalized = normalizeValue(dataVal, min, max, interpolation, warpingValues)
       const color = getContinuousColor(normalized, settings.colorScheme, 'lab')
       colorStops.push([dataVal, color])
     }
@@ -277,6 +294,7 @@ export class BubbleRenderer {
     isBivariate: boolean = false,
     sizeBreaks?: number[],
     resolvedRange?: ResolvedCustomRange | null,
+    colorBreaks?: number[],
   ): GeoJSON.FeatureCollection {
     const bubbleFeatures: GeoJSON.Feature[] = []
 
@@ -311,6 +329,13 @@ export class BubbleRenderer {
       const inCustomRange = colorValue !== undefined
         ? isValueInCustomRange(colorValue, resolvedRange ?? null)
         : false
+
+      // Custom break modunda sınır dışı kalan feature'lar görünmez baloncuk üretir:
+      // boyut hesabı devam eder ama renk NO_DATA_COLOR (transparent) alır.
+      // Bu feature'ları tamamen atlamak daha tutarlı bir kullanıcı deneyimi sağlar.
+      if (colorBreaks && colorValue !== undefined) {
+        if (colorValue < colorBreaks[0] || colorValue > colorBreaks[colorBreaks.length - 1]) return
+      }
 
       // Calculate centroid - only process Polygon/MultiPolygon geometries
       const geometry = feature.geometry
