@@ -26,13 +26,13 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
 
   // Yeşil-Mavi
   greenBlue: [
-    '#f0f9e8',
-    '#b6e3bb',
-    '#75c8c5',
-    '#4ba8c9',
-    '#2989bd',
-    '#0a6aad',
-    '#254b8c',
+    '#ffffcc',
+    '#bbe4b8',
+    '#71c7be',
+    '#3aa4c0',
+    '#2e7fb6',
+    '#295aa6',
+    '#253494',
   ],
 
   // Gün Batımı
