@@ -14,7 +14,6 @@ import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
 import { calculateCentroid } from '@/utils/geometryUtils'
 import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
-import { applyNormalizationMulti } from '@/utils/normalization'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
 import { formatNumber } from '@/utils/numberFormatter'
 import type { NumberFormat } from '@/utils/numberFormatter'
@@ -60,34 +59,28 @@ export class BubbleRenderer {
     settings: VisualizationSettings,
     locationLevel: 'province' | 'district' = 'province',
   ): Promise<void> {
-    // Apply normalization if configured
-    const normOpts = {
-      type: settings.normalization || 'none' as const,
-      divisionField: settings.normalizationField,
-    }
-
     // Bivariate: renk sütunu ayrıysa colorColumn kullan, yoksa dataColumn
     const colorColumn = settings.colorColumn || dataColumn
     const isBivariate = colorColumn !== dataColumn
 
-    // Bivariate modda hem boyut hem renk sütununu aynı girdiden normalize et — aksi
-    // halde boyut % cinsinden, renk ham değerle sınıflandırılabilir. Tek geçişli
-    // multi-column varyant, divisionField normalize edilen sütunlardan biriyle
-    // çakıştığında ikinci geçişin bozuk payda okumasını da engeller.
-    const normalizeColumns = isBivariate ? [dataColumn, colorColumn] : [dataColumn]
-    const fullyNormalizedData = applyNormalizationMulti(userData, normalizeColumns, normOpts)
+    // NOTE: `userData` is already normalized upstream (see `useVizRender.ts`). The
+    // snapshot stored in `currentVisualization.data` mirrors this same dataset so
+    // the legend's min/max, classification breaks and per-feature radii stay in
+    // lock-step with the bubbles rendered on the map.
 
-    // Extract size values (0 geçerli veri değeridir, yalnızca NaN dışlanır)
-    const sizeValues = fullyNormalizedData
-      .map((d) => parseFloat(String(d[dataColumn])))
-      .filter((v) => !isNaN(v))
+    // Build the data maps FIRST (last-write-wins dedup) so sizeValues/colorValues
+    // reflect exactly the set of values that will be painted on the map. Deriving
+    // min/max from the non-deduped userData can inflate the domain with values
+    // that never reach the map (e.g. duplicate rows for the same location where
+    // only the last wins), producing a bubble scale that disagrees with the
+    // legend scale (which uses the same dedup rule via extractSnapshotValues).
+    const sizeDataMap = this.createDataMap(userData, dataColumn, locationLevel)
+    const colorDataMap = isBivariate
+      ? this.createDataMap(userData, colorColumn, locationLevel)
+      : sizeDataMap
 
-    // Extract color values (may be from a different column in bivariate mode)
-    const colorValues = isBivariate
-      ? fullyNormalizedData
-        .map((d) => parseFloat(String(d[colorColumn])))
-        .filter((v) => !isNaN(v))
-      : sizeValues
+    const sizeValues = Object.values(sizeDataMap)
+    const colorValues = isBivariate ? Object.values(colorDataMap) : sizeValues
 
     if (sizeValues.length === 0) {
       console.warn('⚠️  No valid data for visualization')
@@ -124,12 +117,6 @@ export class BubbleRenderer {
     const sizeBreaks = isGraduated
       ? calculateBreaks(sizeValues, settings.classificationMethod, settings.classCount)
       : undefined
-
-    // Create data maps
-    const sizeDataMap = this.createDataMap(fullyNormalizedData, dataColumn, locationLevel)
-    const colorDataMap = isBivariate
-      ? this.createDataMap(fullyNormalizedData, colorColumn, locationLevel)
-      : sizeDataMap
 
     // Process features and convert to bubbles
     // Custom break modunda sınır dışı kalan feature'lar (value < breaks[0] veya > breaks[last])

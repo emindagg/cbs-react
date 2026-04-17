@@ -21,6 +21,7 @@ import {
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import type { PaintPropertyValue } from '@/types/maplibre-expressions'
 import type { MatchResults, VisualizationSettings } from '@/types/visualization'
+import { applyNormalizationMulti } from '@/utils/normalization'
 import { coerceNumberFormat } from '@/utils/numberFormatter'
 
 interface UseVizRenderProps {
@@ -265,28 +266,49 @@ export function useVizRender({
         valueLabelFormat: coerceNumberFormat(currentColorConfig.legend.format),
       }
 
+      // Normalize upstream so the renderer and the legend consume the SAME dataset.
+      // Previously the BubbleRenderer normalized internally while the legend read raw
+      // `successfulData`, producing different min/max → bubble sizes on the map did
+      // not match the legend circles. Centralizing normalization here guarantees the
+      // snapshot stored in `currentVisualization.data` is exactly what the renderer
+      // used to compute bubble radii.
+      const normalizeColumns: string[] = [columnMapping.dataColumn]
+      if (
+        currentVizSettings.type === 'bubble'
+        && renderSettings.colorColumn
+        && renderSettings.colorColumn !== columnMapping.dataColumn
+      ) {
+        normalizeColumns.push(renderSettings.colorColumn)
+      }
+      const preparedData = applyNormalizationMulti(successfulData, normalizeColumns, {
+        type: renderSettings.normalization ?? 'none',
+        divisionField: renderSettings.normalizationField,
+      })
+
       switch (currentVizSettings.type) {
         case 'choropleth':
-          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn, renderSettings, locationLevel)
+          await vizManager.renderChoropleth(preparedData, columnMapping.dataColumn, renderSettings, locationLevel)
           break
 
         case 'dot':
-          await vizManager.renderPoint(successfulData, columnMapping.dataColumn, renderSettings, locationLevel)
+          await vizManager.renderPoint(preparedData, columnMapping.dataColumn, renderSettings, locationLevel)
           break
 
         case 'bubble':
-          await vizManager.renderBubble(successfulData, columnMapping.dataColumn, renderSettings, locationLevel)
+          await vizManager.renderBubble(preparedData, columnMapping.dataColumn, renderSettings, locationLevel)
           break
 
         default:
           // Fallback to choropleth
-          await vizManager.renderChoropleth(successfulData, columnMapping.dataColumn, renderSettings, locationLevel)
+          await vizManager.renderChoropleth(preparedData, columnMapping.dataColumn, renderSettings, locationLevel)
       }
 
-      // Update current visualization to trigger legend display
+      // Update current visualization to trigger legend display — `preparedData`
+      // (post-normalization) is the canonical snapshot so downstream consumers
+      // (legend min/max, rehydration, custom range clamps) stay in lock-step.
       setCurrentVisualization({
         type: currentVizSettings.type,
-        data: successfulData,
+        data: preparedData,
         column: columnMapping.dataColumn,
         locationLevel,
         renderSettings,

@@ -11,6 +11,7 @@ import { BUBBLE_DEFAULT_FILL_COLOR, DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, calcula
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { calculateBreaks } from '@/utils/classification'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
+import { normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 import BubbleSizeLegend from './BubbleSizeLegend'
 import ColorLegend from './ColorLegend'
@@ -24,7 +25,13 @@ export default function Container() {
   // renderSettings null ise (ilk render öncesi) vizSettings fallback olur.
   const rs = currentVisualization.renderSettings ?? vizSettings
 
-  // Renderer'ın createDataMap last-write-wins davranışını yansıtan tekilleştirme yardımcısı
+  // Legend min/max must be computed on the SAME deduplicated value set that
+  // BubbleRenderer.createDataMap produces, otherwise the bubble radii scale
+  // the map uses (min/max of the deduped dataMap) diverges from the scale the
+  // legend draws (min/max of the snapshot). Mirror createDataMap's key logic
+  // exactly: normalize Turkish text, prefer `_province` (mixed mode) over the
+  // top-level `province` (set by useVizRender for all successful matches), and
+  // use the same underscore-separated composite key for district level.
   const extractSnapshotValues = useCallback((
     data: Record<string, unknown>[],
     col: string,
@@ -34,9 +41,15 @@ export default function Container() {
     for (const row of data) {
       const v = parseFloat(String(row[col]))
       if (isNaN(v)) continue
-      const key = locationLevel === 'district' && row.province
-        ? `${String(row.province)}__${String(row.location ?? '')}`
-        : String(row.location ?? Object.values(row)[0] ?? '')
+      const locationName = row.location ?? Object.values(row)[0]
+      if (!locationName) continue
+      const normalizedKey = normalizeTurkishText(String(locationName))
+      const provinceName = row._province ?? row.province
+      let key = normalizedKey
+      if (locationLevel === 'district' && provinceName) {
+        const provinceNormalized = normalizeTurkishText(String(provinceName))
+        key = `${provinceNormalized}_${normalizedKey}`
+      }
       seen.set(key, v)
     }
     return Array.from(seen.values())
@@ -291,13 +304,13 @@ export default function Container() {
   // Bivariate modda renk lejantı "Renk", boyut lejantı "Boyut" varsayılan başlığını almalı
   const colorLegendConfig = isBubbleBivariate
     ? {
-        ...colorConfig.legend,
-        title: {
-          ...colorConfig.legend.title,
-          show: colorConfig.legend.title?.show ?? true,
-          text: colorConfig.legend.title?.text || 'Renk',
-        },
-      }
+      ...colorConfig.legend,
+      title: {
+        ...colorConfig.legend.title,
+        show: colorConfig.legend.title?.show ?? true,
+        text: colorConfig.legend.title?.text || 'Renk',
+      },
+    }
     : colorConfig.legend
 
   if (colorConfig.legend.orientation === 'vertical') {
