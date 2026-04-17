@@ -160,8 +160,6 @@ export default function DistributionPreview({
                 'Eşit Aralık: Değer aralığı eşit genişlikte sınıflara bölünür.'}
               {!isContinuous && classificationMethod === 'jenks' &&
                 'Jenks: Verideki doğal grupları ve kırılma noktalarını bulur.'}
-              {!isContinuous && classificationMethod === 'kmeans' &&
-                'K-Ortalamalar: Benzer değerleri istatistiksel olarak optimal gruplara ayırır.'}
             </p>
           </div>
         </div>

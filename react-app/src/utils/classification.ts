@@ -60,10 +60,6 @@ export function calculateBreaks(
     return extractBreaksFromCkmeans(sorted, classCount)
   }
 
-  if (method === 'kmeans') {
-    return extractBreaksFromCkmeans(sorted, classCount)
-  }
-
   if (method === 'stddev') {
     const mean = ss.mean(sorted)
     const stdDev = ss.standardDeviation(sorted)

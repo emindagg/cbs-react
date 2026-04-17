@@ -12,11 +12,11 @@ describe('disambiguateBoundaryLabels', () => {
     expect(result).toEqual(values.map(formatter))
   })
 
-  it('disambiguates duplicate labels for kmeans/jenks-like close breaks', () => {
+  it('disambiguates duplicate labels for jenks-like close breaks', () => {
     const values = [1_900_000, 2_100_000, 2_300_000]
     const formatter = (value: number) => `${Math.round(value / 1_000_000)}M`
 
-    const result = disambiguateBoundaryLabels(values, formatter, { classificationMethod: 'kmeans' })
+    const result = disambiguateBoundaryLabels(values, formatter, { classificationMethod: 'jenks' })
 
     expect(new Set(result).size).toBe(result.length)
     expect(result.some((label) => label !== '2M')).toBe(true)

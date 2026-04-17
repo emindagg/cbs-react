@@ -76,7 +76,7 @@ function formatWithAbbreviation(
 }
 
 function getInitialPrecision(method?: ClassificationMethod): number {
-  if (method === 'kmeans' || method === 'jenks' || method === 'continuous-natural') {
+  if (method === 'jenks' || method === 'continuous-natural') {
     return 2
   }
   return 1

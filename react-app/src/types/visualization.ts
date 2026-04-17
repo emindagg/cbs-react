@@ -19,7 +19,6 @@ export type ClassificationMethod =
   | 'quantile'
   | 'equal'
   | 'jenks'
-  | 'kmeans'
   | 'custom'
   | 'stddev'
   | 'continuous-linear'

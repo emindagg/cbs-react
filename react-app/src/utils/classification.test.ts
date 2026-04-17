@@ -109,26 +109,6 @@ describe('classification', () => {
       })
     })
 
-    describe('kmeans', () => {
-      it('should calculate kmeans breaks', () => {
-        const values = [1, 2, 3, 10, 11, 12, 20, 21, 22]
-        const breaks = calculateBreaks(values, 'kmeans', 3)
-
-        expect(breaks.length).toBeGreaterThanOrEqual(2)
-        expect(breaks[0]).toBe(1)
-        expect(breaks[breaks.length - 1]).toBe(22)
-      })
-
-      it('should handle single value', () => {
-        const values = [42]
-        const breaks = calculateBreaks(values, 'kmeans', 3)
-
-        expect(breaks).toHaveLength(2)
-        expect(breaks[0]).toBe(42)
-        expect(breaks[1]).toBe(42)
-      })
-    })
-
     describe('stddev', () => {
       // Uniform [-100, 99] — spread ~±1.73σ; ±0.5σ ve ±1.5σ break'leri aralığa sığar.
       const uniform = Array.from({ length: 200 }, (_, i) => i - 100)

@@ -18,7 +18,7 @@ const baseConfig: LegendConfiguration = {
 }
 
 describe('BarContent', () => {
-  it('shows all boundary labels (N+1 for N colors) and preserves abbreviations for jenks/kmeans-like breaks', () => {
+  it('shows all boundary labels (N+1 for N colors) and preserves abbreviations for jenks-like breaks', () => {
     const { container } = render(
       <BarContent
         config={baseConfig}

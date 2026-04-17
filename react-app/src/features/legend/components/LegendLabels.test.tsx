@@ -54,7 +54,7 @@ describe('LegendLabels', () => {
         width={280}
         formatLabel={(value) => `${Math.round(value / 1_000_000)}M`}
         mode="steps"
-        classificationMethod="kmeans"
+        classificationMethod="jenks"
         labelType="ruler"
       />,
     )
