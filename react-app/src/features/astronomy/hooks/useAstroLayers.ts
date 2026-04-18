@@ -5,7 +5,7 @@
 
 import type maplibregl from 'maplibre-gl'
 
-import { getAxialTiltLines } from '../utils/astroUtils'
+import { getAxialTiltLabels, getAxialTiltLines } from '../utils/astroUtils'
 
 const ECLIPSE_LABEL_OFFSET_Y = 1.4
 
@@ -75,11 +75,22 @@ export function setupAstroLayers(map: maplibregl.Map): void {
         'line-opacity': 0.6,
       },
     })
+  }
+
+  // Axial Tilt Labels (separate source with Point features — robust under globe projection)
+  if (!map.getSource('astro-axial-tilt-labels')) {
+    map.addSource('astro-axial-tilt-labels', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: getAxialTiltLabels(),
+      },
+    })
 
     map.addLayer({
       id: 'astro-axial-label',
       type: 'symbol',
-      source: 'astro-axial-tilt',
+      source: 'astro-axial-tilt-labels',
       layout: {
         'text-field': ['get', 'name'],
         'text-size': 13,
@@ -87,10 +98,6 @@ export function setupAstroLayers(map: maplibregl.Map): void {
         'text-anchor': 'top',
         'text-letter-spacing': 0.05,
         'text-padding': 4,
-        'symbol-placement': 'line-center',
-        'text-keep-upright': true,
-        'text-allow-overlap': false,
-        'text-ignore-placement': false,
       },
       paint: {
         'text-color': '#b45309',
@@ -155,7 +162,7 @@ export function cleanupAstroLayers(map: maplibregl.Map): void {
     'astro-eclipse-marker',
     'astro-eclipse-label',
   ]
-  const sources = ['astro-terminator', 'astro-moon-position', 'astro-axial-tilt', 'astro-eclipse-events']
+  const sources = ['astro-terminator', 'astro-moon-position', 'astro-axial-tilt', 'astro-axial-tilt-labels', 'astro-eclipse-events']
 
   layers.forEach(id => {
     if (map.getLayer(id)) map.removeLayer(id)

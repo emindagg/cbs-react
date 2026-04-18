@@ -43,7 +43,7 @@
     "framer-motion": "^12.31.0",
     "fuse.js": "^7.1.0",
     "lucide-react": "^0.563.0",
-    "maplibre-gl": "^5.17.0",
+    "maplibre-gl": "^5.23.0",
     "papaparse": "^5.5.3",
     "proj4": "^2.20.4",
     "rc-slider": "^11.1.9",

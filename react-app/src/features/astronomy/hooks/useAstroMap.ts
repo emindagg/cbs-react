@@ -268,23 +268,49 @@ export function useAstroMap() {
     }
   }, [map, isEnabled, features.moonPhase, currentDate, moonPhaseAngle])
 
-  // Initialize Sources and Layers
+  // Initialize Sources and Layers + persist across style reloads (e.g. 2D/3D projection switch)
   useEffect(() => {
     if (!map || !isEnabled) {
       return
     }
 
-    const setupLayers = () => {
+    const rehydrate = () => {
+      if (!map.isStyleLoaded()) return
+
       setupAstroLayers(map)
+
+      const { features: liveFeatures } = useAstroStore.getState()
+      updateAstroData(map, currentDateRef.current, liveFeatures.eclipses)
+
+      const setVisibility = (layerId: string, visible: boolean) => {
+        if (map.getLayer(layerId)) {
+          map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none')
+        }
+      }
+      setVisibility('astro-night-shadow', liveFeatures.terminator)
+      setVisibility('astro-terminator-line', liveFeatures.terminator)
+      setVisibility('astro-axial-line', liveFeatures.axialTilt)
+      setVisibility('astro-axial-label', liveFeatures.axialTilt)
+      setVisibility('astro-eclipse-marker', liveFeatures.eclipses)
+      setVisibility('astro-eclipse-label', liveFeatures.eclipses)
+    }
+
+    const onStyleData = () => {
+      if (!map.isStyleLoaded()) return
+      if (map.getSource('astro-axial-tilt')) return
+      rehydrate()
     }
 
     if (map.isStyleLoaded()) {
-      setupLayers()
+      rehydrate()
     } else {
-      map.once('style.load', setupLayers)
+      map.once('style.load', rehydrate)
     }
 
+    map.on('styledata', onStyleData)
+
     return () => {
+      map.off('styledata', onStyleData)
       cleanupAstroLayers(map)
     }
   }, [map, isEnabled])

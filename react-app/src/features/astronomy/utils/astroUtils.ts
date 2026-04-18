@@ -278,6 +278,33 @@ export function getAxialTiltLines() {
 }
 
 /**
+ * Get Axial Tilt Labels as Point features.
+ * Separate from lines because `symbol-placement: line-center` is unstable
+ * under MapLibre globe projection and can crash the placement engine.
+ */
+export function getAxialTiltLabels() {
+  const AXIAL_TILT = 23.44
+  const LABEL_LNG = 0
+
+  const createLabel = (lat: number, name: string) => ({
+    type: 'Feature' as const,
+    geometry: {
+      type: 'Point' as const,
+      coordinates: [LABEL_LNG, lat],
+    },
+    properties: { name, latitude: lat },
+  })
+
+  return [
+    createLabel(0, 'Ekvator'),
+    createLabel(AXIAL_TILT, 'Yengeç Dönencesi'),
+    createLabel(-AXIAL_TILT, 'Oğlak Dönencesi'),
+    createLabel(90 - AXIAL_TILT, 'Kuzey Kutup Dairesi'),
+    createLabel(-(90 - AXIAL_TILT), 'Güney Kutup Dairesi'),
+  ]
+}
+
+/**
  * Get Season based on sun declination
  */
 export function getSeason(date: Date) {
