@@ -69,7 +69,7 @@ export function setupAstroLayers(map: maplibregl.Map): void {
       type: 'line',
       source: 'astro-axial-tilt',
       paint: {
-        'line-color': '#10b981',
+        'line-color': '#b45309',
         'line-width': 1,
         'line-dasharray': [4, 1],
         'line-opacity': 0.6,
@@ -82,15 +82,21 @@ export function setupAstroLayers(map: maplibregl.Map): void {
       source: 'astro-axial-tilt',
       layout: {
         'text-field': ['get', 'name'],
-        'text-size': 10,
-        'text-offset': [0, 1],
+        'text-size': 13,
+        'text-offset': [0, 0.8],
         'text-anchor': 'top',
+        'text-letter-spacing': 0.05,
+        'text-padding': 4,
         'symbol-placement': 'line-center',
+        'text-keep-upright': true,
+        'text-allow-overlap': false,
+        'text-ignore-placement': false,
       },
       paint: {
-        'text-color': '#10b981',
+        'text-color': '#b45309',
         'text-halo-color': '#ffffff',
-        'text-halo-width': 1,
+        'text-halo-width': 2.5,
+        'text-halo-blur': 0.5,
       },
     })
   }
