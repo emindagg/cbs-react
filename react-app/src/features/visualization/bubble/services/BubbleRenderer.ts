@@ -584,9 +584,11 @@ export class BubbleRenderer {
     const effectiveBackdropFillOpacity: unknown = settings.dataOnlyMode
       ? ['case', ['==', ['get', 'hasData'], true], backdropFillOpacity, 0]
       : backdropFillOpacity
+    const backdropLineColor = settings.outlineColor ?? BACKDROP_LINE_COLOR
+    const backdropLineOpacity = settings.outlineOpacity ?? BACKDROP_LINE_OPACITY
     const effectiveBackdropLineOpacity: unknown = settings.dataOnlyMode
-      ? ['case', ['==', ['get', 'hasData'], true], BACKDROP_LINE_OPACITY, 0]
-      : BACKDROP_LINE_OPACITY
+      ? ['case', ['==', ['get', 'hasData'], true], backdropLineOpacity, 0]
+      : backdropLineOpacity
     const circleLayerExists = Boolean(this.map.getLayer(layerId))
 
     // Add or update backdrop source
@@ -628,14 +630,14 @@ export class BubbleRenderer {
         type: 'line',
         source: BACKDROP_SOURCE_ID,
         paint: {
-          'line-color': BACKDROP_LINE_COLOR,
-          'line-opacity': BACKDROP_LINE_OPACITY,
+          'line-color': backdropLineColor,
+          'line-opacity': backdropLineOpacity,
           'line-width': BACKDROP_LINE_WIDTH,
         },
       }, circleLayerExists ? layerId : undefined)
       this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-opacity', effectiveBackdropLineOpacity)
     } else {
-      this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-color', BACKDROP_LINE_COLOR)
+      this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-color', backdropLineColor)
       this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-opacity', effectiveBackdropLineOpacity)
       this.map.setPaintProperty(BACKDROP_OUTLINE_LAYER_ID, 'line-width', BACKDROP_LINE_WIDTH)
     }

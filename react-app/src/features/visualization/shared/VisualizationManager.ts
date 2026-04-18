@@ -15,12 +15,12 @@ import { suggestClassificationMethod } from '@/utils/dataStats'
 import { getPlateCodeByName, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 import { applyLabelLayers } from './labelLayers'
+import { DEFAULT_OUTLINE_COLOR, DEFAULT_OUTLINE_OPACITY } from './outlineDefaults'
 import { BubbleRenderer } from '../bubble/services/BubbleRenderer'
 import { ChoroplethRenderer } from '../choropleth/services/ChoroplethRenderer'
 import { PointRenderer } from '../point/services/PointRenderer'
 
 const DEFAULT_BACKDROP_FILL_OPACITY = 1
-const BACKDROP_LINE_OPACITY = 1
 
 export class VisualizationManager {
   private map: Map
@@ -413,6 +413,8 @@ export class VisualizationManager {
     type LayerFilter = NonNullable<Parameters<Map['setFilter']>[1]>
 
     const noDataColor = settings.noDataColor ?? '#e4e4e4'
+    const outlineColor = settings.outlineColor ?? DEFAULT_OUTLINE_COLOR
+    const outlineOpacity = settings.outlineOpacity ?? DEFAULT_OUTLINE_OPACITY
 
     // Choropleth: update fill/outline filter, opacity, and noDataColor
     if (this.map.getLayer('choropleth-fill')) {
@@ -425,6 +427,8 @@ export class VisualizationManager {
           : ['any', ['==', ['get', 'hasData'], true], ['==', ['get', 'hasData'], false]] as LayerFilter
       this.map.setFilter('choropleth-fill', layerFilter)
       this.map.setFilter('choropleth-outline', layerFilter)
+      this.map.setPaintProperty('choropleth-outline', 'line-color', outlineColor)
+      this.map.setPaintProperty('choropleth-outline', 'line-opacity', outlineOpacity)
 
       const choroplethOpacity = settings.choroplethOpacity ?? 1
       const fillOpacity = settings.dataOnlyMode && settings.dataOnlyStyle === 'transparent'
@@ -455,8 +459,9 @@ export class VisualizationManager {
     }
     if (this.map.getLayer('viz-backdrop-outline')) {
       const effectiveLineOpacity: unknown = settings.dataOnlyMode
-        ? ['case', ['==', ['get', 'hasData'], true], BACKDROP_LINE_OPACITY, 0]
-        : BACKDROP_LINE_OPACITY
+        ? ['case', ['==', ['get', 'hasData'], true], outlineOpacity, 0]
+        : outlineOpacity
+      this.map.setPaintProperty('viz-backdrop-outline', 'line-color', outlineColor)
       this.map.setPaintProperty('viz-backdrop-outline', 'line-opacity', effectiveLineOpacity)
     }
 

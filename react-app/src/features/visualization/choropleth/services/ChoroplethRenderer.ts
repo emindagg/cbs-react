@@ -25,6 +25,7 @@ import {
   type ResolvedCustomRange,
 } from '../../shared/customRange'
 import { applyLabelLayers } from '../../shared/labelLayers'
+import { DEFAULT_OUTLINE_COLOR, DEFAULT_OUTLINE_OPACITY } from '../../shared/outlineDefaults'
 
 const NO_DATA_COLOR = '#e4e4e4'
 const CONTINUOUS_STOPS = 16
@@ -416,6 +417,8 @@ export class ChoroplethRenderer {
     }
 
     // Add outline layer (only features with data)
+    const outlineColor = settings.outlineColor ?? DEFAULT_OUTLINE_COLOR
+    const outlineOpacity = settings.outlineOpacity ?? DEFAULT_OUTLINE_OPACITY
     if (!this.map.getLayer('choropleth-outline')) {
       this.map.addLayer({
         id: 'choropleth-outline',
@@ -423,16 +426,16 @@ export class ChoroplethRenderer {
         source: sourceId,
         filter: layerFilter,
         paint: {
-          'line-color': '#6b7280',
+          'line-color': outlineColor,
           'line-width': 1,
-          'line-opacity': 0.8,
+          'line-opacity': outlineOpacity,
         },
       })
     } else {
       this.map.setFilter('choropleth-outline', layerFilter)
-      this.map.setPaintProperty('choropleth-outline', 'line-color', '#6b7280')
+      this.map.setPaintProperty('choropleth-outline', 'line-color', outlineColor)
       this.map.setPaintProperty('choropleth-outline', 'line-width', 1)
-      this.map.setPaintProperty('choropleth-outline', 'line-opacity', 0.8)
+      this.map.setPaintProperty('choropleth-outline', 'line-opacity', outlineOpacity)
     }
 
     const labelPoints = this.buildLabelPoints(geojson.features, locationLevel, settings.valueLabelFormat ?? '1,000.0')

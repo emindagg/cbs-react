@@ -163,6 +163,10 @@ export interface VisualizationSettings {
   labelColor?: string;
   /** Değer etiketlerinin rengi (hex). Varsayılan: #000000 */
   valueColor?: string;
+  /** İl/İlçe dış sınır rengi (hex). Varsayılan: #6b7280 */
+  outlineColor?: string;
+  /** İl/İlçe dış sınır şeffaflığı 0-1. Varsayılan: 0.8 */
+  outlineOpacity?: number;
 }
 
 export interface CurrentVisualization {

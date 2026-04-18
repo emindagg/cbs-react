@@ -134,6 +134,8 @@ export function useVizRender({
     vizSettings.noDataColor ?? '#e4e4e4',
     vizSettings.labelColor ?? '#000000',
     vizSettings.valueColor ?? '#000000',
+    vizSettings.outlineColor ?? '#6b7280',
+    vizSettings.outlineOpacity ?? 0.8,
   ].join('-')
 
   const prevDataVizKeyRef = useRef<string | null>(null)
