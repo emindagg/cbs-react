@@ -33,6 +33,48 @@ describe('customRange helpers', () => {
     expect(range).toBeNull()
   })
 
+  it('ignores NaN/Infinity when computing auto bounds', () => {
+    const range = resolveCustomRange(
+      { enabled: true, min: null, center: null, max: null, outOfRangeMode: 'gray' },
+      [2, Number.NaN, 10, Number.POSITIVE_INFINITY, 7],
+    )
+    expect(range).toEqual({
+      enabled: true,
+      min: 2,
+      max: 10,
+      outOfRangeMode: 'gray',
+    })
+  })
+
+  it('returns null when values array contains only non-finite numbers and bounds are missing', () => {
+    const range = resolveCustomRange(
+      { enabled: true, min: null, center: null, max: null, outOfRangeMode: 'gray' },
+      [Number.NaN, Number.POSITIVE_INFINITY],
+    )
+    expect(range).toBeNull()
+  })
+
+  it('returns null when values is empty and bounds are missing', () => {
+    const range = resolveCustomRange(
+      { enabled: true, min: null, center: null, max: null, outOfRangeMode: 'gray' },
+      [],
+    )
+    expect(range).toBeNull()
+  })
+
+  it('uses explicit bounds even if values array is empty', () => {
+    const range = resolveCustomRange(
+      { enabled: true, min: 0, center: null, max: 100, outOfRangeMode: 'gray' },
+      [],
+    )
+    expect(range).toEqual({
+      enabled: true,
+      min: 0,
+      max: 100,
+      outOfRangeMode: 'gray',
+    })
+  })
+
   it('checks in-range and clamp behavior', () => {
     const range = resolveCustomRange(
       { enabled: true, min: 2, center: null, max: 10, outOfRangeMode: 'gray' },
