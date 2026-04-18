@@ -410,6 +410,70 @@ describe('useVizRender regressions', () => {
     })
   })
 
+  it('applies display-only updates to the active rendered type without auto-switching visualization type', async () => {
+    const map = createMapMock()
+
+    useVisualizationStore.getState().setVizSettings(choroplethSettings)
+
+    const initialProps = {
+      columnMapping: {
+        dataColumn: 'value',
+        locationLevel: 'province' as const,
+      },
+      map,
+      matchResults,
+      vizSettings: useVisualizationStore.getState().vizSettings,
+    }
+
+    const { result, rerender } = renderHook((props: typeof initialProps) => useVizRender(props), {
+      initialProps,
+    })
+
+    await act(async () => {
+      await result.current.handleRender()
+    })
+
+    await waitFor(() => {
+      expect(renderChoroplethMock).toHaveBeenCalledTimes(1)
+      expect(result.current.hasRendered).toBe(true)
+    })
+
+    act(() => {
+      useVisualizationStore.getState().setVizSettings({
+        type: 'dot',
+        showLabels: true,
+        showValues: true,
+        dataOnlyMode: true,
+      })
+      rerender({
+        ...initialProps,
+        vizSettings: useVisualizationStore.getState().vizSettings,
+      })
+    })
+
+    await waitFor(() => {
+      expect(updateDisplayOptionsMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'choropleth',
+          showLabels: true,
+          showValues: true,
+          dataOnlyMode: true,
+        }),
+      )
+    })
+
+    expect(renderChoroplethMock).toHaveBeenCalledTimes(1)
+    expect(renderPointMock).not.toHaveBeenCalled()
+    expect(useVisualizationStore.getState().currentVisualization.renderSettings).toEqual(
+      expect.objectContaining({
+        type: 'choropleth',
+        showLabels: true,
+        showValues: true,
+        dataOnlyMode: true,
+      }),
+    )
+  })
+
   it('surfaces a toast error when there is no map instance', async () => {
     useVisualizationStore.getState().setVizSettings(choroplethSettings)
 

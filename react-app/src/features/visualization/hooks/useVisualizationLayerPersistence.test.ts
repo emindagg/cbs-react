@@ -205,6 +205,31 @@ describe('useVisualizationLayerPersistence', () => {
     })
   })
 
+  it('does not rehydrate when the active visualization layer already exists on the map', () => {
+    const map = createMapMock()
+    map.getLayer = vi.fn((layerId: string) => (
+      layerId === 'choropleth-fill'
+        ? { id: 'choropleth-fill' }
+        : undefined
+    ))
+
+    useMapStore.setState({ mapInstance: map as unknown as maplibregl.Map })
+    useVisualizationStore.setState({
+      currentVisualization: {
+        type: 'choropleth',
+        data: [{ location: 'Ankara', value: 10 }],
+        column: 'value',
+        locationLevel: 'province',
+        renderSettings: validSettings,
+      },
+    })
+
+    renderHook(() => useVisualizationLayerPersistence())
+    map.triggerStyleData()
+
+    expect(renderChoroplethMock).not.toHaveBeenCalled()
+  })
+
   it('skips rehydrate during render transaction and resumes after it ends', async () => {
     const map = createMapMock()
     useMapStore.setState({ mapInstance: map as unknown as maplibregl.Map })
