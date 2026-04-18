@@ -1,18 +1,19 @@
-# Görev: Renderer ve yardımcı hesap akışı incelemesi
-Tarih: 2026-04-17
+# Görev: Koroplet, bubble ve nokta harita testlerini güncelle
+Tarih: 2026-04-18
 
 ## Bağlam
-Kullanıcı, `ChoroplethRenderer`, `BubbleRenderer`, `PointRenderer` ile bunların bağlı yardımcıları olan `classification`, `interpolation`, `normalization`, `mapExpressions`, `symbolShapes`, `colorSchemes` modüllerinin incelenmesini istiyor.
-Amaç kod yazmak değil; gerçek bugları ve hesaplama tutarsızlıklarını doğrulanabilir bulgular halinde raporlamak.
+Kullanıcı, koroplet harita, bubble map ve nokta harita oluşturma akışlarıyla ilgili testlerin güncellenmesini istiyor. Mevcut kapsam `useVizRender`, görselleştirme katmanı geri yükleme akışı ve ilgili legend/snapshot davranışları etrafında toplanıyor; testleri güncel render davranışıyla hizalamak gerekiyor.
 
 ## Plan
-- [x] Adım 1: Proje kökü, scriptler ve ilgili kaynak dosyaları okuyup render zincirini çıkar.
-- [x] Adım 2: Renderer ve yardımcı modülleri birlikte inceleyip veri akışı, sınır durumları ve hesaplamaları doğrula.
-- [x] Adım 3: İlgili testleri ve kullanım izlerini kontrol edip yalnızca doğrulanabilir bug/tutarsızlık bulgularını derle.
+- [ ] Adım 1: İlgili render ve persistence kodunu okuyup güncel davranışları netleştir.
+- [ ] Adım 2: Koroplet, bubble ve nokta harita oluşturma akışlarını kapsayan testleri güncelle veya eksik senaryoları ekle.
+- [ ] Adım 3: İlgili Vitest dosyalarını çalıştırıp başarısızlıkları gider.
+- [ ] Adım 4: Değişiklikleri diff ve encoding açısından kontrol edip sonucu özetle.
 
 ## Doğrulama kriterleri
-- [x] Her bulgu belirli dosya ve satır referansına dayanıyor.
-- [x] Bulgular gerçek davranış farkı, bug veya hesaplama tutarsızlığı içeriyor; varsayımsal stil eleştirisi içermiyor.
+- [ ] Koroplet, bubble ve nokta harita render akışları için ilgili testler geçiyor.
+- [ ] Güncellenen testler mevcut davranışı doğruluyor; eski davranış varsayımlarına dayanmıyor.
+- [ ] Düzenlenen dosyalarda Türkçe karakterler ve UTF-8 bütünlüğü korunuyor.
 
 ## Sonuç
-İnceleme tamamlandı. Renderer ve yardımcılarda doğrulanabilir buglar ile hesaplama tutarsızlıkları raporlandı; kod değişikliği yapılmadı.
+Henüz tamamlanmadı.

@@ -118,12 +118,15 @@ export class ChoroplethRenderer {
     } else {
       colorExpression = buildStepExpression('dataValue', breaks, colorPalette, NO_DATA_COLOR)
 
-      // Özel sınıflarda: max sınır değerini aşan veriler gri renk alır
-      // (MapLibre step ifadesi son rengi sınırsız olarak değerlerin üstüne de uygular)
+      // Özel sınıflarda: min değerinin altında ve max sınır değerini aşan veriler gri renk alır
+      // (MapLibre step ifadesi ilk rengi sınırsız olarak değerlerin altına, son rengi üstüne uygular)
       if (isCustom) {
+        const minBreak = breaks[0]
         const maxBreak = breaks[breaks.length - 1]
         colorExpression = [
           'case',
+          ['<', ['get', 'dataValue'], minBreak],
+          NO_DATA_COLOR,
           ['>', ['get', 'dataValue'], maxBreak],
           NO_DATA_COLOR,
           colorExpression,
