@@ -328,15 +328,19 @@ export class BubbleRenderer {
       const colorValue = isBivariate
         ? this.getDataValue(feature, colorDataMap, normalizedFeatureName, locationLevel)
         : dataValue
-      const inCustomRange = colorValue !== undefined
-        ? isValueInCustomRange(colorValue, resolvedRange ?? null)
+      // Bivariate modunda colorValue `undefined` (getDataValue) olabilir; null coercion
+      // (`null >= min` → 0) ve NaN karşılaştırmalarını önlemek için Number.isFinite kullanıyoruz.
+      const hasValidColorValue = Number.isFinite(colorValue)
+      const inCustomRange = hasValidColorValue
+        ? isValueInCustomRange(colorValue as number, resolvedRange ?? null)
         : false
 
       // Custom break modunda sınır dışı kalan feature'lar görünmez baloncuk üretir:
       // boyut hesabı devam eder ama renk NO_DATA_COLOR (transparent) alır.
       // Bu feature'ları tamamen atlamak daha tutarlı bir kullanıcı deneyimi sağlar.
-      if (colorBreaks && colorValue !== undefined) {
-        if (colorValue < colorBreaks[0] || colorValue > colorBreaks[colorBreaks.length - 1]) return
+      if (colorBreaks && hasValidColorValue) {
+        const v = colorValue as number
+        if (v < colorBreaks[0] || v > colorBreaks[colorBreaks.length - 1]) return
       }
 
       // Calculate centroid - only process Polygon/MultiPolygon geometries
