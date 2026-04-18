@@ -25,6 +25,7 @@ const INTERACTIVE_MARKER_CLASSNAME = 'astro-interactive-marker'
 
 export function useAstroMap() {
   const map = useMapStore(state => state.mapInstance)
+  const isGlobeMode = useMapStore(state => state.isGlobeMode)
   const { isEnabled, currentDate, moonPhaseAngle, features, isPlaying, speed, setCurrentDate, setMoonPhaseAngle } = useAstroStore()
   const animationFrameRef = useRef<number | null>(null)
   const lastUpdateRef = useRef<number>(0)
@@ -338,6 +339,43 @@ export function useAstroMap() {
     if (!map || !isEnabled) return
     updateAstroData(map, currentDate, features.eclipses)
   }, [map, isEnabled, currentDate, features.eclipses])
+
+  // Projection change — MapLibre keeps sources but their tile buckets can end up
+  // in a stale/empty state (e.g. wide polygons crossing the antimeridian).
+  // Full cleanup + re-create purges bucket state reliably.
+  useEffect(() => {
+    if (!map || !isEnabled) return
+
+    const refresh = () => {
+      if (!map.isStyleLoaded()) return
+
+      cleanupAstroLayers(map)
+      setupAstroLayers(map)
+
+      const { features: liveFeatures } = useAstroStore.getState()
+      updateAstroData(map, currentDateRef.current, liveFeatures.eclipses)
+
+      const setV = (id: string, v: boolean) => {
+        if (map.getLayer(id)) {
+          map.setLayoutProperty(id, 'visibility', v ? 'visible' : 'none')
+        }
+      }
+      setV('astro-night-shadow', liveFeatures.terminator)
+      setV('astro-terminator-line', liveFeatures.terminator)
+      setV('astro-axial-line', liveFeatures.axialTilt)
+      setV('astro-axial-label', liveFeatures.axialTilt)
+      setV('astro-eclipse-marker', liveFeatures.eclipses)
+      setV('astro-eclipse-label', liveFeatures.eclipses)
+    }
+
+    // Run after all post-setProjection movements (setZoom/setCenter) settle.
+    const runWhenIdle = () => map.once('idle', refresh)
+    runWhenIdle()
+
+    return () => {
+      map.off('idle', refresh)
+    }
+  }, [map, isEnabled, isGlobeMode])
 
   // Animation Loop
   useEffect(() => {
