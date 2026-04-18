@@ -53,6 +53,22 @@ const validSettings: VisualizationSettings = {
   legendType: 'discrete',
 }
 
+const validBubbleSettings: VisualizationSettings = {
+  type: 'bubble',
+  classCount: 5,
+  classificationMethod: 'jenks',
+  colorScheme: 'teal',
+  legendType: 'discrete',
+}
+
+const validDotSettings: VisualizationSettings = {
+  type: 'dot',
+  classCount: 5,
+  classificationMethod: 'jenks',
+  colorScheme: 'teal',
+  legendType: 'discrete',
+}
+
 describe('useVisualizationLayerPersistence', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -130,6 +146,60 @@ describe('useVisualizationLayerPersistence', () => {
         [{ location: 'Ankara', value: 10 }],
         'value',
         validSettings,
+        'province',
+      )
+    })
+  })
+
+  it('rehydrates active bubble visualization after styledata when layer is missing', async () => {
+    const map = createMapMock()
+    useMapStore.setState({ mapInstance: map as unknown as maplibregl.Map })
+    useVisualizationStore.setState({
+      currentVisualization: {
+        type: 'bubble',
+        data: [{ location: 'Ankara', value: 10, color_metric: 4 }],
+        column: 'value',
+        locationLevel: 'province',
+        renderSettings: validBubbleSettings,
+      },
+    })
+
+    renderHook(() => useVisualizationLayerPersistence())
+    map.triggerStyleData()
+
+    await waitFor(() => {
+      expect(renderBubbleMock).toHaveBeenCalledTimes(1)
+      expect(renderBubbleMock).toHaveBeenCalledWith(
+        [{ location: 'Ankara', value: 10, color_metric: 4 }],
+        'value',
+        validBubbleSettings,
+        'province',
+      )
+    })
+  })
+
+  it('rehydrates active point visualization after styledata when layer is missing', async () => {
+    const map = createMapMock()
+    useMapStore.setState({ mapInstance: map as unknown as maplibregl.Map })
+    useVisualizationStore.setState({
+      currentVisualization: {
+        type: 'dot',
+        data: [{ location: 'Ankara', value: 10 }],
+        column: 'value',
+        locationLevel: 'province',
+        renderSettings: validDotSettings,
+      },
+    })
+
+    renderHook(() => useVisualizationLayerPersistence())
+    map.triggerStyleData()
+
+    await waitFor(() => {
+      expect(renderPointMock).toHaveBeenCalledTimes(1)
+      expect(renderPointMock).toHaveBeenCalledWith(
+        [{ location: 'Ankara', value: 10 }],
+        'value',
+        validDotSettings,
         'province',
       )
     })

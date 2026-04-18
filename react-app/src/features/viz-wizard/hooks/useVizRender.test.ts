@@ -93,6 +93,17 @@ const bubbleSettings: VisualizationSettings = {
   symbolStrokeWidth: 0.5,
 }
 
+const dotSettings: VisualizationSettings = {
+  type: 'dot',
+  classCount: 5,
+  classificationMethod: 'jenks',
+  colorScheme: 'teal',
+  legendType: 'discrete',
+  dotColor: '#2d6a4f',
+  dotOpacity: 0.85,
+  dotSize: 2.4,
+}
+
 describe('useVizRender regressions', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -234,6 +245,169 @@ describe('useVizRender regressions', () => {
       'circle-color',
       expect.anything(),
     )
+  })
+
+  it('normalizes bubble size and color columns before rendering and stores the normalized snapshot', async () => {
+    const map = createMapMock()
+    const normalizedMatchResults: MatchResults = {
+      successful: [
+        {
+          rowIndex: 0,
+          matched: true,
+          ambiguous: false,
+          location: 'Ankara',
+          province: 'Ankara',
+          value: 100,
+          originalData: {
+            city: 'Ankara',
+            value: 100,
+            color_metric: 50,
+            population: 10,
+          },
+        },
+      ],
+      ambiguous: [],
+      failed: [],
+    }
+
+    useVisualizationStore.getState().setVizSettings({
+      ...bubbleSettings,
+      normalization: 'field',
+      normalizationField: 'population',
+    })
+
+    const { result } = renderHook(() =>
+      useVizRender({
+        columnMapping: {
+          dataColumn: 'value',
+          locationLevel: 'province',
+        },
+        map,
+        matchResults: normalizedMatchResults,
+        vizSettings: useVisualizationStore.getState().vizSettings,
+      }),
+    )
+
+    await act(async () => {
+      await result.current.handleRender()
+    })
+
+    await waitFor(() => {
+      expect(renderBubbleMock).toHaveBeenCalledTimes(1)
+    })
+
+    expect(renderBubbleMock).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          location: 'Ankara',
+          province: 'Ankara',
+          city: 'Ankara',
+          value: 10,
+          color_metric: 5,
+          population: 10,
+        }),
+      ],
+      'value',
+      expect.objectContaining({
+        type: 'bubble',
+        normalization: 'field',
+        normalizationField: 'population',
+        colorColumn: 'color_metric',
+        valueLabelFormat: '0a',
+      }),
+      'province',
+    )
+
+    expect(useVisualizationStore.getState().currentVisualization).toEqual({
+      type: 'bubble',
+      column: 'value',
+      locationLevel: 'province',
+      data: [
+        expect.objectContaining({
+          location: 'Ankara',
+          province: 'Ankara',
+          city: 'Ankara',
+          value: 10,
+          color_metric: 5,
+          population: 10,
+        }),
+      ],
+      renderSettings: expect.objectContaining({
+        type: 'bubble',
+        normalization: 'field',
+        normalizationField: 'population',
+        colorColumn: 'color_metric',
+        valueLabelFormat: '0a',
+      }),
+    })
+  })
+
+  it('routes dot visualization to the point renderer and stores the active snapshot', async () => {
+    const map = createMapMock()
+
+    useVisualizationStore.getState().setVizSettings(dotSettings)
+
+    const { result } = renderHook(() =>
+      useVizRender({
+        columnMapping: {
+          dataColumn: 'value',
+          locationLevel: 'province',
+        },
+        map,
+        matchResults,
+        vizSettings: useVisualizationStore.getState().vizSettings,
+      }),
+    )
+
+    await act(async () => {
+      await result.current.handleRender()
+    })
+
+    await waitFor(() => {
+      expect(renderPointMock).toHaveBeenCalledTimes(1)
+      expect(result.current.hasRendered).toBe(true)
+    })
+
+    expect(renderPointMock).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          location: 'Ankara',
+          province: 'Ankara',
+          city: 'Ankara',
+          value: 10,
+        }),
+      ],
+      'value',
+      expect.objectContaining({
+        type: 'dot',
+        dotColor: '#2d6a4f',
+        dotOpacity: 0.85,
+        dotSize: 2.4,
+        valueLabelFormat: '0a',
+      }),
+      'province',
+    )
+
+    expect(useVisualizationStore.getState().currentVisualization).toEqual({
+      type: 'dot',
+      column: 'value',
+      locationLevel: 'province',
+      data: [
+        expect.objectContaining({
+          location: 'Ankara',
+          province: 'Ankara',
+          city: 'Ankara',
+          value: 10,
+        }),
+      ],
+      renderSettings: expect.objectContaining({
+        type: 'dot',
+        dotColor: '#2d6a4f',
+        dotOpacity: 0.85,
+        dotSize: 2.4,
+        valueLabelFormat: '0a',
+      }),
+    })
   })
 
   it('surfaces a toast error when there is no map instance', async () => {
