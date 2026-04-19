@@ -1,4 +1,5 @@
 import { getRampColors } from '../services/InterpolationRenderer'
+import { isClassifySupported } from '../services/symbologyConstraints'
 import type {
   InterpolationColorRamp,
   InterpolationConfig,
@@ -128,7 +129,7 @@ export default function InterpolationPanel({
                     key={m}
                     onClick={() => setConfig({ method: m })}
                     className={`text-[10px] font-medium py-1.5 rounded-md transition-colors ${config.method === m
-                        ? 'bg-[#18181b] text-white'
+                        ? 'bg-zinc-900 text-white'
                         : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100'
                       }`}
                   >
@@ -175,7 +176,7 @@ export default function InterpolationPanel({
             </div>
 
             {/* Symbology (Görünüm) — pürüzsüz modda anlamsız (her zaman sürekli renk) */}
-            {config.gridType !== 'smooth' && (
+            {isClassifySupported(config.gridType) && (
               <div>
                 <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
                   Semboloji (Görünüm)
@@ -195,7 +196,7 @@ export default function InterpolationPanel({
             )}
 
             {/* Class Count (Symbology=classify ve smooth değilken gösterilir) */}
-            {config.gridType !== 'smooth' && config.symbology === 'classify' && (
+            {isClassifySupported(config.gridType) && config.symbology === 'classify' && (
               <SliderRow
                 label="Sınıf Sayısı"
                 value={config.classCount}
@@ -246,7 +247,7 @@ export default function InterpolationPanel({
               <button
                 type="button"
                 onClick={() => setConfig({ showPointValues: !config.showPointValues })}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${config.showPointValues ? 'bg-[#18181b]' : 'bg-zinc-300'
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${config.showPointValues ? 'bg-zinc-900' : 'bg-zinc-300'
                   }`}
               >
                 <span
@@ -261,7 +262,7 @@ export default function InterpolationPanel({
               onClick={() => { void runInterpolation() }}
               disabled={!canRun}
               className={`w-full text-[11px] font-semibold py-2 rounded-md transition-colors flex items-center justify-center gap-1.5 ${canRun
-                  ? 'bg-[#18181b] text-white hover:bg-[#27272a]'
+                  ? 'bg-zinc-900 text-white hover:bg-zinc-800'
                   : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'
                 }`}
             >
@@ -296,7 +297,7 @@ export default function InterpolationPanel({
             {/* Deactivate */}
             <button
               onClick={deactivate}
-              className="w-full text-[10px] font-medium py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5 text-[#18181b] bg-zinc-100 hover:bg-zinc-200"
+              className="w-full text-[10px] font-medium py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5 text-zinc-900 bg-zinc-100 hover:bg-zinc-200"
             >
               <i className="fa-solid fa-power-off text-[9px]"></i>
               Analizi Kapat
@@ -336,7 +337,7 @@ function SliderRow({ label, value, min, max, step, format, onChange }: SliderRow
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#18181b]"
+        className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-zinc-900"
       />
     </div>
   )

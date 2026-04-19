@@ -9,7 +9,7 @@ Bu klasör, projenin tüm dokümantasyon dosyalarını içerir.
 ## Geliştirme
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Katkıda bulunma rehberi, kod standartları, test ve PR süreci
-- [FEATURES.md](./FEATURES.md) - Tüm feature'ların detaylı dökümü, public API'leri ve bağımlılık grafiği
+- [FEATURES.md](./FEATURES.md) - Tüm feature'ların detaylı dökümü, public API'leri ve bağımlılık grafiği (Interpolation dahil)
 
 ## Entegrasyonlar
 
@@ -35,4 +35,4 @@ Projeye yeni başlıyorsanız, şu sırayla okuyun:
 
 ---
 
-**Son Güncelleme:** 22 Şubat 2026
+**Son Güncelleme:** 19 Nisan 2026

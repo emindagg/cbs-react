@@ -63,10 +63,11 @@ Notifications: react-hot-toast
 └────────────────────────┬────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────┐
-│                Feature Layer (13 Feature)                │
+│                Feature Layer (20 Feature)                │
 │  map │ visualization │ viz-wizard │ legend │ layers     │
 │  data-management │ data-import │ data-mapper            │
 │  astronomy │ basemap │ clustering │ geocoder │ globe    │
+│  heatmap │ isochrone │ interpolation │ timeline │ ...    │
 └────────────────────────┬────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────┐
@@ -298,8 +299,8 @@ MapProvider (App.tsx)
    ├── bubble-boundary-fill, bubble-circles
    └── dot-density-boundary, dot-density-dots
 4. Data Management Layers (imported/drawn features)
-5. Analysis Layers (buffer, heatmap)
-6. Label & Marker Layers
+5. Analysis Layers (buffer, heatmap, interpolation)
+6. Label & Marker Layers (interpolation value labels dahil)
 ```
 
 ### Basemap Tipleri
@@ -555,5 +556,5 @@ Cross-feature deep import'lar ESLint kuralları ile engellenir:
 
 ---
 
-**Son Güncelleme:** 25 Mart 2026
-**Versiyon:** 2.0.1 (Görselleştirme ve renk ölçeği akışı güncellendi)
+**Son Güncelleme:** 19 Nisan 2026
+**Versiyon:** 2.1.0 (Interpolation feature ve pürüzsüz raster davranışı dokümante edildi)

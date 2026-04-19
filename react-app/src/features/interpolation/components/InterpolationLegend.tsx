@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { getRampColors } from '../services/InterpolationRenderer'
+import { resolveEffectiveSymbology } from '../services/symbologyConstraints'
 import type {
   InterpolationConfig,
   InterpolationLegendSettings,
@@ -153,7 +154,7 @@ export default function InterpolationLegend({
   if (!isActive || !result || error) return null
 
   const { min, max } = result
-  const isClassified = config.symbology === 'classify'
+  const isClassified = resolveEffectiveSymbology(config) === 'classify'
   const stops = isClassified ? Math.max(3, Math.min(config.classCount, 15)) : 7
   const colors = getRampColors(config.colorRamp, stops)
 

@@ -1,13 +1,13 @@
 ﻿# Features Documentation
 
 **Project:** CBS React Map Visualization Platform
-**Last Updated:** 26 Mart 2026
+**Last Updated:** 19 Nisan 2026
 
 ---
 
 ## Genel Bakış
 
-Bu repo artık `src/features/` altında **19 feature modülü** içeriyor. Eski dokümanlardaki `13 feature` ifadesi güncel durumu yansıtmıyor.
+Bu repo artık `src/features/` altında **20 feature modülü** içeriyor. Eski dokümanlardaki `13 feature` ifadesi güncel durumu yansıtmıyor.
 
 Feature'lar hâlâ Vertical Slice yaklaşımıyla organize ediliyor, ancak hepsi aynı ağırlıkta değil:
 - Bazıları tam feature paketi olarak `component + hook + service/renderer + store` içeriyor.
@@ -49,6 +49,7 @@ Güncel uygulama akışı:
 | Geocoder | `src/features/geocoder/` | `SearchContainer`, `useGeocoder` | Üst kontrol alanına gömülü arama ve geocoding akışı |
 | Globe View | `src/features/globe-view/` | `useGlobeView`, `GlobeToggleButton` | Mercator/globe projeksiyon geçişi |
 | Heatmap | `src/features/heatmap/` | `HeatmapPanel`, `useHeatmap`, `useHeatmapStore`, `HeatmapRenderer` | Nokta verilerinden yoğunluk tabanlı ısı haritası üretir |
+| Interpolation | `src/features/interpolation/` | `InterpolationPanel`, `InterpolationLegend`, `useInterpolation`, `useInterpolationStore`, `InterpolationRenderer` | IDW/Kriging enterpolasyon analizi, vektör + pürüzsüz raster görünüm, sürüklenebilir lejant |
 | Isochrone | `src/features/isochrone/` | `IsochronePanel`, `useIsochrone`, `useIsochroneStore` | Erişilebilirlik analizi, isochrone ve rota akışı |
 | Layers | `src/features/layers/` | `LayersPanel`, `useOverlayLayers` | Hazır overlay katmanlarını yükler ve stillerini yönetir |
 | Legend | `src/features/legend/` | `LegendContainer`, `DynamicLegend`, `ColorLegend`, `BubbleSizeLegend`, `DotDensityLegend` | Görselleştirme tipine göre uygun legend bileşenini seçer |
@@ -172,6 +173,20 @@ Feature imported/drawn nokta verilerinden yoğunluk haritası üretir.
 - `AppLayout` paneli mount eder.
 - `useHeatmap` sayısal alanlar, preset'ler ve görünür veri üzerinden konfigürasyonu yönetir.
 - `HeatmapRenderer` MapLibre katman üretiminden sorumludur.
+
+### Interpolation
+
+**Path:** `src/features/interpolation/`
+**Public API:** `InterpolationPanel`, `InterpolationLegend`, `useInterpolation`, `useInterpolationStore`, `InterpolationRenderer`, tipler
+
+Feature, nokta verilerinden IDW/Kriging tabanlı enterpolasyon yüzeyi üretir.
+- Aktivasyon `GISToolsControl` üzerinden yapılır; panel `AppLayout` içinde mount edilir.
+- Hesaplama tarafında ağır işlemler Web Worker'da yürütülür (`interpolation.worker.ts`), render tarafı `InterpolationRenderer` ile yönetilir.
+- `gridType` modları: vektör (`square`, `triangle`, `hex`, `isoband`) + raster (`smooth` / pürüzsüz).
+- Pürüzsüz modda sonuç raster olarak üretilir; renkleme canvas + image source + raster layer akışıyla uygulanır.
+- `InterpolationLegend` harita üstünde floating/sürüklenebilir çalışır; başlığı kullanıcı düzenleyebilir.
+- Nokta değerlerini harita üzerinde gösterme seçeneği vardır; değer katmanları dolgu/raster katmanlarının üstüne taşınacak şekilde yönetilir.
+- İş kuralı: `smooth` modunda sınıflandırılmış semboloji desteklenmez; UI tarafında seçenek gizlenir, renderer tarafında efektif semboloji `stretch`e düşürülür (tek kaynak kuralı: `symbologyConstraints.ts`).
 
 ### Isochrone
 
@@ -308,11 +323,13 @@ Not: Her feature kendi local store'una sahip değildir. Özellikle `visualizatio
 ## Önemli Güncelleme Notları
 
 Bu dokümanın önceki sürümüne göre düzeltilen başlıca noktalar:
-- Feature sayısı `13` değil `19`
+- Feature sayısı `13` değil `20`
 - `Map` feature kapsamı artık zaman çizelgesi, yükselti profili aracı ve geniş GIS tools menüsünü de içeriyor
 - `Layers` feature'ı genel “il/ilçe sınırları” anlatısından ziyade belirli overlay katalogları etrafında çalışıyor
 - `Data Import` ile `Data Management` artık ayrı sorumluluklarla belgeleniyor; kanonik veri yaşam döngüsü `data-management` tarafında
 - `Data Mapper` public hook açmıyor; esas olarak düzenleme/eşleme UI modülü
+- `Interpolation` feature'ı eklendi: IDW/Kriging, pürüzsüz raster görünüm, floating lejant ve nokta değer label katmanları
+- Pürüzsüz modda semboloji davranışı netleştirildi: sınıflandırma değil sürekli geçiş
 - `Visualization` tarafında `ChoroplethSettings` public API'si yok
 - `Viz Wizard` adımlarının rolü değişmiş durumda; özellikle Step 3 yalnız stil ayarı değil, render ve sunum ayarlarının merkezi
 - `Geocoder` servis adı `geocoderApi` değil `geocoderService`
@@ -331,4 +348,4 @@ Bu dokümanın önceki sürümüne göre düzeltilen başlıca noktalar:
 ---
 
 **Maintainers:** Development Team
-**Last Review:** 26 Mart 2026
+**Last Review:** 19 Nisan 2026

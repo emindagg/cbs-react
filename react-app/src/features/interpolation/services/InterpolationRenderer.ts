@@ -8,6 +8,7 @@ import type {
   InterpolationRaster,
   InterpolationResult,
 } from '../types'
+import { resolveEffectiveSymbology } from './symbologyConstraints'
 
 const SOURCE_ID = 'interpolation-source'
 const FILL_LAYER_ID = 'interpolation-fill'
@@ -113,9 +114,8 @@ function rasterToImageData(
   const { width, height, values } = raster
   const safeMax = max > min ? max : min + 1
   const range = safeMax - min
-  // Pürüzsüz (raster) modda her zaman sürekli renk geçişi uygulanır.
-  // Sınıflandırılmış görünüm sadece vektör (kare/üçgen/altıgen/eş değer alanları) modlarında geçerlidir.
-  const isClassified = config.gridType !== 'smooth' && config.symbology === 'classify'
+  // Pürüzsüz modda symbology kısıtı symbologyConstraints helper'ı tarafından uygulanır.
+  const isClassified = resolveEffectiveSymbology(config) === 'classify'
 
   const data = new Uint8ClampedArray(width * height * 4)
 
@@ -195,7 +195,7 @@ export class InterpolationRenderer {
     min: number,
     max: number,
   ): void {
-    const isClassified = config.symbology === 'classify'
+    const isClassified = resolveEffectiveSymbology(config) === 'classify'
     const expression = buildFillColorExpression(
       min,
       max,
