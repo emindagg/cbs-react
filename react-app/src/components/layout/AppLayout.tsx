@@ -10,6 +10,7 @@ import { ElevationProfilePanel, useElevationProfile } from '@/features/elevation
 import { SearchContainer } from '@/features/geocoder'
 import { GlobeToggleButton } from '@/features/globe-view'
 import { HeatmapPanel, useHeatmap } from '@/features/heatmap'
+import { InterpolationLegend, InterpolationPanel, useInterpolation } from '@/features/interpolation'
 import { IsochronePanel, useIsochrone } from '@/features/isochrone'
 import { LayersPanel, useOverlayLayers } from '@/features/layers'
 import { LegendContainer } from '@/features/legend'
@@ -58,6 +59,9 @@ export default function AppLayout() {
 
   // Spatial analysis (Convex Hull, Voronoi)
   const spatial = useSpatialAnalysis()
+
+  // Interpolation (IDW, Kriging)
+  const interpolation = useInterpolation()
 
   // Isochrone accessibility analysis
   const isochrone = useIsochrone()
@@ -188,6 +192,33 @@ export default function AppLayout() {
         onNearestPointsConfigChange={spatial.setNearestPointsConfig}
         onClose={() => spatial.setPanelOpen(false)}
         onDeactivate={spatial.deactivate}
+      />
+
+      {/* Interpolation Panel */}
+      <InterpolationPanel
+        isActive={interpolation.isActive}
+        isPanelOpen={interpolation.isPanelOpen}
+        config={interpolation.config}
+        isProcessing={interpolation.isProcessing}
+        error={interpolation.error}
+        numericColumns={interpolation.numericColumns}
+        pointCount={interpolation.pointCount}
+        hasData={interpolation.hasData}
+        setConfig={interpolation.setConfig}
+        setPanelOpen={interpolation.setPanelOpen}
+        runInterpolation={interpolation.runInterpolation}
+        deactivate={interpolation.deactivate}
+      />
+
+      {/* Interpolation Legend (floating, harita üzerinde) */}
+      <InterpolationLegend
+        isActive={interpolation.isActive}
+        result={interpolation.result}
+        error={interpolation.error}
+        config={interpolation.config}
+        legend={interpolation.legend}
+        setLegendTitle={interpolation.setLegendTitle}
+        setLegendPosition={interpolation.setLegendPosition}
       />
 
       {/* Isochrone Panel */}
