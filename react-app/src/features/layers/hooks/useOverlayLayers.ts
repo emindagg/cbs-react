@@ -70,6 +70,10 @@ function getLandCoverFillColorExpression(): ExpressionSpecification {
   ] as ExpressionSpecification
 }
 
+function getLayerOpacity(definition: OverlayLayerDefinition, layerState: OverlayLayerState): number {
+  return definition.id === LAND_COVER_LAYER_ID ? 1 : layerState.opacity
+}
+
 async function fetchGeoJsonFromUrl(url: string): Promise<FeatureCollection<Geometry>> {
   const response = await fetch(url)
   if (!response.ok) {
@@ -144,7 +148,7 @@ function ensureLayerOnMap(
       source: sourceId,
       paint: {
         'fill-color': definition.id === LAND_COVER_LAYER_ID ? getLandCoverFillColorExpression() : layerState.color,
-        'fill-opacity': layerState.opacity,
+        'fill-opacity': getLayerOpacity(definition, layerState),
       },
     })
   }
@@ -155,9 +159,9 @@ function ensureLayerOnMap(
       type: 'line',
       source: sourceId,
       paint: {
-        'line-color': '#000000',
+        'line-color': definition.id === LAND_COVER_LAYER_ID ? getLandCoverFillColorExpression() : '#000000',
         'line-width': 1,
-        'line-opacity': 0.5,
+        'line-opacity': definition.id === LAND_COVER_LAYER_ID ? 1 : 0.5,
       },
     })
   }
@@ -197,7 +201,16 @@ function applyLayerStyles(map: MapLibreMap, definition: OverlayLayerDefinition, 
       'fill-color',
       definition.id === LAND_COVER_LAYER_ID ? getLandCoverFillColorExpression() : layerState.color,
     )
-    map.setPaintProperty(definition.id, 'fill-opacity', layerState.opacity)
+    map.setPaintProperty(definition.id, 'fill-opacity', getLayerOpacity(definition, layerState))
+  }
+
+  if (definition.type === 'fill' && map.getLayer(`${definition.id}-outline`)) {
+    map.setPaintProperty(
+      `${definition.id}-outline`,
+      'line-color',
+      definition.id === LAND_COVER_LAYER_ID ? getLandCoverFillColorExpression() : '#000000',
+    )
+    map.setPaintProperty(`${definition.id}-outline`, 'line-opacity', definition.id === LAND_COVER_LAYER_ID ? 1 : 0.5)
   }
 
   if (definition.type === 'circle' && map.getLayer(definition.id)) {

@@ -49,7 +49,7 @@ export const OVERLAY_LAYER_DEFINITIONS: OverlayLayerDefinition[] = [
     url: 'https://raw.githubusercontent.com/emindagg/katman_verisi/main/corine_2018.geojson',
     type: 'fill',
     color: '#ffffff',
-    opacity: 0.7,
+    opacity: 1,
   },
 ]
 
