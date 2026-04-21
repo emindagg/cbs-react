@@ -106,6 +106,7 @@ export const useTimelineStore = create<TimelineState>((set, get) => ({
   setCurrentEnd: (end) => set({ currentEnd: end }),
   setCurrentRange: (_start, end) => set({ currentEnd: end }),
   setPlaying: (playing) => set({ isPlaying: playing }),
+  // eslint-disable-next-line no-magic-numbers
   setPlaySpeed: (speed) => set({ playSpeed: Math.max(100, Math.min(2000, speed)) }),
   setFilterMode: (mode) => set({ filterMode: mode }),
   setTimeStep: (step) => set({ timeStep: step }),

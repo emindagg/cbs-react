@@ -102,17 +102,21 @@ function scoreHeaderCandidate(matrix: string[][], rowIndex: number, lastNonEmpty
 
   if (nonEmptyCount === 0) return Number.NEGATIVE_INFINITY
   if (nonEmptyCount === 1) {
+    // eslint-disable-next-line no-magic-numbers
     return nonEmptyValues[0].length > 24 ? -36 : -24
   }
 
   const uniqueCount = new Set(nonEmptyValues.map((value) => value.toLocaleLowerCase('tr-TR'))).size
   const textLikeCount = nonEmptyValues.filter(hasLetter).length
   const numericLikeCount = nonEmptyValues.filter(isNumericLike).length
+  // eslint-disable-next-line no-magic-numbers
   const longTextCount = nonEmptyValues.filter((value) => value.length > 48).length
 
   let score = 0
+  // eslint-disable-next-line no-magic-numbers
   score += Math.min(nonEmptyCount, 8) * 4
   score += (uniqueCount / nonEmptyCount) * 10
+  // eslint-disable-next-line no-magic-numbers
   score += (textLikeCount / nonEmptyCount) * 22
   score -= (numericLikeCount / nonEmptyCount) * 16
   score -= longTextCount * 5
@@ -135,7 +139,9 @@ function scoreHeaderCandidate(matrix: string[][], rowIndex: number, lastNonEmpty
       return supported / nonEmptyCount
     })
     const averageSupport = supportRatios.reduce((total, value) => total + value, 0) / supportRatios.length
+    // eslint-disable-next-line no-magic-numbers
     if (averageSupport >= 0.45) score += 18
+    // eslint-disable-next-line no-magic-numbers
     else if (averageSupport >= 0.25) score += 8
     else score -= 12
 

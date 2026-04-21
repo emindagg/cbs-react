@@ -110,7 +110,9 @@ export class HeatmapRenderer {
       source: SOURCE_ID,
       paint: {
         'circle-radius': ['interpolate', ['linear'], ['zoom'],
+           
           ZOOM_THRESHOLD, 3,
+          // eslint-disable-next-line no-magic-numbers
           18, 8,
         ] as Parameters<Map['setPaintProperty']>[2],
         'circle-color': lastColor,
@@ -132,6 +134,7 @@ export class HeatmapRenderer {
       5,  radius,
       9,  radius * 2.5,
       12, radius * 6,
+      // eslint-disable-next-line no-magic-numbers
       15, radius * 14,
     ]
   }

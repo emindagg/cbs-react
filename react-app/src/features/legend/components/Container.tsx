@@ -190,10 +190,13 @@ export default function Container() {
             label = '> 1.5 Std. S. (Çok Yüksek)'
           } else {
             // Check inner ranges to apply specific labels
+             
             if (zMinNum >= 0.5 && zMaxNum <= 1.5) {
               label = '0.5 - 1.5 Std. S. (Yüksek)'
+            // eslint-disable-next-line no-magic-numbers
             } else if (zMinNum >= -0.5 && zMaxNum <= 0.5) {
               label = '-0.5 - 0.5 Std. S. (Ortalama)'
+            // eslint-disable-next-line no-magic-numbers
             } else if (zMinNum >= -1.5 && zMaxNum <= -0.5) {
               label = '-1.5 - -0.5 Std. S. (Düşük)'
             } else {

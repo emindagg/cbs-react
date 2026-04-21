@@ -6,17 +6,26 @@ const LINE_LAYER_ID = 'isochrone-route-line'
 const DEST_LAYER_ID = 'isochrone-route-dest'
 const PIN_IMAGE_ID = 'isochrone-dest-pin'
 
+const PIN_SIZE_PX = 48
+const PIN_RADIUS_RATIO = 0.28
+const PIN_TIP_Y_RATIO = 0.88
+const PIN_TOP_Y_RATIO = 0.14
+const PIN_CURVE_H_RATIO = 1.05
+const PIN_CURVE_V_RATIO = 1.1
+const PIN_TEARDROP_RATIO = 2.2
+const PIN_INNER_DOT_RATIO = 0.38
+
 /** Draw a teardrop location pin onto a canvas and return ImageData */
-function createPinImage(size = 48): ImageData {
+function createPinImage(size = PIN_SIZE_PX): ImageData {
   const canvas = document.createElement('canvas')
   canvas.width = size
   canvas.height = size
   const ctx = canvas.getContext('2d')!
 
   const cx = size / 2
-  const r = size * 0.28        // circle radius
-  const tipY = size * 0.88     // tip of the pin
-  const topY = size * 0.14     // top of the circle center
+  const r = size * PIN_RADIUS_RATIO        // circle radius
+  const tipY = size * PIN_TIP_Y_RATIO     // tip of the pin
+  const topY = size * PIN_TOP_Y_RATIO     // top of the circle center
 
   ctx.clearRect(0, 0, size, size)
 
@@ -28,8 +37,8 @@ function createPinImage(size = 48): ImageData {
   // Pin body path: circle top + teardrop bottom
   ctx.beginPath()
   ctx.arc(cx, topY + r, r, Math.PI, 0)  // top semicircle
-  ctx.quadraticCurveTo(cx + r, topY + r * 2.2, cx, tipY)  // right side to tip
-  ctx.quadraticCurveTo(cx - r, topY + r * 2.2, cx, tipY)  // left side to tip (already at tip)
+  ctx.quadraticCurveTo(cx + r, topY + r * PIN_TEARDROP_RATIO, cx, tipY)  // right side to tip
+  ctx.quadraticCurveTo(cx - r, topY + r * PIN_TEARDROP_RATIO, cx, tipY)  // left side to tip (already at tip)
   ctx.closePath()
 
   // Rebuild path cleanly
@@ -38,9 +47,9 @@ function createPinImage(size = 48): ImageData {
   const pinCY = topY + pinR
   // Draw full pin shape
   ctx.moveTo(cx, tipY)
-  ctx.quadraticCurveTo(cx - pinR * 1.05, pinCY + pinR * 1.1, cx - pinR, pinCY)
+  ctx.quadraticCurveTo(cx - pinR * PIN_CURVE_H_RATIO, pinCY + pinR * PIN_CURVE_V_RATIO, cx - pinR, pinCY)
   ctx.arc(cx, pinCY, pinR, Math.PI, 0)
-  ctx.quadraticCurveTo(cx + pinR * 1.05, pinCY + pinR * 1.1, cx, tipY)
+  ctx.quadraticCurveTo(cx + pinR * PIN_CURVE_H_RATIO, pinCY + pinR * PIN_CURVE_V_RATIO, cx, tipY)
   ctx.closePath()
 
   ctx.fillStyle = '#2563eb'
@@ -50,7 +59,7 @@ function createPinImage(size = 48): ImageData {
 
   // Inner white dot
   ctx.beginPath()
-  ctx.arc(cx, pinCY, pinR * 0.38, 0, Math.PI * 2)
+  ctx.arc(cx, pinCY, pinR * PIN_INNER_DOT_RATIO, 0, Math.PI * 2)
   ctx.fillStyle = '#ffffff'
   ctx.fill()
 
@@ -113,7 +122,7 @@ export class RouteRenderer {
 
     // Pin icon layer
     if (!this.map.hasImage(PIN_IMAGE_ID)) {
-      const img = createPinImage(48)
+      const img = createPinImage(PIN_SIZE_PX)
       this.map.addImage(PIN_IMAGE_ID, img, { pixelRatio: 2 })
     }
 

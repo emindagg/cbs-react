@@ -202,6 +202,7 @@ export class NearestPointsRenderer {
       layout: {
         'text-field': ['get', 'label'],
         'text-size': 10,
+        // eslint-disable-next-line no-magic-numbers
         'text-offset': [0, -0.8],
         'text-allow-overlap': false,
       },

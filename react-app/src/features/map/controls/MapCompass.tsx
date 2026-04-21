@@ -4,10 +4,13 @@ import { useMapStore } from '@/stores/useMapStore'
 import { useToolStore } from '@/stores/useToolStore'
 
 const DIRECTIONS = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB']
+const DIRECTION_COUNT = DIRECTIONS.length
+const SECTOR_DEGREES = 360 / DIRECTION_COUNT
+const SECTOR_HALF = SECTOR_DEGREES / 2
 
 function getDirectionText(bearing: number): string {
   const normalized = ((bearing % 360) + 360) % 360
-  const index = Math.floor((normalized + 22.5) / 45) % 8
+  const index = Math.floor((normalized + SECTOR_HALF) / SECTOR_DEGREES) % DIRECTION_COUNT
   return DIRECTIONS[index]
 }
 
@@ -56,6 +59,7 @@ export function MapCompass() {
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
+        // eslint-disable-next-line no-magic-numbers
         zIndex: isGisOpen ? 0 : 1200,
         userSelect: 'none',
         background: 'rgba(28,28,30,0.85)',

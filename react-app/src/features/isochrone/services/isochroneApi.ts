@@ -3,6 +3,10 @@ import type { OrsProfile } from '../types'
 const BASE = 'https://api.openrouteservice.org/v2'
 const KEY = import.meta.env.VITE_ORS_API_KEY as string
 
+// ORS hata kodları: yol ağından uzak nokta
+const ORS_ERR_POINT_NOT_NEAR_ROAD = 2010
+const ORS_ERR_ROUTE_NOT_FOUND = 2009
+
 export async function fetchIsochrones(
   profile: OrsProfile,
   origin: [number, number],
@@ -29,7 +33,7 @@ export async function fetchIsochrones(
   if (!res.ok) {
     const json = await res.json().catch(() => null) as { error?: { code?: number; message?: string } } | null
     const code = json?.error?.code
-    if (code === 2010 || code === 2009) {
+    if (code === ORS_ERR_POINT_NOT_NEAR_ROAD || code === ORS_ERR_ROUTE_NOT_FOUND) {
       throw new Error('Seçilen noktanın yakınında yol bulunamadı. Lütfen bir yola yakın noktaya tıklayın.')
     }
     throw new Error(json?.error?.message ?? `İzocron hesaplanamadı (${res.status})`)
@@ -59,7 +63,7 @@ export async function fetchRoute(
   if (!res.ok) {
     const json = await res.json().catch(() => null) as { error?: { code?: number; message?: string } } | null
     const code = json?.error?.code
-    if (code === 2010 || code === 2009) {
+    if (code === ORS_ERR_POINT_NOT_NEAR_ROAD || code === ORS_ERR_ROUTE_NOT_FOUND) {
       throw new Error('Seçilen noktanın yakınında yol bulunamadı. Lütfen bir yola yakın noktaya tıklayın.')
     }
     throw new Error(json?.error?.message ?? `Rota hesaplanamadı (${res.status})`)

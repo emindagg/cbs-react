@@ -108,6 +108,7 @@ export function useGeolocation(): UseGeolocationReturn {
           .addTo(mapInstance)
 
         // Haritayı konuma uçur
+        // eslint-disable-next-line no-magic-numbers
         const zoom = accuracy < 100 ? 15 : accuracy < 1000 ? 13 : 11
         mapInstance.flyTo({
           center: [longitude, latitude],
@@ -224,7 +225,8 @@ function createGeoJSONCircle(
 ): GeoJSON.Feature<GeoJSON.Polygon> {
   const [lng, lat] = center
   const coords: [number, number][] = []
-  const distanceDeg = radiusMeters / 111320 // yaklaşık metre → derece
+  const METERS_PER_DEGREE = 111320 // enlemde yaklaşık 1° uzunluğu (metre)
+  const distanceDeg = radiusMeters / METERS_PER_DEGREE
 
   for (let i = 0; i < points; i++) {
     const angle = (i * 360) / points

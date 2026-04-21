@@ -32,13 +32,17 @@ const ALL_MONTHS = { ...TR_MONTHS, ...EN_MONTHS }
 
 const MIN_TS = 0
 const MAX_TS = 4102444800000
+const MIN_YEAR = 1900
+const MAX_YEAR = 2100
+const MAX_MONTH_INDEX = 11
+const MAX_DAY_OF_MONTH = 31
 
 function isValidTs(ts: number): boolean {
   return !Number.isNaN(ts) && ts > MIN_TS && ts < MAX_TS
 }
 
 function buildDate(y: number, m: number, d: number, h = 0, min = 0, s = 0): Date | null {
-  if (y < 1900 || y > 2100 || m < 0 || m > 11 || d < 1 || d > 31) return null
+  if (y < MIN_YEAR || y > MAX_YEAR || m < 0 || m > MAX_MONTH_INDEX || d < 1 || d > MAX_DAY_OF_MONTH) return null
   const dt = new Date(y, m, d, h, min, s)
   if (Number.isNaN(dt.getTime())) return null
   return dt
@@ -103,18 +107,29 @@ function tryTextDate(str: string): string | undefined {
   return undefined
 }
 
+const UNIX_MS_YEAR_2000 = 946684800000
+const UNIX_S_YEAR_2000 = 946684800
+const UNIX_S_MAX = 4102444800
+const MS_PER_SECOND = 1000
+
 function tryUnixTimestamp(value: unknown): string | undefined {
   if (typeof value !== 'number') return undefined
-  if (value > 946684800000 && value < MAX_TS) return new Date(value).toISOString()
-  if (value > 946684800 && value < 4102444800) return new Date(value * 1000).toISOString()
+  if (value > UNIX_MS_YEAR_2000 && value < MAX_TS) return new Date(value).toISOString()
+  if (value > UNIX_S_YEAR_2000 && value < UNIX_S_MAX) return new Date(value * MS_PER_SECOND).toISOString()
   return undefined
 }
 
+const EXCEL_SERIAL_MAX = 100000
+const EXCEL_EPOCH_YEAR = 1899
+const EXCEL_EPOCH_MONTH = 11
+const EXCEL_EPOCH_DAY = 30
+const MS_PER_DAY = 86400000
+
 function tryExcelSerial(value: unknown): string | undefined {
   if (typeof value !== 'number') return undefined
-  if (value > 1 && value < 100000) {
-    const epoch = new Date(1899, 11, 30)
-    const ms = epoch.getTime() + value * 86400000
+  if (value > 1 && value < EXCEL_SERIAL_MAX) {
+    const epoch = new Date(EXCEL_EPOCH_YEAR, EXCEL_EPOCH_MONTH, EXCEL_EPOCH_DAY)
+    const ms = epoch.getTime() + value * MS_PER_DAY
     if (isValidTs(ms)) return new Date(ms).toISOString()
   }
   return undefined
@@ -193,7 +208,9 @@ export function extractDateFromProperties(props: Record<string, unknown> | undef
   }
 
   for (const [, v] of Object.entries(props)) {
-    if (typeof v === 'string' && v.length >= 6 && v.length <= 35) {
+    const MIN_DATE_LEN = 6
+    const MAX_DATE_LEN = 35
+    if (typeof v === 'string' && v.length >= MIN_DATE_LEN && v.length <= MAX_DATE_LEN) {
       const parsed = parseDate(v)
       if (parsed) return parsed
     }

@@ -75,18 +75,25 @@ function hexToRgb(hex: string): [number, number, number] {
   const full = h.length === 3
     ? h.split('').map((c) => c + c).join('')
     : h
-  const num = parseInt(full, 16)
-  return [(num >> 16) & 0xff, (num >> 8) & 0xff, num & 0xff]
+  const HEX_RADIX = 16
+  const R_SHIFT = 16
+  const G_SHIFT = 8
+  const BYTE_MASK = 0xff
+  const num = parseInt(full, HEX_RADIX)
+  return [(num >> R_SHIFT) & BYTE_MASK, (num >> G_SHIFT) & BYTE_MASK, num & BYTE_MASK]
 }
+
+const LUT_SIZE = 256
+const RGB_CHANNELS = 3
 
 // Sürekli (stretch) mod için renk arama tablosu — 256 ara renk
 function buildStretchLUT(ramp: InterpolationColorRamp): Uint8Array {
-  const colors = getRampColors(ramp, 256).map(hexToRgb)
-  const lut = new Uint8Array(256 * 3)
-  for (let i = 0; i < 256; i++) {
-    lut[i * 3] = colors[i][0]
-    lut[i * 3 + 1] = colors[i][1]
-    lut[i * 3 + 2] = colors[i][2]
+  const colors = getRampColors(ramp, LUT_SIZE).map(hexToRgb)
+  const lut = new Uint8Array(LUT_SIZE * RGB_CHANNELS)
+  for (let i = 0; i < LUT_SIZE; i++) {
+    lut[i * RGB_CHANNELS] = colors[i][0]
+    lut[i * RGB_CHANNELS + 1] = colors[i][1]
+    lut[i * RGB_CHANNELS + 2] = colors[i][2]
   }
   return lut
 }
@@ -375,6 +382,7 @@ export class InterpolationRenderer {
           'text-field': ['coalesce', ['get', 'label'], ['to-string', ['get', 'value']]],
           'text-font': ['Open Sans Bold'],
           'text-size': 12,
+          // eslint-disable-next-line no-magic-numbers
           'text-offset': [0, -0.9],
           'text-allow-overlap': true,
           'text-ignore-placement': true,

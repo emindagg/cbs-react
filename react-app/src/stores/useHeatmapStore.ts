@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 import type { HeatmapColorStop, HeatmapConfig, HeatmapPreset, HeatmapStore } from '@/features/heatmap'
 
+/* eslint-disable no-magic-numbers */
 const PRESETS: Record<HeatmapPreset, HeatmapColorStop[]> = {
   classic: [
     [0, 'rgba(33,102,172,0)'],
@@ -99,6 +100,8 @@ const PRESETS: Record<HeatmapPreset, HeatmapColorStop[]> = {
     [1, 'rgb(255,255,0)'],
   ],
 }
+
+/* eslint-enable no-magic-numbers */
 
 export const HEATMAP_PRESETS = PRESETS
 

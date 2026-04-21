@@ -106,6 +106,7 @@ export function ExcelHeaderPanel({ pending }: ExcelHeaderPanelProps) {
               </th>
               {Array.from({ length: maxCols }).map((_, i) => (
                 <th key={i} className="border-b border-zinc-200 px-3 py-2 text-left font-medium text-zinc-500">
+                  {/* eslint-disable-next-line no-magic-numbers */}
                   {String.fromCharCode(65 + i)}
                 </th>
               ))}

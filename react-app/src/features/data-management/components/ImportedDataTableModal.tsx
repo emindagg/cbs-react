@@ -124,6 +124,7 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
 
   const handleClose = useCallback(() => {
     if (pendingEdits.current.size > 0) {
+      // eslint-disable-next-line no-alert
       const confirmed = window.confirm('Kaydedilmemiş değişiklikler var. Çıkmak istediğinizden emin misiniz?')
       if (!confirmed) return
       pendingEdits.current.clear()

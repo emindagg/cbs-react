@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import * as turf from '@turf/turf'
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { Zap } from 'lucide-react'
@@ -125,6 +126,11 @@ function formatTableMetric(value: number, suffix: string): string {
   return `${value.toFixed(2)} ${suffix}`
 }
 
+const KM_PER_MILE = 1.609344
+const KM_PER_NAUTICAL_MILE = 1.852
+const KM_PER_YARD = 0.0009144
+const KM_PER_FOOT = 0.0003048
+
 function toKilometers(distance: number, unit: unknown): number | null {
   if (!Number.isFinite(distance)) return null
 
@@ -134,13 +140,13 @@ function toKilometers(distance: number, unit: unknown): number | null {
     case 'kilometers':
       return distance
     case 'miles':
-      return distance * 1.609344
+      return distance * KM_PER_MILE
     case 'nauticalmiles':
-      return distance * 1.852
+      return distance * KM_PER_NAUTICAL_MILE
     case 'yards':
-      return distance * 0.0009144
+      return distance * KM_PER_YARD
     case 'feet':
-      return distance * 0.0003048
+      return distance * KM_PER_FOOT
     default:
       return null
   }
@@ -285,6 +291,7 @@ function getItemFillColor(item: DataItem): string | null {
 
 const DRAG_THRESHOLD = 6
 
+// eslint-disable-next-line max-lines-per-function
 export function BufferOptionsControl({ hasBufferResults }: BufferOptionsControlProps) {
   const [isPopupOpen, setIsPopupOpen] = useState(false)
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false)

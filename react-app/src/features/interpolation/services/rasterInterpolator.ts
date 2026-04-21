@@ -14,6 +14,8 @@ import { computeMinMaxFromPoints } from './idwInterpolator'
 const MAX_DIM = 384
 // Aynı konumlu nokta sayılan eşik (derece²) — floating-point tam eşitlik güvenilmez
 const DISTANCE_EPSILON_SQ = 1e-18
+// bbox bileşen minimum genişliği (derece) — 0 bölme hatasını önler
+const BBOX_MIN_SPAN = 1e-9
 
 export interface RasterResult {
   raster: InterpolationRaster
@@ -38,8 +40,8 @@ function computeRasterDimensions(bbox: [number, number, number, number]): {
   width: number
   height: number
 } {
-  const w = Math.max(1e-9, bbox[2] - bbox[0])
-  const h = Math.max(1e-9, bbox[3] - bbox[1])
+  const w = Math.max(BBOX_MIN_SPAN, bbox[2] - bbox[0])
+  const h = Math.max(BBOX_MIN_SPAN, bbox[3] - bbox[1])
   // Enlem etkisini de hesaba kat (cos(lat)) — daha doğru en/boy oranı
   const midLat = (bbox[1] + bbox[3]) / 2
   const aspect = (w * Math.cos((midLat * Math.PI) / 180)) / h

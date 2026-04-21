@@ -22,6 +22,7 @@ import DistanceTool from '../tools/DistanceTool'
 const SPACE_COLOR = '#010108'
 
 // Star positions: [x%, y%, size, opacity]
+/* eslint-disable no-magic-numbers */
 const STARS: [number, number, number, number][] = [
   [5, 8, 1.5, 0.9], [12, 22, 1, 0.7], [18, 5, 2, 0.8], [25, 40, 1, 0.6],
   [33, 15, 1.5, 0.9], [40, 65, 1, 0.7], [48, 30, 2, 1.0], [55, 80, 1, 0.6],
@@ -98,7 +99,7 @@ export default function MapContainer() {
       tileSize: 256,
       attribution: attributionMap[activeBasemap] || '© HGM - Harita Genel Müdürlüğü',
     }
-  }, [activeBasemap])
+  }, [activeBasemap, apiKey])
 
   // "Empty" style for when using raster basemaps or NONE
   // In globe mode, always include a dark background layer so the space shows through

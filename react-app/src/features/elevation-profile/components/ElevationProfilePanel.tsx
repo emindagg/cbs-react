@@ -273,6 +273,7 @@ function ChartContent({
     const last = Math.round(totalDist)
     if (ticks[ticks.length - 1] !== last) {
       // Son tick öncekiyle çakışacak kadar yakınsa onu yerinde güncelle
+      // eslint-disable-next-line no-magic-numbers
       if (last - ticks[ticks.length - 1] < step * 0.99) {
         ticks[ticks.length - 1] = last
       } else {

@@ -6,6 +6,16 @@ import type {
   InterpolationState,
 } from '@/features/interpolation'
 
+const IDW_POWER_MIN = 0.1
+const IDW_POWER_MAX = 10
+const CELL_WIDTH_MIN = 0.1
+const CELL_WIDTH_MAX = 1000
+const CLASS_COUNT_MIN = 3
+const CLASS_COUNT_MAX = 15
+const KRIGING_SIGMA2_MAX = 1e6
+const KRIGING_ALPHA_MIN = 0.01
+const KRIGING_ALPHA_MAX = 1e6
+
 const defaultConfig: InterpolationConfig = {
   method: 'idw',
   valueColumn: '',
@@ -36,19 +46,19 @@ function sanitizeConfigPatch(
 ): Partial<InterpolationConfig> {
   const out: Partial<InterpolationConfig> = { ...partial }
   if (out.idwPower !== undefined) {
-    out.idwPower = clamp(out.idwPower, 0.1, 10, current.idwPower)
+    out.idwPower = clamp(out.idwPower, IDW_POWER_MIN, IDW_POWER_MAX, current.idwPower)
   }
   if (out.cellWidth !== undefined) {
-    out.cellWidth = clamp(out.cellWidth, 0.1, 1000, current.cellWidth)
+    out.cellWidth = clamp(out.cellWidth, CELL_WIDTH_MIN, CELL_WIDTH_MAX, current.cellWidth)
   }
   if (out.classCount !== undefined) {
-    out.classCount = Math.round(clamp(out.classCount, 3, 15, current.classCount))
+    out.classCount = Math.round(clamp(out.classCount, CLASS_COUNT_MIN, CLASS_COUNT_MAX, current.classCount))
   }
   if (out.krigingSigma2 !== undefined) {
-    out.krigingSigma2 = clamp(out.krigingSigma2, 0, 1e6, current.krigingSigma2)
+    out.krigingSigma2 = clamp(out.krigingSigma2, 0, KRIGING_SIGMA2_MAX, current.krigingSigma2)
   }
   if (out.krigingAlpha !== undefined) {
-    out.krigingAlpha = clamp(out.krigingAlpha, 0.01, 1e6, current.krigingAlpha)
+    out.krigingAlpha = clamp(out.krigingAlpha, KRIGING_ALPHA_MIN, KRIGING_ALPHA_MAX, current.krigingAlpha)
   }
   if (out.fillOpacity !== undefined) {
     out.fillOpacity = clamp(out.fillOpacity, 0, 1, current.fillOpacity)

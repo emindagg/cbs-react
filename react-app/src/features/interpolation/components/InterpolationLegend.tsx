@@ -24,6 +24,7 @@ function formatLegendNumber(n: number): string {
   if (abs >= 1000) return n.toFixed(0)
   if (abs >= 100) return n.toFixed(1)
   if (abs >= 1) return n.toFixed(2)
+  // eslint-disable-next-line no-magic-numbers
   if (abs >= 0.01) return n.toFixed(3)
   if (abs === 0) return '0'
   return n.toExponential(2)
@@ -66,17 +67,10 @@ export default function InterpolationLegend({
     active: boolean
   } | null>(null)
 
-  // Ref render sırasında okunamaz; pozisyonu effect'te hesaplar ve state'te tutarız.
+  // Ref render sırasında okunamaz. Container genişliği zaten LEGEND_WIDTH sabit
+  // (container style'da width: LEGEND_WIDTH veriliyor), yüksekliği de içerik sabit
+  // olduğu için DEFAULT_HEIGHT yeterli bir tahmin. Resize'ta yeniden hesaplanır.
   const [fallbackPos, setFallbackPos] = useState(() => computeDefaultPosition())
-
-  // Mount sonrası gerçek container boyutuna göre fallback'i yenile
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const width = el.offsetWidth || LEGEND_WIDTH
-    const height = el.offsetHeight || DEFAULT_HEIGHT
-    setFallbackPos(computeDefaultPosition(width, height))
-  }, [result])
 
   // Pozisyonu viewport dışına düşmesin diye kırpar (event/effect bağlamında çağrılır)
   const clampPosition = useCallback(
@@ -94,9 +88,14 @@ export default function InterpolationLegend({
     [],
   )
 
-  // Viewport yeniden boyutlandırılırsa lejantı içeri çek
+  // Viewport yeniden boyutlandırılırsa lejantı içeri çek ve fallback pozisyonu yenile
   useEffect(() => {
     const handleResize = () => {
+      const el = containerRef.current
+      const width = el?.offsetWidth || LEGEND_WIDTH
+      const height = el?.offsetHeight || DEFAULT_HEIGHT
+      const nextFallback = computeDefaultPosition(width, height)
+      setFallbackPos((prev) => (prev.x === nextFallback.x && prev.y === nextFallback.y ? prev : nextFallback))
       if (!legend.position) return
       setLegendPosition(clampPosition(legend.position))
     }

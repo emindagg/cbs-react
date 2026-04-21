@@ -3,9 +3,13 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useMapStore } from '@/stores/useMapStore'
 
+ 
 const SCALE_STEPS_M = [
+   
   1, 2, 5, 10, 20, 50, 100, 200, 500,
+  // eslint-disable-next-line no-magic-numbers
   1000, 2000, 5000, 10000, 20000, 50000,
+  // eslint-disable-next-line no-magic-numbers
   100000, 200000, 500000, 1000000,
 ]
 const MAX_BAR_WIDTH = 100
