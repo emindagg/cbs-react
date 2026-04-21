@@ -59,7 +59,11 @@
       "Bash(pnpm install *)",
       "mcp__context7__resolve-library-id",
       "Bash(pnpm add *)",
-      "Bash(echo \"---EXIT:$?\")"
+      "Bash(echo \"---EXIT:$?\")",
+      "Bash(awk '{print $NF}')",
+      "Bash(awk '{print $1}')",
+      "Bash(awk '/^D:/{file=$0} /warning/{print file\": \"$0}')",
+      "Bash(echo \"TSC EXIT:$?\")"
     ]
   }
 }

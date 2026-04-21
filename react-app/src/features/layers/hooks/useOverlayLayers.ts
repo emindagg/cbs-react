@@ -7,6 +7,24 @@ import { useMapStore } from '@/stores/useMapStore'
 
 import { OVERLAY_LAYER_BASE_URL, OVERLAY_LAYER_DEFINITIONS, type OverlayLayerDefinition } from '../config/layerDefinitions'
 
+const LAND_COVER_LAYER_ID = 'arazi_ortusu_2018'
+const LAND_COVER_FALLBACK_COLOR = '#ffffff'
+const LAND_COVER_COLOR_BY_CODE: Record<number, string> = {
+  1: '#e31a1c',
+  2: '#ff7f00',
+  3: '#33a02c',
+  4: '#a6cee3',
+  5: '#1f78b4',
+}
+
+export const LAND_COVER_LEGEND_ITEMS = [
+  { code: 1, label: 'Yapay Bölgeler', color: LAND_COVER_COLOR_BY_CODE[1] },
+  { code: 2, label: 'Tarımsal Alanlar', color: LAND_COVER_COLOR_BY_CODE[2] },
+  { code: 3, label: 'Orman ve Yarı Doğal Alanlar', color: LAND_COVER_COLOR_BY_CODE[3] },
+  { code: 4, label: 'Sulak Alanlar', color: LAND_COVER_COLOR_BY_CODE[4] },
+  { code: 5, label: 'Su Kütleleri', color: LAND_COVER_COLOR_BY_CODE[5] },
+] as const
+
 interface OverlayLayerState {
   enabled: boolean
   loading: boolean
@@ -32,6 +50,34 @@ function buildInitialState(): OverlayLayerStateMap {
 
 function getSourceId(layerId: string): string {
   return `layer-source-${layerId}`
+}
+
+function getLandCoverFillColorExpression() {
+  return [
+    'match',
+    ['coalesce', ['to-number', ['get', 'LEVEL1']], ['to-number', ['get', 'level1']], ['to-number', ['get', 'code_18']], -1],
+    1,
+    LAND_COVER_COLOR_BY_CODE[1],
+    2,
+    LAND_COVER_COLOR_BY_CODE[2],
+    3,
+    LAND_COVER_COLOR_BY_CODE[3],
+    4,
+    LAND_COVER_COLOR_BY_CODE[4],
+    5,
+    LAND_COVER_COLOR_BY_CODE[5],
+    LAND_COVER_FALLBACK_COLOR,
+  ] as const
+}
+
+async function fetchGeoJsonFromUrl(url: string): Promise<FeatureCollection<Geometry>> {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`GeoJSON indirilemedi (${response.status})`)
+  }
+
+  const data = await response.json()
+  return normalizeFeatureCollection(data)
 }
 
 function normalizeFeatureCollection(raw: unknown): FeatureCollection<Geometry> {
@@ -97,7 +143,7 @@ function ensureLayerOnMap(
       type: 'fill',
       source: sourceId,
       paint: {
-        'fill-color': layerState.color,
+        'fill-color': definition.id === LAND_COVER_LAYER_ID ? getLandCoverFillColorExpression() : layerState.color,
         'fill-opacity': layerState.opacity,
       },
     })
@@ -146,7 +192,11 @@ function applyLayerStyles(map: MapLibreMap, definition: OverlayLayerDefinition, 
   }
 
   if (definition.type === 'fill' && map.getLayer(definition.id)) {
-    map.setPaintProperty(definition.id, 'fill-color', layerState.color)
+    map.setPaintProperty(
+      definition.id,
+      'fill-color',
+      definition.id === LAND_COVER_LAYER_ID ? getLandCoverFillColorExpression() : layerState.color,
+    )
     map.setPaintProperty(definition.id, 'fill-opacity', layerState.opacity)
   }
 
@@ -160,12 +210,33 @@ export function useOverlayLayers() {
   const mapInstance = useMapStore((state) => state.mapInstance)
   const [isPanelOpen, setPanelOpen] = useState(false)
   const [layerStates, setLayerStates] = useState<OverlayLayerStateMap>(() => buildInitialState())
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const layerStatesRef = useRef(layerStates)
   const cacheRef = useRef(new globalThis.Map<string, FeatureCollection<Geometry>>())
+  const qrInitAppliedRef = useRef(false)
 
   useEffect(() => {
     layerStatesRef.current = layerStates
   }, [layerStates])
+
+  useEffect(() => {
+    if (!mapInstance || qrInitAppliedRef.current) return
+
+    const params = new URLSearchParams(window.location.search)
+    const pathname = window.location.pathname.toLowerCase()
+    const isLandCoverPresetPath = pathname.endsWith('/cbs/lc2018') || pathname.endsWith('/cbs/arazi-ortusu-2018')
+    const shouldOpenLandCover = params.get('landCover') === '1'
+    if (!shouldOpenLandCover && !isLandCoverPresetPath) return
+
+    const opacityFromUrl = Number(params.get('landCoverOpacity') ?? 100)
+    const normalizedOpacity = Number.isFinite(opacityFromUrl)
+      ? Math.min(100, Math.max(0, opacityFromUrl)) / 100
+      : 1
+
+    qrInitAppliedRef.current = true
+    setLayerOpacity(LAND_COVER_LAYER_ID, normalizedOpacity)
+    void toggleLayer(LAND_COVER_LAYER_ID, true)
+  }, [mapInstance])
 
   const layers = useMemo(
     () => OVERLAY_LAYER_DEFINITIONS.map((definition) => ({
@@ -217,9 +288,14 @@ export function useOverlayLayers() {
     }
 
     setLayerLoading(layerId, true)
+    setErrorMessage(null)
     try {
-      const rawGeojson = await shp(`${OVERLAY_LAYER_BASE_URL}${definition.file}`)
-      const normalized = normalizeFeatureCollection(rawGeojson)
+      if (!definition.url && !definition.file) {
+        throw new Error(`Katman kaynağı tanımlı değil (${definition.id})`)
+      }
+      const normalized = definition.url
+        ? await fetchGeoJsonFromUrl(definition.url)
+        : normalizeFeatureCollection(await shp(`${OVERLAY_LAYER_BASE_URL}${definition.file!}`))
       cacheRef.current.set(layerId, normalized)
 
       const nextState = {
@@ -240,6 +316,7 @@ export function useOverlayLayers() {
       }))
     } catch (error) {
       console.error(`Katman yüklenemedi (${layerId})`, error)
+      setErrorMessage(`${definition.name} katmanı yüklenemedi. Lütfen bağlantınızı kontrol edin.`)
       setLayerEnabledState(layerId, false)
     } finally {
       setLayerLoading(layerId, false)
@@ -327,5 +404,8 @@ export function useOverlayLayers() {
     toggleLayer,
     setLayerOpacity,
     setLayerColor,
+    errorMessage,
+    clearErrorMessage: () => setErrorMessage(null),
+    isLandCoverLegendVisible: Boolean(layerStates[LAND_COVER_LAYER_ID]?.enabled),
   }
 }

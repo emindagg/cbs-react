@@ -12,7 +12,7 @@ import { GlobeToggleButton } from '@/features/globe-view'
 import { HeatmapPanel, useHeatmap } from '@/features/heatmap'
 import { InterpolationLegend, InterpolationPanel, useInterpolation } from '@/features/interpolation'
 import { IsochronePanel, useIsochrone } from '@/features/isochrone'
-import { LayersPanel, useOverlayLayers } from '@/features/layers'
+import { LandCoverLegend, LayersPanel, useOverlayLayers } from '@/features/layers'
 import { LegendContainer } from '@/features/legend'
 import { MapContainer, MapControlStack, CoordinateDisplay } from '@/features/map'
 import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-analysis'
@@ -43,6 +43,8 @@ export default function AppLayout() {
     toggleLayer,
     setLayerOpacity,
     setLayerColor,
+    errorMessage: overlayErrorMessage,
+    isLandCoverLegendVisible,
   } = useOverlayLayers()
 
   // Initialize astronomy hook
@@ -145,7 +147,9 @@ export default function AppLayout() {
         onToggleLayer={toggleLayer}
         onOpacityChange={setLayerOpacity}
         onColorChange={setLayerColor}
+        errorMessage={overlayErrorMessage}
       />
+      <LandCoverLegend isVisible={isLandCoverLegendVisible} />
 
       {/* Astronomy Feature */}
       <AstroPanel />

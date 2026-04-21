@@ -17,6 +17,7 @@ interface LayersPanelProps {
   onToggleLayer: (layerId: string, enabled: boolean) => void
   onOpacityChange: (layerId: string, opacity: number) => void
   onColorChange: (layerId: string, color: string) => void
+  errorMessage?: string | null
 }
 
 export function LayersPanel({
@@ -27,6 +28,7 @@ export function LayersPanel({
   onToggleLayer,
   onOpacityChange,
   onColorChange,
+  errorMessage,
 }: LayersPanelProps) {
   if (!isOpen) return null
 
@@ -52,6 +54,11 @@ export function LayersPanel({
       </div>
 
       <div className="flex flex-col bg-white max-h-[44vh] overflow-auto">
+        {errorMessage && (
+          <div className="px-3 py-2 text-[11px] text-red-700 bg-red-50 border-b border-red-100">
+            {errorMessage}
+          </div>
+        )}
         {layers.map((layer) => (
           <div
             key={layer.id}
@@ -69,13 +76,15 @@ export function LayersPanel({
                     className={`w-3 h-3 rounded-[2px] border border-black/20 transition-opacity duration-200 ${layer.enabled ? 'opacity-100' : 'opacity-40 grayscale'}`}
                     style={{ backgroundColor: layer.color }}
                   />
-                  <input
-                    type="color"
-                    value={layer.color}
-                    onChange={(e) => onColorChange(layer.id, e.target.value)}
-                    className="absolute inset-0 w-3 h-3 opacity-0 cursor-pointer"
-                    title="Renk"
-                  />
+                  {layer.id !== 'arazi_ortusu_2018' && (
+                    <input
+                      type="color"
+                      value={layer.color}
+                      onChange={(e) => onColorChange(layer.id, e.target.value)}
+                      className="absolute inset-0 w-3 h-3 opacity-0 cursor-pointer"
+                      title="Renk"
+                    />
+                  )}
                 </div>
 
                 <span

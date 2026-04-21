@@ -3,7 +3,8 @@ export type OverlayLayerType = 'line' | 'fill' | 'circle'
 export interface OverlayLayerDefinition {
   id: string
   name: string
-  file: string
+  file?: string
+  url?: string
   type: OverlayLayerType
   color: string
   opacity: number
@@ -41,6 +42,14 @@ export const OVERLAY_LAYER_DEFINITIONS: OverlayLayerDefinition[] = [
     type: 'fill',
     color: '#33cc33',
     opacity: 0.6,
+  },
+  {
+    id: 'arazi_ortusu_2018',
+    name: 'Arazi Örtüsü (2018)',
+    url: 'https://raw.githubusercontent.com/emindagg/katman_verisi/main/corine_2018.geojson',
+    type: 'fill',
+    color: '#ffffff',
+    opacity: 0.7,
   },
 ]
 
