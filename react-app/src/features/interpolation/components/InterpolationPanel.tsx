@@ -222,7 +222,7 @@ export default function InterpolationPanel({
             {/* IDW Power */}
             {config.method === 'idw' && (
               <SliderRow
-                label="Yakın Noktaların Etkisi"
+                label="Mesafe Duyarlılığı"
                 value={config.idwPower}
                 min={0.5}
                 max={5}
@@ -233,7 +233,7 @@ export default function InterpolationPanel({
 
             {/* Fill Opacity */}
             <SliderRow
-              label="Dolgu Opaklık"
+              label="Görünürlük"
               value={config.fillOpacity}
               min={0.1}
               max={1}
