@@ -129,9 +129,9 @@ export default function InterpolationPanel({
                     key={m}
                     onClick={() => setConfig({ method: m })}
                     className={`text-[10px] font-medium py-1.5 rounded-md transition-colors ${config.method === m
-                        ? 'bg-zinc-900 text-white'
-                        : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100'
-                      }`}
+                      ? 'bg-zinc-900 text-white'
+                      : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100'
+                    }`}
                   >
                     {m === 'idw' ? 'IDW' : 'Kriging'}
                   </button>
@@ -248,11 +248,11 @@ export default function InterpolationPanel({
                 type="button"
                 onClick={() => setConfig({ showPointValues: !config.showPointValues })}
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${config.showPointValues ? 'bg-zinc-900' : 'bg-zinc-300'
-                  }`}
+                }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.showPointValues ? 'translate-x-4' : 'translate-x-0.5'
-                    }`}
+                  }`}
                 />
               </button>
             </div>
@@ -262,9 +262,9 @@ export default function InterpolationPanel({
               onClick={() => { void runInterpolation() }}
               disabled={!canRun}
               className={`w-full text-[11px] font-semibold py-2 rounded-md transition-colors flex items-center justify-center gap-1.5 ${canRun
-                  ? 'bg-zinc-900 text-white hover:bg-zinc-800'
-                  : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'
-                }`}
+                ? 'bg-zinc-900 text-white hover:bg-zinc-800'
+                : 'bg-zinc-100 text-zinc-400 cursor-not-allowed'
+              }`}
             >
               {isProcessing ? (
                 <>

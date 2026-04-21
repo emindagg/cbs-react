@@ -5,12 +5,12 @@
 
 import { create } from 'zustand'
 
+import type { ExcelSelectionPreview, PendingExcelSelection } from '@/utils/columnMapper/types'
 import {
   clampLegendClassCount,
   isValidCustomBreaksLength,
 } from '@/utils/legendClassCount'
 
-import type { ExcelSelectionPreview, PendingExcelSelection } from '@/utils/columnMapper/types'
 
 import type {
   ColumnMapping,

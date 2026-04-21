@@ -1,5 +1,5 @@
-import type { Geometry } from 'geojson'
 import { wktToGeoJSON } from 'betterknown'
+import type { Geometry } from 'geojson'
 
 const GEOJSON_GEOMETRY_TYPES = new Set([
   'Point', 'MultiPoint', 'LineString', 'MultiLineString',

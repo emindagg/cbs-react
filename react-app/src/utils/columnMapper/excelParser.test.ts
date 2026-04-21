@@ -1,5 +1,5 @@
-import * as XLSX from 'xlsx'
 import { describe, expect, it } from 'vitest'
+import * as XLSX from 'xlsx'
 
 import { analyzeWorksheetForSelection, finalizeExcelSelection, parseWorksheetToTable } from './excelParser'
 import { ExcelParseError } from './types'

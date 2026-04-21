@@ -6,9 +6,9 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 
-import { finalizeExcelSelection } from '@/utils/columnMapper/excelParser'
-import { detectColumns } from '@/utils/columnMapper/columnDetector'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
+import { detectColumns } from '@/utils/columnMapper/columnDetector'
+import { finalizeExcelSelection } from '@/utils/columnMapper/excelParser'
 import type { ExcelSelectionPreview, PendingExcelSelection } from '@/utils/columnMapper/types'
 
 interface ExcelHeaderPanelProps {

@@ -9,6 +9,7 @@ import { SingleSlider } from '@/components/ui'
 import type { VisualizationSettings } from '@/types/visualization'
 
 import { DotColorPicker } from './DotColorPicker'
+import { isValueInCustomRange, resolveCustomRange } from '../../shared/customRange'
 import {
   DEFAULT_DOT_COLOR,
   DEFAULT_DOT_OPACITY,
@@ -17,7 +18,6 @@ import {
   MAX_TOTAL_DOTS,
 } from '../constants/dot-density'
 import { calculateSmartDotValue } from '../utils/dot-density'
-import { isValueInCustomRange, resolveCustomRange } from '../../shared/customRange'
 
 
 /** Debounce süresi — dotValue ve dotSize için ortak */
@@ -54,9 +54,9 @@ export function DotDensitySettings({
   const dotCount = useMemo(
     () => effectiveDotValue > 0
       ? Math.min(
-          visibleValues.reduce((sum, v) => sum + Math.min(Math.round(Math.abs(v) / effectiveDotValue), MAX_DOTS_PER_FEATURE), 0),
-          MAX_TOTAL_DOTS,
-        )
+        visibleValues.reduce((sum, v) => sum + Math.min(Math.round(Math.abs(v) / effectiveDotValue), MAX_DOTS_PER_FEATURE), 0),
+        MAX_TOTAL_DOTS,
+      )
       : 0,
     [visibleValues, effectiveDotValue],
   )

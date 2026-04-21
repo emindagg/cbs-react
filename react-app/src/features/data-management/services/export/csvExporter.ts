@@ -1,7 +1,7 @@
 import Papa from 'papaparse'
 
-import type { DataItem } from '../../types'
 import { representativeCoord } from './exportCoords'
+import type { DataItem } from '../../types'
 
 export function exportAsCsv(items: DataItem[]): Blob {
   const rows = items.map((item) => {

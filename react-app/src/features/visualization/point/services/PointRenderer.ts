@@ -4,9 +4,9 @@ import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
 import type { VisualizationSettings } from '@/types/visualization'
 import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
 import { calculateBounds, calculateCentroid } from '@/utils/geometryUtils'
-import { hashString, mulberry32 } from '@/utils/prng'
 import { formatNumber } from '@/utils/numberFormatter'
 import type { NumberFormat } from '@/utils/numberFormatter'
+import { hashString, mulberry32 } from '@/utils/prng'
 import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 import {

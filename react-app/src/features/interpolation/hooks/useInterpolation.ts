@@ -1,3 +1,4 @@
+import * as turf from '@turf/turf'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { useDataManagementStore } from '@/stores/useDataManagementStore'
@@ -52,15 +53,16 @@ function extractCentroidCoords(geom: GeoJSON.Geometry): [number, number] | null 
     return [lon, lat]
   }
   if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
-    const coords = geom.type === 'Polygon'
-      ? geom.coordinates[0]
-      : geom.coordinates.flat(1)[0]
-    if (!coords || coords.length === 0) return null
-    const [sumLon, sumLat] = coords.reduce(
-      ([sLon, sLat], [lon, lat]) => [sLon + lon, sLat + lat],
-      [0, 0],
-    )
-    return [sumLon / coords.length, sumLat / coords.length]
+    // turf.centroid MultiPolygon'un tüm dış halkalarını dikkate alır — flat(1)[0] ile
+    // sadece ilk alt-poligonun ilk köşesine düşme bug'ını önler.
+    try {
+      const c = turf.centroid({ type: 'Feature', geometry: geom, properties: {} })
+      const [lon, lat] = c.geometry.coordinates
+      if (!isFinite(lon) || !isFinite(lat)) return null
+      return [lon, lat]
+    } catch {
+      return null
+    }
   }
   if (geom.type === 'LineString') {
     const mid = geom.coordinates[Math.floor(geom.coordinates.length / 2)]
@@ -123,6 +125,8 @@ export function useInterpolation() {
   const rendererRef = useRef<InterpolationRenderer | null>(null)
   const workerRef = useRef<Worker | null>(null)
   const runInterpolationRef = useRef<(() => Promise<void>) | null>(null)
+  // Hızlı toggle/config değişimlerinde eski worker mesajlarını yoksaymak için artan id
+  const runIdRef = useRef(0)
 
   const getRenderer = useCallback(() => {
     if (!map) return null
@@ -222,8 +226,23 @@ export function useInterpolation() {
       return
     }
 
+    // Tüm değerler eşitse enterpolasyon anlamsız (kriging sill=0, renk range=0).
+    const uniqueValues = new Set<number>()
+    for (const f of points.features) {
+      const v = (f.properties as { value?: number } | null)?.value
+      if (typeof v === 'number' && isFinite(v)) uniqueValues.add(v)
+    }
+    if (uniqueValues.size < 2) {
+      setError('Enterpolasyon için en az 2 farklı değer gerekli (tüm noktalar aynı değere sahip)')
+      return
+    }
+
     setError(null)
     setIsProcessing(true)
+
+    // Bu çağrı için benzersiz run-id; önceki worker'dan gelen mesajlar yoksayılır.
+    runIdRef.current += 1
+    const thisRun = runIdRef.current
 
     workerRef.current?.terminate()
     const worker = new Worker(
@@ -235,7 +254,17 @@ export function useInterpolation() {
     const input: InterpolationWorkerInput = { points, config }
 
     await new Promise<void>((resolve) => {
+      const cleanup = () => {
+        try { worker.terminate() } catch { /* noop */ }
+        if (workerRef.current === worker) workerRef.current = null
+      }
       worker.onmessage = (ev: MessageEvent<InterpolationWorkerOutput>) => {
+        // Eski worker mesajı — yoksay
+        if (thisRun !== runIdRef.current) {
+          cleanup()
+          resolve()
+          return
+        }
         const data = ev.data
         if ('error' in data) {
           setError(data.error)
@@ -253,15 +282,18 @@ export function useInterpolation() {
           setResult(payload)
         }
         setIsProcessing(false)
-        worker.terminate()
-        if (workerRef.current === worker) workerRef.current = null
+        cleanup()
         resolve()
       }
       worker.onerror = (ev: ErrorEvent) => {
+        if (thisRun !== runIdRef.current) {
+          cleanup()
+          resolve()
+          return
+        }
         setError(ev.message || 'Worker hatası')
         setIsProcessing(false)
-        worker.terminate()
-        if (workerRef.current === worker) workerRef.current = null
+        cleanup()
         resolve()
       }
       worker.postMessage(input)

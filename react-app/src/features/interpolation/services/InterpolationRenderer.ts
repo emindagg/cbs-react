@@ -181,6 +181,9 @@ export class InterpolationRenderer {
   }
 
   private bringValueLayersToFront(): void {
+    // Önce noktayı stack'in en üstüne çıkar, sonra label'ı onun üstüne koy.
+    // moveLayer(id) beforeId olmadan = stack'in en sonuna taşır; iki çağrı sonrası
+    // label en üstte, nokta hemen altında kalır. Etiketler daima noktanın üstünde görünür.
     if (this.map.getLayer(VALUE_POINT_LAYER_ID)) {
       this.map.moveLayer(VALUE_POINT_LAYER_ID)
     }

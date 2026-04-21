@@ -59,13 +59,13 @@ export interface InterpolationWorkerInput {
 
 export type InterpolationWorkerOutput =
   | {
-      result: {
-        grid: FeatureCollection<Polygon | MultiPolygon | Point> | null
-        raster: InterpolationRaster | null
-        min: number
-        max: number
-      }
+    result: {
+      grid: FeatureCollection<Polygon | MultiPolygon | Point> | null
+      raster: InterpolationRaster | null
+      min: number
+      max: number
     }
+  }
   | { error: string }
 
 export interface InterpolationLegendSettings {

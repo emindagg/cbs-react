@@ -46,9 +46,9 @@ export function ModalToolbar({
         <div className="inline-flex rounded-md border border-zinc-200 overflow-hidden">
           <label
             className={`flex items-center gap-1.5 px-3 py-2 cursor-pointer text-[11px] font-semibold transition-all ${locationLevel === 'province'
-                ? 'bg-[#1e2330] text-white'
-                : 'bg-white text-zinc-500 hover:bg-zinc-50'
-              }`}
+              ? 'bg-[#1e2330] text-white'
+              : 'bg-white text-zinc-500 hover:bg-zinc-50'
+            }`}
           >
             <input type="radio" name="dm-level-m" value="province" checked={locationLevel === 'province'} onChange={() => setLocationLevel('province')} className="sr-only" />
             <i className={`fa-solid fa-map-location-dot text-[9px] ${locationLevel === 'province' ? 'text-emerald-400' : 'text-zinc-400'}`} />
@@ -56,9 +56,9 @@ export function ModalToolbar({
           </label>
           <label
             className={`flex items-center gap-1.5 px-3 py-2 cursor-pointer text-[11px] font-semibold transition-all border-l border-zinc-200 ${locationLevel === 'mixed'
-                ? 'bg-[#1e2330] text-white'
-                : 'bg-white text-zinc-500 hover:bg-zinc-50'
-              }`}
+              ? 'bg-[#1e2330] text-white'
+              : 'bg-white text-zinc-500 hover:bg-zinc-50'
+            }`}
           >
             <input type="radio" name="dm-level-m" value="mixed" checked={locationLevel === 'mixed'} onChange={() => setLocationLevel('mixed')} className="sr-only" />
             <i className={`fa-solid fa-layer-group text-[9px] ${locationLevel === 'mixed' ? 'text-emerald-400' : 'text-zinc-400'}`} />

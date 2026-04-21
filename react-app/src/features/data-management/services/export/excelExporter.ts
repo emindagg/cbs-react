@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx'
 
-import type { DataItem } from '../../types'
 import { representativeCoord } from './exportCoords'
+import type { DataItem } from '../../types'
 
 interface ExportRow {
   id: string

@@ -9,10 +9,10 @@ import toast from 'react-hot-toast'
 
 import { getVisualizationManager } from '@/shared/visualization'
 import type { VisualizationManager } from '@/shared/visualization'
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import type { DistrictInfo, LocationInfo } from '@/types/geojson'
 import type { MatchResults } from '@/types/visualization'
 import { ColumnMapper } from '@/utils/columnMapper'
-import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
 interface UseMatchingProps {
   rawData: Record<string, unknown>[] | null

@@ -18,8 +18,8 @@ export function interpolateIDW(
   // 'smooth' worker tarafında raster ile ele alınır; buraya geldiğinde fallback square.
   const baseGridType: 'point' | 'square' | 'hex' | 'triangle' =
     config.gridType === 'isoband' ? 'point'
-    : config.gridType === 'smooth' ? 'square'
-    : config.gridType
+      : config.gridType === 'smooth' ? 'square'
+        : config.gridType
 
   const raw = turf.interpolate(points, config.cellWidth, {
     gridType: baseGridType,
@@ -35,9 +35,22 @@ export function interpolateIDW(
   sanitizeValues(raw, min)
 
   if (config.gridType === 'isoband') {
+    const rawPoints = raw as unknown as FeatureCollection<Point>
+    if (!rawPoints?.features || rawPoints.features.length === 0) {
+      throw new Error('İsoband için IDW nokta ızgarası boş')
+    }
     const gridRange = computeMinMax(raw)
     const breaks = computeBreaks(min, max, config.classCount, gridRange)
-    const bandsFc = turf.isobands(raw as unknown as FeatureCollection<Point>, breaks, { zProperty: 'value' }) as unknown as FeatureCollection<MultiPolygon>
+    if (breaks.length < 2) {
+      throw new Error('İsoband oluşturmak için yeterli kırılma noktası yok (değer aralığı çok dar)')
+    }
+    let bandsFc: FeatureCollection<MultiPolygon>
+    try {
+      bandsFc = turf.isobands(rawPoints, breaks, { zProperty: 'value' }) as unknown as FeatureCollection<MultiPolygon>
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      throw new Error(`İsoband oluşturulamadı: ${msg}`)
+    }
     normalizeIsobandValues(bandsFc)
     return { grid: bandsFc as unknown as AnyGrid, min, max }
   }

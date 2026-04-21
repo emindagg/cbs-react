@@ -9,10 +9,11 @@ import * as turf from '@turf/turf'
 import type { FeatureCollection, Point } from 'geojson'
 
 import type { InterpolationConfig, InterpolationRaster, KrigingModel } from '../types'
-
 import { computeMinMaxFromPoints } from './idwInterpolator'
 
 const MAX_DIM = 384
+// Aynı konumlu nokta sayılan eşik (derece²) — floating-point tam eşitlik güvenilmez
+const DISTANCE_EPSILON_SQ = 1e-18
 
 export interface RasterResult {
   raster: InterpolationRaster
@@ -82,7 +83,17 @@ export function interpolateIDWRaster(
     throw new Error('Geçerli nokta bulunamadı')
   }
 
+  const { min, max } = computeMinMaxFromPoints(points)
+  if (!isFinite(min) || !isFinite(max)) {
+    throw new Error('Geçerli minimum/maksimum değer hesaplanamadı')
+  }
+
+  // Tüm noktalar tek konumda ise raster anlamsız olur (bbox alanı 0)
   const bbox = turf.bbox(points) as [number, number, number, number]
+  if (!isFinite(bbox[0]) || !isFinite(bbox[2]) || bbox[2] - bbox[0] <= 0 || bbox[3] - bbox[1] <= 0) {
+    throw new Error('Nokta dağılımı çok dar: enterpolasyon için geçerli bir alan oluşturulamıyor')
+  }
+
   const { width, height } = computeRasterDimensions(bbox)
   const values = new Float32Array(width * height)
 
@@ -103,7 +114,9 @@ export function interpolateIDWRaster(
         const dx = p.x - lon
         const dy = p.y - lat
         const dist2 = dx * dx + dy * dy
-        if (dist2 === 0) {
+        // Epsilon eşiği: floating-point hassasiyeti nedeniyle tam sıfır kontrolü güvenilmez.
+        // Yakın noktalarda dist2 → 0 olur ve 1/pow(dist2, power/2) → Infinity üretir.
+        if (dist2 < DISTANCE_EPSILON_SQ) {
           exactHit = p.v
           break
         }
@@ -112,11 +125,18 @@ export function interpolateIDWRaster(
         weightedValue += w * p.v
       }
 
-      values[j * width + i] = exactHit !== null ? exactHit : weightedValue / weightSum
+      let cellValue: number
+      if (exactHit !== null) {
+        cellValue = exactHit
+      } else if (weightSum > 0 && isFinite(weightSum)) {
+        cellValue = weightedValue / weightSum
+      } else {
+        // weightSum = 0 ya da Infinity: fallback olarak dataMin (lejant dışına çıkmasın)
+        cellValue = min
+      }
+      values[j * width + i] = isFinite(cellValue) ? cellValue : min
     }
   }
-
-  const { min, max } = computeMinMaxFromPoints(points)
 
   return {
     raster: { width, height, bbox, values },
@@ -138,28 +158,52 @@ export function interpolateKrigingRaster(
   const ys = numericPoints.map((p) => p.y)
   const vs = numericPoints.map((p) => p.v)
 
-  const modelFn = selectVariogramModel(config.krigingModel)
-  const variogram = train(vs, xs, ys, modelFn, config.krigingSigma2, config.krigingAlpha)
+  if (new Set(vs).size < 2) {
+    throw new Error('Kriging için en az 2 farklı değere sahip nokta gerekli (tüm değerler eşit)')
+  }
+
+  const { min, max } = computeMinMaxFromPoints(points)
+  if (!isFinite(min) || !isFinite(max)) {
+    throw new Error('Geçerli minimum/maksimum değer hesaplanamadı')
+  }
 
   const bbox = turf.bbox(points) as [number, number, number, number]
+  if (!isFinite(bbox[0]) || !isFinite(bbox[2]) || bbox[2] - bbox[0] <= 0 || bbox[3] - bbox[1] <= 0) {
+    throw new Error('Nokta dağılımı çok dar: enterpolasyon için geçerli bir alan oluşturulamıyor')
+  }
+
+  const modelFn = selectVariogramModel(config.krigingModel)
+  let variogram: ReturnType<typeof train>
+  try {
+    variogram = train(vs, xs, ys, modelFn, config.krigingSigma2, config.krigingAlpha)
+    const v = variogram as unknown as Record<string, unknown>
+    const check = (k: string) => {
+      const n = v?.[k]
+      return typeof n !== 'number' || !isFinite(n)
+    }
+    if (check('nugget') || check('range') || check('sill')) {
+      throw new Error('variogram-invalid')
+    }
+  } catch {
+    throw new Error(
+      'Kriging modeli eğitilemedi: noktalar çok yakın, değerler sabit veya yetersiz varyans. Lütfen farklı konum/değerli noktalar deneyin.',
+    )
+  }
+
   const { width, height } = computeRasterDimensions(bbox)
   const values = new Float32Array(width * height)
 
   const lonStep = (bbox[2] - bbox[0]) / Math.max(1, width - 1)
   const latStep = (bbox[3] - bbox[1]) / Math.max(1, height - 1)
 
-  const { min: dataMin } = computeMinMaxFromPoints(points)
-
   for (let j = 0; j < height; j++) {
     const lat = bbox[3] - j * latStep
     for (let i = 0; i < width; i++) {
       const lon = bbox[0] + i * lonStep
       const p = predict(lon, lat, variogram)
-      values[j * width + i] = typeof p === 'number' && !isNaN(p) ? p : dataMin
+      values[j * width + i] = typeof p === 'number' && isFinite(p) ? p : min
     }
   }
-
-  const { min, max } = computeMinMaxFromPoints(points)
 
   return {
     raster: { width, height, bbox, values },

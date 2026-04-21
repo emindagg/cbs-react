@@ -31,6 +31,19 @@ function formatLegendNumber(n: number): string {
 
 const LEGEND_WIDTH = 240
 const MARGIN = 8
+const DEFAULT_HEIGHT = 92
+const BOTTOM_OFFSET = 32
+
+function computeDefaultPosition(
+  width: number = LEGEND_WIDTH,
+  height: number = DEFAULT_HEIGHT,
+): { x: number; y: number } {
+  if (typeof window === 'undefined') return { x: MARGIN, y: MARGIN }
+  return {
+    x: Math.max(MARGIN, Math.round((window.innerWidth - width) / 2)),
+    y: Math.max(MARGIN, window.innerHeight - height - BOTTOM_OFFSET),
+  }
+}
 
 export default function InterpolationLegend({
   isActive,
@@ -53,22 +66,24 @@ export default function InterpolationLegend({
     active: boolean
   } | null>(null)
 
-  // İlk render veya pozisyon yoksa varsayılan konum: alt orta
-  const defaultPosition = useCallback(() => {
-    const width = containerRef.current?.offsetWidth ?? LEGEND_WIDTH
-    const height = containerRef.current?.offsetHeight ?? 92
-    return {
-      x: Math.max(MARGIN, Math.round((window.innerWidth - width) / 2)),
-      y: Math.max(MARGIN, window.innerHeight - height - 32),
-    }
-  }, [])
+  // Ref render sırasında okunamaz; pozisyonu effect'te hesaplar ve state'te tutarız.
+  const [fallbackPos, setFallbackPos] = useState(() => computeDefaultPosition())
 
-  // Pozisyonu viewport dışına düşmesin diye kırpar
+  // Mount sonrası gerçek container boyutuna göre fallback'i yenile
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const width = el.offsetWidth || LEGEND_WIDTH
+    const height = el.offsetHeight || DEFAULT_HEIGHT
+    setFallbackPos(computeDefaultPosition(width, height))
+  }, [result])
+
+  // Pozisyonu viewport dışına düşmesin diye kırpar (event/effect bağlamında çağrılır)
   const clampPosition = useCallback(
     (pos: { x: number; y: number }) => {
       const el = containerRef.current
       const width = el?.offsetWidth ?? LEGEND_WIDTH
-      const height = el?.offsetHeight ?? 92
+      const height = el?.offsetHeight ?? DEFAULT_HEIGHT
       const maxX = Math.max(MARGIN, window.innerWidth - width - MARGIN)
       const maxY = Math.max(MARGIN, window.innerHeight - height - MARGIN)
       return {
@@ -96,7 +111,7 @@ export default function InterpolationLegend({
       const target = e.target as HTMLElement
       if (target.closest('input, button')) return
 
-      const origin = legend.position ?? defaultPosition()
+      const origin = legend.position ?? fallbackPos
       dragStateRef.current = {
         startX: e.clientX,
         startY: e.clientY,
@@ -108,7 +123,7 @@ export default function InterpolationLegend({
       ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
       e.preventDefault()
     },
-    [isEditingTitle, legend.position, defaultPosition],
+    [isEditingTitle, legend.position, fallbackPos],
   )
 
   const handlePointerMove = useCallback(
@@ -160,15 +175,15 @@ export default function InterpolationLegend({
 
   const background = isClassified
     ? `linear-gradient(to right, ${colors
-        .map((c, i) => {
-          const start = (i / stops) * 100
-          const end = ((i + 1) / stops) * 100
-          return `${c} ${start}%, ${c} ${end}%`
-        })
-        .join(',')})`
+      .map((c, i) => {
+        const start = (i / stops) * 100
+        const end = ((i + 1) / stops) * 100
+        return `${c} ${start}%, ${c} ${end}%`
+      })
+      .join(',')})`
     : `linear-gradient(to right, ${colors.join(',')})`
 
-  const pos = legend.position ?? defaultPosition()
+  const pos = legend.position ?? fallbackPos
   const title = legend.title ?? result.valueColumn
 
   const cursor = isEditingTitle ? 'default' : isDragging ? 'grabbing' : 'grab'
