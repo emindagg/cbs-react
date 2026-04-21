@@ -102,3 +102,10 @@ npm run test:watch
 - README içinde proje adı `OGM Materyal CBS` olarak kullanılır.
 - Ayrıntılı feature dökümü için `docs/FEATURES.md` referans alınmalıdır.
 - Teknik altlık, renderer ve servis ayrıntıları için ilgili dokümanlar README yerine `docs/` altında tutulur.
+
+## Kısa URL Presetleri
+
+Arazi Örtüsü (2018) katmanını hızlı açılış için:
+
+- `https://ogmmateryal.eba.gov.tr/cbs/lc2018`
+- `https://ogmmateryal.eba.gov.tr/cbs/arazi-ortusu-2018`

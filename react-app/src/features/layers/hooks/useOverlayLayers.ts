@@ -237,6 +237,9 @@ export function useOverlayLayers() {
 
     const params = new URLSearchParams(window.location.search)
     const pathname = window.location.pathname.toLowerCase()
+    // Kısa URL örnekleri:
+    // https://ogmmateryal.eba.gov.tr/cbs/lc2018
+    // https://ogmmateryal.eba.gov.tr/cbs/arazi-ortusu-2018
     const isLandCoverPresetPath = pathname.endsWith('/cbs/lc2018') || pathname.endsWith('/cbs/arazi-ortusu-2018')
     const shouldOpenLandCover = params.get('landCover') === '1'
     if (!shouldOpenLandCover && !isLandCoverPresetPath) return
