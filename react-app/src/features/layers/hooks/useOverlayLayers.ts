@@ -70,10 +70,6 @@ function getLandCoverFillColorExpression(): ExpressionSpecification {
   ] as ExpressionSpecification
 }
 
-function getLayerOpacity(definition: OverlayLayerDefinition, layerState: OverlayLayerState): number {
-  return definition.id === LAND_COVER_LAYER_ID ? 1 : layerState.opacity
-}
-
 async function fetchGeoJsonFromUrl(url: string): Promise<FeatureCollection<Geometry>> {
   const response = await fetch(url)
   if (!response.ok) {
@@ -148,7 +144,7 @@ function ensureLayerOnMap(
       source: sourceId,
       paint: {
         'fill-color': definition.id === LAND_COVER_LAYER_ID ? getLandCoverFillColorExpression() : layerState.color,
-        'fill-opacity': getLayerOpacity(definition, layerState),
+        'fill-opacity': layerState.opacity,
       },
     })
   }
@@ -201,7 +197,7 @@ function applyLayerStyles(map: MapLibreMap, definition: OverlayLayerDefinition, 
       'fill-color',
       definition.id === LAND_COVER_LAYER_ID ? getLandCoverFillColorExpression() : layerState.color,
     )
-    map.setPaintProperty(definition.id, 'fill-opacity', getLayerOpacity(definition, layerState))
+    map.setPaintProperty(definition.id, 'fill-opacity', layerState.opacity)
   }
 
   if (definition.type === 'fill' && map.getLayer(`${definition.id}-outline`)) {
