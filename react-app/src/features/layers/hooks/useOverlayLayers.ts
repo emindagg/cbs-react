@@ -1,5 +1,5 @@
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
-import type { Map as MapLibreMap } from 'maplibre-gl'
+import type { ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import shp from 'shpjs'
 
@@ -52,7 +52,7 @@ function getSourceId(layerId: string): string {
   return `layer-source-${layerId}`
 }
 
-function getLandCoverFillColorExpression() {
+function getLandCoverFillColorExpression(): ExpressionSpecification {
   return [
     'match',
     ['coalesce', ['to-number', ['get', 'LEVEL1']], ['to-number', ['get', 'level1']], ['to-number', ['get', 'code_18']], -1],
@@ -67,7 +67,7 @@ function getLandCoverFillColorExpression() {
     5,
     LAND_COVER_COLOR_BY_CODE[5],
     LAND_COVER_FALLBACK_COLOR,
-  ] as const
+  ] as ExpressionSpecification
 }
 
 async function fetchGeoJsonFromUrl(url: string): Promise<FeatureCollection<Geometry>> {
