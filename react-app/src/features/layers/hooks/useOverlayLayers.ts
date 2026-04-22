@@ -3,6 +3,7 @@ import type { ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import shp from 'shpjs'
 import { feature as topojsonFeature } from 'topojson-client'
+import simplify from '@turf/simplify'
 
 import { useMapStore } from '@/stores/useMapStore'
 
@@ -120,6 +121,19 @@ function normalizeFeatureCollection(raw: unknown): FeatureCollection<Geometry> {
   return { type: 'FeatureCollection', features: [] }
 }
 
+function reduceVertexCountForLargeFillLayer(
+  data: FeatureCollection<Geometry>,
+  layerId: string,
+): FeatureCollection<Geometry> {
+  if (layerId !== LAND_COVER_LAYER_ID) return data
+
+  return simplify(data, {
+    tolerance: 0.00006,
+    highQuality: false,
+    mutate: false,
+  }) as FeatureCollection<Geometry>
+}
+
 function ensureLayerOnMap(
   map: MapLibreMap,
   definition: OverlayLayerDefinition,
@@ -160,15 +174,15 @@ function ensureLayerOnMap(
     })
   }
 
-  if (definition.type === 'fill' && !map.getLayer(`${definition.id}-outline`)) {
+  if (definition.type === 'fill' && definition.id !== LAND_COVER_LAYER_ID && !map.getLayer(`${definition.id}-outline`)) {
     map.addLayer({
       id: `${definition.id}-outline`,
       type: 'line',
       source: sourceId,
       paint: {
-        'line-color': definition.id === LAND_COVER_LAYER_ID ? getLandCoverFillColorExpression() : '#000000',
+        'line-color': '#000000',
         'line-width': 1,
-        'line-opacity': definition.id === LAND_COVER_LAYER_ID ? 1 : 0.5,
+        'line-opacity': 0.5,
       },
     })
   }
@@ -193,7 +207,7 @@ function applyLayerStyles(map: MapLibreMap, definition: OverlayLayerDefinition, 
   if (map.getLayer(definition.id)) {
     map.setLayoutProperty(definition.id, 'visibility', visibility)
   }
-  if (definition.type === 'fill' && map.getLayer(`${definition.id}-outline`)) {
+  if (definition.type === 'fill' && definition.id !== LAND_COVER_LAYER_ID && map.getLayer(`${definition.id}-outline`)) {
     map.setLayoutProperty(`${definition.id}-outline`, 'visibility', visibility)
   }
 
@@ -211,13 +225,13 @@ function applyLayerStyles(map: MapLibreMap, definition: OverlayLayerDefinition, 
     map.setPaintProperty(definition.id, 'fill-opacity', layerState.opacity)
   }
 
-  if (definition.type === 'fill' && map.getLayer(`${definition.id}-outline`)) {
+  if (definition.type === 'fill' && definition.id !== LAND_COVER_LAYER_ID && map.getLayer(`${definition.id}-outline`)) {
     map.setPaintProperty(
       `${definition.id}-outline`,
       'line-color',
-      definition.id === LAND_COVER_LAYER_ID ? getLandCoverFillColorExpression() : '#000000',
+      '#000000',
     )
-    map.setPaintProperty(`${definition.id}-outline`, 'line-opacity', definition.id === LAND_COVER_LAYER_ID ? 1 : 0.5)
+    map.setPaintProperty(`${definition.id}-outline`, 'line-opacity', 0.5)
   }
 
   if (definition.type === 'circle' && map.getLayer(definition.id)) {
@@ -319,14 +333,15 @@ export function useOverlayLayers() {
       const normalized = definition.url
         ? await fetchGeoJsonFromUrl(definition.url)
         : normalizeFeatureCollection(await shp(`${OVERLAY_LAYER_BASE_URL}${definition.file!}`))
-      cacheRef.current.set(layerId, normalized)
+      const preparedData = reduceVertexCountForLargeFillLayer(normalized, layerId)
+      cacheRef.current.set(layerId, preparedData)
 
       const nextState = {
         ...layerStatesRef.current[layerId],
         enabled: true,
         loaded: true,
       }
-      ensureLayerOnMap(mapInstance, definition, normalized, nextState)
+      ensureLayerOnMap(mapInstance, definition, preparedData, nextState)
       applyLayerStyles(mapInstance, definition, nextState)
 
       setLayerStates((current) => ({

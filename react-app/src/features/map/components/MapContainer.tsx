@@ -20,6 +20,7 @@ import DistanceTool from '../tools/DistanceTool'
 
 
 const SPACE_COLOR = '#010108'
+const LARGE_MESH_VERTEX_WARNING = 'Max vertices per segment is 65535'
 
 // Star positions: [x%, y%, size, opacity]
 /* eslint-disable no-magic-numbers */
@@ -61,6 +62,18 @@ function SpaceBackground() {
 
 export default function MapContainer() {
   const { setLoaded, setMapInstance, activeBasemap, isGlobeMode } = useMapStore()
+  const handleMapLibreError = (event: { error?: unknown }) => {
+    const message =
+      typeof event.error === 'string'
+        ? event.error
+        : event.error instanceof Error
+          ? event.error.message
+          : ''
+
+    if (message.includes(LARGE_MESH_VERTEX_WARNING)) {
+      event.error = undefined
+    }
+  }
 
   // Bubble haritası tooltip hook'u
   useBubbleTooltip()
@@ -134,7 +147,9 @@ export default function MapContainer() {
         onLoad={(e) => {
           setLoaded(true)
           setMapInstance(e.target)
+          e.target.on('error', handleMapLibreError)
         }}
+        onError={handleMapLibreError}
       >
         {/* Render Basemap Raster Layer if not NONE */}
         {basemapSource && (
