@@ -118,9 +118,11 @@ function ensureLayerOnMap(
   const sourceId = getSourceId(definition.id)
 
   if (!map.getSource(sourceId)) {
+    const isLandCover = definition.id === LAND_COVER_LAYER_ID
     map.addSource(sourceId, {
       type: 'geojson',
       data,
+      ...(isLandCover ? { tolerance: 3, buffer: 0, maxzoom: 12 } : {}),
     })
   }
 
