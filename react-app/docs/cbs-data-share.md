@@ -57,9 +57,14 @@ CBS React uygulamasında üretilen **koroplet harita**, **kabarcık harita**, **
 ## 4. Fonksiyonel Gereksinimler
 
 ### 4.1 Paylaşım tetikleyici konumları
-- `VizWizardStep3` render sonrası → "Paylaş" butonu (koroplet / bubble / dot)
-- `DataCreationSection` / `DataManagementSection` → "Projeyi Paylaş" butonu (kullanıcı çizimleri + içe aktarılan veri)
-- Opsiyonel: `AppLayout` üst barında global "Paylaş" kısayolu
+
+**VSA notu:** `viz-wizard` ve `data-management` feature'ları `@/features/share`'den import edemez (cross-feature yasağı). Bu yüzden `ShareButton` bu feature'ların **içine gömülmez**; orchestrator'lardan (`AppLayout.tsx` / `Sidebar.tsx`) aktif sekmeye/moda göre koşullu render edilir. Orchestrator, aktif feature'ı tespit etmek için yalnızca `@/stores/`'u okur.
+
+- **Viz wizard tamamlandığında** → Sidebar, Step3 bölümünün altına `ShareButton` yerleştirir (koşul: `useVisualizationStore`'da `currentVisualization.type !== null`)
+- **Veri oluşturma/içe aktarma aktifken** → Sidebar, DataCreationSection bölümünün altına "Projeyi Paylaş" butonunu yerleştirir (koşul: `useDataManagementStore`'da `items.length > 0`)
+- **Global kısayol** → `AppLayout` üst barında (opsiyonel, her iki içerik türü için aynı `ShareButton` davranışı)
+
+Feature tarafı sadece "paylaşılabilir içerik var mı" state'ini store'a yazar; paylaşım UI'sini orchestrator takar.
 
 ### 4.2 Paylaşım paneli
 
@@ -146,7 +151,7 @@ CBS React uygulamasında üretilen **koroplet harita**, **kabarcık harita**, **
 ```
 src/features/share/
 ├── components/
-│   ├── ShareButton.tsx           # Viz ve veri oluşturma ekranlarında
+│   ├── ShareButton.tsx           # Orchestrator'lardan (AppLayout/Sidebar) çağrılır
 │   ├── SharePanel.tsx            # Mod seçimi + link/kod gösterimi
 │   ├── ShareAuthPrompt.tsx       # "Giriş gerekli" modal
 │   ├── ShareCodeInput.tsx        # Üst barda kod girişi
@@ -164,6 +169,25 @@ src/features/share/
 └── index.ts                      # VSA public barrel
 ```
 
+**Barrel (index.ts) dışarı açılanlar:**
+- `ShareButton`, `SharePanel`, `ShareAuthPrompt`, `ShareCodeInput`, `ShareModeBadge`
+- `useSharedMode` (AppLayout'un URL modunu okuması için)
+- `SharedVizPayload` (type)
+
+`useShare`, `useAuth`, servisler ve diğer hook'lar feature içinde kalır — dışarı export edilmez.
+
+#### 5.1.1 VSA ön koşulu: Paylaşılabilir tip taşıması
+
+`SharedVizPayload`, `data-management`'a ait şu tipleri kullanacak:
+- `DataItem`, `DataItemType`, `DataItemSource`, `LayerStyles`, `NewDataItem`
+
+Bu tipler şu an `src/features/data-management/types.ts` altında. `share` feature'ı bunları cross-feature import ile alamaz (yasak). İki seçenekten biri uygulanır:
+
+- **Seçenek A (önerilen):** Bu tipler `src/types/dataManagement.ts`'e taşınır; `data-management` feature'ı da oradan re-export eder. `share` feature'ı `@/types/dataManagement`'ten tüketir.
+- **Seçenek B:** `useDataManagementStore.ts`, eksik olan tipleri (`LayerStyles`, `DataItemType`, `DataItemSource`, `NewDataItem`) re-export eder. `share` feature'ı `@/stores/useDataManagementStore`'dan tüketir.
+
+**Karar:** Seçenek A temiz — görselleştirme tipleri zaten `src/types/visualization.ts`'te olduğu gibi, data-management tipleri de `src/types/` altına çıkmalı. Bu değişiklik Faz 1'de bağımsız PR olarak yapılır.
+
 ### 5.2 Paylaşılan altyapı (shared/)
 
 ```
@@ -176,6 +200,35 @@ src/shared/auth/
 ```
 
 **Not:** `src/features/share/services/authService.ts` bu shared katmanı sarmalar; feature dışı taraflardan (AppLayout vb.) çağrı gerekirse `@/shared/auth/` kullanılır.
+
+#### 5.2.1 Store okuma/yazma pattern'i
+
+Servis dosyaları React hook kullanamaz. Bu yüzden `sharePayload.ts` store'lara doğrudan statik erişim API'si ile bağlanır:
+
+```typescript
+// src/features/share/services/sharePayload.ts
+import { useVisualizationStore } from '@/stores/useVisualizationStore'
+import { useDataManagementStore } from '@/stores/useDataManagementStore'
+import { useMapStore } from '@/stores/useMapStore'
+
+export function buildShareablePayload(): SharedVizPayload {
+  const viz = useVisualizationStore.getState()
+  const dm = useDataManagementStore.getState()
+  const map = useMapStore.getState()
+  // ... allowlist ile payload kur
+}
+
+export function applySharedPayload(payload: SharedVizPayload): void {
+  useVisualizationStore.setState({ /* ... */ })
+  useDataManagementStore.setState({ /* ... */ })
+  useMapStore.setState({ /* ... */ })
+}
+```
+
+- **Okuma:** `useXStore.getState()` — snapshot
+- **Yazma:** `useXStore.setState(partial)` — hidrasyon için
+- **React bileşenleri içinde** (hook-safe bağlam): yine de normal `useXStore((s) => s.x)` selector pattern'i kullanılır
+- **Çoklu store yazımını `startTransition` ile sarmala** — hidrasyon INP'yi bozmasın (mevcut performans pattern'i)
 
 ### 5.3 Payload şeması
 
@@ -303,12 +356,24 @@ Viz {
 - **CORS:** Mevcut backend CORS policy devam eder (backendrehber.md)
 - **JWT TTL:** sessionStorage, tab kapanınca silinir (kabul edilen davranış)
 
-### 5.8 Mimari kısıtlamalar (CLAUDE.md uyumu)
+### 5.8 VSA Uyumluluk Checklist (CLAUDE.md)
 
-- `share` feature yalnızca `@/stores/`, `@/shared/`, `@/utils/`, `@/types/`, `@/constants/`'dan import edebilir
-- Store'lardan veri okumak `sharePayload.ts` içinde olmalı — diğer feature'lardan **direkt import yok**
-- Barrel: `@/features/share` — deep import yasak
-- ESLint config'e whitelist gerekiyorsa: `AppLayout` paylaşım modunu okumak için `@/features/share` kullanır (orchestrator zaten feature barrel import ediyor, sorun olmamalı)
+Bu özellik CLAUDE.md'deki "Import Boundaries" kurallarına şu şekilde uyum sağlar:
+
+| Kural | Uygulama |
+|---|---|
+| Cross-feature import yasağı | `share` yalnızca `@/stores/`, `@/shared/`, `@/utils/`, `@/types/`, `@/constants/` import eder. `@/features/data-management`, `@/features/viz-wizard`, `@/features/visualization` **hiçbir yerde** import edilmez |
+| `viz-wizard`/`data-management`, `@/features/share` import etmez | `ShareButton` bu feature'ların içine değil, **orchestrator**'larda (`AppLayout.tsx`, `Sidebar.tsx`) yerleştirilir (§4.1) |
+| No deep imports | Tüketici: `import { ShareButton } from '@/features/share'` — asla `@/features/share/components/ShareButton` değil |
+| Orchestrator whitelist | `AppLayout.tsx` ve `Sidebar.tsx` zaten `@/features/<name>` barrel'ı import edebilir; yeni ESLint whitelist **gerekmez** |
+| Global UI yasağı | `src/components/` altına yeni dosya eklenmez |
+| Shared kod konumu | Birden fazla feature'ın kullanabileceği `apiService`, `authStorage`, `mebbisUrl` → `src/shared/api/` ve `src/shared/auth/` |
+| Ortak tipler | `DataItem`, `LayerStyles` vb. `src/types/dataManagement.ts`'e taşınır (§5.1.1 ön koşul) |
+| IndexedDB persist yasağı | `share` feature'ı Zustand persist middleware kullanmaz. Paylaşım state'i her zaman remote veya URL parametresinden türetilir |
+| No semicolons, single quotes, import type | Standart TS/ESLint kuralları tüm yeni dosyalarda korunur |
+| Max 600 satır / dosya | Components bölündü (`SharePanel`, `ShareAuthPrompt`, `ShareModeBadge` ayrı) |
+
+**Doğrulama:** PR öncesi `npm run lint:strict` temiz geçmeli. Cross-feature ihlali ESLint tarafından otomatik yakalanır.
 
 ### 5.9 Performans
 
@@ -373,23 +438,32 @@ Viz {
 
 ## 8. Geliştirme Sırası
 
+### Faz 0 — VSA ön koşulu: Tip taşıması (0.5 gün)
+Bağımsız, küçük kapsamlı PR. Diğer fazlardan önce merge edilmeli.
+- `DataItem`, `DataItemType`, `DataItemSource`, `LayerStyles`, `NewDataItem` → `src/types/dataManagement.ts`
+- `src/features/data-management/types.ts`'i yeni lokasyondan re-export edecek şekilde güncelle
+- Mevcut tüketicilerin import yollarını güncelle (çoğu zaten `@/features/data-management` barrel üzerinden)
+- `npm run lint:strict` + `npm run test:run` temiz
+
 ### Faz 1 — Temel altyapı (2–3 gün)
-- `src/shared/api/apiService.ts`
-- `src/shared/auth/` katmanı
-- `login-redirect` URL handler
-- MEBBİS login URL builder
+- `src/shared/api/apiService.ts` — fetch wrapper + 401 handler
+- `src/shared/auth/authStorage.ts` — sessionStorage token yönetimi
+- `src/shared/auth/mebbisUrl.ts` — MEBBİS login URL builder
+- `login-redirect` URL handler (AppLayout içinde veya ayrı route)
 - Toast + sessionStorage testleri
 
 ### Faz 2 — Payload serializer (1–2 gün)
-- `sharePayload.ts` (allowlist)
-- Unit testler: GeoJSON sızıntısı olmadığını doğrula
-- `applySharedPayload` + store hidrasyon testleri
+- `sharePayload.ts` (allowlist — `VIZ_ALLOWED_FIELDS`, `DM_ALLOWED_FIELDS`)
+- `buildShareablePayload` / `applySharedPayload` (store `getState`/`setState` pattern, §5.2.1)
+- Unit testler: GeoJSON sızıntısı yok (snapshot boyutu 2 MB altında, `provincesGeoJSON` içermez)
+- Store hidrasyon testleri (`startTransition` ile)
 
 ### Faz 3 — Share feature UI (3–4 gün)
-- `ShareButton`, `SharePanel`, `ShareAuthPrompt`, `ShareModeBadge`
-- `useShare`, `useSharedMode`
-- URL param parse
+- `ShareButton`, `SharePanel`, `ShareAuthPrompt`, `ShareModeBadge`, `ShareCodeInput`, `ShareCancelConfirm`
+- `useShare`, `useSharedMode`, `useAuth`
+- URL param parse (`?share=<key>&mode=view|edit`)
 - Backend mock (MSW) ile uçtan uca test
+- Barrel (`index.ts`) — yalnızca §5.1'de listelenen 5 bileşen + `useSharedMode` + `SharedVizPayload` dışa açılır
 
 ### Faz 4 — Backend entegrasyonu (backend ekibi ile paralel)
 - Endpoint kontratlarının finalize edilmesi
