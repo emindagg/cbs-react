@@ -2,6 +2,7 @@ import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import type { ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import shp from 'shpjs'
+import { feature as topojsonFeature } from 'topojson-client'
 
 import { useMapStore } from '@/stores/useMapStore'
 
@@ -73,10 +74,20 @@ function getLandCoverFillColorExpression(): ExpressionSpecification {
 async function fetchGeoJsonFromUrl(url: string): Promise<FeatureCollection<Geometry>> {
   const response = await fetch(url)
   if (!response.ok) {
-    throw new Error(`GeoJSON indirilemedi (${response.status})`)
+    throw new Error(`Katman verisi indirilemedi (${response.status})`)
   }
 
   const data = await response.json()
+  if (data && typeof data === 'object' && (data as { type?: string }).type === 'Topology') {
+    const topology = data as { objects?: Record<string, unknown> }
+    const objectEntries = Object.entries(topology.objects ?? {})
+    if (objectEntries.length === 0) {
+      throw new Error('TopoJSON içinde obje bulunamadı')
+    }
+    const [, firstObject] = objectEntries[0]
+    const converted = topojsonFeature(data as never, firstObject as never)
+    return normalizeFeatureCollection(converted)
+  }
   return normalizeFeatureCollection(data)
 }
 
@@ -118,11 +129,9 @@ function ensureLayerOnMap(
   const sourceId = getSourceId(definition.id)
 
   if (!map.getSource(sourceId)) {
-    const isLandCover = definition.id === LAND_COVER_LAYER_ID
     map.addSource(sourceId, {
       type: 'geojson',
       data,
-      ...(isLandCover ? { tolerance: 3, buffer: 0, maxzoom: 12 } : {}),
     })
   }
 

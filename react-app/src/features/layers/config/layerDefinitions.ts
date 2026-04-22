@@ -46,7 +46,7 @@ export const OVERLAY_LAYER_DEFINITIONS: OverlayLayerDefinition[] = [
   {
     id: 'arazi_ortusu_2018',
     name: 'Arazi Örtüsü (2018)',
-    url: 'https://raw.githubusercontent.com/emindagg/katman_verisi/main/corine_2018.geojson',
+    url: 'https://raw.githubusercontent.com/emindagg/katman_verisi/main/turkiye_corine.topojson',
     type: 'fill',
     color: '#ffffff',
     opacity: 1,
