@@ -109,3 +109,27 @@ Arazi Örtüsü (2018) katmanını hızlı açılış için:
 
 - `https://ogmmateryal.eba.gov.tr/cbs/lc2018`
 - `https://ogmmateryal.eba.gov.tr/cbs/arazi-ortusu-2018`
+
+## Sorun Giderme
+
+### MEBİ'de yayın sonrası beyaz ekran
+
+Belirti:
+- Uygulama `https://mebi.eba.gov.tr/upload/skill-based-app/<id>/index.html` gibi alt klasörde açılıyor ama sayfa beyaz kalıyor.
+
+Neden:
+- Build, yanlış `base` ile üretildiğinde asset yolları (`/cbs-react/...` veya `/assets/...`) yayınlanan klasörle uyuşmaz.
+
+Çözüm (alt klasör yayını için önerilen):
+```bash
+cd "D:/0GM/MEB PROJELER/CBS PROJELER/cbs-react/react-app"
+MSYS_NO_PATHCONV=1 pnpm exec tsc -b && MSYS_NO_PATHCONV=1 pnpm exec vite build --base=./
+```
+
+Yükleme adımı:
+- Sunucudaki hedef klasörü temizleyin.
+- `react-app/dist` klasörünün **içeriğini** (klasörün kendisini değil) hedef klasöre kopyalayın.
+- Tarayıcıda `Ctrl+F5` ile hard refresh yapın.
+
+Doğrulama:
+- `dist/index.html` içinde yolların `./assets/...` ve `./geocoder.js` olarak üretildiğini kontrol edin.
