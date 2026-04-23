@@ -259,7 +259,7 @@ export function parseFormattedNumber(str: string): number | null {
   // Handle percentage
   if (trimmed.endsWith('%')) {
     const num = parseLocalizedNumeric(trimmed.slice(0, -1))
-    return isNaN(num) ? null : num / 100
+    return num === null ? null : num / 100
   }
 
   return parseLocalizedNumeric(trimmed)
