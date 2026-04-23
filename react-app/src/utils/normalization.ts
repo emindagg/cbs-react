@@ -4,6 +4,7 @@
  */
 
 import type { NormalizationType } from '../types/visualization'
+import { parseFormattedNumber } from './numberFormatter'
 
 interface NormalizationOptions {
   type: NormalizationType
@@ -54,7 +55,8 @@ export function applyNormalizationMulti(
     const totals: Record<string, number> = {}
     for (const col of columns) {
       totals[col] = data.reduce((sum, d) => {
-        const v = parseFloat(String(d[col]))
+        const parsed = parseFormattedNumber(String(d[col]))
+        const v = parsed ?? Number.NaN
         return sum + (isNaN(v) ? 0 : v)
       }, 0)
     }
@@ -67,7 +69,8 @@ export function applyNormalizationMulti(
           next[col] = NaN
           continue
         }
-        const v = parseFloat(String(d[col]))
+        const parsed = parseFormattedNumber(String(d[col]))
+        const v = parsed ?? Number.NaN
         next[col] = isNaN(v) ? NaN : (v / total) * 100
       }
       return next
@@ -79,11 +82,13 @@ export function applyNormalizationMulti(
       // Böleni, hiçbir sütunu değiştirmeden ÖNCE satırın orijinal
       // halinden oku — böylece divisionField kendisi normalize edilen
       // sütunlardan biri olsa bile doğru payda kullanılır.
-      const div = parseFloat(String(d[divisionField]))
+      const parsedDiv = parseFormattedNumber(String(d[divisionField]))
+      const div = parsedDiv ?? Number.NaN
       const next: Record<string, unknown> = { ...d }
       const divInvalid = isNaN(div) || div === 0
       for (const col of columns) {
-        const v = parseFloat(String(d[col]))
+        const parsed = parseFormattedNumber(String(d[col]))
+        const v = parsed ?? Number.NaN
         next[col] = isNaN(v) || divInvalid ? NaN : v / div
       }
       return next

@@ -10,6 +10,7 @@ import { getInterpolatedColorPalette } from '@/constants/colorSchemes'
 import { BUBBLE_DEFAULT_FILL_COLOR, DEFAULT_DOT_COLOR, DEFAULT_DOT_SIZE, calculateSmartDotValue } from '@/shared/visualization'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { calculateBreaks } from '@/utils/classification'
+import { parseFormattedNumber } from '@/utils/numberFormatter'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
 import { normalizeTurkishText } from '@/utils/turkishNormalizer'
 
@@ -39,8 +40,8 @@ export default function Container() {
   ): number[] => {
     const seen = new Map<string, number>()
     for (const row of data) {
-      const v = parseFloat(String(row[col]))
-      if (isNaN(v)) continue
+      const v = parseFormattedNumber(String(row[col]))
+      if (v === null) continue
       const locationName = row.location ?? Object.values(row)[0]
       if (!locationName) continue
       const normalizedKey = normalizeTurkishText(String(locationName))

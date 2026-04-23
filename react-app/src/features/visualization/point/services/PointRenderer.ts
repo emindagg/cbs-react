@@ -5,6 +5,7 @@ import type { VisualizationSettings } from '@/types/visualization'
 import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
 import { calculateBounds, calculateCentroid } from '@/utils/geometryUtils'
 import { formatNumber } from '@/utils/numberFormatter'
+import { parseFormattedNumber } from '@/utils/numberFormatter'
 import type { NumberFormat } from '@/utils/numberFormatter'
 import { hashString, mulberry32 } from '@/utils/prng'
 import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
@@ -36,6 +37,7 @@ export const DEFAULT_BACKDROP_FILL_OPACITY = 1
 const BACKDROP_LINE_COLOR = '#94a3b8'
 const BACKDROP_LINE_OPACITY = 0.85
 const BACKDROP_LINE_WIDTH = 0.8
+const toNumericValue = (raw: unknown): number | null => parseFormattedNumber(String(raw))
 
 type Coordinate = [number, number]
 type Ring = Coordinate[]
@@ -67,8 +69,8 @@ export class PointRenderer {
   ): Promise<void> {
     // 1. Extract numeric values (0 geçerli veri değeridir, yalnızca NaN dışlanır)
     const values = userData
-      .map((d) => parseFloat(String(d[dataColumn])))
-      .filter((v) => !isNaN(v))
+      .map((d) => toNumericValue(d[dataColumn]))
+      .filter((v): v is number => v !== null)
 
     if (values.length === 0) {
       console.warn('⚠️  No valid data for dot-density visualization')
@@ -147,8 +149,8 @@ export class PointRenderer {
           const provinceName = String(d._province)
           const provinceNormalized = normalizeTurkishText(provinceName)
           const compositeKey = `${provinceNormalized}_${normalizedKey}`
-          const value = parseFloat(String(d[dataColumn]))
-          if (isNaN(value)) return
+          const value = toNumericValue(d[dataColumn])
+          if (value === null) return
           dataMap[compositeKey] = value
 
           const plateCode = getPlateCodeByName(provinceName)
@@ -156,8 +158,8 @@ export class PointRenderer {
             dataMap[`${plateCode}_${normalizedKey}`] = value
           }
         } else {
-          const value = parseFloat(String(d[dataColumn]))
-          if (!isNaN(value)) dataMap[normalizedKey] = value
+          const value = toNumericValue(d[dataColumn])
+          if (value !== null) dataMap[normalizedKey] = value
         }
       }
     })

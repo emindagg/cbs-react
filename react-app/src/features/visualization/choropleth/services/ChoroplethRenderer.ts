@@ -14,7 +14,7 @@ import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
 import { calculateCentroid } from '@/utils/geometryUtils'
 import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
-import { formatNumber } from '@/utils/numberFormatter'
+import { formatNumber, parseFormattedNumber } from '@/utils/numberFormatter'
 import type { NumberFormat } from '@/utils/numberFormatter'
 import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
 
@@ -29,6 +29,7 @@ import { DEFAULT_OUTLINE_COLOR, DEFAULT_OUTLINE_OPACITY } from '../../shared/out
 
 const NO_DATA_COLOR = '#e4e4e4'
 const CONTINUOUS_STOPS = 16
+const toNumericValue = (raw: unknown): number | null => parseFormattedNumber(String(raw))
 
 export class ChoroplethRenderer {
   private map: Map
@@ -60,8 +61,8 @@ export class ChoroplethRenderer {
   ): Promise<void> {
     // Extract values for classification (0 geçerli veri değeridir, yalnızca NaN dışlanır)
     const values = userData
-      .map((d) => parseFloat(String(d[dataColumn])))
-      .filter((v) => !isNaN(v))
+      .map((d) => toNumericValue(d[dataColumn]))
+      .filter((v): v is number => v !== null)
 
     if (values.length === 0) {
       console.warn('⚠️  No valid data for visualization')
@@ -210,8 +211,8 @@ export class ChoroplethRenderer {
           const provinceName = String(d._province)
           const provinceNormalized = normalizeTurkishText(provinceName)
           const compositeKey = `${provinceNormalized}_${normalizedKey}`
-          const value = parseFloat(String(d[dataColumn]))
-          if (isNaN(value)) return
+          const value = toNumericValue(d[dataColumn])
+          if (value === null) return
           dataMap[compositeKey] = value
 
           // Also store plate-code-based key (e.g. "27_sehitkamil")
@@ -220,8 +221,8 @@ export class ChoroplethRenderer {
             dataMap[`${plateCode}_${normalizedKey}`] = value
           }
         } else {
-          const value = parseFloat(String(d[dataColumn]))
-          if (!isNaN(value)) dataMap[normalizedKey] = value
+          const value = toNumericValue(d[dataColumn])
+          if (value !== null) dataMap[normalizedKey] = value
         }
       }
     })

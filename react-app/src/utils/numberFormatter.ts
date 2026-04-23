@@ -202,23 +202,49 @@ export const FORMAT_OPTIONS: Array<{
 export function parseFormattedNumber(str: string): number | null {
   if (!str || str === '-') return null
 
+  const parseLocalizedNumeric = (value: string): number | null => {
+    const compact = value.replace(/\s+/g, '').replace(/[^\d.,+-]/g, '')
+    if (!compact) return null
+
+    const hasComma = compact.includes(',')
+    const hasDot = compact.includes('.')
+    let normalized = compact
+
+    if (hasComma && hasDot) {
+      const lastComma = compact.lastIndexOf(',')
+      const lastDot = compact.lastIndexOf('.')
+      const decimalSep = lastComma > lastDot ? ',' : '.'
+      const thousandSep = decimalSep === ',' ? '.' : ','
+      normalized = compact.replace(new RegExp(`\\${thousandSep}`, 'g'), '')
+      if (decimalSep === ',') normalized = normalized.replace(',', '.')
+    } else if (hasComma) {
+      const commaCount = (compact.match(/,/g) || []).length
+      if (commaCount > 1) {
+        normalized = compact.replace(/,/g, '')
+      } else {
+        const [, frac = ''] = compact.split(',')
+        normalized = /^\d{3}$/.test(frac) ? compact.replace(/,/g, '') : compact.replace(',', '.')
+      }
+    } else if (hasDot) {
+      const dotCount = (compact.match(/\./g) || []).length
+      if (dotCount > 1) {
+        normalized = compact.replace(/\./g, '')
+      } else {
+        const [, frac = ''] = compact.split('.')
+        normalized = /^\d{3}$/.test(frac) ? compact.replace(/\./g, '') : compact
+      }
+    }
+
+    const num = Number.parseFloat(normalized)
+    return Number.isNaN(num) ? null : num
+  }
+
   // Handle abbreviated numbers
   const trimmed = str.trim()
   const abbrevMatch = trimmed.match(/^([\d.,]+)(Mlr|[kmbtBM])$/i)
   if (abbrevMatch) {
-    let numericPart = abbrevMatch[1]
-    if (numericPart.includes(',') && numericPart.includes('.')) {
-      numericPart = numericPart.replace(/\./g, '').replace(',', '.')
-    } else if (numericPart.includes(',')) {
-      numericPart = numericPart.replace(',', '.')
-    } else {
-      const dotParts = numericPart.split('.')
-      if (dotParts.length > 2 || (dotParts.length === 2 && dotParts[1].length === 3)) {
-        numericPart = numericPart.replace(/\./g, '')
-      }
-    }
-
-    const num = parseFloat(numericPart)
+    const num = parseLocalizedNumeric(abbrevMatch[1])
+    if (num === null) return null
     const suffix = abbrevMatch[2].toLowerCase()
     const multipliers: Record<string, number> = {
       k: 1e3,
@@ -230,19 +256,11 @@ export function parseFormattedNumber(str: string): number | null {
     return num * (multipliers[suffix] || 1)
   }
 
-  // Remove Turkish thousand separators
-  let cleaned = trimmed.replace(/\./g, '')
-
-  // Replace Turkish decimal separator with English
-  cleaned = cleaned.replace(/,/g, '.')
-
   // Handle percentage
-  if (cleaned.endsWith('%')) {
-    cleaned = cleaned.slice(0, -1)
-    const num = parseFloat(cleaned)
+  if (trimmed.endsWith('%')) {
+    const num = parseLocalizedNumeric(trimmed.slice(0, -1))
     return isNaN(num) ? null : num / 100
   }
 
-  const num = parseFloat(cleaned)
-  return isNaN(num) ? null : num
+  return parseLocalizedNumeric(trimmed)
 }

@@ -17,6 +17,8 @@ describe('numberFormatter', () => {
 
   it('parses localized and abbreviated values', () => {
     expect(parseFormattedNumber('1.234,56')).toBeCloseTo(1234.56, 5)
+    expect(parseFormattedNumber('15.701.602')).toBe(15701602)
+    expect(parseFormattedNumber('15,701,602')).toBe(15701602)
     expect(parseFormattedNumber('1.2M')).toBeCloseTo(1200000, 5)
     expect(parseFormattedNumber('12%')).toBeCloseTo(0.12, 5)
   })

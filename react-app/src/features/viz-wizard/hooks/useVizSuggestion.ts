@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 
 import type { ClassificationMethod, MatchResults } from '@/types/visualization'
 import { suggestClassificationMethod } from '@/utils/dataStats'
+import { parseFormattedNumber } from '@/utils/numberFormatter'
 
 interface UseVizSuggestionProps {
   matchResults: MatchResults
@@ -34,8 +35,8 @@ export function useVizSuggestion({ matchResults, dataColumn }: UseVizSuggestionP
     try {
       // Extract values from successful matches (0 geçerli veri değeridir, yalnızca NaN dışlanır)
       const values = matchResults.successful
-        .map((m) => parseFloat(String(m.originalData[dataColumn])))
-        .filter((v) => !isNaN(v))
+        .map((m) => parseFormattedNumber(String(m.originalData[dataColumn])))
+        .filter((v): v is number => v !== null)
 
       if (values.length === 0) {
         setTimeout(() => {

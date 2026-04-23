@@ -14,7 +14,7 @@ import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
 import { calculateCentroid } from '@/utils/geometryUtils'
 import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
-import { formatNumber } from '@/utils/numberFormatter'
+import { formatNumber, parseFormattedNumber } from '@/utils/numberFormatter'
 import type { NumberFormat } from '@/utils/numberFormatter'
 import { calculateSymbolSize } from '@/utils/symbolShapes'
 import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
@@ -39,6 +39,7 @@ const DEFAULT_BACKDROP_FILL_OPACITY = 0.22
 const BACKDROP_LINE_COLOR = '#94a3b8'
 const BACKDROP_LINE_OPACITY = 0.85
 const BACKDROP_LINE_WIDTH = 0.8
+const toNumericValue = (raw: unknown): number | null => parseFormattedNumber(String(raw))
 
 export class BubbleRenderer {
   private map: Map
@@ -263,8 +264,8 @@ export class BubbleRenderer {
           const provinceName = String(d._province)
           const provinceNormalized = normalizeTurkishText(provinceName)
           const compositeKey = `${provinceNormalized}_${normalizedKey}`
-          const value = parseFloat(String(d[dataColumn]))
-          if (isNaN(value)) return
+          const value = toNumericValue(d[dataColumn])
+          if (value === null) return
           dataMap[compositeKey] = value
 
           // Also store plate-code-based key (e.g. "27_sehitkamil")
@@ -273,8 +274,8 @@ export class BubbleRenderer {
             dataMap[`${plateCode}_${normalizedKey}`] = value
           }
         } else {
-          const value = parseFloat(String(d[dataColumn]))
-          if (!isNaN(value)) dataMap[normalizedKey] = value
+          const value = toNumericValue(d[dataColumn])
+          if (value !== null) dataMap[normalizedKey] = value
         }
       }
     })

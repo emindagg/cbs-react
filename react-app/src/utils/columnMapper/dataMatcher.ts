@@ -5,6 +5,7 @@
  */
 
 import type { ColumnMapping, MatchResult, MatchResults } from '../../types/visualization'
+import { parseFormattedNumber } from '../numberFormatter'
 import { findClosestMatch, getPlateCodeByName, normalizeTurkishText } from '../turkishNormalizer'
 import type { ColumnMapperIndexes, RawDataRow } from './types'
 
@@ -35,7 +36,8 @@ export function matchData(
     const districtValue = columnMapping.districtColumn
       ? row[columnMapping.districtColumn]
       : null
-    const dataValue = parseFloat(String(row[columnMapping.dataColumn!]))
+    const parsedValue = parseFormattedNumber(String(row[columnMapping.dataColumn!]))
+    const dataValue = parsedValue ?? Number.NaN
 
     // Create match result
     const result: MatchResult = {
