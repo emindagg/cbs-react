@@ -31,7 +31,7 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
       {/* Lejant Card */}
       <div className="border border-zinc-200 rounded-lg p-3 space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-zinc-700">Lejantı Göster</label>
+          <label className="text-[11px] font-semibold text-zinc-700">Lejantı Göster</label>
           <button
             type="button"
             role="switch"
@@ -119,7 +119,7 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
       {/* Yön Oku Card */}
       <div className="border border-zinc-200 rounded-lg p-3 space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-zinc-700">Yön Oku</label>
+          <label className="text-[11px] font-semibold text-zinc-700">Yön Oku</label>
           <button
             type="button"
             role="switch"
