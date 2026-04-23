@@ -123,7 +123,7 @@ Neden:
 Çözüm (alt klasör yayını için önerilen):
 ```bash
 cd "D:/0GM/MEB PROJELER/CBS PROJELER/cbs-react/react-app"
-MSYS_NO_PATHCONV=1 pnpm exec tsc -b && MSYS_NO_PATHCONV=1 pnpm exec vite build --base=./
+pnpm run build:mebi
 ```
 
 Yükleme adımı:
