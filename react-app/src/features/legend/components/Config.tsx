@@ -34,12 +34,15 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
           <label className="text-sm font-medium text-zinc-700">Lejantı Göster</label>
           <button
             type="button"
+            role="switch"
+            aria-checked={config.visible}
             onClick={() => onChange({ visible: !config.visible })}
-            className={`w-12 h-6 rounded-full transition-all relative ${config.visible ? 'bg-blue-500' : 'bg-zinc-300'}`}
+            className="relative w-12 h-6 cursor-pointer flex items-center justify-center group/neur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 rounded-sm"
           >
-            <div
-              className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${config.visible ? 'left-6' : 'left-0.5'}`}
-            />
+            <div className={`w-full h-[2px] rounded-full transition-colors duration-500 ${config.visible ? 'bg-zinc-900' : 'bg-zinc-300 group-hover/neur:bg-zinc-400'}`} />
+            <div className={`absolute w-3.5 h-3.5 border transition-all duration-500 ease-in-out ${
+              config.visible ? 'translate-x-4 bg-zinc-900 border-zinc-900 rotate-45 scale-110 shadow-md' : '-translate-x-4 bg-white border-zinc-400 rotate-0 scale-100 shadow-sm group-hover/neur:border-zinc-500 group-hover/neur:shadow'
+            }`} />
           </button>
         </div>
 
@@ -119,12 +122,15 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
           <label className="text-sm font-medium text-zinc-700">Yön Oku</label>
           <button
             type="button"
+            role="switch"
+            aria-checked={northArrowVisible}
             onClick={() => setNorthArrowVisible(!northArrowVisible)}
-            className={`w-12 h-6 rounded-full transition-all relative ${northArrowVisible ? 'bg-blue-500' : 'bg-zinc-300'}`}
+            className="relative w-12 h-6 cursor-pointer flex items-center justify-center group/neur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 rounded-sm"
           >
-            <div
-              className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${northArrowVisible ? 'left-6' : 'left-0.5'}`}
-            />
+            <div className={`w-full h-[2px] rounded-full transition-colors duration-500 ${northArrowVisible ? 'bg-zinc-900' : 'bg-zinc-300 group-hover/neur:bg-zinc-400'}`} />
+            <div className={`absolute w-3.5 h-3.5 border transition-all duration-500 ease-in-out ${
+              northArrowVisible ? 'translate-x-4 bg-zinc-900 border-zinc-900 rotate-45 scale-110 shadow-md' : '-translate-x-4 bg-white border-zinc-400 rotate-0 scale-100 shadow-sm group-hover/neur:border-zinc-500 group-hover/neur:shadow'
+            }`} />
           </button>
         </div>
 
