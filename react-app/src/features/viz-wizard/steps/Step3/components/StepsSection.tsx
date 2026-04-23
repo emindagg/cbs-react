@@ -19,7 +19,7 @@ interface StepsSectionProps {
 const CLASSIFICATION_METHODS: { value: ClassificationMethod; label: string; description: string }[] = [
   { value: 'jenks', label: 'Doğal Kırılmalar (Jenks)', description: 'Verideki doğal grupları bulur' },
   { value: 'equal', label: 'Doğrusal (Eşit Aralık)', description: 'Eşit genişlikte aralıklar' },
-  { value: 'quantile', label: 'Çeyrekler (Eşit Sayı)', description: 'Her sınıfta eşit sayıda öğe' },
+  { value: 'quantile', label: 'Çeyrekler (Eşit Sayım)', description: 'Her sınıfta eşit sayıda öğe' },
   { value: 'custom', label: 'Özel Sınıflar', description: 'Sınır değerlerini elle belirleyin' },
 ]
 export function StepsSection({

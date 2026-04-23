@@ -26,7 +26,6 @@ function resetStores() {
     showMeasurementTools: true,
     showAdvancedAnalysis: true,
     distancePoints: [],
-    distanceGhostPoint: null,
     isDrawingDistance: false,
     toolsMenuMode: 'closed',
   })

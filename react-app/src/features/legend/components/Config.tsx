@@ -99,18 +99,6 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={config.highlightOnHover}
-                    onChange={(e) => onChange({ highlightOnHover: e.target.checked })}
-                    className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500"
-                  />
-                  <span className="text-[11px] text-zinc-600">
-                    Hover'da vurgulama aktif et
-                  </span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
                     checked={config.reverseOrder}
                     onChange={(e) => onChange({ reverseOrder: e.target.checked })}
                     className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500"

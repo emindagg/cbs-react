@@ -25,10 +25,8 @@ export default function ColorLegend({
   colors,
   scaleType,
   classificationMethod,
-  onHover,
   onTitleChange,
 }: LegendProps) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
@@ -71,13 +69,6 @@ export default function ColorLegend({
   }, [isDragging, handleMouseMove, handleMouseUp])
 
   if (!config.visible) return null
-
-  const handleItemHover = (index: number | null) => {
-    if (config.highlightOnHover) {
-      setHoveredIndex(index)
-      onHover?.(index)
-    }
-  }
 
   const handleTitleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -176,8 +167,6 @@ export default function ColorLegend({
         colors={colors}
         scaleType={scaleType}
         classificationMethod={classificationMethod}
-        onItemHover={handleItemHover}
-        hoveredIndex={hoveredIndex}
       />
     </div>
   )

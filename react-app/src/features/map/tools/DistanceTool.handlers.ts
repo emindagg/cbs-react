@@ -13,6 +13,7 @@ interface UseDistanceHandlersProps {
   isDrawingDistance: boolean
   distancePoints: [number, number][]
   isClosed: boolean
+  onGhostReset: () => void
 }
 
 export function useDistanceHandlers({
@@ -20,18 +21,13 @@ export function useDistanceHandlers({
   isDrawingDistance,
   distancePoints,
   isClosed,
+  onGhostReset,
 }: UseDistanceHandlersProps) {
   const {
     setDistancePoints,
-    setDistanceGhostPoint,
     setIsDrawingDistance,
     resetDistance,
   } = useToolStore()
-
-  const handleMouseMove = useCallback((e: maplibregl.MapMouseEvent) => {
-    if (!isActive || !isDrawingDistance) return
-    setDistanceGhostPoint([e.lngLat.lng, e.lngLat.lat])
-  }, [isActive, isDrawingDistance, setDistanceGhostPoint])
 
   const handleClick = useCallback((e: maplibregl.MapMouseEvent) => {
     if (!isActive) return
@@ -52,8 +48,8 @@ export function useDistanceHandlers({
     e.preventDefault()
 
     setIsDrawingDistance(false)
-    setDistanceGhostPoint(null)
-  }, [isActive, isDrawingDistance, setIsDrawingDistance, setDistanceGhostPoint])
+    onGhostReset()
+  }, [isActive, isDrawingDistance, setIsDrawingDistance, onGhostReset])
 
   const handleFirstPointClick = useCallback((e: { originalEvent?: Event } | Event) => {
     const hasOriginalEvent = (evt: unknown): evt is { originalEvent: Event; stopPropagation?: never } =>
@@ -69,9 +65,9 @@ export function useDistanceHandlers({
       const firstPoint = distancePoints[0]
       setDistancePoints([...distancePoints, firstPoint])
       setIsDrawingDistance(false)
-      setDistanceGhostPoint(null)
+      onGhostReset()
     }
-  }, [isActive, isDrawingDistance, distancePoints, setDistancePoints, setIsDrawingDistance, setDistanceGhostPoint])
+  }, [isActive, isDrawingDistance, distancePoints, setDistancePoints, setIsDrawingDistance, onGhostReset])
 
   const handleMarkerDrag = useCallback((idx: number, e: { lngLat: { lng: number; lat: number } }) => {
     const newPoints: [number, number][] = [...distancePoints]
@@ -105,7 +101,6 @@ export function useDistanceHandlers({
   }, [isActive, isDrawingDistance, distancePoints.length, resetDistance])
 
   return {
-    handleMouseMove,
     handleClick,
     handleDblClick,
     handleFirstPointClick,

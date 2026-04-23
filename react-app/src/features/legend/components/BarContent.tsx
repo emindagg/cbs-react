@@ -14,8 +14,6 @@ interface BarContentProps {
   colors: string[]
   scaleType: ColorScaleType
   classificationMethod?: ClassificationMethod
-  onItemHover: (index: number | null) => void
-  hoveredIndex: number | null
 }
 
 export function BarContent({
@@ -24,8 +22,6 @@ export function BarContent({
   colors,
   scaleType,
   classificationMethod,
-  onItemHover,
-  hoveredIndex,
 }: BarContentProps) {
   const configuredFormat = coerceNumberFormat(config.format)
 
@@ -129,7 +125,6 @@ export function BarContent({
           {verticalColors.map((color, index) => (
             <div
               key={index}
-              className={config.highlightOnHover ? 'cursor-pointer' : ''}
               style={{
                 backgroundColor: color,
                 height: `${stepHeight}px`,
@@ -140,8 +135,6 @@ export function BarContent({
                 boxShadow:
                   index < verticalColors.length - 1 ? 'inset 0 -1px 0 rgba(0,0,0,0.08)' : 'none',
               }}
-              onMouseEnter={() => onItemHover(index)}
-              onMouseLeave={() => onItemHover(null)}
             />
           ))}
         </div>
@@ -174,11 +167,8 @@ export function BarContent({
           key={index}
           className={`
             legend-item flex items-center gap-2 transition-all
-            ${hoveredIndex === index ? 'opacity-100 scale-105' : 'opacity-90'}
-            ${config.highlightOnHover ? 'cursor-pointer hover:bg-zinc-50 rounded px-1 -mx-1' : ''}
+            opacity-90
           `}
-          onMouseEnter={() => onItemHover(index)}
-          onMouseLeave={() => onItemHover(null)}
         >
           <div
             className="legend-color w-[12px] h-[12px] rounded-none flex-shrink-0"

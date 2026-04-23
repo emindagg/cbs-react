@@ -254,7 +254,6 @@ export interface LegendConfiguration {
     text: string;
     fontSize?: number; // pixels
   };
-  highlightOnHover: boolean;
   reverseOrder: boolean;
   /** Bivariate bubble modunda boyut lejantının bağımsız başlığı */
   sizeLegendTitle?: string;

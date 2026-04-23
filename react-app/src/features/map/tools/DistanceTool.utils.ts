@@ -33,20 +33,3 @@ export function calculatePerimeter(points: [number, number][], isClosed: boolean
   const line = turf.lineString(points)
   return turf.length(line, { units: 'kilometers' })
 }
-
-export function calculateTempDistance(points: [number, number][], ghostPoint: [number, number] | null): number {
-  if (!ghostPoint || points.length === 0) return 0
-  const currentPoints: [number, number][] = [...points, ghostPoint]
-  if (currentPoints.length < 2) return 0
-  const line = turf.lineString(currentPoints)
-  return turf.length(line, { units: 'kilometers' })
-}
-
-export function calculateTempSegmentDistance(
-  points: [number, number][],
-  ghostPoint: [number, number] | null,
-): number {
-  if (!ghostPoint || points.length === 0) return 0
-  const lastPoint = points[points.length - 1]
-  return turf.distance(lastPoint, ghostPoint, { units: 'kilometers' })
-}

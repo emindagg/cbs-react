@@ -13,7 +13,6 @@ const baseConfig: LegendConfiguration = {
   labels: { type: 'ruler' },
   format: '0a',
   title: { show: true, text: 'Lejant', fontSize: 16 },
-  highlightOnHover: false,
   reverseOrder: false,
 }
 

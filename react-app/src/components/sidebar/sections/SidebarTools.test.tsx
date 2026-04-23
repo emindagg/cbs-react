@@ -11,7 +11,6 @@ function resetToolStore() {
     showMeasurementTools: true,
     showAdvancedAnalysis: true,
     distancePoints: [],
-    distanceGhostPoint: null,
     isDrawingDistance: false,
     toolsMenuMode: 'closed',
   })
@@ -34,7 +33,6 @@ describe('SidebarTools', () => {
     useToolStore.setState({
       activeTool: 'measure-distance',
       distancePoints: [[29, 41], [30, 42]],
-      distanceGhostPoint: [31, 43],
       isDrawingDistance: true,
     })
 
@@ -46,7 +44,6 @@ describe('SidebarTools', () => {
     expect(state.showMeasurementTools).toBe(false)
     expect(state.activeTool).toBe('none')
     expect(state.distancePoints).toEqual([])
-    expect(state.distanceGhostPoint).toBeNull()
     expect(state.isDrawingDistance).toBe(false)
   })
 })

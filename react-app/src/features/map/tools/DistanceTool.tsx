@@ -1,36 +1,92 @@
+import * as turf from '@turf/turf'
 import type { FeatureCollection, LineString, Polygon } from 'geojson'
 import type maplibregl from 'maplibre-gl'
-import { useEffect, useMemo, useRef, useCallback } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useMap, Source, Layer, Marker } from 'react-map-gl/maplibre'
 import type { LayerProps } from 'react-map-gl/maplibre'
 
 import { useToolStore } from '@/stores/useToolStore'
 
 import { MeasurementPanel } from './DistanceTool.display'
+import type { MeasurementPanelHandle } from './DistanceTool.display'
 import { useDistanceHandlers } from './DistanceTool.handlers'
 import {
   calculateMeasurement,
   calculatePerimeter,
-  calculateTempSegmentDistance,
-  calculateTempDistance,
   formatArea,
   formatDistance,
 } from './DistanceTool.utils'
+
+const GHOST_SOURCE_ID = 'measure-ghost-source'
+const EMPTY_GHOST_DATA: FeatureCollection<LineString> = { type: 'FeatureCollection', features: [] }
+
+interface MarkerListProps {
+  points: [number, number][]
+  isDrawingDistance: boolean
+  onMarkerDrag: (idx: number, e: { lngLat: { lng: number; lat: number } }) => void
+  onFirstPointClick: (e: { originalEvent?: Event } | Event) => void
+  onPointerDownCapture: () => void
+  onPointerUpCapture: () => void
+}
+
+const MarkerList = memo(function MarkerList({
+  points,
+  isDrawingDistance,
+  onMarkerDrag,
+  onFirstPointClick,
+  onPointerDownCapture,
+  onPointerUpCapture,
+}: MarkerListProps) {
+  return (
+    <>
+      {points.map((pt, idx) => (
+        <Marker
+          key={idx}
+          longitude={pt[0]}
+          latitude={pt[1]}
+          draggable={true}
+          onDrag={(e) => onMarkerDrag(idx, e)}
+          onClick={idx === 0 ? onFirstPointClick : undefined}
+          style={{ transition: 'none' }}
+        >
+          <div
+            className={`box-content rounded-full cursor-move ${idx === 0 && isDrawingDistance && points.length >= 3
+              ? 'ring-2 ring-emerald-500 ring-offset-2'
+              : ''
+            }`}
+            style={{
+              width: '10px',
+              height: '10px',
+              backgroundColor: '#1a1a1a',
+              border: '2px solid #ffffff',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
+              transition: 'none',
+            }}
+            title={idx === 0 && isDrawingDistance ? 'Kapatmak için tıkla' : ''}
+            onPointerDown={onPointerDownCapture}
+            onPointerUp={onPointerUpCapture}
+          />
+        </Marker>
+      ))}
+    </>
+  )
+})
 
 export default function DistanceTool() {
   const { current: map } = useMap()
   const {
     activeTool,
     distancePoints,
-    distanceGhostPoint,
     isDrawingDistance,
     resetDistance,
   } = useToolStore()
 
   const isActive = activeTool === 'measure-distance'
   const isDraggingMarker = useRef(false)
+  const ghostPointRef = useRef<[number, number] | null>(null)
+  const rafRef = useRef<number | null>(null)
+  const panelRef = useRef<MeasurementPanelHandle>(null)
 
-  // Check if shape is closed
   const isClosed = useMemo(() => {
     if (distancePoints.length < 3) return false
     const first = distancePoints[0]
@@ -38,9 +94,35 @@ export default function DistanceTool() {
     return first[0] === last[0] && first[1] === last[1]
   }, [distancePoints])
 
-  // Event handlers
+  const updateGhostSource = useCallback(() => {
+    if (!map) return
+    const mapInstance = map as unknown as maplibregl.Map
+    const source = mapInstance.getSource(GHOST_SOURCE_ID) as maplibregl.GeoJSONSource | undefined
+    if (!source) return
+
+    const ghost = ghostPointRef.current
+    if (!isDrawingDistance || distancePoints.length === 0 || !ghost) {
+      source.setData(EMPTY_GHOST_DATA)
+      return
+    }
+    const lastPoint = distancePoints[distancePoints.length - 1]
+    source.setData({
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: [lastPoint, ghost] },
+        properties: {},
+      }],
+    })
+  }, [map, isDrawingDistance, distancePoints])
+
+  const resetGhost = useCallback(() => {
+    ghostPointRef.current = null
+    updateGhostSource()
+    panelRef.current?.updateLive(0, 0)
+  }, [updateGhostSource])
+
   const {
-    handleMouseMove,
     handleClick,
     handleDblClick,
     handleFirstPointClick,
@@ -51,41 +133,82 @@ export default function DistanceTool() {
     isDrawingDistance,
     distancePoints,
     isClosed,
+    onGhostReset: resetGhost,
   })
 
-  // Wrap click handler to suppress map clicks triggered by marker drag
   const handleClickSafe = useCallback((e: maplibregl.MapMouseEvent) => {
     if (isDraggingMarker.current) return
     handleClick(e)
   }, [handleClick])
 
-  // Attach/Detach Listeners
+  // Accumulated distance between confirmed points (not incl. ghost)
+  const staticDistance = useMemo(() => {
+    if (isClosed || distancePoints.length < 2) return 0
+    return turf.length(turf.lineString(distancePoints), { units: 'kilometers' })
+  }, [distancePoints, isClosed])
+
+  // Mouse move: rAF-throttled, imperative ghost + panel update (no React re-render)
   useEffect(() => {
     if (!map || !isActive) return
-
     const mapInstance = map as unknown as maplibregl.Map
 
+    const flush = () => {
+      rafRef.current = null
+      updateGhostSource()
+      const ghost = ghostPointRef.current
+      if (!ghost || distancePoints.length === 0) return
+      const lastPoint = distancePoints[distancePoints.length - 1]
+      const tempSegment = turf.distance(lastPoint, ghost, { units: 'kilometers' })
+      const tempTotal = staticDistance + tempSegment
+      panelRef.current?.updateLive(tempTotal, tempSegment)
+    }
+
+    const handleMouseMove = (e: maplibregl.MapMouseEvent) => {
+      if (!isDrawingDistance) return
+      ghostPointRef.current = [e.lngLat.lng, e.lngLat.lat]
+      if (rafRef.current !== null) return
+      rafRef.current = requestAnimationFrame(flush)
+    }
+
     mapInstance.on('mousemove', handleMouseMove)
+    return () => {
+      mapInstance.off('mousemove', handleMouseMove)
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+    }
+  }, [map, isActive, isDrawingDistance, distancePoints, staticDistance, updateGhostSource])
+
+  // Click / dblclick / keydown listeners
+  useEffect(() => {
+    if (!map || !isActive) return
+    const mapInstance = map as unknown as maplibregl.Map
+
     mapInstance.on('click', handleClickSafe)
     mapInstance.on('dblclick', handleDblClick)
     document.addEventListener('keydown', handleKeyDown)
 
-    // Set cursor
     if (isDrawingDistance) {
       mapInstance.getCanvas().style.cursor = 'crosshair'
     }
 
     return () => {
-      mapInstance.off('mousemove', handleMouseMove)
       mapInstance.off('click', handleClickSafe)
       mapInstance.off('dblclick', handleDblClick)
       document.removeEventListener('keydown', handleKeyDown)
       mapInstance.getCanvas().style.cursor = ''
     }
-  }, [map, isActive, handleMouseMove, handleClickSafe, handleDblClick, handleKeyDown, isDrawingDistance])
+  }, [map, isActive, handleClickSafe, handleDblClick, handleKeyDown, isDrawingDistance])
 
-
-  // --- GeoJSON Generation ---
+  // Reset ghost when drawing stops or points change
+  useEffect(() => {
+    if (!isDrawingDistance) {
+      ghostPointRef.current = null
+      updateGhostSource()
+      panelRef.current?.updateLive(0, 0)
+    }
+  }, [isDrawingDistance, updateGhostSource])
 
   const mainGeoJSON = useMemo((): FeatureCollection<LineString | Polygon> => {
     if (distancePoints.length < 2) return { type: 'FeatureCollection', features: [] }
@@ -117,28 +240,6 @@ export default function DistanceTool() {
     }
   }, [distancePoints, isClosed])
 
-  const ghostGeoJSON = useMemo((): FeatureCollection<LineString> => {
-    if (!isDrawingDistance || distancePoints.length === 0 || !distanceGhostPoint) {
-      return { type: 'FeatureCollection', features: [] }
-    }
-
-    const lastPoint = distancePoints[distancePoints.length - 1] as [number, number]
-    const ghost = distanceGhostPoint as [number, number]
-
-    return {
-      type: 'FeatureCollection',
-      features: [{
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: [lastPoint, ghost],
-        },
-        properties: {},
-      }],
-    }
-  }, [distancePoints, distanceGhostPoint, isDrawingDistance])
-
-  // Calculations
   const measurementValue = useMemo(
     () => calculateMeasurement(distancePoints, isClosed),
     [distancePoints, isClosed],
@@ -149,30 +250,23 @@ export default function DistanceTool() {
     [distancePoints, isClosed],
   )
 
-  const tempTotalDistance = useMemo(
-    () => calculateTempDistance(distancePoints, distanceGhostPoint),
-    [distancePoints, distanceGhostPoint],
-  )
+  const handleMarkerPointerDown = useCallback(() => {
+    isDraggingMarker.current = true
+  }, [])
 
-  const tempSegmentDistance = useMemo(
-    () => calculateTempSegmentDistance(distancePoints, distanceGhostPoint),
-    [distancePoints, distanceGhostPoint],
-  )
+  const handleMarkerPointerUp = useCallback(() => {
+    setTimeout(() => { isDraggingMarker.current = false }, 50)
+  }, [])
 
-
-  // STRICT VISIBILITY & CLEAN START
-  // 1. If not active -> Null
-  // 2. If active but no points and not drawing -> Null (Don't show empty 0.00m box, let user just see crosshair)
   if (!isActive) return null
   if (distancePoints.length === 0 && !isDrawingDistance) return null
 
-  // Layer Styles
   const lineLayer: LayerProps = {
     id: 'measure-line',
     type: 'line',
     paint: {
-      'line-color': '#111827', // Black
-      'line-width': 3, // Thicker
+      'line-color': '#111827',
+      'line-width': 3,
     },
   }
 
@@ -181,7 +275,7 @@ export default function DistanceTool() {
     type: 'fill',
     paint: {
       'fill-color': '#9ca3af',
-      'fill-opacity': 0.0, // Transparent
+      'fill-opacity': 0.0,
     },
   }
 
@@ -199,60 +293,35 @@ export default function DistanceTool() {
   return (
     <>
       <MeasurementPanel
+        ref={panelRef}
         isClosed={isClosed}
         perimeterValue={perimeterValue}
         measurementValue={measurementValue}
-        tempTotalDistance={tempTotalDistance}
-        tempSegmentDistance={tempSegmentDistance}
         isDrawingDistance={isDrawingDistance}
         formatDistance={formatDistance}
         formatArea={formatArea}
         onReset={resetDistance}
       />
 
-      {/* Main Geometry */}
       <Source id="measure-source" type="geojson" data={mainGeoJSON}>
         <Layer {...lineLayer} />
         {isClosed && <Layer {...fillLayer} />}
       </Source>
 
-      {/* Ghost Geometry */}
       {!isClosed && (
-        <Source id="measure-ghost-source" type="geojson" data={ghostGeoJSON}>
+        <Source id={GHOST_SOURCE_ID} type="geojson" data={EMPTY_GHOST_DATA}>
           <Layer {...ghostLineLayer} />
         </Source>
       )}
 
-      {/* Markers - Legacy OneSoil Style */}
-      {distancePoints.map((pt, idx) => (
-        <Marker
-          key={idx}
-          longitude={pt[0]}
-          latitude={pt[1]}
-          draggable={true}
-          onDrag={(e) => handleMarkerDrag(idx, e)}
-          onClick={idx === 0 ? handleFirstPointClick : undefined}
-          style={{ transition: 'none' }}
-        >
-          <div
-            className={`box-content rounded-full cursor-move ${idx === 0 && isDrawingDistance && distancePoints.length >= 3
-              ? 'ring-2 ring-emerald-500 ring-offset-2'
-              : ''
-            }`}
-            style={{
-              width: '10px',
-              height: '10px',
-              backgroundColor: '#1a1a1a',
-              border: '2px solid #ffffff',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
-              transition: 'none',
-            }}
-            title={idx === 0 && isDrawingDistance ? 'Kapatmak için tıkla' : ''}
-            onPointerDown={() => { isDraggingMarker.current = true }}
-            onPointerUp={() => { setTimeout(() => { isDraggingMarker.current = false }, 50) }}
-          />
-        </Marker>
-      ))}
+      <MarkerList
+        points={distancePoints}
+        isDrawingDistance={isDrawingDistance}
+        onMarkerDrag={handleMarkerDrag}
+        onFirstPointClick={handleFirstPointClick}
+        onPointerDownCapture={handleMarkerPointerDown}
+        onPointerUpCapture={handleMarkerPointerUp}
+      />
     </>
   )
 }

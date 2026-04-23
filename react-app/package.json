@@ -27,6 +27,7 @@
     "@placemarkio/tokml": "^0.3.9",
     "@sakitam-gis/kriging": "^0.1.0",
     "@tmcw/togeojson": "^7.1.2",
+    "@turf/simplify": "^7.3.5",
     "@turf/turf": "^7.3.3",
     "@types/shpjs": "^3.4.7",
     "@types/uuid": "^10.0.0",

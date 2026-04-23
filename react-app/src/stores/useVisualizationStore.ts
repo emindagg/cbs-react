@@ -150,7 +150,6 @@ const defaultLegendConfig: LegendConfiguration = {
     text: 'Lejant',
     fontSize: 16,
   },
-  highlightOnHover: false,
   reverseOrder: false,
 }
 
