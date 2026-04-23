@@ -13,6 +13,8 @@ const SCALE_STEPS_M = [
   100000, 200000, 500000, 1000000,
 ]
 const MAX_BAR_WIDTH = 100
+const CONTROL_WIDTH = 120
+const CONTROL_HEIGHT = 50
 
 function haversineDistance(
   lat1: number, lon1: number,
@@ -62,10 +64,13 @@ function computeScale(map: maplibregl.Map) {
 export default function DraggableScaleControl() {
   const { mapInstance } = useMapStore()
   const [scale, setScale] = useState<{ width: number; label: string } | null>(null)
-  const [pos, setPos] = useState(() => ({
-    x: window.innerWidth - 150,
-    y: window.innerHeight - 60,
-  }))
+  const [pos, setPos] = useState(() => {
+    const isMobile = window.innerWidth < 768
+    return {
+      x: isMobile ? Math.max(8, window.innerWidth / 2 - CONTROL_WIDTH / 2) : window.innerWidth - 150,
+      y: isMobile ? window.innerHeight - 70 : window.innerHeight - 60,
+    }
+  })
   const isDragging = useRef(false)
   const dragOrigin = useRef({ mx: 0, my: 0, px: 0, py: 0 })
 
@@ -81,6 +86,19 @@ export default function DraggableScaleControl() {
     }
   }, [mapInstance])
 
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768
+      setPos({
+        x: isMobile ? Math.max(8, window.innerWidth / 2 - CONTROL_WIDTH / 2) : window.innerWidth - 150,
+        y: isMobile ? window.innerHeight - 70 : window.innerHeight - 60,
+      })
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const onPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       isDragging.current = true
@@ -95,7 +113,13 @@ export default function DraggableScaleControl() {
     if (!isDragging.current) return
     const dx = e.clientX - dragOrigin.current.mx
     const dy = e.clientY - dragOrigin.current.my
-    setPos({ x: dragOrigin.current.px + dx, y: dragOrigin.current.py + dy })
+    const newX = dragOrigin.current.px + dx
+    const newY = dragOrigin.current.py + dy
+
+    const clampedX = Math.max(8, Math.min(newX, window.innerWidth - CONTROL_WIDTH - 8))
+    const clampedY = Math.max(8, Math.min(newY, window.innerHeight - CONTROL_HEIGHT - 8))
+
+    setPos({ x: clampedX, y: clampedY })
   }, [])
 
   const onPointerUp = useCallback(() => {
