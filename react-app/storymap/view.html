@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hikâye Görüntüleme</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../ogm-logo.svg">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- MapLibre GL CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css">
+
+    <!-- TimelineJS CSS -->
+    <link title="timeline-styles" rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+
+    <!-- App Styles -->
+    <link rel="stylesheet" href="./src/styles/variables/colors.css?v=2">
+    <link rel="stylesheet" href="./src/styles/base/reset.css?v=2">
+    <link rel="stylesheet" href="./src/styles/utilities/helpers.css">
+    <link rel="stylesheet" href="./src/styles/components/toolbar.css?v=2">
+    <link rel="stylesheet" href="./src/styles/components/modal.css?v=6">
+    <link rel="stylesheet" href="./src/styles/components/sidebar/sidebar-base.css?v=2">
+    <link rel="stylesheet" href="./src/styles/components/sidebar/sidebar-sections.css">
+    <link rel="stylesheet" href="./src/styles/components/sidebar/sidebar-detail.css">
+    <link rel="stylesheet" href="./src/styles/components/sidebar/sidebar-timeline.css">
+    <link rel="stylesheet" href="./src/styles/components/sidebar/sidebar-settings.css">
+    <link rel="stylesheet" href="./src/styles/components/sidebar/detail-panel.css">
+    <link rel="stylesheet" href="./src/styles/components/sidebar/lightbox.css">
+    <link rel="stylesheet" href="./src/styles/components/timeline-preview.css">
+    <link rel="stylesheet" href="./src/styles/components/storymap-layout.css?v=5">
+    <link rel="stylesheet" href="./src/styles/components/share-panel.css">
+    <link rel="stylesheet" href="./src/styles/components/report-panel.css">
+    <link rel="stylesheet" href="./src/styles/components/toast.css">
+    <link rel="stylesheet" href="./src/styles/components/prompt-modal.css">
+    <link rel="stylesheet" href="./src/styles/components/storymap-manager.css">
+    <link rel="stylesheet" href="./src/styles/components/loading-overlay.css">
+
+    <!-- Loading & Error Styles -->
+    <style>
+        .error-content {
+            background: #FDFCFA;
+            padding: 48px 44px;
+            border-radius: 16px;
+            max-width: 420px;
+            width: 88%;
+            border: 1px solid #E8E4DF;
+            box-shadow: 0 4px 24px rgba(26, 22, 20, 0.08), 0 1px 4px rgba(26, 22, 20, 0.04);
+            animation: errorFadeIn 0.35s ease-out;
+        }
+
+        @keyframes errorFadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .error-content .error-icon-wrapper {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(124, 152, 133, 0.08);
+            border: 1px solid rgba(124, 152, 133, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+
+        .error-content .error-icon-wrapper .error-icon-map {
+            font-size: 22px;
+            color: #A8A7A4;
+            transform: rotate(-8deg);
+            margin: 0;
+        }
+
+        .error-content .error-icon-wrapper .error-icon-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #FDFCFA;
+            border: 2px solid #E8E4DF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-content .error-icon-wrapper .error-icon-badge i {
+            font-size: 10px;
+            color: #D17A5C;
+            margin: 0;
+        }
+
+        .error-content h2 {
+            margin-bottom: 8px;
+            color: #1A1614;
+            font-size: 1.125rem;
+            font-weight: 500;
+            font-family: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        .error-content p {
+            color: #5C5854;
+            margin-bottom: 32px;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .error-hints {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-bottom: 24px;
+            border: 1px solid #E8E4DF;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .error-hints__item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            font-size: 13px;
+            color: #5C5854;
+            border-bottom: 1px solid #F0EDE8;
+        }
+
+        .error-hints__item:last-child {
+            border-bottom: none;
+        }
+
+        .error-hints__item i {
+            font-size: 12px;
+            color: #A8A7A4;
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .error-share-code {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #F7F5F2;
+            border: 1px solid #E8E4DF;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 28px;
+        }
+
+        .error-share-code__label {
+            font-size: 11px;
+            color: #8F8B87;
+            font-weight: 500;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .error-share-code__input {
+            flex: 1;
+            font-size: 13px;
+            color: #1A1614;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-weight: 400;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 0;
+            min-width: 0;
+        }
+
+        .error-share-code__input::placeholder {
+            color: #A8A7A4;
+        }
+
+        .error-share-code:focus-within {
+            border-color: #7C9885;
+            background: rgba(124, 152, 133, 0.06);
+        }
+
+        .error-content .error-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-content .btn {
+            background: #7C9885;
+            color: #FDFCFA;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: none;
+            letter-spacing: 0;
+            font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .error-content .btn:hover {
+            background: #6a8572;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .error-content .btn:active {
+            background: #5a7361;
+            transform: scale(0.98);
+        }
+
+        .error-content .btn i {
+            font-size: 12px;
+        }
+
+        .error-content .btn-retry {
+            background: transparent;
+            color: #5C5854;
+            border: 1px solid #E8E4DF;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: none;
+            font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .error-content .btn-retry:hover {
+            color: #3A3836;
+            border-color: #D4CFC9;
+            background: #F7F5F2;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .error-content .btn-retry i {
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .error-content {
+                padding: 36px 28px;
+                border-radius: 14px;
+                width: 92%;
+            }
+
+            .error-content .error-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .error-content .btn,
+            .error-content .btn-retry {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <div class="loading-spinner__dot"></div>
+                <div class="loading-spinner__dot"></div>
+                <div class="loading-spinner__dot"></div>
+                <div class="loading-spinner__dot"></div>
+            </div>
+            <h2>Harita yükleniyor</h2>
+            <p>Lütfen bekleyin</p>
+        </div>
+    </div>
+
+    <!-- Error Overlay -->
+    <div id="error-overlay" class="error-overlay">
+        <div class="error-content">
+            <div class="error-icon-wrapper">
+                <i class="fas fa-map error-icon-map"></i>
+                <div class="error-icon-badge">
+                    <i class="fas fa-question"></i>
+                </div>
+            </div>
+            <h2 id="error-title">Harita Bulunamadı</h2>
+            <p id="error-message">Paylaşım kodu geçersiz veya harita artık paylaşılmıyor.</p>
+            <div class="error-hints" id="error-hints" style="display: none;">
+                <div class="error-hints__item">
+                    <i class="fas fa-link"></i>
+                    <span>Bağlantı adresini kontrol edin</span>
+                </div>
+                <div class="error-hints__item">
+                    <i class="fas fa-wifi"></i>
+                    <span>İnternet bağlantınızı doğrulayın</span>
+                </div>
+                <div class="error-hints__item">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Harita sahibinden yeni paylaşım kodu isteyin</span>
+                </div>
+            </div>
+            <div class="error-share-code" style="display: none;">
+                <span class="error-share-code__label">Paylaşım Kodu</span>
+                <input type="text" class="error-share-code__input" id="error-share-code" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="error-actions">
+                <button class="btn" id="error-retry-btn">
+                    <i class="fas fa-redo"></i>
+                    Tekrar Dene
+                </button>
+                <button class="btn-retry" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i>
+                    Geri Dön
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAP EDITOR HEADER/TOOLBAR -->
+    <div id="map-toolbar" class="toolbar hidden">
+        <div class="toolbar__left">
+
+        </div>
+        <div class="toolbar__center">
+            <!-- Seçim/İmleç -->
+            <div class="toolbar__group">
+                <button class="toolbar__btn toolbar__btn--active" data-tool="select" title="Seç">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path
+                            d="M13.174 8.976L5 3.012V13.1l2.116-2.902L9 13.928l2.555-1.285-1.838-3.667zm-2.961 3.222l-.77.388L7.27 8.288 6 10.032V4.979l4.106 2.997h-2.01z">
+                        </path>
+                    </svg>
+                </button>
+                <button class="toolbar__btn" data-tool="undo" title="Geri Al">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path
+                            d="M13 11V6a1 1 0 0 0-1-1H3.708l1.646 1.646-.707.707-2.81-2.809 2.81-2.809.706.707L3.796 4H12a2.003 2.003 0 0 1 2 2v5a2.003 2.003 0 0 1-2 2H8v-1h4a1 1 0 0 0 1-1z">
+                        </path>
+                    </svg>
+                </button>
+                <button class="toolbar__btn" data-tool="redo" title="Yinele">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path
+                            d="M4 4h8.203l-1.557-1.558.707-.707 2.81 2.81-2.81 2.809-.707-.707L12.293 5H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h4v1H4a2.003 2.003 0 0 1-2-2V6a2.003 2.003 0 0 1 2-2z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div class="toolbar__divider"></div>
+            <!-- Çizim Araçları -->
+            <div class="toolbar__group">
+                <button class="toolbar__btn" data-tool="marker" title="Nokta ekle">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path
+                            d="M12 11.49V4.066C12 1.852 10.209 1 8 1s-4 .852-4 3.067v7.422L8 15.5zM4.9 3.926C4.9 2.509 5.943 1.79 8 1.79s3.1.719 3.1 2.137v7.259L8 14.294l-3.1-3.108zM10 6a2 2 0 1 0-2 2 2 2 0 0 0 2-2zM7 6a1 1 0 1 1 1 1 1 1 0 0 1-1-1z">
+                        </path>
+                    </svg>
+                </button>
+                <button class="toolbar__btn" data-tool="numbered" title="Numaralı nokta ekle">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path
+                            d="M9 11H8V6.414l-1.307.547-.386-.922L9 4.91zm6.8-2.5a7.3 7.3 0 1 1-7.3-7.3 7.3 7.3 0 0 1 7.3 7.3zm-1 0a6.3 6.3 0 1 0-6.3 6.3 6.307 6.307 0 0 0 6.3-6.3z">
+                        </path>
+                    </svg>
+                </button>
+                <button class="toolbar__btn" data-tool="line" title="Çizgi çiz">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path
+                            d="M6 5v1.293L9.707 10h.328L14 3.657V2h2v2h-1.035L11 10.343V12H9v-1.293L5.293 7h-.492L2 12.383V14H0v-2h1.073L4 6.374V5z">
+                        </path>
+                    </svg>
+                </button>
+                <button class="toolbar__btn" data-tool="polygon" title="Alan çiz">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path d="M6.833 7L1 4v11h14V1z" opacity="1"></path>
+                        <path d="M2 14V5.639l4.927 2.534L14 2.976V14H2z" opacity=".25"></path>
+                    </svg>
+                </button>
+                <button class="toolbar__btn" data-tool="circle" title="Daire çiz">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path
+                            d="M8.5 1.2a7.3 7.3 0 1 0 7.3 7.3 7.3 7.3 0 0 0-7.3-7.3zm0 13.6a6.3 6.3 0 1 1 6.3-6.3 6.307 6.307 0 0 1-6.3 6.3z"
+                            opacity="1"></path>
+                        <path d="M8.5 2.2a6.3 6.3 0 1 0 0 12.6 6.3 6.3 0 1 0 0-12.6z" opacity=".25"></path>
+                    </svg>
+                </button>
+                <button class="toolbar__btn" data-tool="rectangle" title="Dikdörtgen çiz">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path d="M0 1v14h16V1zm15 13H1V2h14z" opacity="1"></path>
+                        <path d="M1 2h14v12H1z" opacity=".25"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="toolbar__divider"></div>
+            <!-- Metin -->
+            <div class="toolbar__group">
+                <button class="toolbar__btn" data-tool="text" title="Metin ekle">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path d="M8 15V3H2V2h13v1H9v12z"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="toolbar__divider"></div>
+            <!-- Ölçüm Aracı -->
+            <div class="toolbar__group">
+                <button class="toolbar__btn" data-tool="measure-distance" title="Ölçüm aracı (Mesafe/Alan)">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path d="M1 5h14v6H1V5zm1 1v4h1V6H2zm2 0v2h1V6H4zm2 0v4h1V6H6zm2 0v2h1V6H8zm2 0v4h1V6h-1zm2 0v2h1V6h-1zm2 0v4h-1V6h1z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="toolbar__right">
+            <!-- Action Buttons -->
+            <div class="toolbar__actions">
+                <!-- Profile Dropdown -->
+                <div class="toolbar__profile-dropdown">
+                    <button class="toolbar__btn toolbar__btn--action toolbar__btn--profile" title="Profil">
+                        <span class="toolbar__profile-avatar">MD</span>
+                    </button>
+                    <div class="toolbar__dropdown-menu" id="profile-dropdown">
+                        <div class="toolbar__dropdown-item" data-dropdown-action="my-work">
+                            <i class="fas fa-folder"></i>
+                            <span>Çalışmalarım</span>
+                        </div>
+                        <div class="toolbar__dropdown-divider"></div>
+                        <div class="toolbar__dropdown-item toolbar__dropdown-item--danger" data-dropdown-action="logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Çıkış Yap</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="toolbar__btn toolbar__btn--action" data-action="home" title="Ana Sayfa">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>
+                    </svg>
+                </button>
+                <button class="toolbar__btn toolbar__btn--action" data-action="share" title="Paylaş">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                        <polyline points="16 6 12 2 8 6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                    </svg>
+                </button>
+                <!-- Bildir butonu - backend hazır olunca aktif edilecek
+                <button class="toolbar__btn toolbar__btn--action" data-action="report" title="Bildir">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7 4a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0V4zm1 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                    </svg>
+                </button>
+                -->
+                <button class="toolbar__btn toolbar__btn--action toolbar__btn--stats hidden" data-action="stats" title="İstatistikler">
+                    <svg viewBox="0 0 16 16" width="16" height="16">
+                        <path d="M1 11v4h4v-4H1zm6-7v11h4V4H7zm6-3v14h4V1h-4z"/>
+                    </svg>
+                </button>
+                <!-- Admin Button (Hidden by default) -->
+                <button class="toolbar__btn toolbar__btn--action toolbar__btn--admin hidden" data-action="admin" title="Yönetim Paneli">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="toolbar__search">
+                <svg viewBox="0 0 16 16" width="14" height="14">
+                    <path
+                        d="M15.707 14.293l-4.054-4.054A6.002 6.002 0 1 0 6 12a5.94 5.94 0 0 0 3.239-.953l4.054 4.054zM2 6a4 4 0 1 1 4 4 4.005 4.005 0 0 1-4-4z">
+                    </path>
+                </svg>
+                <input type="text" placeholder="Konuma göre ara" id="toolbar-search">
+            </div>
+        </div>
+    </div>
+
+    <!-- App Container (will be filled by viewMain.js) -->
+    <div id="app-container"></div>
+
+    <!-- Map and Sidebar Containers for ModalComponent -->
+    <div id="map-container" style="display: none; position: fixed; top: 56px; left: 0; right: 0; bottom: 0; z-index: 1;">
+        <!-- Logo Watermark -->
+        <div class="storymap-logo-watermark" style="position:absolute;bottom:12px;right:12px;z-index:9999;pointer-events:none;user-select:none;">
+            <img src="storymap-alt_logo.svg" alt="CBS Logo" style="width:80px;height:auto;display:block;opacity:0.6;" />
+        </div>
+    </div>
+    <div id="sidebar-container" style="display: none;"></div>
+
+    <!-- Toolbar Container -->
+    <div id="toolbar-container" style="display: none; position: fixed; top: 76px; left: 20px; z-index: 1000;"></div>
+
+    <!-- Timeline Container (for timeline template) -->
+    <div id="timelinejs-container" style="display: none; position: fixed; bottom: 20px; left: 345px; right: 10px; height: 400px; z-index: 1500; background: #fff; border-top: 2px solid #fbbf24; border-radius: 8px 8px 0 0; box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);">
+        <div id="timeline-embed" style="width: 100%; height: 100%;"></div>
+    </div>
+
+    <!-- MapLibre GL JS -->
+    <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
+
+    <!-- Turf.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+    <!-- TimelineJS -->
+    <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"></script>
+
+    <!-- Main Script -->
+    <script type="module" src="src/viewMain.js"></script>
+</body>
+</html>

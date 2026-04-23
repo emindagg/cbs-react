@@ -1,0 +1,801 @@
+/**
+ * STORYMAP SCROLL-BASED LAYOUT
+ * Split-screen layout: scrollable content (left) + fixed map (right)
+ */
+
+/* Container - Full screen overlay layout */
+.storymap-container {
+    width: 100%;
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Dynamic viewport height - mobil address bar desteği */
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    z-index: 1500;
+}
+
+/* Full screen map (background) */
+.storymap-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+/* Left Panel - Scrollable Story Content (semi-transparent over map) */
+.storymap-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 35%;
+    min-width: 320px;
+    max-width: 450px;
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Dynamic viewport height - mobil address bar desteği */
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 1100;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 40vh;
+    pointer-events: auto;
+    scroll-behavior: smooth;
+    /* Firefox scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+
+/* Custom Scrollbar for Content Panel (WebKit) */
+.storymap-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.storymap-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.storymap-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.storymap-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+
+
+/* Story Header - Initial view */
+.storymap-header {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: auto;
+    padding: 1rem 1.5rem;
+    padding-top: 60px;
+    padding-bottom: 2rem;
+    background: transparent;
+    color: #1f2937;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.storymap-header__title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+    position: relative;
+    animation: fadeInSlide 0.6s ease-out;
+}
+
+.storymap-header__title::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981 0%, transparent 100%);
+    border-radius: 2px;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.storymap-header__subtitle {
+    font-size: 0.8rem;
+    font-weight: 400;
+    margin-bottom: 0.8rem;
+    color: #4b5563;
+}
+
+.storymap-header__description {
+    font-size: 0.76rem;
+    line-height: 1.6;
+    color: #374151;
+}
+
+.storymap-header__scroll-hint {
+    margin-top: 1.5rem;
+    text-align: center;
+    animation: bounce 2s infinite;
+}
+
+.storymap-header__scroll-hint i {
+    font-size: 1.5rem;
+    color: #6b7280;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Story Section - Each location/scene */
+.storymap-section {
+    min-height: 50vh;
+    padding: 1.5rem 1.5rem;
+    padding-left: calc(1.5rem + 4px);
+    background: transparent;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.15);
+    border-left: 4px solid transparent;
+    opacity: 0.5;
+    transition: all 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.storymap-section.active {
+    opacity: 1;
+    border-left: 4px solid #10b981;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.storymap-section__header {
+    margin-bottom: 1rem;
+}
+
+.storymap-section__title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 0.5rem;
+}
+
+.storymap-section__subtitle {
+    font-size: 0.85rem;
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.storymap-section__content {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: #000000;
+    margin-bottom: 1.2rem;
+    white-space: pre-line;
+}
+
+/* Media - Images in sections */
+.storymap-section__media {
+    margin: 1rem 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.storymap-section__image {
+    width: auto;
+    max-width: 100%;
+    max-height: 400px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    margin-bottom: 0.5rem;
+    object-fit: contain;
+}
+
+.storymap-section__caption {
+    font-size: 0.85rem;
+    color: #4b5563;
+    font-style: italic;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+/* Facts Panel */
+.storymap-section__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid #b91c1c;
+}
+
+.storymap-fact {
+    text-align: center;
+}
+
+.storymap-fact__label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.storymap-fact__value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* Tags */
+.storymap-section__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.storymap-tag {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    background: rgba(0, 0, 0, 0.08);
+    color: #374151;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Footer Section */
+.storymap-footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 30vh;
+    padding: 2rem 1.5rem;
+    background: transparent;
+    text-align: center;
+}
+
+.storymap-footer__title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.storymap-footer__text {
+    font-size: 0.9rem;
+    color: #4b5563;
+    max-width: 100%;
+}
+
+/* Exit Button - tek parça, içte buton hissi yok */
+.storymap-exit-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    background: var(--color-black, #1c1c1e);
+    box-shadow: rgba(34, 34, 34, 0.35) 0 2px 8px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+}
+
+.storymap-exit-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+    box-shadow: rgba(34, 34, 34, 0.4) 0 4px 12px;
+}
+
+.storymap-exit-btn:active {
+    box-shadow: rgba(34, 34, 34, 0.3) 0 2px 6px;
+}
+
+.storymap-exit-btn:focus-visible {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.storymap-exit-btn i {
+    font-size: 14px;
+    color: inherit;
+    pointer-events: none;
+}
+
+/* Playback Controls - Minimal & Clean */
+.storymap-playback {
+    position: fixed !important;
+    top: 12px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 1200 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+}
+
+.storymap-playback:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.storymap-playback__btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #10b981;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.storymap-playback__btn:hover {
+    background: #059669;
+    transform: scale(1.05);
+}
+
+.storymap-playback__btn:active {
+    transform: scale(0.98);
+}
+
+.storymap-playback__btn[data-playing="true"] {
+    background: #ef4444;
+}
+
+.storymap-playback__btn[data-playing="true"]:hover {
+    background: #dc2626;
+}
+
+.storymap-playback__speeds {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.storymap-playback__speeds-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    color: #6b7280;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0 4px;
+}
+
+.storymap-playback__speeds-label i {
+    font-size: 10px;
+    color: #10b981;
+}
+
+.storymap-playback__speeds-buttons {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.storymap-playback__speed-btn {
+    min-width: 32px;
+    height: 24px;
+    padding: 0 6px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: white;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.storymap-playback__speed-btn:hover {
+    background: rgba(16, 185, 129, 0.06);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #059669;
+}
+
+.storymap-playback__speed-btn:active {
+    transform: scale(0.96);
+}
+
+.storymap-playback__speed-btn--active {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+.storymap-playback__speed-btn--active:hover {
+    background: #059669;
+    border-color: #059669;
+}
+
+/* ========================================
+   RESPONSIVE - MOBILE SPLIT VIEW
+   Üst: Harita | Alt: Kaydırılabilir İçerik
+   ======================================== */
+
+@media (max-width: 768px) {
+    .storymap-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .storymap-map {
+        position: relative;
+        width: 100%;
+        height: 40vh;
+        height: 40dvh;
+        flex-shrink: 0;
+        z-index: 1000;
+    }
+
+    .storymap-content {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        min-width: unset;
+        height: 60vh;
+        height: 60dvh;
+        background: rgba(255, 255, 255, 0.97);
+        backdrop-filter: none;
+        z-index: 1100;
+        padding-bottom: 20vh;
+        border-top: 3px solid #10b981;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .storymap-header {
+        padding: 1rem 1.25rem;
+        padding-top: 12px;
+    }
+
+    .storymap-header__title {
+        font-size: 1.5rem;
+    }
+
+    .storymap-header__subtitle {
+        font-size: 0.75rem;
+    }
+
+    .storymap-header__description {
+        font-size: 0.7rem;
+    }
+
+    .storymap-header__scroll-hint {
+        margin-top: 0.75rem;
+    }
+
+    .storymap-section {
+        padding: 1rem;
+        min-height: 50vh;
+    }
+
+    .storymap-section__title {
+        font-size: 1.25rem;
+    }
+
+    .storymap-section__subtitle {
+        font-size: 0.8rem;
+    }
+
+    .storymap-section__content {
+        font-size: 0.8rem;
+    }
+
+    .storymap-section__image {
+        max-height: 250px;
+    }
+
+    .storymap-section__facts {
+        grid-template-columns: 1fr;
+        padding: 0.75rem;
+    }
+
+    .storymap-footer {
+        min-height: 20vh;
+        padding: 1.5rem;
+    }
+
+    .storymap-footer__title {
+        font-size: 1.15rem;
+    }
+
+    .storymap-footer__text {
+        font-size: 0.85rem;
+    }
+
+    /* Playback controls - harita üstünde */
+    .storymap-playback {
+        top: 8px !important;
+        padding: 5px 8px;
+        gap: 6px;
+    }
+
+    .storymap-playback__btn {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    .storymap-playback__speeds-label {
+        font-size: 8px;
+    }
+
+    .storymap-playback__speed-btn {
+        min-width: 28px;
+        height: 22px;
+        font-size: 9px;
+    }
+
+    .storymap-exit-btn {
+        width: 30px;
+        height: 30px;
+        top: 8px;
+        right: 8px;
+    }
+
+    .storymap-exit-btn i {
+        font-size: 12px;
+    }
+}
+
+/* Küçük mobil cihazlar */
+@media (max-width: 480px) {
+    .storymap-map {
+        height: 35vh;
+        height: 35dvh;
+    }
+
+    .storymap-content {
+        height: 65vh;
+        height: 65dvh;
+    }
+
+    .storymap-header {
+        padding: 0.875rem 1rem;
+        padding-top: 10px;
+    }
+
+    .storymap-header__title {
+        font-size: 1.35rem;
+    }
+
+    .storymap-header__subtitle {
+        font-size: 0.7rem;
+    }
+
+    .storymap-header__description {
+        font-size: 0.65rem;
+    }
+
+    .storymap-section {
+        padding: 0.875rem;
+        min-height: 40vh;
+        padding-left: calc(0.875rem + 4px);
+    }
+
+    .storymap-section__title {
+        font-size: 1.15rem;
+    }
+
+    .storymap-section__subtitle {
+        font-size: 0.75rem;
+    }
+
+    .storymap-section__content {
+        font-size: 0.75rem;
+        line-height: 1.6;
+    }
+
+    .storymap-section__image {
+        max-height: 200px;
+    }
+
+    .storymap-section__caption {
+        font-size: 0.75rem;
+    }
+
+    .storymap-section__facts {
+        gap: 0.5rem;
+        padding: 0.75rem;
+        margin: 0.75rem 0;
+    }
+
+    .storymap-fact__label {
+        font-size: 0.75rem;
+    }
+
+    .storymap-fact__value {
+        font-size: 1.1rem;
+    }
+
+    .storymap-tag {
+        padding: 0.25rem 0.65rem;
+        font-size: 0.75rem;
+    }
+
+    .storymap-footer {
+        min-height: 18vh;
+        padding: 1.25rem;
+    }
+
+    .storymap-footer__title {
+        font-size: 1.05rem;
+    }
+
+    .storymap-footer__text {
+        font-size: 0.8rem;
+    }
+
+    /* Playback controls küçük ekran */
+    .storymap-playback {
+        top: 6px !important;
+        padding: 4px 7px;
+        gap: 5px;
+    }
+
+    .storymap-playback__btn {
+        width: 26px;
+        height: 26px;
+        font-size: 10px;
+    }
+
+    .storymap-playback__speeds-label {
+        font-size: 7px;
+        padding: 0 3px;
+    }
+
+    .storymap-playback__speeds-label i {
+        font-size: 9px;
+    }
+
+    .storymap-playback__speed-btn {
+        min-width: 26px;
+        height: 20px;
+        font-size: 8px;
+        padding: 0 5px;
+    }
+
+    .storymap-exit-btn {
+        width: 28px;
+        height: 28px;
+        top: 8px;
+        right: 8px;
+        border-radius: 10px;
+    }
+
+    .storymap-exit-btn i {
+        font-size: 11px;
+    }
+
+    .storymap-logo-watermark img {
+        width: 56px;
+    }
+}
+
+/* Logo Watermark - Sağ alt köşe; sadece harita üzerinde (içerik kartlarının altında) */
+.storymap-logo-watermark {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 1050;
+    pointer-events: none;
+    user-select: none;
+}
+
+.storymap-logo-watermark img {
+    width: 80px;
+    height: auto;
+    display: block;
+    opacity: 0.6;
+}
+
+/* Tablet portrait (600px - 768px) */
+@media (min-width: 600px) and (max-width: 768px) {
+    .storymap-content {
+        width: 50%;
+        min-width: 320px;
+        max-width: 500px;
+    }
+
+    .storymap-header__title {
+        font-size: 1.65rem;
+    }
+
+    .storymap-section__title {
+        font-size: 1.35rem;
+    }
+}
+
+/* Büyük ekranlar (1024px+) */
+@media (min-width: 1024px) {
+    .storymap-content {
+        width: 32%;
+        max-width: 500px;
+    }
+
+    .storymap-header {
+        padding: 1.25rem 1.75rem;
+        padding-top: 66px;
+        padding-bottom: 2.5rem;
+    }
+
+    .storymap-header__title {
+        font-size: 2.25rem;
+    }
+
+    .storymap-section {
+        padding: 1.75rem;
+        padding-left: calc(1.75rem + 4px);
+    }
+
+    .storymap-section__title {
+        font-size: 1.5rem;
+    }
+
+    .storymap-section__image {
+        max-height: 450px;
+    }
+}

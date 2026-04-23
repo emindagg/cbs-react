@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etkileşimli Hikâye Haritaları</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../ogm-logo.svg">
+
+    <!-- Google Fonts - Same as app.html -->
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Theme Variables -->
+    <link rel="stylesheet" href="src/styles/variables/colors.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--color-background);
+            min-height: 100vh;
+            color: var(--color-text-primary);
+            line-height: 1.6;
+        }
+
+        /* ===== HEADER / NAVIGATION ===== */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: var(--color-surface-elevated);
+            border-bottom: 1px solid var(--color-border);
+            padding: 0 4rem 0 2rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav__logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--color-text-primary);
+        }
+
+        .nav__logo-icon {
+            width: 120px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav__logo-text {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .nav__actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav__link {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+        }
+
+        .nav__link:hover {
+            color: var(--color-primary);
+            background: var(--color-primary-bg);
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            padding: 4rem 2rem 1.5rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--color-surface-elevated) 0%, var(--color-background) 100%);
+        }
+
+        .hero__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--color-primary-bg);
+            color: var(--color-primary-dark);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+        }
+
+        .hero__title {
+            font-family: var(--font-display);
+            font-size: clamp(1.9rem, 5vw, 3.06rem);
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.75rem;
+            line-height: 1.2;
+        }
+
+        .hero__title-highlight {
+            background: linear-gradient(135deg, var(--color-sage), var(--color-moss));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero__subtitle {
+            font-size: 0.84rem;
+            color: var(--color-text-secondary);
+            max-width: 600px;
+            margin: 0 auto 0.75rem;
+        }
+
+        .hero__cta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
+
+        .btn--primary {
+            background: linear-gradient(135deg, var(--color-sage), var(--color-primary-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(124, 152, 133, 0.3);
+        }
+
+        .btn--primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 152, 133, 0.4);
+        }
+
+        .btn--secondary {
+            background: var(--color-surface-elevated);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn--secondary:hover {
+            background: var(--color-gray-100);
+            border-color: var(--color-gray-300);
+        }
+
+        .btn--teacher {
+            background: linear-gradient(135deg, var(--color-terracotta), #c46a4d);
+            color: white;
+            box-shadow: 0 4px 12px rgba(209, 122, 92, 0.3);
+        }
+
+        .btn--teacher:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(209, 122, 92, 0.4);
+        }
+
+        .btn--student {
+            background: linear-gradient(135deg, var(--color-plum), #8f6a88);
+            color: white;
+            box-shadow: 0 4px 12px rgba(166, 124, 158, 0.3);
+        }
+
+        .btn--student:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(166, 124, 158, 0.4);
+        }
+
+        .btn--large {
+            padding: 1rem 2rem;
+            font-size: 1.0625rem;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 1.5rem;
+        }
+
+        /* ===== CARDS SECTION ===== */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card {
+            background: var(--color-surface-elevated);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            border: 1px solid var(--color-border);
+            transition: var(--transition-base);
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--color-border-subtle);
+        }
+
+        .card__icon {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin: 0 auto 1.25rem;
+        }
+
+        .card__icon--view {
+            background: linear-gradient(135deg, var(--color-sage), var(--color-moss));
+        }
+
+        .card__icon--teacher {
+            background: linear-gradient(135deg, var(--color-terracotta), #c46a4d);
+        }
+
+        .card__icon--student {
+            background: linear-gradient(135deg, var(--color-plum), #8f6a88);
+        }
+
+        .card__title {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.375rem;
+        }
+
+        .card__desc {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Public View Form */
+        .card__form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card__form .btn {
+            width: 100%;
+        }
+
+        .card__input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
+            font-size: 0.9375rem;
+            background: var(--color-surface);
+            color: var(--color-text-primary);
+            transition: var(--transition-fast);
+        }
+
+        .card__input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-primary-bg);
+        }
+
+        .card__input::placeholder {
+            color: var(--color-text-tertiary);
+        }
+
+        .card__error {
+            color: #dc2626;
+            font-size: 0.8125rem;
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        /* Features List */
+        .card__features {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-border-subtle);
+            text-align: left;
+        }
+
+        .card__feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0;
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .card__feature i {
+            color: var(--color-sage);
+            font-size: 1rem;
+        }
+
+        /* ===== FEATURES SECTION ===== */
+        .features {
+            padding: 2rem 0;
+        }
+
+        .features__header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .features__title {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .features__subtitle {
+            color: var(--color-text-secondary);
+            font-size: 1.0625rem;
+        }
+
+        .features__grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--color-surface-elevated);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border-subtle);
+        }
+
+        .feature__icon {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            background: var(--color-primary-bg);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            font-size: 1.125rem;
+        }
+
+        .feature__content h3 {
+            font-family: var(--font-display);
+            font-size: 1.0625rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .feature__content p {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: var(--color-surface-elevated);
+            border-top: 1px solid var(--color-border);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .footer__text {
+            color: var(--color-text-tertiary);
+            font-size: 0.875rem;
+        }
+
+        .footer__copyright {
+            color: var(--color-text-tertiary);
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .footer__links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .footer__link {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: var(--transition-fast);
+        }
+
+        .footer__link:hover {
+            color: var(--color-primary);
+        }
+
+        /* Demo bypass button - belli belirsiz */
+        .demo-bypass {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .demo-bypass__btn {
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--color-text-tertiary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: var(--transition-fast);
+        }
+
+        .demo-bypass__btn:hover {
+            opacity: 0.8;
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .nav {
+                position: relative;
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                height: auto;
+            }
+
+            .nav__logo {
+                width: 100%;
+            }
+
+            .nav__logo-text {
+                display: inline;
+            }
+
+            .nav__actions {
+                width: 100%;
+                gap: 0.75rem;
+                justify-content: center;
+            }
+
+            .nav__link {
+                font-size: 0.9375rem;
+                padding: 0.5rem 1rem;
+            }
+
+            .hero {
+                padding: 3rem 1rem 1.5rem;
+            }
+
+            .hero__cta {
+                flex-direction: column;
+            }
+
+            .btn--large {
+                width: 100%;
+            }
+
+            .main {
+                padding: 0 1rem 1.5rem;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .card__form {
+                flex-direction: column;
+            }
+
+            .features__grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero__badge,
+        .hero__title,
+        .hero__subtitle,
+        .hero__cta {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .hero__title {
+            animation-delay: 0.1s;
+        }
+
+        .hero__subtitle {
+            animation-delay: 0.2s;
+        }
+
+        .hero__cta {
+            animation-delay: 0.3s;
+        }
+
+        .card {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="#" class="nav__logo">
+            <div class="nav__logo-icon">
+                <img src="storymap-logo.svg" alt="OGM Logo" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            <span class="nav__logo-text">Hikâye Haritası</span>
+        </a>
+        <div class="nav__actions">
+            <a href="#features" class="nav__link">Özellikler</a>
+            <a href="#" class="nav__link" id="btn-nasil-kullanilir" onclick="event.preventDefault(); window.parent.postMessage({ type: 'open-video-tutorial' }, '*');">Nasıl Kullanılır</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <span class="hero__badge">
+            <i class="fas fa-sparkles"></i>
+            Eğitimde Yeni Nesil Haritalar
+        </span>
+        <h1 class="hero__title">
+            Hikâyelerinizi <span class="hero__title-highlight">Haritalarla</span> Anlatın
+        </h1>
+        <p class="hero__subtitle">
+            Etkileşimli hikâye haritaları oluşturun, paylaşın ve coğrafyayı keşfetmenin yeni yollarını deneyimleyin.
+        </p>
+
+    </section>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Cards Section -->
+        <section class="cards">
+            <!-- Public View Card -->
+            <article class="card" id="public-view-section">
+                <div class="card__icon card__icon--view">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <h2 class="card__title">Harita Görüntüle</h2>
+                <p class="card__desc">Paylaşım kodu ile herkese açık bir hikâye haritasını görüntüleyin.</p>
+                <div class="card__form">
+                    <input type="text" id="public-key-input" class="card__input" placeholder="Paylaşım kodunu girin..." autocomplete="off">
+                    <button id="btn-view-public" class="btn btn--primary">
+                        <i class="fas fa-search"></i>
+                        Görüntüle
+                    </button>
+                </div>
+                <div class="card__error" id="public-key-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Geçerli bir paylaşım kodu girin
+                </div>
+            </article>
+
+            <!-- Teacher Login Card -->
+            <article class="card" id="teacher-login-section">
+                <div class="card__icon card__icon--teacher">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h2 class="card__title">Öğretmen Girişi</h2>
+                <p class="card__desc">Kendi hikâye haritalarınızı oluşturun ve paylaşın.</p>
+                <button id="btn-teacher-login" class="btn btn--teacher" style="width: 100%;">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Giriş Yap
+                </button>
+                <div class="card__features">
+                    <div class="card__feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Sınırsız harita oluşturma</span>
+                    </div>
+                    <div class="card__feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Paylaşım ve işbirliği</span>
+                    </div>
+                    <div class="card__feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Multimedya desteği</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Student Login Card -->
+            <article class="card" id="student-login-section">
+                <div class="card__icon card__icon--student">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h2 class="card__title">Öğrenci Girişi</h2>
+                <p class="card__desc">Paylaşılan haritaları keşfedin ve kendi haritalarınızı oluşturun.</p>
+                <button id="btn-student-login" class="btn btn--student" style="width: 100%;">
+                    <i class="fas fa-sign-in-alt"></i>
+                    EBA ile Giriş Yap
+                </button>
+                <div class="card__features">
+                    <div class="card__feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Paylaşılan haritaları görüntüleme</span>
+                    </div>
+                    <div class="card__feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Kendi haritalarını oluşturma</span>
+                    </div>
+                    <div class="card__feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Eğlenceli öğrenme deneyimi</span>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features" id="features">
+            <div class="features__header">
+                <h2 class="features__title">Neden Hikâye Haritası?</h2>
+            </div>
+            <div class="features__grid">
+                <div class="feature">
+                    <div class="feature__icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <div class="feature__content">
+                        <h3>Etkileşimli Haritalar</h3>
+                        <p>Noktalar, rotalar ve alanlarla zenginleştirilmiş dinamik haritalar oluşturun.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature__icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="feature__content">
+                        <h3>Zaman Çizelgesi</h3>
+                        <p>Tarihi olayları kronolojik sırayla harita üzerinde gösterin.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature__icon">
+                        <i class="fas fa-photo-video"></i>
+                    </div>
+                    <div class="feature__content">
+                        <h3>Multimedya Desteği</h3>
+                        <p>Fotoğraf, video ve ses dosyalarıyla hikâyelerinizi zenginleştirin.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature__icon">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <div class="feature__content">
+                        <h3>Kolay Paylaşım</h3>
+                        <p>Tek bir kodla haritalarınızı kolayca paylaşın.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature__icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div class="feature__content">
+                        <h3>Rota Hikâyeleri</h3>
+                        <p>Seyahat ve keşif rotalarını adım adım anlatın.</p>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature__icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="feature__content">
+                        <h3>İşbirliği</h3>
+                        <p>Birlikte haritalar üzerinde çalışın.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="footer__text">Ortaöğretim Genel Müdürlüğü tarafından geliştirilmiştir.</p>
+        <p class="footer__copyright">© 2026</p>
+    </footer>
+
+    <script type="module" src="src/landingMain.js"></script>
+</body>
+
+</html>

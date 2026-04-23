@@ -1,0 +1,1008 @@
+/* ============================================
+   Toolbar Styles - ArcGIS StoryMaps Benzeri
+   ============================================ */
+
+.toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 16px !important;
+    z-index: 2000;
+    box-shadow: var(--shadow-md);
+}
+
+.toolbar__left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.toolbar__center {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toolbar__group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--color-background);
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.toolbar__btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-size: 14px;
+}
+
+.toolbar__btn svg {
+    fill: currentColor;
+    width: 18px;
+    height: 18px;
+}
+
+.toolbar__btn:hover {
+    background: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.toolbar__btn--active {
+    background: var(--color-primary-bg);
+    color: var(--color-sage);
+}
+
+.toolbar__btn--active:hover {
+    background: var(--color-primary-bg);
+    color: var(--color-primary-dark);
+}
+
+.toolbar__btn:disabled,
+.toolbar__btn--disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.toolbar__btn:disabled:hover,
+.toolbar__btn--disabled:hover {
+    background: transparent;
+    color: var(--color-text-secondary);
+}
+
+/* Toolbar kilitli modda */
+.toolbar--locked .toolbar__btn:not(.toolbar__btn--active):not([data-tool="select"]) {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.toolbar--locked .toolbar__btn--active {
+    box-shadow: none;
+}
+
+.toolbar__divider {
+    width: 1px;
+    height: 28px;
+    background: var(--color-border);
+    margin: 0 4px;
+}
+
+.toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: auto;
+}
+
+/* Action Buttons */
+.toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toolbar__btn--action {
+    width: 40px;
+    height: 40px;
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: var(--color-text-secondary);
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-sm);
+}
+
+.toolbar__btn--action:hover {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.toolbar__btn--action svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Admin Button - Special styling */
+.toolbar__btn--admin {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    border-color: #dc2626;
+    color: white;
+}
+
+.toolbar__btn--admin:hover {
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+    border-color: #b91c1c;
+    color: white;
+}
+
+/* Stats Button - Special styling for admin mode */
+.toolbar__btn--stats {
+    background: #111827;
+    border-color: #111827;
+    color: white;
+}
+
+.toolbar__btn--stats:hover {
+    background: #1f2937;
+    border-color: #1f2937;
+    color: white;
+}
+
+.toolbar__search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-background);
+    padding: 8px 16px;
+    border-radius: 6px;
+    min-width: 200px;
+}
+
+.toolbar__search svg {
+    fill: var(--color-text-tertiary);
+    flex-shrink: 0;
+}
+
+.toolbar__search i {
+    color: var(--color-text-tertiary);
+    font-size: 14px;
+}
+
+.toolbar__search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--color-text-primary);
+    font-size: 14px;
+    width: 100%;
+}
+
+.toolbar__search input::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+/* ============================================
+   Tooltip for Toolbar Buttons
+   ============================================ */
+
+.toolbar__btn[title] {
+    position: relative;
+}
+
+.toolbar__btn[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #374151;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* ============================================
+   Drawing Mode Indicator
+   ============================================ */
+
+.toolbar__mode-indicator {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    color: #374151;
+    padding: 8px 14px 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 2001;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.toolbar__mode-indicator i {
+    font-size: 12px;
+}
+
+.toolbar__mode-indicator--success {
+    background: var(--color-primary-bg);
+    color: var(--color-sage);
+    border-color: rgba(124, 152, 133, 0.2);
+}
+
+.toolbar__mode-indicator--info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.toolbar__mode-indicator--warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+/* İptal butonu */
+.toolbar__mode-cancel {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.08);
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-left: 2px;
+}
+
+.toolbar__mode-cancel:hover {
+    background: rgba(0, 0, 0, 0.15);
+    color: #374151;
+}
+
+.toolbar__mode-cancel i {
+    font-size: 10px;
+}
+
+/* ============================================
+   Measurement Popup Styles
+   ============================================ */
+
+.meas-popup .maplibregl-popup-content {
+    background: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-width: 100px;
+}
+
+.meas-popup .maplibregl-popup-tip {
+    border-top-color: white;
+}
+
+/* Çizim sırasında tooltip tıklamaları engellemesin */
+.meas-popup--temp {
+    pointer-events: none;
+}
+
+.meas-popup--temp .maplibregl-popup-content {
+    background: #ffffff;
+    color: #111827;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.meas-popup--temp .maplibregl-popup-tip {
+    border-top-color: #ffffff;
+}
+
+.meas-popup--result .maplibregl-popup-content {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+.meas-popup--result .maplibregl-popup-tip {
+    display: none;
+}
+
+.meas-popup--result .maplibregl-popup-close-button {
+    display: none;
+}
+
+/* Measurement marker styles */
+.measurement-marker {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #111827;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: move;
+}
+
+.measurement-marker--finalized {
+    cursor: default;
+    border-color: #6b7280;
+    background: #f3f4f6;
+    opacity: 0.8;
+}
+
+
+/* ============================================
+   MapLibre Control Buttons - Modern Dark Style
+   ============================================ */
+
+/* MapLibre control container - View mode'da sidebar'ın üstünde olmalı */
+.maplibregl-ctrl-top-right,
+.maplibregl-ctrl-bottom-right,
+.maplibregl-ctrl-top-left,
+.maplibregl-ctrl-bottom-left {
+    z-index: 9999 !important;
+    position: relative !important;
+}
+
+/* Navigation Control Group (Zoom In/Out) - Birleşik rounded rectangle */
+.maplibregl-ctrl-group {
+    background-color: var(--color-black, #1c1c1e) !important;
+    border: none !important;
+    border-radius: 18px !important;
+    box-shadow: rgba(34, 34, 34, 0.35) 0px 2px 8px !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    z-index: 9999 !important; /* Sidebar ve diğer elementlerin çok üstünde */
+    position: relative !important; /* z-index çalışması için */
+}
+
+.maplibregl-ctrl-group:not(:empty) {
+    box-shadow: rgba(34, 34, 34, 0.35) 0px 2px 8px !important;
+}
+
+/* Zoom butonları - grup içinde */
+.maplibregl-ctrl-group button {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 0 !important;
+    border: none !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    transition: background-color 0.3s !important;
+    cursor: pointer !important;
+    position: relative;
+    padding: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    color: rgb(255, 255, 255) !important;
+    box-sizing: border-box;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+}
+
+/* Sadece zoom butonları için ikon gizle, yazı göster */
+.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon,
+.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon {
+    display: none !important;
+}
+
+.maplibregl-ctrl-zoom-in::before {
+    content: '+' !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+}
+
+.maplibregl-ctrl-zoom-out::before {
+    content: '−' !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+}
+
+/* Geolocate ikonu görünür kalsın */
+.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon {
+    display: block !important;
+    filter: invert(1) !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.maplibregl-ctrl-group button:active {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.maplibregl-ctrl-group button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+}
+
+/* Butonlar arası ayırıcı çizgi */
+.maplibregl-ctrl-group button + button {
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+
+
+/* 3D Toggle Control - Ayrı yuvarlak buton */
+.maplibregl-ctrl-3d {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    transition: opacity 0.3s, background-color 0.3s !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    background-color: var(--color-black, #1c1c1e) !important;
+    box-shadow: rgba(34, 34, 34, 0.35) 0px 2px 8px !important;
+    color: rgb(255, 255, 255) !important;
+    font-size: 12px;
+    font-weight: 500;
+    z-index: 9999 !important;
+    position: relative !important;
+}
+
+.maplibregl-ctrl-3d:hover {
+    background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+.maplibregl-ctrl-3d--active {
+    background-color: #1e3a5f !important;
+    color: #fff !important;
+}
+
+.maplibregl-ctrl-3d--active:hover {
+    background-color: #0f2942 !important;
+}
+
+.maplibregl-ctrl-3d svg {
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.5 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+}
+
+.maplibregl-ctrl-group .maplibregl-ctrl-3d--active svg {
+    stroke: #fff !important;
+}
+
+/* Geolocate (Konum) Control - Ayrı yuvarlak buton */
+.maplibregl-ctrl-geolocate {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    transition: opacity 0.3s, background-color 0.3s !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    background-color: var(--color-black, #1c1c1e) !important;
+    box-shadow: rgba(34, 34, 34, 0.35) 0px 2px 8px !important;
+    color: rgb(255, 255, 255) !important;
+    z-index: 9999 !important;
+    position: relative !important;
+}
+
+.maplibregl-ctrl-geolocate:hover {
+    background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Geolocate ikonu - navigation arrow */
+.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon {
+    display: none !important;
+}
+
+.maplibregl-ctrl-geolocate::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M12 2L4 20l8-4 8 4L12 2z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transform: rotate(45deg);
+}
+
+/* Geolocate aktif durumları */
+.maplibregl-ctrl-geolocate-active {
+    background-color: #1e3a5f !important;
+}
+
+.maplibregl-ctrl-geolocate-active:hover {
+    background-color: #0f2942 !important;
+}
+
+.maplibregl-ctrl-geolocate-active-error {
+    background-color: #dc2626 !important;
+}
+
+.maplibregl-ctrl-geolocate-waiting {
+    animation: geolocate-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes geolocate-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Compass button */
+.maplibregl-ctrl-compass {
+    width: 36px !important;
+    height: 36px !important;
+}
+
+.maplibregl-ctrl-compass .maplibregl-ctrl-icon {
+    filter: invert(1) !important;
+}
+
+/* ============================================
+   Custom User Location Marker - Minimal Pin
+   ============================================ */
+
+.user-location-marker {
+    width: 36px;
+    height: 44px;
+    position: relative;
+    display: inline-block;
+}
+
+.user-location-pin {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50% 50% 50% 0;
+    border: 2px solid rgba(255, 255, 255, 1);
+    background: #202628;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-45deg);
+    animation: user-location-bounce 1s linear infinite;
+}
+
+.user-location-shadow {
+    position: absolute;
+    width: 20px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(100, 100, 100, 0.4);
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+@keyframes user-location-bounce {
+    0% { top: 4px; }
+    50% { top: 1px; }
+    100% { top: 4px; }
+}
+
+
+/* ============================================
+   Measurement Tool - OneSoil Style
+   ============================================ */
+
+/* Top Panel - Sabit üst bilgi paneli */
+.measurement-tool-panel {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(17, 24, 39, 0.95);
+    backdrop-filter: blur(8px);
+    padding: 7px 11px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 2001;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.3);
+    min-height: 31px;
+}
+
+.measurement-tool-panel__esc {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 4px;
+}
+
+.measurement-tool-panel__esc:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.measurement-tool-panel__esc svg {
+    width: 10px;
+    height: 10px;
+}
+
+.measurement-tool-panel__divider {
+    width: 1px;
+    height: 17px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.measurement-tool-panel__item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.measurement-tool-panel__label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 10px;
+    font-weight: 400;
+}
+
+.measurement-tool-panel__value {
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.measurement-tool-panel__value--primary {
+    color: #ffffff;
+    font-size: 13px;
+}
+
+.measurement-tool-panel__segment {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 10px;
+    font-weight: 500;
+    margin-left: -3px;
+}
+
+.measurement-tool-panel__hint {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 10px;
+    font-weight: 400;
+}
+
+/* Measurement Tool Markers - OneSoil Style */
+.measurement-tool-marker {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    cursor: move;
+}
+
+/* ============================================
+   View Mode (Salt Okunur Mod) Styles
+   ============================================ */
+
+.toolbar__btn--view-mode-disabled {
+    pointer-events: none !important;
+    opacity: 0.3 !important;
+    cursor: not-allowed !important;
+}
+
+/* ============================================
+   Profile Dropdown Styles
+   ============================================ */
+
+.toolbar__profile-dropdown {
+    position: relative;
+}
+
+.toolbar__btn--profile {
+    position: relative;
+    padding: 0;
+    overflow: visible;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+.toolbar__btn--profile:hover {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.toolbar__profile-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    background: var(--color-primary-bg);
+    color: var(--color-sage);
+    border: 2.5px solid var(--color-sage);
+    transition: all 0.2s ease;
+}
+
+.toolbar__btn--profile:hover .toolbar__profile-avatar {
+    border-color: var(--color-primary-dark);
+    background: var(--color-surface-elevated);
+    transform: scale(1.05);
+}
+
+.toolbar__dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    min-width: 200px;
+    z-index: 3000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.2s ease;
+}
+
+.toolbar__dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.toolbar__dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    color: var(--color-text-primary);
+    font-size: 14px;
+}
+
+.toolbar__dropdown-item:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.toolbar__dropdown-item:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+.toolbar__dropdown-item:hover {
+    background-color: var(--color-background);
+}
+
+.toolbar__dropdown-item i {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    width: 16px;
+    text-align: center;
+}
+
+.toolbar__dropdown-item--danger {
+    color: #dc2626;
+}
+
+.toolbar__dropdown-item--danger i {
+    color: #dc2626;
+}
+
+.toolbar__dropdown-item--danger:hover {
+    background-color: rgba(220, 38, 38, 0.1);
+}
+
+.toolbar__dropdown-divider {
+    height: 1px;
+    background-color: var(--color-border);
+    margin: 4px 0;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet ve küçük ekranlar */
+@media (max-width: 768px) {
+    .toolbar {
+        padding: 0 12px;
+    }
+
+    .toolbar__search {
+        min-width: 140px;
+        padding: 6px 12px;
+    }
+
+    .toolbar__search input {
+        font-size: 13px;
+    }
+
+    .toolbar__left {
+        gap: 12px;
+    }
+
+    .toolbar__right {
+        gap: 12px;
+    }
+
+    .toolbar__btn {
+        width: 34px;
+        height: 34px;
+        font-size: 13px;
+    }
+
+    .toolbar__btn--action {
+        width: 36px;
+        height: 36px;
+    }
+
+    /* Mode indicator mobilde daha küçük */
+    .toolbar__mode-indicator {
+        padding: 6px 12px;
+        font-size: 11px;
+        top: 60px;
+    }
+
+    /* Measurement panel mobilde daha küçük */
+    .measurement-tool-panel {
+        padding: 6px 10px;
+        font-size: 10px;
+        top: 60px;
+    }
+}
+
+/* Küçük mobil cihazlar */
+@media (max-width: 480px) {
+    .toolbar {
+        padding: 0 8px !important;
+        height: 52px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+
+    .toolbar::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+
+    .toolbar__search {
+        min-width: 0;
+        flex: 1;
+        max-width: 180px;
+        padding: 5px 10px;
+    }
+
+    .toolbar__search input {
+        font-size: 12px;
+    }
+
+    .toolbar__left {
+        gap: 8px;
+    }
+
+    .toolbar__right {
+        gap: 8px;
+    }
+
+    .toolbar__btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .toolbar__btn svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .toolbar__btn--action {
+        width: 34px;
+        height: 34px;
+    }
+
+    .toolbar__btn--action svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .toolbar__group {
+        gap: 2px;
+        padding: 3px;
+    }
+
+    .toolbar__divider {
+        margin: 0 2px;
+    }
+
+    /* Profile avatar mobilde daha küçük */
+    .toolbar__profile-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+
+    /* Dropdown menu mobilde fixed position ile scroll container dışına çıksın */
+    .toolbar__dropdown-menu {
+        position: fixed;
+        top: 54px;
+        right: 8px;
+        left: auto;
+        min-width: 180px;
+        z-index: 3000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Mode indicator çok küçük ekranlarda */
+    .toolbar__mode-indicator {
+        padding: 5px 10px;
+        font-size: 10px;
+        top: 56px;
+    }
+
+    /* Measurement panel çok küçük ekranlarda */
+    .measurement-tool-panel {
+        padding: 5px 8px;
+        font-size: 9px;
+        top: 56px;
+        gap: 6px;
+    }
+
+    .measurement-tool-panel__label {
+        font-size: 9px;
+    }
+
+    .measurement-tool-panel__value {
+        font-size: 10px;
+    }
+}

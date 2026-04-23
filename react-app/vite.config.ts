@@ -55,10 +55,24 @@ function serveStorymap() {
   }
 }
 
+function copyStorymapToDist() {
+  return {
+    name: 'copy-storymap-to-dist',
+    closeBundle() {
+      const distStorymapDir = path.resolve(__dirname, 'dist/storymap')
+      if (!fs.existsSync(STORYMAP_DIR) || !fs.statSync(STORYMAP_DIR).isDirectory()) {
+        return
+      }
+      fs.rmSync(distStorymapDir, { recursive: true, force: true })
+      fs.cpSync(STORYMAP_DIR, distStorymapDir, { recursive: true })
+    },
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/cbs-react/',
-  plugins: [react(), serveStorymap()],
+  plugins: [react(), serveStorymap(), copyStorymapToDist()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

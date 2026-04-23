@@ -1,0 +1,327 @@
+/* ========================================
+   SIDEBAR SETTINGS VIEW
+   Ayarlar Görünümü, Basemap, Config, Switches
+   ======================================== */
+
+/* ========================================
+   SETTINGS CONTENT
+   ======================================== */
+
+.sidebar__content--settings {
+    background: #f5f5f0;
+    padding: 24px 20px;
+}
+
+.sidebar__settings-section {
+    margin-bottom: 28px;
+}
+
+.sidebar__settings-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 12px;
+}
+
+/* ========================================
+   BASEMAP SELECTOR
+   ======================================== */
+
+.sidebar__basemap-selector {
+    position: relative;
+}
+
+.sidebar__basemap-current {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.sidebar__basemap-current:hover {
+    border-color: #10b981;
+}
+
+.sidebar__basemap-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.sidebar__basemap-name {
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.sidebar__basemap-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 8px;
+    display: none;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.sidebar__basemap-dropdown--open {
+    display: block;
+}
+
+.sidebar__basemap-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #374151;
+    font-size: 14px;
+    text-align: left;
+    transition: all 0.2s;
+}
+
+.sidebar__basemap-option:hover {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.sidebar__basemap-option--active {
+    background: rgba(16, 185, 129, 0.2);
+    color: #059669;
+}
+
+.sidebar__basemap-option .sidebar__basemap-thumb {
+    width: 40px;
+    height: 40px;
+}
+
+/* ========================================
+   CONFIG ITEMS
+   ======================================== */
+
+.sidebar__config-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+}
+
+.sidebar__config-item--indent {
+    padding-left: 40px;
+}
+
+.sidebar__config-text {
+    flex: 1;
+    font-size: 14px;
+    color: #374151;
+}
+
+.sidebar__info-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.sidebar__info-btn:hover {
+    color: #6b7280;
+}
+
+/* ========================================
+   SWITCH (Toggle)
+   ======================================== */
+
+.sidebar__switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.sidebar__switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sidebar__switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #d1d5db;
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.sidebar__switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.sidebar__switch input:checked + .sidebar__switch-slider {
+    background-color: #10b981;
+}
+
+.sidebar__switch input:checked + .sidebar__switch-slider:before {
+    transform: translateX(20px);
+    background-color: white;
+}
+
+/* ========================================
+   RADIO / CHECKBOX
+   ======================================== */
+
+.sidebar__radio {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.sidebar__radio input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.sidebar__radio-mark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sidebar__radio input:checked + .sidebar__radio-mark {
+    border-color: #10b981;
+    background: transparent;
+}
+
+.sidebar__radio input:checked + .sidebar__radio-mark:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+}
+
+/* Checkbox için kare stil */
+.sidebar__radio input[type="checkbox"] + .sidebar__radio-mark {
+    border-radius: 4px;
+}
+
+.sidebar__radio input[type="checkbox"]:checked + .sidebar__radio-mark {
+    background: #10b981;
+    border-color: #10b981;
+}
+
+.sidebar__radio input[type="checkbox"]:checked + .sidebar__radio-mark:after {
+    content: "\f00c";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    width: auto;
+    height: auto;
+    background: transparent;
+    color: white;
+    font-size: 10px;
+    border-radius: 0;
+}
+
+/* ========================================
+   SETTINGS VIEW OVERRIDES
+   ======================================== */
+
+/* Settings görünümünde sidebar arka planı kemik beyazı */
+.sidebar:has(.sidebar__content--settings) {
+    background: #f5f5f0;
+}
+
+.sidebar:has(.sidebar__content--settings) .sidebar__header {
+    background: #f5f5f0;
+    border-bottom-color: #e5e7eb;
+}
+
+.sidebar:has(.sidebar__content--settings) .sidebar__title {
+    color: #374151;
+}
+
+.sidebar:has(.sidebar__content--settings) .sidebar__subtitle {
+    color: #6b7280;
+}
+
+.sidebar:has(.sidebar__content--settings) .sidebar__footer {
+    background: #f5f5f0;
+    border-top-color: #e5e7eb;
+}
+
+.sidebar:has(.sidebar__content--settings) .sidebar__footer-btn {
+    background: #10b981;
+    color: white;
+}
+
+.sidebar:has(.sidebar__content--settings) .sidebar__footer-btn:hover {
+    opacity: 0.9;
+}
+
+.sidebar:has(.sidebar__content--settings) .sidebar__footer-btn--secondary {
+    background: var(--color-gray-100);
+    color: #374151;
+    border-color: #e5e7eb;
+}
+
+.sidebar:has(.sidebar__content--settings) .sidebar__footer-btn--secondary:hover {
+    background: #f9fafb;
+}
+
