@@ -97,7 +97,7 @@ const TOOLS: ToolDef[] = [
   { id: 'heatmap', icon: Flame, label: 'Isı Haritası', activeColor: 'text-red-600', activeBg: 'bg-red-50', activeBorder: 'border-red-200', group: 'analysis' },
   { id: 'isochrone', icon: Network, label: 'Erişilebilirlik Analizi', activeColor: 'text-cyan-600', activeBg: 'bg-cyan-50', activeBorder: 'border-cyan-200', group: 'analysis' },
   { id: 'elevation-profile', icon: TrendingUp, label: 'Yükselti Profili Analizi', activeColor: 'text-teal-600', activeBg: 'bg-teal-50', activeBorder: 'border-teal-200', group: 'analysis' },
-  { id: 'export-png', icon: Camera, label: 'Görüntü İndir (PNG)', activeColor: 'text-zinc-700', activeBg: 'bg-zinc-100', activeBorder: 'border-zinc-300', group: 'general' },
+  { id: 'export-png', icon: Camera, label: 'Ekran Görüntüsü Al', activeColor: 'text-zinc-700', activeBg: 'bg-zinc-100', activeBorder: 'border-zinc-300', group: 'general' },
   { id: 'export-pdf', icon: FileText, label: 'PDF Olarak İndir', activeColor: 'text-zinc-700', activeBg: 'bg-zinc-100', activeBorder: 'border-zinc-300', group: 'general' },
   { id: 'clean-visuals', icon: Eraser, label: 'Haritayı Temizle', activeColor: 'text-zinc-700', activeBg: 'bg-zinc-100', activeBorder: 'border-zinc-300', group: 'general' },
   { id: 'clear-data', icon: Paintbrush, label: 'Verileri Sıfırla', activeColor: 'text-amber-600', activeBg: 'bg-amber-50', activeBorder: 'border-amber-200', group: 'reset' },
