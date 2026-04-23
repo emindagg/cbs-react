@@ -7,6 +7,7 @@ import {
   Flame,
   Network,
   Camera,
+  FileText,
   Eraser,
   Paintbrush,
   Trash2,
@@ -14,6 +15,7 @@ import {
   Waves,
 } from 'lucide-react'
 import { useState, useRef, useEffect, type ComponentType } from 'react'
+import toast from 'react-hot-toast'
 import { useMap } from 'react-map-gl/maplibre'
 
 import { useElevationProfileStore } from '@/features/elevation-profile'
@@ -27,6 +29,10 @@ import { useToolStore, type ToolType } from '@/stores/useToolStore'
 
 import { BufferModal } from './GISToolsControl.buffer'
 import { BufferOptionsControl } from './GISToolsControl.bufferOptions'
+import { RegionSelector, type SelectionRect } from './RegionSelector'
+import { exportAsPng, exportAsPdf } from '../services/mapExport'
+
+type ExportFormat = 'png' | 'pdf'
 
 type IconComponent = ComponentType<{
   size?: number | string
@@ -91,7 +97,8 @@ const TOOLS: ToolDef[] = [
   { id: 'heatmap', icon: Flame, label: 'Isı Haritası', activeColor: 'text-red-600', activeBg: 'bg-red-50', activeBorder: 'border-red-200', group: 'analysis' },
   { id: 'isochrone', icon: Network, label: 'Erişilebilirlik Analizi', activeColor: 'text-cyan-600', activeBg: 'bg-cyan-50', activeBorder: 'border-cyan-200', group: 'analysis' },
   { id: 'elevation-profile', icon: TrendingUp, label: 'Yükselti Profili Analizi', activeColor: 'text-teal-600', activeBg: 'bg-teal-50', activeBorder: 'border-teal-200', group: 'analysis' },
-  { id: 'screenshot', icon: Camera, label: 'Ekran Görüntüsü', activeColor: 'text-zinc-700', activeBg: 'bg-zinc-100', activeBorder: 'border-zinc-300', group: 'general' },
+  { id: 'export-png', icon: Camera, label: 'Görüntü İndir (PNG)', activeColor: 'text-zinc-700', activeBg: 'bg-zinc-100', activeBorder: 'border-zinc-300', group: 'general' },
+  { id: 'export-pdf', icon: FileText, label: 'PDF Olarak İndir', activeColor: 'text-zinc-700', activeBg: 'bg-zinc-100', activeBorder: 'border-zinc-300', group: 'general' },
   { id: 'clean-visuals', icon: Eraser, label: 'Haritayı Temizle', activeColor: 'text-zinc-700', activeBg: 'bg-zinc-100', activeBorder: 'border-zinc-300', group: 'general' },
   { id: 'clear-data', icon: Paintbrush, label: 'Verileri Sıfırla', activeColor: 'text-amber-600', activeBg: 'bg-amber-50', activeBorder: 'border-amber-200', group: 'reset' },
   { id: 'clear-measurements', icon: Trash2, label: 'Ölçümleri Sil', activeColor: 'text-red-600', activeBg: 'bg-red-50', activeBorder: 'border-red-200', group: 'reset' },
@@ -99,6 +106,7 @@ const TOOLS: ToolDef[] = [
 
 export default function GISToolsControl() {
   const [showBufferModal, setShowBufferModal] = useState(false)
+  const [exportFormat, setExportFormat] = useState<ExportFormat | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { current: map } = useMap()
 
@@ -163,19 +171,35 @@ export default function GISToolsControl() {
     }
   }
 
-  const handleScreenshot = () => {
-    if (!map) return
+  // PNG/PDF butonu → menüyü kapat ve bölge seçiciyi aç.
+  const startExportFlow = (format: ExportFormat) => {
+    closeToolsMenu()
+    setExportFormat(format)
+  }
+
+  // Bölge seçici kullanıcı onayladıktan sonra gerçek export'u çalıştırır.
+  const runExport = async (format: ExportFormat, region: SelectionRect | null) => {
+    setExportFormat(null)
+    // DOM güncellensin (selector kalksın) → bir frame bekle.
+    await new Promise((r) => requestAnimationFrame(() => r(null)))
+
+    const toastId = toast.loading(
+      format === 'png' ? 'Görüntü hazırlanıyor…' : 'PDF hazırlanıyor…',
+    )
     try {
-      const canvas = map.getCanvas()
-      const dataURL = canvas.toDataURL('image/png')
-      const a = document.createElement('a')
-      a.href = dataURL
-      a.download = `harita-goruntusu-${new Date().toISOString().slice(0, 19).replace('T', '_')}.png`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
+      const common = { map: map?.getMap() ?? null, region }
+      if (format === 'png') {
+        await exportAsPng({ ...common, quality: 'high' })
+      } else {
+        await exportAsPdf({ ...common, quality: 'print' })
+      }
+      toast.success(
+        format === 'png' ? 'Görüntü indirildi' : 'PDF indirildi',
+        { id: toastId },
+      )
     } catch (e) {
-      console.error('Screenshot error:', e)
+      console.error('Export error:', e)
+      toast.error('Dışa aktarım sırasında hata oluştu', { id: toastId })
     }
   }
 
@@ -210,8 +234,10 @@ export default function GISToolsControl() {
         setActiveTool('elevation-profile' as ToolType)
         setElevationPanelOpen(true)
       }
-    } else if (toolId === 'screenshot') {
-      handleScreenshot()
+    } else if (toolId === 'export-png') {
+      startExportFlow('png')
+    } else if (toolId === 'export-pdf') {
+      startExportFlow('pdf')
     } else if (toolId === 'clean-visuals') {
       resetDistance()
       resetDraw()
@@ -268,7 +294,7 @@ export default function GISToolsControl() {
   })
 
   return (
-    <div ref={containerRef} className={`absolute top-3 right-3 z-10002 flex flex-col items-end ${toolsMenuMode === 'closed' && !showBufferModal && !hasBufferAnalysisItems ? 'pointer-events-none' : ''}`}>
+    <div ref={containerRef} data-export-ignore="true" className={`absolute top-3 right-3 z-10002 flex flex-col items-end ${toolsMenuMode === 'closed' && !showBufferModal && !hasBufferAnalysisItems ? 'pointer-events-none' : ''}`}>
       {/* Toggle Button */}
       <button
         id="toggle-gis-tools"
@@ -366,6 +392,16 @@ export default function GISToolsControl() {
 
       <BufferOptionsControl hasBufferResults={hasBufferAnalysisItems} />
       <BufferModal isOpen={showBufferModal} onClose={() => setShowBufferModal(false)} />
+
+      <RegionSelector
+        open={exportFormat !== null}
+        title={exportFormat === 'pdf' ? 'PDF için alan seçin' : 'PNG için alan seçin'}
+        confirmLabel={exportFormat === 'pdf' ? 'PDF İndir' : 'PNG İndir'}
+        onConfirm={(rect) => {
+          if (exportFormat) void runExport(exportFormat, rect)
+        }}
+        onCancel={() => setExportFormat(null)}
+      />
 
       <style>{`
         .gis-tools-scrollbar::-webkit-scrollbar { width: 6px; }

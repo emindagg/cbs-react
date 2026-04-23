@@ -95,11 +95,12 @@ export default function AppLayout() {
   }, [isSidebarOpen, isMdUp])
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-zinc-50">
+    <div id="app-root" className="relative h-screen w-full overflow-hidden bg-zinc-50">
 
       {/* Sidebar */}
       <aside
         id="sidebar"
+        data-export-ignore="true"
         className={`
                     fixed left-0 top-0 z-1350 
                     w-full md:w-72 bg-white shadow-xl h-screen 
@@ -119,6 +120,7 @@ export default function AppLayout() {
       {/* Map Control Stack (Vertical) */}
       <div
         id="map-control-container"
+        data-export-ignore="true"
         className="fixed top-3 z-1500 transition-all duration-300 ease-in-out"
         style={{ left: controlsLeft }}
       >

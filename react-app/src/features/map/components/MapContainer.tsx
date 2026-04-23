@@ -144,6 +144,7 @@ export default function MapContainer() {
         }}
         style={{ width: '100%', height: '100vh', position: 'relative', zIndex: 1 }}
         mapStyle={mapStyleObj as maplibregl.StyleSpecification}
+        canvasContextAttributes={{ preserveDrawingBuffer: true }}
         onLoad={(e) => {
           setLoaded(true)
           setMapInstance(e.target)
