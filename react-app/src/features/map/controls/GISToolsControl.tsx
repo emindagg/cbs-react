@@ -204,6 +204,16 @@ export default function GISToolsControl() {
   }
 
   const handleToolSelect = (toolId: string) => {
+    // Export aksiyonları mevcut analiz state'ini bozmamalı.
+    if (toolId === 'export-png') {
+      startExportFlow('png')
+      return
+    }
+    if (toolId === 'export-pdf') {
+      startExportFlow('pdf')
+      return
+    }
+
     deactivateOthers(toolId)
     if (toolId === 'buffer') {
       if (showBufferModal || hasBufferAnalysisItems) {
@@ -234,10 +244,6 @@ export default function GISToolsControl() {
         setActiveTool('elevation-profile' as ToolType)
         setElevationPanelOpen(true)
       }
-    } else if (toolId === 'export-png') {
-      startExportFlow('png')
-    } else if (toolId === 'export-pdf') {
-      startExportFlow('pdf')
     } else if (toolId === 'clean-visuals') {
       resetDistance()
       resetDraw()
