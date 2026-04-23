@@ -42,12 +42,13 @@ interface MapState {
 
 // Default Turkey center coordinates
 const TURKEY_CENTER: [number, number] = [35.2433, 38.9637]
+const DEFAULT_BASEMAP: BasemapType = import.meta.env.PROD ? 'TEMEL' : 'CARTO_LIGHT'
 
 export const useMapStore = create<MapState>((set) => ({
   isLoaded: false,
   zoom: 6,
   center: TURKEY_CENTER,
-  activeBasemap: 'CARTO_LIGHT', // Default
+  activeBasemap: DEFAULT_BASEMAP,
   mapInstance: null,
   isGlobeMode: false,
   northArrowVisible: true,

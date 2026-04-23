@@ -11,6 +11,7 @@ export default function BasemapSwitcher() {
   const { activeBasemap, setActiveBasemap } = useMapStore()
   const [isOpen, setIsOpen] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
+  const isProd = import.meta.env.PROD
 
   // Close when clicking outside
   useEffect(() => {
@@ -33,6 +34,9 @@ export default function BasemapSwitcher() {
     { id: 'YUKSEKLIK', label: 'HGM Yükseklik', icon: 'fa-mountain' },
     { id: 'NONE', label: 'Altlık Haritayı Gizle', icon: 'fa-ban' },
   ]
+  const visibleBasemaps = isProd
+    ? basemaps.filter((bm) => bm.id !== 'CARTO_LIGHT' && bm.id !== 'ESRI_SATELLITE')
+    : basemaps
 
   const handleSelect = (id: BasemapType) => {
     setActiveBasemap(id)
@@ -58,7 +62,7 @@ export default function BasemapSwitcher() {
           </div>
 
           <div className="flex flex-col">
-            {basemaps.map((bm) => (
+            {visibleBasemaps.map((bm) => (
               <button
                 key={bm.id}
                 onClick={() => handleSelect(bm.id)}
