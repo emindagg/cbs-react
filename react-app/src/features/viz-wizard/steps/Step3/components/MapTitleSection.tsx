@@ -3,6 +3,7 @@
  */
 
 import type { MapTitleConfiguration } from '@/types/visualization'
+import { SliderWithInput } from '@/components/ui'
 
 interface MapTitleSectionProps {
   mapTitle: MapTitleConfiguration
@@ -71,31 +72,14 @@ export function MapTitleSection({
                 </select>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[11px] font-medium text-zinc-600">Yazı Boyutu</label>
-                  <span className="text-[10px] text-zinc-400">{mapTitle.fontSize ?? 24}px</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="range"
-                    min={5}
-                    max={55}
-                    step={1}
-                    value={mapTitle.fontSize ?? 24}
-                    onChange={(e) => setMapTitle({ fontSize: Number.parseInt(e.target.value) })}
-                    className="flex-1"
-                  />
-                  <input
-                    type="number"
-                    min={5}
-                    max={55}
-                    value={mapTitle.fontSize ?? 24}
-                    onChange={(e) => setMapTitle({ fontSize: Number.parseInt(e.target.value) })}
-                    className="w-14 px-2 py-1 text-[10px] border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
+              <SliderWithInput
+                label="Yazı Boyutu"
+                min={5}
+                max={55}
+                step={1}
+                value={mapTitle.fontSize ?? 24}
+                onChange={(fontSize) => setMapTitle({ fontSize })}
+              />
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
                 <p className="text-[10px] text-blue-700">
