@@ -197,6 +197,149 @@ export const FORMAT_OPTIONS: Array<{
 ]
 
 /**
+ * Bir sütunun ondalık/binlik ayıraç yerelini tespit eder.
+ *
+ * Heuristikler (öncelik sırasıyla):
+ *  1. Hem nokta hem virgül varsa: sondaki karakter ondalıktır.
+ *  2. İki veya daha fazla aynı ayırıcı varsa kesinlikle binlik grubudur.
+ *  3. Tek ayırıcı + 3 haneli son grup → binlik olma olasılığı yüksek.
+ *  4. Tek ayırıcı + 3 olmayan son grup → ondalık; virgül TR, nokta belirsiz.
+ *
+ * 'ambiguous': Yeterli kanıt yok; parseFormattedNumber heuristiği devreye girer.
+ */
+export type NumberLocale = 'tr' | 'en' | 'ambiguous'
+
+export interface ColumnLocaleReport {
+  locale: NumberLocale
+  trScore: number
+  enScore: number
+  samples: number
+  /** Aynı sütunda çelişkili güçlü kanıt oranı (0-1). */
+  inconsistency: number
+}
+
+export function detectNumberLocale(values: readonly unknown[]): ColumnLocaleReport {
+  let trScore = 0
+  let enScore = 0
+  let samples = 0
+  let trStrong = 0
+  let enStrong = 0
+
+  for (const raw of values) {
+    if (raw === null || raw === undefined) continue
+    if (typeof raw === 'number') continue
+    const s = String(raw).trim()
+    if (!s) continue
+
+    const digitOnly = s.replace(/[^\d.,]/g, '')
+    if (!digitOnly) continue
+
+    samples++
+
+    const dotCount = (digitOnly.match(/\./g) || []).length
+    const commaCount = (digitOnly.match(/,/g) || []).length
+
+    if (dotCount >= 1 && commaCount >= 1) {
+      const lastDot = digitOnly.lastIndexOf('.')
+      const lastComma = digitOnly.lastIndexOf(',')
+      if (lastComma > lastDot) { trScore += 5; trStrong++ }
+      else { enScore += 5; enStrong++ }
+      continue
+    }
+
+    if (dotCount >= 2 && commaCount === 0) { trScore += 5; trStrong++; continue }
+    if (commaCount >= 2 && dotCount === 0) { enScore += 5; enStrong++; continue }
+
+    if (dotCount === 1 && commaCount === 0) {
+      const frac = digitOnly.split('.')[1] ?? ''
+      if (frac.length === 3) trScore += 1
+      else enScore += 2 // 12.5 → en ondalık güçlü
+      continue
+    }
+    if (commaCount === 1 && dotCount === 0) {
+      const frac = digitOnly.split(',')[1] ?? ''
+      if (frac.length === 3) enScore += 1
+      else trScore += 2 // 12,5 → tr ondalık güçlü
+      continue
+    }
+  }
+
+  const strongTotal = trStrong + enStrong
+  const inconsistency = strongTotal > 1
+    ? Math.min(trStrong, enStrong) / strongTotal
+    : 0
+
+  let locale: NumberLocale
+  if (samples === 0 || trScore === enScore) locale = 'ambiguous'
+  else locale = trScore > enScore ? 'tr' : 'en'
+
+  return { locale, trScore, enScore, samples, inconsistency }
+}
+
+/** Locale zorunlu: her çağrı aynı ayıraç kuralıyla parse edilir. */
+export function parseWithLocale(str: string, locale: NumberLocale): number | null {
+  if (!str) return null
+  const trimmed = str.trim()
+  if (!trimmed || trimmed === '-') return null
+
+  const abbrevMatch = trimmed.match(/^([\d.,]+)(Mlr|[kmbtBM])$/i)
+  if (abbrevMatch) {
+    const num = parseLocaleNumeric(abbrevMatch[1], locale)
+    if (num === null) return null
+    const suffix = abbrevMatch[2].toLowerCase()
+    const multipliers: Record<string, number> = { k: 1e3, b: 1e3, m: 1e6, mlr: 1e9, t: 1e12 }
+    return num * (multipliers[suffix] || 1)
+  }
+
+  if (trimmed.endsWith('%')) {
+    const num = parseLocaleNumeric(trimmed.slice(0, -1), locale)
+    return num === null ? null : num / 100
+  }
+
+  return parseLocaleNumeric(trimmed, locale)
+}
+
+function parseLocaleNumeric(s: string, locale: NumberLocale): number | null {
+  const compact = s.replace(/\s+/g, '').replace(/[^\d.,+-]/g, '')
+  if (!compact) return null
+
+  if (locale === 'ambiguous') {
+    return parseFormattedNumber(compact)
+  }
+
+  const normalized = locale === 'tr'
+    ? compact.replace(/\./g, '').replace(',', '.')
+    : compact.replace(/,/g, '')
+
+  const num = Number.parseFloat(normalized)
+  return Number.isNaN(num) ? null : num
+}
+
+/**
+ * Bir veri setinin tek sütununu sayıya çevirir.
+ * Sütunun locale'ı tek seferde tespit edilir; tüm satırlar aynı kuralla parse edilir.
+ * Orijinal kayıtlar mutate edilmez.
+ */
+export function coerceNumericColumn(
+  data: readonly Record<string, unknown>[],
+  column: string,
+): { data: Record<string, unknown>[]; report: ColumnLocaleReport } {
+  const values = data.map((row) => row[column])
+  const report = detectNumberLocale(values)
+
+  const next = data.map((row) => {
+    const raw = row[column]
+    if (typeof raw === 'number') return row
+    if (raw === null || raw === undefined || raw === '') return row
+    const parsed = parseWithLocale(String(raw), report.locale)
+    if (parsed === null) return row
+    return { ...row, [column]: parsed }
+  })
+
+  return { data: next, report }
+}
+
+/**
  * Parse formatted number back to numeric value
  */
 export function parseFormattedNumber(str: string): number | null {

@@ -44,6 +44,9 @@ export default function VizWizardStep2({
     districtIndex,
     setProvinceIndex,
     setDistrictIndex,
+    numericLocalePreference,
+    setNumericLocalePreference,
+    detectedNumericLocale,
   } = useVisualizationStore()
 
   const { mapInstance: map } = useMapStore()
@@ -74,7 +77,7 @@ export default function VizWizardStep2({
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, columnMapping.locationLevel, columnMapping.locationColumn])
+  }, [map, columnMapping.locationLevel, columnMapping.locationColumn, columnMapping.dataColumn, numericLocalePreference])
 
   // Extract geoJsonKeys from loaded indexes
   const geoJsonKeys = useMemo((): string[] => {
@@ -158,6 +161,34 @@ export default function VizWizardStep2({
                 <span className="inline-block w-2 h-2 rounded-sm bg-orange-200" />
                 <span className="text-zinc-500">Veri:</span>
                 <span className="font-medium text-zinc-700">{columnMapping.dataColumn}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {columnMapping.dataColumn && (
+          <div className="border border-zinc-200 rounded-md p-2 bg-white/70 space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-semibold text-zinc-700">Sayı Formatı</span>
+              <select
+                value={numericLocalePreference}
+                onChange={(e) => setNumericLocalePreference(e.target.value as 'tr' | 'en' | 'ambiguous')}
+                className="h-6 px-2 text-[10px] border border-zinc-300 rounded bg-white text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+              >
+                <option value="ambiguous">Otomatik</option>
+                <option value="tr">TR (1.234,56)</option>
+                <option value="en">EN (1,234.56)</option>
+              </select>
+            </div>
+            {detectedNumericLocale && (
+              <div className="text-[10px] text-zinc-600 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span>
+                  Algılanan: <span className="font-semibold uppercase">{detectedNumericLocale.locale}</span>
+                </span>
+                <span>Örnek: {detectedNumericLocale.samples}</span>
+                {detectedNumericLocale.inconsistency >= 0.2 && (
+                  <span className="text-amber-700 font-medium">Karışık format tespit edildi</span>
+                )}
               </div>
             )}
           </div>

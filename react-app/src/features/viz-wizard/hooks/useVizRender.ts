@@ -22,7 +22,7 @@ import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import type { PaintPropertyValue } from '@/types/maplibre-expressions'
 import type { MatchResults, VisualizationSettings } from '@/types/visualization'
 import { applyNormalizationMulti } from '@/utils/normalization'
-import { coerceNumberFormat } from '@/utils/numberFormatter'
+import { coerceNumberFormat, coerceNumericColumn, parseWithLocale } from '@/utils/numberFormatter'
 
 interface UseVizRenderProps {
   matchResults: MatchResults
@@ -236,6 +236,7 @@ export function useVizRender({
       // Closure yerine anlık store değerlerini oku — stale closure sorununu önler
       const { vizSettings: currentVizSettings, colorConfig: currentColorConfig } =
         useVisualizationStore.getState()
+      const { numericLocalePreference } = useVisualizationStore.getState()
 
       // Get successful matches only
       const successfulData = matchResults.successful.map((m) => ({
@@ -253,6 +254,30 @@ export function useVizRender({
       if (!columnMapping.dataColumn) {
         toast.error('Veri kolonu seçilmedi!')
         return
+      }
+
+      const coerceByPreference = (rows: Record<string, unknown>[], column: string) => {
+        if (numericLocalePreference === 'ambiguous') {
+          return coerceNumericColumn(rows, column).data
+        }
+        return rows.map((row) => {
+          const value = row[column]
+          if (typeof value === 'number' || value === null || value === undefined || value === '') {
+            return row
+          }
+          const parsed = parseWithLocale(String(value), numericLocalePreference)
+          if (parsed === null) return row
+          return { ...row, [column]: parsed }
+        })
+      }
+
+      let localePreparedData = coerceByPreference(successfulData, columnMapping.dataColumn)
+      if (
+        currentVizSettings.type === 'bubble'
+        && currentVizSettings.colorColumn
+        && currentVizSettings.colorColumn !== columnMapping.dataColumn
+      ) {
+        localePreparedData = coerceByPreference(localePreparedData, currentVizSettings.colorColumn)
       }
 
       // Determine location level
@@ -282,7 +307,7 @@ export function useVizRender({
       ) {
         normalizeColumns.push(renderSettings.colorColumn)
       }
-      const preparedData = applyNormalizationMulti(successfulData, normalizeColumns, {
+      const preparedData = applyNormalizationMulti(localePreparedData, normalizeColumns, {
         type: renderSettings.normalization ?? 'none',
         divisionField: renderSettings.normalizationField,
       })

@@ -13,6 +13,7 @@ import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import type { DistrictInfo, LocationInfo } from '@/types/geojson'
 import type { MatchResults } from '@/types/visualization'
 import { ColumnMapper } from '@/utils/columnMapper'
+import { coerceNumericColumn, parseWithLocale } from '@/utils/numberFormatter'
 
 interface UseMatchingProps {
   rawData: Record<string, unknown>[] | null
@@ -94,12 +95,16 @@ export function useMatching({
   }
 
   const performMatching = async (dataOverride?: Record<string, unknown>[]): Promise<MatchResults | null> => {
-    const { excludedRows } = useVisualizationStore.getState()
+    const {
+      excludedRows,
+      numericLocalePreference,
+      setDetectedNumericLocale,
+    } = useVisualizationStore.getState()
     const excludedSet = new Set(excludedRows)
     const rawDataToUse = dataOverride || rawData
-    const dataToUse = rawDataToUse?.filter((_, i) => !excludedSet.has(i)) ?? null
+    const filteredData = rawDataToUse?.filter((_, i) => !excludedSet.has(i)) ?? null
 
-    if (!dataToUse || !map) {
+    if (!filteredData || !map) {
       return null
     }
 
@@ -127,8 +132,38 @@ export function useMatching({
 
       // Create ColumnMapper and perform matching
       const mapper = new ColumnMapper()
-      mapper.rawData = dataToUse
-      mapper.columns = Object.keys(dataToUse[0])
+      let preparedData = filteredData
+      if (columnMapping.dataColumn) {
+        const { data, report } = coerceNumericColumn(filteredData, columnMapping.dataColumn)
+        preparedData = numericLocalePreference === 'ambiguous'
+          ? data
+          : data.map((row) => {
+            const value = row[columnMapping.dataColumn!]
+            if (typeof value === 'number' || value === null || value === undefined || value === '') {
+              return row
+            }
+            const forced = parseWithLocale(String(value), numericLocalePreference)
+            if (forced === null) return row
+            return { ...row, [columnMapping.dataColumn!]: forced }
+          })
+
+        setDetectedNumericLocale({
+          ...report,
+          locale: numericLocalePreference === 'ambiguous' ? report.locale : numericLocalePreference,
+        })
+
+        if (report.inconsistency >= 0.2) {
+          toast(
+            'Veri sütununda karışık sayı formatı algılandı. Gerekirse formatı manuel seçin.',
+            { icon: '!' },
+          )
+        }
+      } else {
+        setDetectedNumericLocale(null)
+      }
+
+      mapper.rawData = preparedData
+      mapper.columns = Object.keys(preparedData[0])
       mapper.setColumnMapping(columnMapping)
       mapper.setIndexes(
         localProvinceIndex as unknown as Record<string, LocationInfo> | null,

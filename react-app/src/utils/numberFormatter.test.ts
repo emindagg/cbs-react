@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { coerceNumberFormat, formatNumber, parseFormattedNumber } from './numberFormatter'
+import {
+  coerceNumberFormat,
+  coerceNumericColumn,
+  detectNumberLocale,
+  formatNumber,
+  parseFormattedNumber,
+  parseWithLocale,
+} from './numberFormatter'
 
 describe('numberFormatter', () => {
   it('coerces unknown format to fallback', () => {
@@ -21,5 +28,32 @@ describe('numberFormatter', () => {
     expect(parseFormattedNumber('15,701,602')).toBe(15701602)
     expect(parseFormattedNumber('1.2M')).toBeCloseTo(1200000, 5)
     expect(parseFormattedNumber('12%')).toBeCloseTo(0.12, 5)
+  })
+
+  it('detects column locale using mixed separators', () => {
+    const tr = detectNumberLocale(['12,5', '1.250', '61,25'])
+    expect(tr.locale).toBe('tr')
+
+    const en = detectNumberLocale(['12.5', '1,250', '61.25'])
+    expect(en.locale).toBe('en')
+  })
+
+  it('parses with explicit locale', () => {
+    expect(parseWithLocale('15.701.602', 'tr')).toBe(15701602)
+    expect(parseWithLocale('15,701,602', 'en')).toBe(15701602)
+    expect(parseWithLocale('61,5', 'tr')).toBeCloseTo(61.5, 5)
+    expect(parseWithLocale('61.5', 'en')).toBeCloseTo(61.5, 5)
+  })
+
+  it('coerces a whole column with single locale decision', () => {
+    const input = [
+      { il: 'A', deger: '1.250' },
+      { il: 'B', deger: '2.750' },
+      { il: 'C', deger: '61,5' },
+    ]
+    const { data, report } = coerceNumericColumn(input, 'deger')
+    expect(report.locale).toBe('tr')
+    expect(data[0].deger).toBe(1250)
+    expect(data[2].deger).toBe(61.5)
   })
 })

@@ -6,6 +6,7 @@
 import { create } from 'zustand'
 
 import type { ExcelSelectionPreview, PendingExcelSelection } from '@/utils/columnMapper/types'
+import type { ColumnLocaleReport, NumberLocale } from '@/utils/numberFormatter'
 import {
   clampLegendClassCount,
   isValidCustomBreaksLength,
@@ -92,6 +93,12 @@ interface VisualizationStore {
   excludedRows: number[]
   toggleExcludedRow: (rowIndex: number) => void
   clearExcludedRows: () => void
+
+  // Numeric locale parsing (data column)
+  numericLocalePreference: NumberLocale
+  setNumericLocalePreference: (locale: NumberLocale) => void
+  detectedNumericLocale: ColumnLocaleReport | null
+  setDetectedNumericLocale: (report: ColumnLocaleReport | null) => void
 
   // Reset everything
   reset: () => void
@@ -311,6 +318,12 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
     })),
   clearExcludedRows: () => set({ excludedRows: [] }),
 
+  // Numeric locale parsing
+  numericLocalePreference: 'ambiguous',
+  setNumericLocalePreference: (locale) => set({ numericLocalePreference: locale }),
+  detectedNumericLocale: null,
+  setDetectedNumericLocale: (report) => set({ detectedNumericLocale: report }),
+
   // Reset everything
   reset: () =>
     set({
@@ -326,5 +339,7 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
       isVisualizationRenderInProgress: false,
       colorConfig: defaultColorConfig,
       mapTitle: defaultMapTitle,
+      numericLocalePreference: 'ambiguous',
+      detectedNumericLocale: null,
     }),
 }))
