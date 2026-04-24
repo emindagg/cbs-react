@@ -14,6 +14,7 @@ interface BarContentProps {
   colors: string[]
   scaleType: ColorScaleType
   classificationMethod?: ClassificationMethod
+  fillOpacity?: number
 }
 
 export function BarContent({
@@ -22,6 +23,7 @@ export function BarContent({
   colors,
   scaleType,
   classificationMethod,
+  fillOpacity = 1,
 }: BarContentProps) {
   const configuredFormat = coerceNumberFormat(config.format)
 
@@ -59,7 +61,7 @@ export function BarContent({
       <div className="space-y-2">
         <div
           className="h-[14px] w-full rounded-none"
-          style={{ background: gradientString, boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.08)' }}
+          style={{ background: gradientString, boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.08)', opacity: fillOpacity }}
         />
         <div className="flex flex-row justify-between">
           {continuousItems.map((item, index) => (
@@ -73,7 +75,7 @@ export function BarContent({
       <div className="flex flex-row items-center gap-2">
         <div
           className="w-[14px] rounded-none"
-          style={{ background: gradientString, height: verticalBarHeight, boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.08)' }}
+          style={{ background: gradientString, height: verticalBarHeight, boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.08)', opacity: fillOpacity }}
         />
         <div className="flex flex-col justify-between" style={{ height: verticalBarHeight }}>
           {continuousItems.map((item, index) => (
@@ -121,7 +123,7 @@ export function BarContent({
 
     return (
       <div className="flex flex-row" style={{ position: 'relative' }}>
-        <div className="flex flex-col" style={{ width: '18px', flexShrink: 0 }}>
+        <div className="flex flex-col" style={{ width: '18px', flexShrink: 0, opacity: fillOpacity }}>
           {verticalColors.map((color, index) => (
             <div
               key={index}
@@ -172,7 +174,7 @@ export function BarContent({
         >
           <div
             className="legend-color w-[12px] h-[12px] rounded-none flex-shrink-0"
-            style={{ backgroundColor: item.color, border: '1px solid rgba(0, 0, 0, 0.2)' }}
+            style={{ backgroundColor: item.color, border: '1px solid rgba(0, 0, 0, 0.2)', opacity: fillOpacity }}
           />
           <span className="legend-label text-[12px] text-[#333333] font-[450] whitespace-nowrap">
             {item.label}

@@ -42,6 +42,8 @@ export interface DynamicLegendProps {
   classificationMethod?: ClassificationMethod
   onHover?: (index: number | null) => void
   onTitleChange?: (title: string) => void
+  /** Haritadaki choropleth-fill opacity'si ile senkron swatch opaklığı */
+  fillOpacity?: number
 }
 
 /** Props for the color bar sub-component */
@@ -51,6 +53,7 @@ export interface LegendBarProps {
   breaks: number[]
   width: number
   barHeight?: number
+  fillOpacity?: number
 }
 
 /** Props for the labels sub-component */
@@ -64,6 +67,7 @@ export interface LegendLabelsProps {
   labelType: 'ruler' | 'ranges' | 'custom'
   customLabels?: string[]
   reverseOrder?: boolean
+  fillOpacity?: number
 }
 
 /** Props for a single smart label */

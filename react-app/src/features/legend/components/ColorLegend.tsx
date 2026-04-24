@@ -17,6 +17,7 @@ interface LegendProps {
   classificationMethod?: ClassificationMethod;
   onHover?: (index: number | null) => void;
   onTitleChange?: (title: string) => void;
+  fillOpacity?: number;
 }
 
 export default function ColorLegend({
@@ -26,6 +27,7 @@ export default function ColorLegend({
   scaleType,
   classificationMethod,
   onTitleChange,
+  fillOpacity,
 }: LegendProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
@@ -167,6 +169,7 @@ export default function ColorLegend({
         colors={colors}
         scaleType={scaleType}
         classificationMethod={classificationMethod}
+        fillOpacity={fillOpacity}
       />
     </div>
   )

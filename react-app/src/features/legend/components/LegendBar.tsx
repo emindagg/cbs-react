@@ -55,6 +55,7 @@ export default function LegendBar({
   breaks,
   width,
   barHeight = 14,
+  fillOpacity = 1,
 }: LegendBarProps) {
   const gradient = useMemo(() => buildGradient(colors, breaks), [colors, breaks])
 
@@ -66,6 +67,7 @@ export default function LegendBar({
           width: `${width}px`,
           height: `${barHeight}px`,
           background: gradient,
+          opacity: fillOpacity,
         }}
       />
     )
@@ -77,7 +79,7 @@ export default function LegendBar({
   return (
     <div
       className="legend-bar"
-      style={{ width: `${width}px`, height: `${barHeight}px` }}
+      style={{ width: `${width}px`, height: `${barHeight}px`, opacity: fillOpacity }}
     >
       {colors.map((color, i) => (
         <div

@@ -317,6 +317,8 @@ export default function Container() {
     }
     : colorConfig.legend
 
+  const colorFillOpacity = rs.choroplethOpacity ?? 1
+
   if (colorConfig.legend.orientation === 'vertical') {
     return (
       <>
@@ -327,6 +329,7 @@ export default function Container() {
           scaleType={colorConfig.scaleType}
           classificationMethod={rs.classificationMethod}
           onTitleChange={handleTitleChange}
+          fillOpacity={colorFillOpacity}
         />
         {bubbleSizeLegend}
       </>
@@ -342,6 +345,7 @@ export default function Container() {
         scaleType={colorConfig.scaleType}
         classificationMethod={rs.classificationMethod}
         onTitleChange={handleTitleChange}
+        fillOpacity={colorFillOpacity}
       />
       {bubbleSizeLegend}
     </>

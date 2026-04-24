@@ -27,6 +27,7 @@ export default function LegendLabels({
   labelType,
   customLabels,
   reverseOrder,
+  fillOpacity = 1,
 }: LegendLabelsProps) {
   // ── Ruler mode: boundary-aligned labels ─────────────────────
   // Works for both steps and continuous
@@ -107,7 +108,7 @@ export default function LegendLabels({
     <div className="legend-items legend-items--ranges" style={{ width: `${width}px` }}>
       {ordered.map((item, i) => (
         <div key={i} className="legend-item" title={item.text}>
-          <span className="legend-item__swatch" style={{ backgroundColor: item.color }} />
+          <span className="legend-item__swatch" style={{ backgroundColor: item.color, opacity: fillOpacity }} />
           <span className="legend-item__label">{item.text}</span>
         </div>
       ))}

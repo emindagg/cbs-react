@@ -27,6 +27,7 @@ export default function DynamicLegend({
   classificationMethod,
   onHover: _onHover,
   onTitleChange,
+  fillOpacity,
 }: DynamicLegendProps) {
   // ── Drag state ──────────────────────────────────────────────
   const legendRef = useRef<HTMLDivElement>(null)
@@ -177,6 +178,7 @@ export default function DynamicLegend({
           colors={displayColors}
           breaks={breaks}
           width={width}
+          fillOpacity={fillOpacity}
         />
       )}
 
@@ -191,6 +193,7 @@ export default function DynamicLegend({
         labelType={config.labels.type}
         customLabels={config.labels.customLabels}
         reverseOrder={config.reverseOrder}
+        fillOpacity={fillOpacity}
       />
     </div>
   )
