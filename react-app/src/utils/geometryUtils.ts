@@ -1,26 +1,22 @@
 /**
  * Geometry Utilities
  * Calculate centroids and geometric properties for GeoJSON features
- * Uses turf's pointOnFeature for guaranteed point-in-polygon placement
+ * Uses polylabel for cartographic label placement and turf's pointOnFeature
+ * as a safe fallback.
  */
 
 import { pointOnFeature } from '@turf/turf'
+import polylabel from 'polylabel'
 
 type Coordinate = [number, number]
 type Polygon = Coordinate[][]
 type MultiPolygon = Coordinate[][][]
 
-const ERZINCAN_LABEL_KEY = 'erzincan'
-const ANTALYA_LABEL_KEY = 'antalya'
-const ERZINCAN_LABEL_LEFT_OFFSET_RATIO = 0.5
-const ERZINCAN_LABEL_TOP_OFFSET_RATIO = 0.2
-const ANTALYA_LABEL_TOP_OFFSET_RATIO = 0.3
+const POLYLABEL_PRECISION = 0.001
 
 /**
  * Calculate centroid for a polygon geometry
- * Uses turf pointOnFeature (pole of inaccessibility approximation)
- * to guarantee the point falls inside the polygon — important for
- * concave shapes like Antalya.
+ * Uses turf pointOnFeature to guarantee the point falls inside the polygon.
  * Falls back to simple average if turf fails.
  */
 export function calculateCentroid(geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon): Coordinate {
@@ -43,48 +39,19 @@ export function calculateCentroid(geometry: GeoJSON.Polygon | GeoJSON.MultiPolyg
 
 /**
  * Calculate a label point for province/district names.
- * Some provinces use small cartographic overrides within their own bbox.
+ * Polylabel finds the point farthest from polygon edges, which is usually
+ * more readable for map labels than bbox centers or per-province offsets.
  */
-export function calculateLabelPoint(
-  geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon,
-  label: string,
-): Coordinate {
-  const labelPoint = calculateCentroid(geometry)
-  const labelKey = normalizeLabelKey(label)
+export function calculateLabelPoint(geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon): Coordinate {
+  try {
+    const polygon = getPolygonForLabel(geometry)
+    if (!polygon) return calculateCentroid(geometry)
 
-  if (labelKey !== ERZINCAN_LABEL_KEY && labelKey !== ANTALYA_LABEL_KEY) {
-    return labelPoint
+    const labelPoint = polylabel(polygon, POLYLABEL_PRECISION)
+    return [labelPoint[0], labelPoint[1]]
+  } catch {
+    return calculateCentroid(geometry)
   }
-
-  const bounds = calculateBounds(geometry)
-  const minLng = bounds[0]
-  const maxLat = bounds[3]
-  if (!Number.isFinite(minLng) || !Number.isFinite(maxLat)) {
-    return labelPoint
-  }
-
-  const [lng, lat] = labelPoint
-  if (labelKey === ANTALYA_LABEL_KEY) {
-    return [
-      lng,
-      lat + (maxLat - lat) * ANTALYA_LABEL_TOP_OFFSET_RATIO,
-    ]
-  }
-
-  return [
-    lng + (minLng - lng) * ERZINCAN_LABEL_LEFT_OFFSET_RATIO,
-    lat + (maxLat - lat) * ERZINCAN_LABEL_TOP_OFFSET_RATIO,
-  ]
-}
-
-function normalizeLabelKey(label: string): string {
-  return label
-    .trim()
-    .toLocaleLowerCase('tr-TR')
-    .replace(/ı/g, 'i')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]/g, '')
 }
 
 /**
@@ -136,6 +103,47 @@ function calculateMultiPolygonCentroidSimple(coordinates: MultiPolygon): Coordin
   }
 
   return calculatePolygonCentroidSimple(largestPolygon)
+}
+
+function getPolygonForLabel(geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon): Polygon | null {
+  if (geometry.type === 'Polygon') {
+    return isValidPolygon(geometry.coordinates as Polygon) ? geometry.coordinates as Polygon : null
+  }
+
+  const multiPolygon = geometry.coordinates as MultiPolygon
+  let largestPolygon: Polygon | null = null
+  let largestArea = -Infinity
+
+  for (const polygon of multiPolygon) {
+    if (!isValidPolygon(polygon)) continue
+
+    const area = Math.abs(calculateRingArea(polygon[0]))
+    if (area > largestArea) {
+      largestArea = area
+      largestPolygon = polygon
+    }
+  }
+
+  return largestPolygon
+}
+
+function isValidPolygon(polygon: Polygon): boolean {
+  return Array.isArray(polygon)
+    && polygon.length > 0
+    && Array.isArray(polygon[0])
+    && polygon[0].length >= 4
+}
+
+function calculateRingArea(ring: Coordinate[]): number {
+  let area = 0
+
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const current = ring[i]
+    const previous = ring[j]
+    area += (previous[0] * current[1]) - (current[0] * previous[1])
+  }
+
+  return area / 2
 }
 
 /**

@@ -1,19 +1,23 @@
-# Görev: Koroplet, bubble ve nokta harita testlerini yeniden doğrula
-Tarih: 2026-04-18
+# Görev: Poligon etiketlerini polylabel ile konumlandır
+Tarih: 2026-04-24
 
 ## Bağlam
-Kullanıcı, kodda yaptığı son değişikliklerden sonra koroplet harita, bubble map ve nokta harita oluşturma akışlarıyla ilgili testlerin tekrar çalıştırılmasını, mevcut davranışın detaylı incelenmesini ve eksik test kalmamasını istiyor. Çalışma odağı `useVizRender`, görselleştirme katmanı geri yükleme, legend/snapshot akışı ve bu akışlara bağlı yardımcı testlerdir.
+İl/ilçe etiketleri şu anda poligon içi nokta üretimi için `pointOnFeature` ve bazı il bazlı manuel kaydırmalar kullanıyor. Bu yaklaşım Erzincan ve Antalya gibi tekil düzeltmelerle çalışsa da uzun vadede ölçeklenmez. Amaç, varsayılan etiket noktasını `polylabel` mantığıyla üretmek ve manuel il düzeltmelerini kaldırmaktır.
 
 ## Plan
-- [x] Adım 1: İlgili kaynak ve test dosyalarını yeniden okuyup son davranışları ve kapsamdaki boşlukları çıkar.
-- [x] Adım 2: Koroplet, bubble ve nokta harita oluşturma akışları için hedef Vitest paketini çalıştırıp mevcut durumu doğrula.
-- [x] Adım 3: Kaçan davranışlar için test ekle veya mevcut testleri güncelle.
-- [x] Adım 4: Güncellenen testleri tekrar çalıştır, lint ile kontrol et ve diff/encoding incelemesini tamamla.
+- [x] Adım 1: `polylabel` bağımlılığını projeye ekle ve tip/import kullanımını doğrula.
+- [x] Adım 2: `geometryUtils` içinde `calculateLabelPoint` fonksiyonunu polylabel varsayılan olacak şekilde yeniden tasarla.
+- [x] Adım 3: Polygon ve MultiPolygon için polylabel koordinat üretimini destekle; başarısız durumda mevcut `calculateCentroid`/`pointOnFeature` fallback'ini koru.
+- [x] Adım 4: Erzincan ve Antalya özel offset kurallarını kaldır; renderer'ların ortak `calculateLabelPoint` kullanımını koru.
+- [x] Adım 5: Geometri testlerini polylabel davranışına göre güncelle ve regresyon senaryolarını ekle.
+- [x] Adım 6: Test, lint, TypeScript, build ve Türkçe karakter kontrollerini çalıştır; diff'i gözden geçir.
 
 ## Doğrulama kriterleri
-- [x] İlgili görselleştirme testleri güncel kod üzerinde geçiyor.
-- [x] Testler koroplet, bubble ve nokta harita için render, paint/display güncelleme ve yeniden yükleme davranışlarını kapsıyor.
-- [x] Düzenlenen dosyalarda Türkçe karakterler ve UTF-8 bütünlüğü korunuyor.
+- [x] Etiket noktaları varsayılan olarak poligon içinde ve kenarlardan uzak, okunabilir bir konuma yerleşiyor.
+- [x] Erzincan/Antalya için manuel özel kural kalmıyor.
+- [x] Koroplet, bubble ve dot label kaynakları aynı merkezi hesaplama mantığını kullanıyor.
+- [x] `geometryUtils` testleri geçiyor.
+- [x] Lint, TypeScript, build ve Türkçe karakter kontrolleri temiz geçiyor.
 
 ## Sonuç
-İlgili görselleştirme test paketi yeniden çalıştırıldı ve boş kalan davranışlar için ek senaryolar yazıldı. `useVizRender` içinde display-only güncellemenin aktif render türüne uygulanması, `useVisualizationLayerPersistence` içinde mevcut katman varken yeniden yükleme yapılmaması ve legend container'ın bubble/dot için aktif görselleştirmeyi esas alması artık doğrudan test ediliyor. Ek olarak `ChoroplethRenderer`, `BubbleRenderer` ve `PointRenderer` için düşük seviyeli renderer testleri yazıldı; custom-break, custom-range, backdrop ve dot/bubble üretim davranışları doğrudan `addSource`/`addLayer` çıktıları üzerinden doğrulandı. Hedef suite ve ESLint temiz geçti.
+`polylabel` varsayılan etiket noktası algoritması olarak eklendi. `calculateLabelPoint`, Polygon için doğrudan polylabel kullanıyor; MultiPolygon için en büyük poligonu seçiyor ve başarısız durumda mevcut `calculateCentroid` fallback'ine dönüyor. Erzincan ve Antalya özel offset kuralları kaldırıldı. Koroplet, bubble ve dot renderer'ları ortak etiket noktası üretimini kullanmaya devam ediyor.

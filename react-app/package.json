@@ -51,6 +51,7 @@
     "lucide-react": "^0.563.0",
     "maplibre-gl": "^5.23.0",
     "papaparse": "^5.5.3",
+    "polylabel": "2.0.1",
     "proj4": "^2.20.4",
     "rc-slider": "^11.1.9",
     "react": "^19.2.0",

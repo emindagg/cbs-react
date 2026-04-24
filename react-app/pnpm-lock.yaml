@@ -92,6 +92,9 @@ importers:
       papaparse:
         specifier: ^5.5.3
         version: 5.5.3
+      polylabel:
+        specifier: 2.0.1
+        version: 2.0.1
       proj4:
         specifier: ^2.20.4
         version: 2.20.4
@@ -3186,6 +3189,9 @@ packages:
 
   polyclip-ts@0.16.8:
     resolution: {integrity: sha512-JPtKbDRuPEuAjuTdhR62Gph7Is2BS1Szx69CFOO3g71lpJDFo78k4tFyi+qFOMVPePEzdSKkpGU3NBXPHHjvKQ==}
+
+  polylabel@2.0.1:
+    resolution: {integrity: sha512-B6Yu+Bdl/8SGtjVhyUfZzD3DwciCS9SPVtHiNdt8idHHatvTHp5Ss8XGDRmQFtfF1ZQnfK+Cj5dXdpkUXBbXgA==}
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -7863,6 +7869,10 @@ snapshots:
     dependencies:
       bignumber.js: 9.3.1
       splaytree-ts: 1.0.2
+
+  polylabel@2.0.1:
+    dependencies:
+      tinyqueue: 3.0.0
 
   possible-typed-array-names@1.1.0: {}
 

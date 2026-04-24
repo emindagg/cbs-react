@@ -462,7 +462,7 @@ export class PointRenderer {
 
       const normalizedFeatureName = normalizeTurkishText(featureName)
       const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
-      const labelPoint = calculateLabelPoint(geometry, displayName)
+      const labelPoint = calculateLabelPoint(geometry)
 
       pointFeatures.push({
         type: 'Feature',

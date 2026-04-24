@@ -401,37 +401,90 @@ describe('geometryUtils', () => {
   })
 
   describe('calculateLabelPoint', () => {
-    const squareGeometry: GeoJSON.Polygon = {
-      type: 'Polygon',
-      coordinates: [
-        [
-          [0, 0],
-          [10, 0],
-          [10, 10],
-          [0, 10],
-          [0, 0],
+    it('should use polylabel point for a simple polygon', () => {
+      const geometry: GeoJSON.Polygon = {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0],
+            [10, 0],
+            [10, 10],
+            [0, 10],
+            [0, 0],
+          ],
         ],
-      ],
-    }
+      }
 
-    it('should not offset non-Erzincan labels', () => {
-      const labelPoint = calculateLabelPoint(squareGeometry, 'Tunceli')
+      const labelPoint = calculateLabelPoint(geometry)
 
-      expect(labelPoint).toEqual(calculateCentroid(squareGeometry))
+      expect(labelPoint[0]).toBeCloseTo(5, 1)
+      expect(labelPoint[1]).toBeCloseTo(5, 1)
     })
 
-    it('should move Erzincan label 50 percent left and 20 percent up within bounds', () => {
-      const labelPoint = calculateLabelPoint(squareGeometry, 'ERZİNCAN')
+    it('should place labels inside a concave polygon away from edges', () => {
+      const geometry: GeoJSON.Polygon = {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0],
+            [10, 0],
+            [10, 2],
+            [2, 2],
+            [2, 10],
+            [0, 10],
+            [0, 0],
+          ],
+        ],
+      }
 
-      expect(labelPoint[0]).toBeCloseTo(2.5, 5)
-      expect(labelPoint[1]).toBeCloseTo(6, 5)
+      const labelPoint = calculateLabelPoint(geometry)
+
+      expect(labelPoint[0]).toBeGreaterThan(0)
+      expect(labelPoint[0]).toBeLessThan(2)
+      expect(labelPoint[1]).toBeGreaterThan(0)
+      expect(labelPoint[1]).toBeLessThan(2)
     })
 
-    it('should move Antalya label 30 percent up within bounds', () => {
-      const labelPoint = calculateLabelPoint(squareGeometry, 'Antalya')
+    it('should use the largest polygon for multi-polygon labels', () => {
+      const geometry: GeoJSON.MultiPolygon = {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [0, 0],
+              [1, 0],
+              [1, 1],
+              [0, 1],
+              [0, 0],
+            ],
+          ],
+          [
+            [
+              [10, 10],
+              [20, 10],
+              [20, 20],
+              [10, 20],
+              [10, 10],
+            ],
+          ],
+        ],
+      }
 
-      expect(labelPoint[0]).toBeCloseTo(5, 5)
-      expect(labelPoint[1]).toBeCloseTo(6.5, 5)
+      const labelPoint = calculateLabelPoint(geometry)
+
+      expect(labelPoint[0]).toBeCloseTo(15, 1)
+      expect(labelPoint[1]).toBeCloseTo(15, 1)
+    })
+
+    it('should fall back to centroid logic for invalid label geometry', () => {
+      const geometry: GeoJSON.Polygon = {
+        type: 'Polygon',
+        coordinates: [[]],
+      }
+
+      const labelPoint = calculateLabelPoint(geometry)
+
+      expect(labelPoint).toEqual(calculateCentroid(geometry))
     })
   })
 

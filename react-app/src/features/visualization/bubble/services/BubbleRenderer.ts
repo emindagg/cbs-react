@@ -535,7 +535,7 @@ export class BubbleRenderer {
       // inCustomRange must mirror the BUBBLE's computation (colorValue-based) so
       // transparent-out-of-range label filters stay in sync with symbol filters.
       const colorValue = this.getDataValue(feature, colorDataMap, normalizedFeatureName, locationLevel)
-      const labelPoint = calculateLabelPoint(geometry, displayName)
+      const labelPoint = calculateLabelPoint(geometry)
 
       pointFeatures.push({
         type: 'Feature',

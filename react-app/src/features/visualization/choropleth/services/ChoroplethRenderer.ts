@@ -471,7 +471,7 @@ export class ChoroplethRenderer {
       if (seen.has(dedupKey)) return
       seen.add(dedupKey)
 
-      const labelPoint = calculateLabelPoint(geometry, displayName)
+      const labelPoint = calculateLabelPoint(geometry)
       const dataVal = feature.properties.dataValue ?? 0
       const hasData = feature.properties.hasData ?? false
       pointFeatures.push({
