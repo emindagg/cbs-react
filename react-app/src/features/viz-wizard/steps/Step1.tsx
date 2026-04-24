@@ -38,6 +38,7 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
   const [isLoading, setIsLoading] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null)
+  const [isDragOver, setIsDragOver] = useState(false)
 
   const { setFileData, setColumnMapping, setPendingExcel } = useVisualizationStore()
 
@@ -61,10 +62,7 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
     setTimeout(() => onNext(), 500)
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+  const processFile = async (file: File) => {
     setIsLoading(true)
     setFileName(file.name)
     setFileInfo(null)
@@ -87,11 +85,44 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
     }
   }
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    await processFile(file)
+  }
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    if (isLoading) return
+    event.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return
+    setIsDragOver(false)
+  }
+
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    setIsDragOver(false)
+    if (isLoading) return
+
+    const file = event.dataTransfer.files?.[0]
+    if (!file) return
+    await processFile(file)
+  }
+
   return (
     <div className="space-y-3">
-      <div className="border border-zinc-200 rounded-lg overflow-hidden">
+      <div
+        className={`border rounded-lg overflow-hidden transition-all ${isDragOver && !isLoading ? 'border-dashed border-zinc-400 ring-2 ring-zinc-300/80 bg-zinc-50/60' : 'border-zinc-200'}`}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={(event) => { void handleDrop(event) }}
+      >
         <div className="flex">
-          <label className="shrink-0 px-4 py-2 bg-zinc-800 text-white text-[11px] font-medium cursor-pointer hover:bg-zinc-700 transition-colors">
+          <label className={`shrink-0 px-4 py-2 text-white text-[11px] font-medium cursor-pointer transition-colors ${isDragOver && !isLoading ? 'bg-zinc-700' : 'bg-zinc-800 hover:bg-zinc-700'}`}>
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
@@ -99,7 +130,7 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
               disabled={isLoading}
               className="hidden"
             />
-            Dosya Aç
+            {isDragOver && !isLoading ? 'Dosyayı Bırak' : 'Dosya Aç'}
           </label>
 
           <div className="flex-1 px-3 py-2 bg-white text-[11px] text-zinc-500 flex items-center">
@@ -108,6 +139,8 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
                 <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-500 border-t-transparent mr-2" />
                 Yükleniyor...
               </>
+            ) : isDragOver ? (
+              <span className="text-zinc-700">Dosyayı bırakın (.xlsx, .xls, .csv)</span>
             ) : fileName ? (
               <span className="text-zinc-700 truncate">{fileName}</span>
             ) : (
