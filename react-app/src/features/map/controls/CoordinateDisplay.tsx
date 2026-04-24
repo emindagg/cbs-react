@@ -25,58 +25,20 @@ export function CoordinateDisplay({ leftPosition, hidden = false }: CoordinateDi
   return (
     <div
       id="coordinate-display"
+      className="fixed bottom-3 z-[1400] pointer-events-none transition-all duration-300 ease-out"
       style={{
-        position: 'fixed',
-        bottom: '0.75rem',
         left: leftPosition,
-        zIndex: 1400,
-        pointerEvents: 'none',
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.18s ease, left 0.3s ease',
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.45rem',
-          background: '#1c1c1e',
-          border: '1px solid rgba(255,255,255,0.10)',
-          borderRadius: '7px',
-          padding: '5px 11px',
-          color: '#e2e8f0',
-          fontFamily: '"SF Mono", "Fira Mono", "Cascadia Code", monospace',
-          fontSize: '11.5px',
-          fontWeight: 500,
-          letterSpacing: '0.025em',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.45)',
-          whiteSpace: 'nowrap',
-          userSelect: 'none',
-        }}
-      >
-        {/* Pulsing kırmızı nokta */}
-        <span
-          style={{
-            width: 5,
-            height: 5,
-            borderRadius: '50%',
-            background: '#22c55e',
-            flexShrink: 0,
-            boxShadow: '0 0 6px #22c55eaa',
-            animation: 'coordPulse 1.6s ease-in-out infinite',
-          }}
-        />
-        <span style={{ color: '#f1f5f9', fontWeight: 600 }}>
-          {coords.lat.toFixed(5)},&nbsp;{coords.lng.toFixed(5)}
-        </span>
+      <div className="flex items-center gap-2 px-3 py-1.5 text-zinc-800 font-mono text-[11px] font-bold select-none drop-shadow-[0_2px_4px_rgba(255,255,255,1)]">
+        <i className="fa-solid fa-map-pin text-zinc-600 text-[10px]" />
+        <div className="flex items-center gap-1.5">
+          <span className="text-zinc-900">{coords.lat.toFixed(5)}</span>
+          <span className="text-zinc-500">,</span>
+          <span className="text-zinc-900">{coords.lng.toFixed(5)}</span>
+        </div>
       </div>
-
-      <style>{`
-        @keyframes coordPulse {
-          0%,100% { opacity: 1; transform: scale(1); }
-          50%      { opacity: 0.5; transform: scale(1.3); }
-        }
-      `}</style>
     </div>
   )
 }
