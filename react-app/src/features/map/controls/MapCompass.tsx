@@ -48,6 +48,7 @@ export function MapCompass() {
     <div
       onClick={handleClick}
       title="Kuzeye Sıfırla"
+      data-export-ignore="true"
       style={{
         position: 'fixed',
         top: 60,

@@ -115,6 +115,7 @@ export function SearchContainer({
   return (
     <div
       id="search-container"
+      data-export-ignore="true"
       className="fixed top-3 z-10000 transition-all duration-300 ease-in-out"
       style={{ left: leftPosition }}
     >

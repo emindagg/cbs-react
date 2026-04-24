@@ -25,6 +25,7 @@ export function CoordinateDisplay({ leftPosition, hidden = false }: CoordinateDi
   return (
     <div
       id="coordinate-display"
+      data-export-ignore="true"
       className="fixed bottom-3 z-[1400] pointer-events-none transition-all duration-300 ease-out"
       style={{
         left: leftPosition,
