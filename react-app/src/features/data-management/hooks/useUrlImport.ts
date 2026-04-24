@@ -36,7 +36,8 @@ export function useUrlImport() {
       }
 
       if (items.length > 0) {
-        addItems(items.map(item => ({ ...item, sourceLabel })))
+        const mappedItems = items.map(item => ({ ...item, sourceLabel }))
+        addItems(mappedItems)
         toast.success(`${items.length} veri URL uzerinden yuklendi.`)
       } else {
         toast.error('URL iceriginde aktarilabilir veri bulunamadi.')

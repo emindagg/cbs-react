@@ -14,6 +14,7 @@ import GISToolsControl from '../controls/GISToolsControl'
 import { MapCompass } from '../controls/MapCompass'
 import TimelineControl from '../controls/TimelineControl'
 import { useFeaturePopup } from '../hooks/useFeaturePopup'
+import { useImportedDataAutoFit } from '../hooks/useImportedDataAutoFit'
 import DataLayer from '../layers/DataLayer'
 import DistanceTool from '../tools/DistanceTool'
 
@@ -78,6 +79,7 @@ export default function MapContainer() {
   // Bubble haritası tooltip hook'u
   useBubbleTooltip()
   useChoroplethTooltip()
+  useImportedDataAutoFit()
 
   const { popup, close, selectItem } = useFeaturePopup()
 
