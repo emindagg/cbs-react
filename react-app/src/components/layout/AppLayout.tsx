@@ -35,6 +35,11 @@ export default function AppLayout() {
   const { isEnabled: isAstronomyEnabled, setIsEnabled: setAstronomyEnabled } = useAstroStore()
   const isMdUp = useMediaQuery('(min-width: 768px)')
   const { mapTitle, setMapTitle } = useVisualizationStore()
+
+  // Viz persistence önce kayıt olmalı: styledata anında önce viz layer'ları üste
+  // çıkar, ardından overlay layer'lar (sular vb.) onların üstüne alınsın.
+  useVisualizationLayerPersistence()
+
   const {
     isPanelOpen: isLayersPanelOpen,
     togglePanel: toggleLayersPanel,
@@ -47,12 +52,8 @@ export default function AppLayout() {
     isLandCoverLegendVisible,
   } = useOverlayLayers()
 
-  // Initialize astronomy hook
   useAstroMap()
-  // Initialize clustering hook
   useClustering()
-  // Re-add visualization layers after style changes (basemap switch)
-  useVisualizationLayerPersistence()
   // Sync layerStyles to MapLibre paint properties (INP optimization)
   useLayerStyleSync()
 

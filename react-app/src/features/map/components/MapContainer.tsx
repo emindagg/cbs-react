@@ -1,5 +1,5 @@
 import maplibregl from 'maplibre-gl'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import Map, { Source, Layer } from 'react-map-gl/maplibre'
 
 import { DataManagementDrawTool } from '@/features/data-management'
@@ -63,7 +63,31 @@ function SpaceBackground() {
 }
 
 export default function MapContainer() {
-  const { setLoaded, setMapInstance, activeBasemap, isGlobeMode } = useMapStore()
+  const { setLoaded, setMapInstance, activeBasemap, isGlobeMode, mapInstance } = useMapStore()
+
+  // Altlık harita (basemap-layer) her zaman stack'in en altında olmalı; aksi halde
+  // setStyle sonrasında react-map-gl basemap'i en üste ekleyip viz/overlay katmanları
+  // örtüyor. activeBasemap değişiminden sonra basemap-layer'ı zorla en alta taşı.
+  useEffect(() => {
+    if (!mapInstance) return
+    const sink = () => {
+      if (!mapInstance.getLayer('basemap-layer')) return
+      const layers = mapInstance.getStyle().layers ?? []
+      const firstOther = layers.find((l) => l.id !== 'basemap-layer' && l.id !== 'background')
+      if (firstOther) {
+        mapInstance.moveLayer('basemap-layer', firstOther.id)
+      }
+    }
+    sink()
+    mapInstance.on('styledata', sink)
+    mapInstance.on('sourcedata', sink)
+    return () => {
+      mapInstance.off('styledata', sink)
+      mapInstance.off('sourcedata', sink)
+    }
+  }, [mapInstance, activeBasemap])
+
+
   const handleMapLibreError = (event: { error?: unknown }) => {
     const message =
       typeof event.error === 'string'

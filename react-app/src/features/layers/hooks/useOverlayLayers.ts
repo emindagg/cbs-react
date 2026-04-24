@@ -201,6 +201,17 @@ function ensureLayerOnMap(
   }
 }
 
+function moveOverlayLayersToTop(map: MapLibreMap, definition: OverlayLayerDefinition) {
+  // Altlık harita (basemap-layer) ya da diğer render sıralamalarının altında kalmasını önlemek için
+  // overlay katmanlarını stilin en üstüne taşı.
+  if (map.getLayer(definition.id)) {
+    map.moveLayer(definition.id)
+  }
+  if (definition.type === 'fill' && definition.id !== LAND_COVER_LAYER_ID && map.getLayer(`${definition.id}-outline`)) {
+    map.moveLayer(`${definition.id}-outline`)
+  }
+}
+
 function applyLayerStyles(map: MapLibreMap, definition: OverlayLayerDefinition, layerState: OverlayLayerState) {
   const visibility = layerState.enabled ? 'visible' : 'none'
 
@@ -313,6 +324,7 @@ export function useOverlayLayers() {
     if (cacheRef.current.has(layerId)) {
       ensureLayerOnMap(mapInstance, definition, cacheRef.current.get(layerId)!, currentState)
       applyLayerStyles(mapInstance, definition, { ...currentState, enabled: true })
+      moveOverlayLayersToTop(mapInstance, definition)
       setLayerStates((current) => ({
         ...current,
         [layerId]: {
@@ -343,6 +355,7 @@ export function useOverlayLayers() {
       }
       ensureLayerOnMap(mapInstance, definition, preparedData, nextState)
       applyLayerStyles(mapInstance, definition, nextState)
+      moveOverlayLayersToTop(mapInstance, definition)
 
       setLayerStates((current) => ({
         ...current,
@@ -413,6 +426,7 @@ export function useOverlayLayers() {
 
         ensureLayerOnMap(mapInstance, definition, data, state)
         applyLayerStyles(mapInstance, definition, state)
+        moveOverlayLayersToTop(mapInstance, definition)
       })
     }
 
