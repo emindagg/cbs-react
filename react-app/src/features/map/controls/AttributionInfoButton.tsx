@@ -31,7 +31,7 @@ export default function AttributionInfoButton() {
   return (
     <div className="fixed bottom-3 right-3 z-10002" data-export-ignore="true" ref={panelRef}>
       {isOpen && (
-        <div className="mb-2 w-[320px] max-w-[calc(100vw-24px)] rounded-xl border border-zinc-200 bg-white/95 backdrop-blur p-3 shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
+        <div className="mb-2 w-[320px] max-w-[calc(100vw-24px)] rounded-xl border border-white/40 bg-white/40 backdrop-blur-2xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.08)]">
           <div className="space-y-1.5 text-[11px] text-zinc-700 leading-relaxed">
             <p>© HGM - Harita Genel Müdürlüğü</p>
             <p>© openrouteservice.org by HeiGIT | Map data © OpenStreetMap contributors</p>
@@ -43,7 +43,7 @@ export default function AttributionInfoButton() {
       <button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className={`flex items-center justify-center h-6 w-6 rounded-full border border-zinc-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-colors ${isOpen ? 'bg-zinc-100 text-zinc-800' : 'bg-white/90 text-zinc-500 hover:bg-white hover:text-zinc-800'}`}
+        className={`flex items-center justify-center h-6 w-6 rounded-full border shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all ${isOpen ? 'bg-zinc-100 border-zinc-300 text-zinc-800' : 'bg-white/40 backdrop-blur-xl border-white/40 text-zinc-600 hover:bg-white/60 hover:text-zinc-900'}`}
         aria-label="Atıf bilgisini göster"
       >
         <i className="fa-solid fa-info text-[10px]" />
