@@ -10,6 +10,7 @@ export interface UseGeolocationReturn {
   errorMessage: string | null
   isPermissionDenied: boolean
   locate: () => void
+  clear: () => void
 }
 
 /**
@@ -212,7 +213,30 @@ export function useGeolocation(): UseGeolocationReturn {
     )
   }, [mapInstance])
 
-  return { status, errorMessage, isPermissionDenied, locate }
+  const clear = useCallback(() => {
+    if (!mapInstance) return
+
+    // Marker'ı kaldır
+    if (markerRef.current) {
+      markerRef.current.remove()
+      markerRef.current = null
+    }
+
+    // Accuracy layer'larını temizle
+    const sourceId = 'geolocation-accuracy'
+    const layerId = 'geolocation-accuracy-fill'
+    const outlineId = 'geolocation-accuracy-outline'
+
+    if (mapInstance.getLayer(layerId)) mapInstance.removeLayer(layerId)
+    if (mapInstance.getLayer(outlineId)) mapInstance.removeLayer(outlineId)
+    if (mapInstance.getSource(sourceId)) mapInstance.removeSource(sourceId)
+
+    setStatus('idle')
+    setErrorMessage(null)
+    setIsPermissionDenied(false)
+  }, [mapInstance])
+
+  return { status, errorMessage, isPermissionDenied, locate, clear }
 }
 
 /**

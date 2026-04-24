@@ -28,7 +28,7 @@ function NavArrowSVG({ style }: { style?: React.CSSProperties }) {
  * - error (diğer) → kırmızı ok + kırmızı ring + tooltip
  */
 export function GeolocationButton() {
-  const { status, errorMessage, isPermissionDenied, locate } = useGeolocation()
+  const { status, errorMessage, isPermissionDenied, locate, clear } = useGeolocation()
   const [showGuide, setShowGuide] = useState(false)
 
   const isLoading = status === 'loading'
@@ -42,6 +42,11 @@ export function GeolocationButton() {
       : 'text-white'
 
   const handleClick = () => {
+    if (isSuccess) {
+      clear()
+      return
+    }
+
     if (isPermissionDenied) {
       setShowGuide(prev => !prev)
       locate()
@@ -58,12 +63,13 @@ export function GeolocationButton() {
         type="button"
         onClick={handleClick}
         disabled={isLoading}
-        aria-label="Konumuma git"
+        aria-label={isSuccess ? 'Konum işaretini kaldır' : 'Konumuma git'}
         title={
           isLoading ? 'Konum aranıyor…'
             : isPermissionDenied ? 'Konum izni engellendi'
               : isError ? (errorMessage ?? 'Konum hatası')
-                : 'Konumuma git'
+                : isSuccess ? 'Konum işaretini kaldır'
+                  : 'Konumuma git'
         }
         className={[
           'w-9 h-9 bg-[#1c1c1e] hover:bg-[#2a2a2c] hover:text-white/70 active:bg-[#2c2c2e] rounded-[12px]',
