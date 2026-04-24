@@ -71,7 +71,7 @@ export function applyLabelLayers(map: Map, sourceId: string, settings: Visualiza
         'text-size': nameSizeExpr as PaintVal,
         'text-anchor': 'center',
         'text-max-width': 8,
-        'text-padding': 3,
+        'text-padding': 1,
       },
       paint: { 'text-color': labelColor as PaintVal },
     })
@@ -89,7 +89,7 @@ export function applyLabelLayers(map: Map, sourceId: string, settings: Visualiza
         'text-size': nameSizeExpr as PaintVal,
         'text-anchor': 'center',
         'text-max-width': 8,
-        'text-padding': 3,
+        'text-padding': 1,
       },
       paint: { 'text-color': labelColor as PaintVal },
     })
@@ -105,7 +105,7 @@ export function applyLabelLayers(map: Map, sourceId: string, settings: Visualiza
         'text-field': valueFieldExpr as PaintVal,
         'text-size': valueSizeExpr as PaintVal,
         'text-anchor': 'center',
-        'text-padding': 3,
+        'text-padding': 1,
       },
       paint: { 'text-color': valueColor as PaintVal },
     })
