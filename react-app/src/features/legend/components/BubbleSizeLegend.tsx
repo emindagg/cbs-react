@@ -134,6 +134,8 @@ export default function BubbleSizeLegend({
   const svgW = maxRadius * 2 + 4
   const cx = svgW / 2
 
+  const isHorizontal = config.orientation === 'horizontal'
+
   return (
     <div
       ref={legendRef}
@@ -179,9 +181,12 @@ export default function BubbleSizeLegend({
 
       {/* Graduated: rows of right-aligned circles with range labels */}
       {graduatedClasses ? (
-        <div className="flex flex-col gap-1">
-          {[...graduatedClasses].reverse().map((cls, i) => (
-            <div key={i} className="flex items-center gap-2">
+        <div className={isHorizontal ? 'flex flex-row items-end gap-3' : 'flex flex-col gap-1'}>
+          {(isHorizontal ? graduatedClasses : [...graduatedClasses].reverse()).map((cls, i) => (
+            <div
+              key={i}
+              className={isHorizontal ? 'flex flex-col items-center gap-1' : 'flex items-center gap-2'}
+            >
               <svg
                 width={svgW}
                 height={cls.radius * 2 + 4}
@@ -207,9 +212,12 @@ export default function BubbleSizeLegend({
         </div>
       ) : (
         /* Proportional: ayrı satırlar (max→min), right-aligned, değer etiketi */
-        <div className="flex flex-col gap-1">
-          {circles.map((c, i) => (
-            <div key={i} className="flex items-center gap-2">
+        <div className={isHorizontal ? 'flex flex-row items-end gap-3' : 'flex flex-col gap-1'}>
+          {(isHorizontal ? [...circles].reverse() : circles).map((c, i) => (
+            <div
+              key={i}
+              className={isHorizontal ? 'flex flex-col items-center gap-1' : 'flex items-center gap-2'}
+            >
               <svg
                 width={svgW}
                 height={c.radius * 2 + 4}
