@@ -10,6 +10,12 @@ type Coordinate = [number, number]
 type Polygon = Coordinate[][]
 type MultiPolygon = Coordinate[][][]
 
+const ERZINCAN_LABEL_KEY = 'erzincan'
+const ANTALYA_LABEL_KEY = 'antalya'
+const ERZINCAN_LABEL_LEFT_OFFSET_RATIO = 0.5
+const ERZINCAN_LABEL_TOP_OFFSET_RATIO = 0.2
+const ANTALYA_LABEL_TOP_OFFSET_RATIO = 0.3
+
 /**
  * Calculate centroid for a polygon geometry
  * Uses turf pointOnFeature (pole of inaccessibility approximation)
@@ -33,6 +39,52 @@ export function calculateCentroid(geometry: GeoJSON.Polygon | GeoJSON.MultiPolyg
     }
     return calculateMultiPolygonCentroidSimple(geometry.coordinates as MultiPolygon)
   }
+}
+
+/**
+ * Calculate a label point for province/district names.
+ * Some provinces use small cartographic overrides within their own bbox.
+ */
+export function calculateLabelPoint(
+  geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon,
+  label: string,
+): Coordinate {
+  const labelPoint = calculateCentroid(geometry)
+  const labelKey = normalizeLabelKey(label)
+
+  if (labelKey !== ERZINCAN_LABEL_KEY && labelKey !== ANTALYA_LABEL_KEY) {
+    return labelPoint
+  }
+
+  const bounds = calculateBounds(geometry)
+  const minLng = bounds[0]
+  const maxLat = bounds[3]
+  if (!Number.isFinite(minLng) || !Number.isFinite(maxLat)) {
+    return labelPoint
+  }
+
+  const [lng, lat] = labelPoint
+  if (labelKey === ANTALYA_LABEL_KEY) {
+    return [
+      lng,
+      lat + (maxLat - lat) * ANTALYA_LABEL_TOP_OFFSET_RATIO,
+    ]
+  }
+
+  return [
+    lng + (minLng - lng) * ERZINCAN_LABEL_LEFT_OFFSET_RATIO,
+    lat + (maxLat - lat) * ERZINCAN_LABEL_TOP_OFFSET_RATIO,
+  ]
+}
+
+function normalizeLabelKey(label: string): string {
+  return label
+    .trim()
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ı/g, 'i')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '')
 }
 
 /**

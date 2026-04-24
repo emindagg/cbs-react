@@ -3,9 +3,8 @@ import type { GeoJSONSource, Map } from 'maplibre-gl'
 import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
 import type { VisualizationSettings } from '@/types/visualization'
 import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
-import { calculateBounds, calculateCentroid } from '@/utils/geometryUtils'
-import { formatNumber } from '@/utils/numberFormatter'
-import { parseFormattedNumber } from '@/utils/numberFormatter'
+import { calculateBounds, calculateLabelPoint } from '@/utils/geometryUtils'
+import { formatNumber, parseFormattedNumber } from '@/utils/numberFormatter'
 import type { NumberFormat } from '@/utils/numberFormatter'
 import { hashString, mulberry32 } from '@/utils/prng'
 import { getPlateCodeByName, getProvinceByPlateCode, normalizeTurkishText } from '@/utils/turkishNormalizer'
@@ -463,7 +462,7 @@ export class PointRenderer {
 
       const normalizedFeatureName = normalizeTurkishText(featureName)
       const dataValue = this.getDataValue(feature, dataMap, normalizedFeatureName, locationLevel)
-      const centroid = calculateCentroid(geometry)
+      const labelPoint = calculateLabelPoint(geometry, displayName)
 
       pointFeatures.push({
         type: 'Feature',
@@ -474,7 +473,7 @@ export class PointRenderer {
           hasData: dataValue !== undefined,
           inCustomRange: dataValue !== undefined ? isValueInCustomRange(dataValue, resolvedRange) : false,
         },
-        geometry: { type: 'Point', coordinates: centroid },
+        geometry: { type: 'Point', coordinates: labelPoint },
       })
     })
 

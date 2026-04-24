@@ -11,7 +11,7 @@ import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
 import type { VisualizationSettings } from '@/types/visualization'
 import { calculateBreaks } from '@/utils/classification'
 import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
-import { calculateCentroid } from '@/utils/geometryUtils'
+import { calculateLabelPoint } from '@/utils/geometryUtils'
 import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
 import { formatNumber, parseFormattedNumber } from '@/utils/numberFormatter'
@@ -471,7 +471,7 @@ export class ChoroplethRenderer {
       if (seen.has(dedupKey)) return
       seen.add(dedupKey)
 
-      const centroid = calculateCentroid(geometry)
+      const labelPoint = calculateLabelPoint(geometry, displayName)
       const dataVal = feature.properties.dataValue ?? 0
       const hasData = feature.properties.hasData ?? false
       pointFeatures.push({
@@ -483,7 +483,7 @@ export class ChoroplethRenderer {
           hasData,
           inCustomRange: feature.properties.inCustomRange ?? true,
         },
-        geometry: { type: 'Point', coordinates: centroid },
+        geometry: { type: 'Point', coordinates: labelPoint },
       })
     })
 

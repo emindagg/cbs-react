@@ -11,7 +11,7 @@ import type { GeoJSONFeature, GeoJSONFeatureCollection } from '@/types/geojson'
 import type { VisualizationSettings } from '@/types/visualization'
 import { calculateBreaks } from '@/utils/classification'
 import { isPolygonOrMultiPolygon } from '@/utils/geometryTypeGuards'
-import { calculateCentroid } from '@/utils/geometryUtils'
+import { calculateCentroid, calculateLabelPoint } from '@/utils/geometryUtils'
 import { normalizeValue } from '@/utils/interpolation'
 import { buildInterpolateExpression, buildStepExpression } from '@/utils/mapExpressions'
 import { formatNumber, parseFormattedNumber } from '@/utils/numberFormatter'
@@ -535,7 +535,7 @@ export class BubbleRenderer {
       // inCustomRange must mirror the BUBBLE's computation (colorValue-based) so
       // transparent-out-of-range label filters stay in sync with symbol filters.
       const colorValue = this.getDataValue(feature, colorDataMap, normalizedFeatureName, locationLevel)
-      const centroid = calculateCentroid(geometry)
+      const labelPoint = calculateLabelPoint(geometry, displayName)
 
       pointFeatures.push({
         type: 'Feature',
@@ -546,7 +546,7 @@ export class BubbleRenderer {
           hasData: dataValue !== undefined,
           inCustomRange: colorValue !== undefined ? isValueInCustomRange(colorValue, resolvedRange) : false,
         },
-        geometry: { type: 'Point', coordinates: centroid },
+        geometry: { type: 'Point', coordinates: labelPoint },
       })
     })
 

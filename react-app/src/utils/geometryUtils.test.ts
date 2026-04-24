@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import { mockPolygonFeature, mockMultiPolygonFeature } from '@/test/mockData'
 
-import { calculateCentroid, calculateBounds, getBoundsCenter } from './geometryUtils'
+import { calculateCentroid, calculateLabelPoint, calculateBounds, getBoundsCenter } from './geometryUtils'
 
 describe('geometryUtils', () => {
   describe('calculateCentroid', () => {
@@ -397,6 +397,41 @@ describe('geometryUtils', () => {
         expect(bounds[0]).toBeLessThan(bounds[2])
         expect(bounds[1]).toBeLessThan(bounds[3])
       })
+    })
+  })
+
+  describe('calculateLabelPoint', () => {
+    const squareGeometry: GeoJSON.Polygon = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [0, 0],
+          [10, 0],
+          [10, 10],
+          [0, 10],
+          [0, 0],
+        ],
+      ],
+    }
+
+    it('should not offset non-Erzincan labels', () => {
+      const labelPoint = calculateLabelPoint(squareGeometry, 'Tunceli')
+
+      expect(labelPoint).toEqual(calculateCentroid(squareGeometry))
+    })
+
+    it('should move Erzincan label 50 percent left and 20 percent up within bounds', () => {
+      const labelPoint = calculateLabelPoint(squareGeometry, 'ERZİNCAN')
+
+      expect(labelPoint[0]).toBeCloseTo(2.5, 5)
+      expect(labelPoint[1]).toBeCloseTo(6, 5)
+    })
+
+    it('should move Antalya label 30 percent up within bounds', () => {
+      const labelPoint = calculateLabelPoint(squareGeometry, 'Antalya')
+
+      expect(labelPoint[0]).toBeCloseTo(5, 5)
+      expect(labelPoint[1]).toBeCloseTo(6.5, 5)
     })
   })
 
