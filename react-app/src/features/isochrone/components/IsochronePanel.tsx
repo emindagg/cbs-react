@@ -112,8 +112,8 @@ export default function IsochronePanel({
                 disabled={anyLoading}
                 className={`flex-1 flex flex-col items-center gap-1 py-1.5 rounded-lg border text-[9px] font-medium transition-all ${
                   mode === p.value
-                    ? 'bg-cyan-500 border-cyan-500 text-white shadow-sm'
-                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-cyan-300 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed'
+                    ? 'bg-slate-700 border-slate-700 text-white shadow-sm'
+                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed'
                 }`}
               >
                 <i className={`fa-solid ${p.icon} text-[11px]`}></i>
