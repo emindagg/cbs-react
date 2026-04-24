@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+
 import { getRampColors } from '../services/InterpolationRenderer'
 import { isClassifySupported } from '../services/symbologyConstraints'
 import type {
@@ -35,6 +37,70 @@ const COLOR_RAMP_OPTIONS: { value: InterpolationColorRamp; label: string }[] = [
   { value: 'reds', label: 'Kırmızı Tonları' },
 ]
 
+function ColorRampSelect({
+  value,
+  onChange,
+}: {
+  value: InterpolationColorRamp
+  onChange: (v: InterpolationColorRamp) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handleClick = (e: MouseEvent) => {
+      if (!wrapperRef.current) return
+      if (!wrapperRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    window.addEventListener('mousedown', handleClick)
+    return () => window.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  const selectedGradient = `linear-gradient(to right, ${getRampColors(value, 7).join(',')})`
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        aria-label="Renk skalası seç"
+        title={COLOR_RAMP_OPTIONS.find((o) => o.value === value)?.label ?? ''}
+        className="w-full bg-zinc-50 border border-zinc-200 rounded-md px-2 py-1.5 focus:outline-none focus:border-zinc-700 flex items-center"
+      >
+        <div
+          className="flex-1 h-3 rounded-full"
+          style={{ background: selectedGradient }}
+        />
+        <i className={`fa-solid fa-chevron-down text-[9px] text-zinc-400 ml-2 transition-transform ${open ? 'rotate-180' : ''}`}></i>
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 top-full mt-1 z-20 bg-white border border-zinc-200 rounded-md shadow-lg overflow-hidden">
+          {COLOR_RAMP_OPTIONS.map((opt) => {
+            const gradient = `linear-gradient(to right, ${getRampColors(opt.value, 7).join(',')})`
+            const isSelected = opt.value === value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => { onChange(opt.value); setOpen(false) }}
+                aria-label={opt.label}
+                title={opt.label}
+                className={`w-full px-2 py-1.5 flex items-center hover:bg-zinc-50 ${isSelected ? 'bg-zinc-100' : ''}`}
+              >
+                <div
+                  className="flex-1 h-3 rounded-full"
+                  style={{ background: gradient }}
+                />
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const GRID_OPTIONS: { value: InterpolationGridType; label: string }[] = [
   { value: 'smooth', label: 'Pürüzsüz' },
   { value: 'isoband', label: 'Eş Değer Alanlar' },
@@ -65,7 +131,6 @@ export default function InterpolationPanel({
   if (!isActive || !isPanelOpen) return null
 
   const canRun = hasData && pointCount >= 3 && !!config.valueColumn && !isProcessing
-  const rampPreview = getRampColors(config.colorRamp, 7)
 
   return (
     <div className="fixed top-14 right-14 z-1500 w-72 bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-zinc-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
@@ -160,18 +225,9 @@ export default function InterpolationPanel({
               <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
                 Renk Skalası
               </label>
-              <select
+              <ColorRampSelect
                 value={config.colorRamp}
-                onChange={(e) => setConfig({ colorRamp: e.target.value as InterpolationColorRamp })}
-                className="w-full bg-zinc-50 border border-zinc-200 rounded-md px-2 py-1.5 text-[11px] text-zinc-700 focus:outline-none focus:border-zinc-700"
-              >
-                {COLOR_RAMP_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <div
-                className="mt-1.5 h-2 rounded-full"
-                style={{ background: `linear-gradient(to right, ${rampPreview.join(',')})` }}
+                onChange={(v) => setConfig({ colorRamp: v })}
               />
             </div>
 
