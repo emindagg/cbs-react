@@ -1,11 +1,12 @@
 import type { TerrainSlopeClass } from '../types'
 
+// 5 sınıflı eğim renderer (TKGM bazlı, sadeleştirilmiş)
 export const SLOPE_CLASS_DEFINITIONS: Omit<TerrainSlopeClass, 'pixelCount'>[] = [
-  { min: 0, max: 10, label: '% 0 - 10', color: '#00c837' },
-  { min: 10, max: 20, label: '% 10 - 20', color: '#7ee329' },
-  { min: 20, max: 30, label: '% 20 - 30', color: '#fff21a' },
-  { min: 30, max: 40, label: '% 30 - 40', color: '#ff8c1a' },
-  { min: 40, max: null, label: '% 40+', color: '#ff1616' },
+  { min: 0, max: 6, label: '% 0 - 6 (Düz / Hafif)', color: '#1a9850' },
+  { min: 6, max: 12, label: '% 6 - 12 (Orta eğimli)', color: '#a6d96a' },
+  { min: 12, max: 20, label: '% 12 - 20 (Dik)', color: '#fee08b' },
+  { min: 20, max: 30, label: '% 20 - 30 (Çok dik)', color: '#fdae61' },
+  { min: 30, max: null, label: '% 30+ (Sarp)', color: '#d73027' },
 ]
 
 const GREEN_SHIFT = 8

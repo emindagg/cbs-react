@@ -14,10 +14,10 @@ import { readTerrariumElevationAtGlobalPixel } from './terrainTiles'
 
 // Üst sınır: tile patlamasını engellemek için. LOD sistemi sayesinde bu sınıra
 // pratikte ulaşılmaz; çok büyük alanlarda zoom otomatik düşer.
-const ABSOLUTE_MAX_AREA_KM2 = 5000
-const MIN_RASTER_DIMENSION = 32
-const MAX_RASTER_DIMENSION = 320
-const ALPHA_INSIDE = 220
+const ABSOLUTE_MAX_AREA_KM2 = 10000
+const MIN_RASTER_DIMENSION = 64
+const MAX_RASTER_DIMENSION = 640
+const ALPHA_INSIDE = 255
 const ALPHA_OUTSIDE = 0
 
 interface PolygonSlopeInput {

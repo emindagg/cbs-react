@@ -5,12 +5,12 @@ import { createInitialSlopeClasses, getSlopeClassColor, getSlopeClassIndex } fro
 describe('slopeClasses', () => {
   it('maps slope percentages to expected classes', () => {
     expect(getSlopeClassIndex(0)).toBe(0)
-    expect(getSlopeClassIndex(9.9)).toBe(0)
-    expect(getSlopeClassIndex(10)).toBe(1)
-    expect(getSlopeClassIndex(20)).toBe(2)
-    expect(getSlopeClassIndex(30)).toBe(3)
-    expect(getSlopeClassIndex(40)).toBe(4)
-    expect(getSlopeClassIndex(80)).toBe(4)
+    expect(getSlopeClassIndex(5.9)).toBe(0)
+    expect(getSlopeClassIndex(6)).toBe(1)
+    expect(getSlopeClassIndex(12)).toBe(2)
+    expect(getSlopeClassIndex(20)).toBe(3)
+    expect(getSlopeClassIndex(30)).toBe(4)
+    expect(getSlopeClassIndex(120)).toBe(4)
   })
 
   it('creates mutable class counters without changing definitions', () => {
@@ -20,7 +20,7 @@ describe('slopeClasses', () => {
     expect(createInitialSlopeClasses()[0].pixelCount).toBe(0)
   })
 
-  it('returns RGB color for a class', () => {
-    expect(getSlopeClassColor(4)).toEqual([255, 22, 22])
+  it('returns RGB color for the last class', () => {
+    expect(getSlopeClassColor(4)).toEqual([215, 48, 39])
   })
 })

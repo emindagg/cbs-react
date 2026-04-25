@@ -5,10 +5,10 @@ export const DEFAULT_TERRAIN_ZOOM = 14
 export const MIN_TERRAIN_ZOOM = 8
 export const MAX_TERRAIN_ZOOM = 15
 
-// Hedef piksel sayısı (LOD seçimi için): ~256x256 raster (65K) civarı tutulur.
+// Hedef piksel sayısı (LOD seçimi için): ~512x512 raster (262K) civarı tutulur.
 // Eğer alan büyürse zoom otomatik düşer, böylece tile sayısı ve hesap maliyeti sabit kalır.
-export const TARGET_RASTER_PIXELS = 65_536
-export const MAX_TILES_PER_ANALYSIS = 64
+export const TARGET_RASTER_PIXELS = 262_144
+export const MAX_TILES_PER_ANALYSIS = 144
 
 const MAX_MERCATOR_LAT = 85.05112878
 const WEB_MERCATOR_INITIAL_RESOLUTION = 156543.03392804097

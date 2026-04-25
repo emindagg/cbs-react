@@ -96,7 +96,7 @@ const TOOLS: ToolDef[] = [
   { id: 'voronoi', icon: LayoutGrid, label: 'En Yakın Alanlar', activeColor: 'text-emerald-600', activeBg: 'bg-emerald-50', activeBorder: 'border-emerald-200', group: 'analysis' },
   { id: 'nearest-points', icon: Crosshair, label: 'En Yakın Nokta', activeColor: 'text-violet-600', activeBg: 'bg-violet-50', activeBorder: 'border-violet-200', group: 'analysis' },
   { id: 'interpolation', icon: Waves, label: 'Enterpolasyon', activeColor: 'text-indigo-600', activeBg: 'bg-indigo-50', activeBorder: 'border-indigo-200', group: 'analysis' },
-  { id: 'aspect-analysis', icon: Compass, label: 'Bakı Analizi', activeColor: 'text-teal-600', activeBg: 'bg-teal-50', activeBorder: 'border-teal-200', group: 'analysis' },
+  { id: 'aspect-analysis', icon: Compass, label: 'Bakı ve Eğim Analizi', activeColor: 'text-teal-600', activeBg: 'bg-teal-50', activeBorder: 'border-teal-200', group: 'analysis' },
   { id: 'heatmap', icon: Flame, label: 'Isı Haritası', activeColor: 'text-red-600', activeBg: 'bg-red-50', activeBorder: 'border-red-200', group: 'analysis' },
   { id: 'isochrone', icon: Network, label: 'Erişilebilirlik Analizi', activeColor: 'text-cyan-600', activeBg: 'bg-cyan-50', activeBorder: 'border-cyan-200', group: 'analysis' },
   { id: 'elevation-profile', icon: TrendingUp, label: 'Yükselti Profili Analizi', activeColor: 'text-teal-600', activeBg: 'bg-teal-50', activeBorder: 'border-teal-200', group: 'analysis' },
@@ -294,7 +294,7 @@ export default function GISToolsControl() {
     if (tool.id === 'voronoi' && activeAnalysis === 'voronoi') return 'En Yakın Alanları Kapat'
     if (tool.id === 'nearest-points' && activeAnalysis === 'nearest-points') return 'Analizi Kapat'
     if (tool.id === 'interpolation' && isInterpolationActive) return 'Enterpolasyonu Kapat'
-    if (tool.id === 'aspect-analysis' && isTerrainAnalysisActive) return 'Bakı Analizini Kapat'
+    if (tool.id === 'aspect-analysis' && isTerrainAnalysisActive) return 'Bakı ve Eğim Analizini Kapat'
     if (tool.id === 'elevation-profile' && activeTool === 'elevation-profile') return 'Analizi Kapat'
     return tool.label
   }

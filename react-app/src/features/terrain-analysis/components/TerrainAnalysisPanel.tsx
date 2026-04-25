@@ -66,10 +66,7 @@ export default function TerrainAnalysisPanel({
           <div className="w-6 h-6 rounded-lg bg-teal-500 flex items-center justify-center">
             <i className="fa-solid fa-compass text-white text-[10px]"></i>
           </div>
-          <div>
-            <h3 className="text-[11px] font-bold text-zinc-800">Bakı Analizi</h3>
-            <p className="text-[8px] text-zinc-500">AWS Terrarium DEM</p>
-          </div>
+          <h3 className="text-[11px] font-bold text-zinc-800">Bakı ve Eğim Analizi</h3>
         </div>
         <button
           onClick={onClose}
@@ -86,13 +83,13 @@ export default function TerrainAnalysisPanel({
             onClick={() => onModeChange('point-aspect')}
             className={`h-7 rounded-md text-[10px] font-semibold transition-colors ${mode === 'point-aspect' ? 'bg-white text-teal-700 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}
           >
-            Nokta Bakı
+            Bakı Analizi
           </button>
           <button
             onClick={() => onModeChange('polygon-slope')}
             className={`h-7 rounded-md text-[10px] font-semibold transition-colors ${mode === 'polygon-slope' ? 'bg-white text-red-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}
           >
-            Alan Eğim
+            Eğim Analizi
           </button>
         </div>
 
@@ -202,7 +199,7 @@ export default function TerrainAnalysisPanel({
               disabled={!selectedPolygonId || isLoading || Boolean(selectedPolygon && selectedPolygon.areaKm2 > getMaxSlopeAnalysisAreaKm2())}
               className="w-full h-8 rounded-lg bg-red-600 text-white text-[10px] font-semibold hover:bg-red-700 disabled:opacity-40 disabled:pointer-events-none transition-colors"
             >
-              Eğim Analizini Çalıştır
+              Analizi Çalıştır
             </button>
 
             {slopeResult && (

@@ -36,6 +36,7 @@ export default function AttributionInfoButton() {
             <p>© HGM - Harita Genel Müdürlüğü</p>
             <p>© openrouteservice.org by HeiGIT | Map data © OpenStreetMap contributors</p>
             <p>© European Union, Copernicus Land Monitoring Service</p>
+            <p>AWS Terrarium DEM</p>
           </div>
         </div>
       )}

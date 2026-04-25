@@ -164,8 +164,8 @@ export class TerrainAnalysisRenderer {
         type: 'raster',
         source: SLOPE_RASTER_SOURCE_ID,
         paint: {
-          'raster-opacity': 0.72,
-          'raster-resampling': 'nearest',
+          'raster-opacity': 0.92,
+          'raster-resampling': 'linear',
           'raster-fade-duration': 0,
         },
       })
