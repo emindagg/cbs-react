@@ -17,6 +17,7 @@ export default function TerrainAnalysisTool() {
   const { current: mapObj } = useMap()
   const activeTool = useToolStore((state) => state.activeTool)
   const setActiveTool = useToolStore((state) => state.setActiveTool)
+  const mode = useTerrainAnalysisStore((state) => state.mode)
   const isActive = activeTool === 'aspect-analysis'
   const abortRef = useRef<AbortController | null>(null)
 
@@ -24,7 +25,7 @@ export default function TerrainAnalysisTool() {
     const map = mapObj?.getMap() as maplibregl.Map | null ?? null
     if (!map) return
 
-    if (!isActive) {
+    if (!isActive || mode !== 'point-aspect') {
       abortRef.current?.abort()
       abortRef.current = null
       map.getCanvas().style.cursor = ''
@@ -83,7 +84,7 @@ export default function TerrainAnalysisTool() {
       document.removeEventListener('keydown', handleKeyDown)
       map.getCanvas().style.cursor = ''
     }
-  }, [mapObj, isActive, setActiveTool])
+  }, [mapObj, isActive, mode, setActiveTool])
 
   return null
 }

@@ -1,7 +1,7 @@
 import type { FeatureCollection, LineString, Point } from 'geojson'
-import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl'
+import type { GeoJSONSource, ImageSource, Map as MapLibreMap } from 'maplibre-gl'
 
-import type { TerrainAnalysisResult } from '../types'
+import type { TerrainAnalysisResult, TerrainSlopeResult } from '../types'
 
 const POINT_SOURCE_ID = 'terrain-aspect-point-source'
 const ARROW_SOURCE_ID = 'terrain-aspect-arrow-source'
@@ -11,6 +11,10 @@ const ARROW_LAYER_ID = 'terrain-aspect-arrow-line'
 const ARROW_HEAD_LAYER_ID = 'terrain-aspect-arrow-head'
 const POINT_LAYER_ID = 'terrain-aspect-point'
 const LABEL_LAYER_ID = 'terrain-aspect-label'
+const SLOPE_RASTER_SOURCE_ID = 'terrain-slope-raster-source'
+const SLOPE_RASTER_LAYER_ID = 'terrain-slope-raster-layer'
+const SLOPE_BOUNDARY_SOURCE_ID = 'terrain-slope-boundary-source'
+const SLOPE_BOUNDARY_LAYER_ID = 'terrain-slope-boundary-layer'
 
 const EMPTY_POINTS: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] }
 const EMPTY_LINES: FeatureCollection<LineString> = { type: 'FeatureCollection', features: [] }
@@ -120,6 +124,71 @@ export class TerrainAnalysisRenderer {
     this.bringToFront()
   }
 
+  renderSlope(result: TerrainSlopeResult | null): void {
+    if (!result) {
+      this.removeSlope()
+      return
+    }
+
+    const [w, s, e, n] = result.raster.bbox
+    const coordinates: [[number, number], [number, number], [number, number], [number, number]] = [
+      [w, n],
+      [e, n],
+      [e, s],
+      [w, s],
+    ]
+    const rasterSource = this.map.getSource(SLOPE_RASTER_SOURCE_ID) as ImageSource | undefined
+    if (rasterSource) {
+      rasterSource.updateImage({ url: result.raster.imageDataUrl, coordinates })
+    } else {
+      this.map.addSource(SLOPE_RASTER_SOURCE_ID, {
+        type: 'image',
+        url: result.raster.imageDataUrl,
+        coordinates,
+      })
+    }
+
+    const boundaryData: FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon> = {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        geometry: result.geometry,
+        properties: { name: result.itemName },
+      }],
+    }
+    ensureSource(this.map, SLOPE_BOUNDARY_SOURCE_ID, boundaryData)
+
+    if (!this.map.getLayer(SLOPE_RASTER_LAYER_ID)) {
+      this.map.addLayer({
+        id: SLOPE_RASTER_LAYER_ID,
+        type: 'raster',
+        source: SLOPE_RASTER_SOURCE_ID,
+        paint: {
+          'raster-opacity': 0.72,
+          'raster-resampling': 'nearest',
+          'raster-fade-duration': 0,
+        },
+      })
+    }
+
+    if (!this.map.getLayer(SLOPE_BOUNDARY_LAYER_ID)) {
+      this.map.addLayer({
+        id: SLOPE_BOUNDARY_LAYER_ID,
+        type: 'line',
+        source: SLOPE_BOUNDARY_SOURCE_ID,
+        paint: {
+          'line-color': '#ff0000',
+          'line-width': 2.5,
+          'line-opacity': 0.95,
+        },
+      })
+    }
+
+    for (const layerId of [SLOPE_RASTER_LAYER_ID, SLOPE_BOUNDARY_LAYER_ID]) {
+      if (this.map.getLayer(layerId)) this.map.moveLayer(layerId)
+    }
+  }
+
   remove(): void {
     removeLayer(this.map, LABEL_LAYER_ID)
     removeLayer(this.map, POINT_LAYER_ID)
@@ -128,6 +197,24 @@ export class TerrainAnalysisRenderer {
     removeSource(this.map, POINT_SOURCE_ID)
     removeSource(this.map, ARROW_HEAD_SOURCE_ID)
     removeSource(this.map, ARROW_SOURCE_ID)
+    this.removeSlope()
+  }
+
+  removeAspect(): void {
+    removeLayer(this.map, LABEL_LAYER_ID)
+    removeLayer(this.map, POINT_LAYER_ID)
+    removeLayer(this.map, ARROW_HEAD_LAYER_ID)
+    removeLayer(this.map, ARROW_LAYER_ID)
+    removeSource(this.map, POINT_SOURCE_ID)
+    removeSource(this.map, ARROW_HEAD_SOURCE_ID)
+    removeSource(this.map, ARROW_SOURCE_ID)
+  }
+
+  removeSlope(): void {
+    removeLayer(this.map, SLOPE_BOUNDARY_LAYER_ID)
+    removeLayer(this.map, SLOPE_RASTER_LAYER_ID)
+    removeSource(this.map, SLOPE_BOUNDARY_SOURCE_ID)
+    removeSource(this.map, SLOPE_RASTER_SOURCE_ID)
   }
 
   private ensureLayers(): void {

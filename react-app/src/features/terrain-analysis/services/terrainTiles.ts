@@ -4,6 +4,7 @@ import {
   clampTerrainZoom,
   decodeTerrariumElevation,
   DEFAULT_TERRAIN_ZOOM,
+  globalPixelToTilePixel,
   getOffsetTilePixel,
   groundResolutionMeters,
   terrariumTileUrl,
@@ -91,6 +92,25 @@ async function readElevationAtOffset(
   signal?: AbortSignal,
 ): Promise<number> {
   const tilePixel = getOffsetTilePixel(point.lng, point.lat, zoom, offsetX, offsetY)
+  const tile = await fetchTerrariumTile(tilePixel.z, tilePixel.x, tilePixel.y, signal)
+  const image = tile.imageData
+  const x = Math.min(image.width - 1, Math.max(0, tilePixel.pixelX))
+  const y = Math.min(image.height - 1, Math.max(0, tilePixel.pixelY))
+  const idx = (y * image.width + x) * 4
+  return decodeTerrariumElevation(
+    image.data[idx],
+    image.data[idx + 1],
+    image.data[idx + 2],
+  )
+}
+
+export async function readTerrariumElevationAtGlobalPixel(
+  globalX: number,
+  globalY: number,
+  zoom: number,
+  signal?: AbortSignal,
+): Promise<number> {
+  const tilePixel = globalPixelToTilePixel(globalX, globalY, zoom)
   const tile = await fetchTerrariumTile(tilePixel.z, tilePixel.x, tilePixel.y, signal)
   const image = tile.imageData
   const x = Math.min(image.width - 1, Math.max(0, tilePixel.pixelX))

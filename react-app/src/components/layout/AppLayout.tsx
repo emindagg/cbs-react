@@ -1,3 +1,4 @@
+import * as turf from '@turf/turf'
 import { useState, useMemo } from 'react'
 
 import Sidebar from '@/components/sidebar/Sidebar'
@@ -21,6 +22,7 @@ import { TerrainAnalysisPanel, useTerrainAnalysis } from '@/features/terrain-ana
 import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useDataManagementStore } from '@/stores/useDataManagementStore'
 import { useMapStore } from '@/stores/useMapStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
@@ -33,6 +35,7 @@ import { useVisualizationStore } from '@/stores/useVisualizationStore'
 export default function AppLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(false)
   const mapInstance = useMapStore((state) => state.mapInstance)
+  const dataItems = useDataManagementStore((state) => state.items)
   const { isEnabled: isAstronomyEnabled, setIsEnabled: setAstronomyEnabled } = useAstroStore()
   const isMdUp = useMediaQuery('(min-width: 768px)')
   const { mapTitle, setMapTitle } = useVisualizationStore()
@@ -75,6 +78,16 @@ export default function AppLayout() {
 
   // Terrain analysis (aspect)
   const terrainAnalysis = useTerrainAnalysis()
+  const terrainPolygons = useMemo(() => (
+    dataItems
+      .filter((item) => item.visible && (item.geometry.type === 'Polygon' || item.geometry.type === 'MultiPolygon'))
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        geometry: item.geometry as GeoJSON.Polygon | GeoJSON.MultiPolygon,
+        areaKm2: Math.round((turf.area({ type: 'Feature', geometry: item.geometry, properties: {} }) / 1_000_000) * 100) / 100,
+      }))
+  ), [dataItems])
 
   // Toggle sidebar and resize map
   const toggleSidebar = () => {
@@ -272,8 +285,18 @@ export default function AppLayout() {
         isActive={terrainAnalysis.isActive}
         isLoading={terrainAnalysis.isLoading}
         error={terrainAnalysis.error}
+        mode={terrainAnalysis.mode}
         selectedPoint={terrainAnalysis.selectedPoint}
         result={terrainAnalysis.result}
+        polygonOptions={terrainPolygons}
+        selectedPolygonId={terrainAnalysis.selectedPolygonId}
+        slopeResult={terrainAnalysis.slopeResult}
+        onModeChange={terrainAnalysis.setMode}
+        onSelectedPolygonChange={terrainAnalysis.setSelectedPolygonId}
+        onRunSlopeAnalysis={() => {
+          const polygon = terrainPolygons.find((item) => item.id === terrainAnalysis.selectedPolygonId)
+          if (polygon) void terrainAnalysis.runSlopeAnalysis(polygon)
+        }}
         onClose={() => terrainAnalysis.setPanelOpen(false)}
         onDeactivate={terrainAnalysis.deactivate}
       />

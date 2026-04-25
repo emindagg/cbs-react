@@ -61,4 +61,36 @@ describe('TerrainAnalysisRenderer', () => {
     expect(layers.size).toBe(0)
     expect(sources.size).toBe(0)
   })
+
+  it('adds raster and boundary layers for slope result', () => {
+    const { map, layers, sources } = createMapMock()
+    const renderer = new TerrainAnalysisRenderer(map)
+
+    renderer.renderSlope({
+      itemId: 'poly-1',
+      itemName: 'Test Alanı',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[[35, 39], [35.01, 39], [35.01, 39.01], [35, 39.01], [35, 39]]],
+      },
+      areaKm2: 1,
+      raster: {
+        width: 2,
+        height: 2,
+        bbox: [35, 39, 35.01, 39.01],
+        imageDataUrl: 'data:image/png;base64,test',
+      },
+      classes: [],
+      minSlopePercent: 0,
+      maxSlopePercent: 45,
+      avgSlopePercent: 20,
+      tileZoom: 14,
+      source: 'aws-terrarium',
+    })
+
+    expect(sources.has('terrain-slope-raster-source')).toBe(true)
+    expect(sources.has('terrain-slope-boundary-source')).toBe(true)
+    expect(layers.has('terrain-slope-raster-layer')).toBe(true)
+    expect(layers.has('terrain-slope-boundary-layer')).toBe(true)
+  })
 })
