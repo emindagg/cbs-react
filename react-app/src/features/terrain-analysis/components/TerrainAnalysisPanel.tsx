@@ -12,12 +12,16 @@ interface TerrainAnalysisPanelProps {
   polygonOptions: TerrainPolygonOption[]
   selectedPolygonId: string | null
   slopeResult: TerrainSlopeResult | null
+  slopeOpacity: number
   onModeChange: (mode: TerrainAnalysisMode) => void
   onSelectedPolygonChange: (id: string | null) => void
   onRunSlopeAnalysis: () => void
+  onSlopeOpacityChange: (opacity: number) => void
   onClose: () => void
   onDeactivate: () => void
 }
+
+const PERCENT_MULTIPLIER = 100
 
 function formatCoordinate(value: number): string {
   return value.toLocaleString('tr-TR', {
@@ -44,12 +48,15 @@ export default function TerrainAnalysisPanel({
   polygonOptions,
   selectedPolygonId,
   slopeResult,
+  slopeOpacity,
   onModeChange,
   onSelectedPolygonChange,
   onRunSlopeAnalysis,
+  onSlopeOpacityChange,
   onClose,
   onDeactivate,
 }: TerrainAnalysisPanelProps) {
+  const opacityPercent = Math.round(slopeOpacity * PERCENT_MULTIPLIER)
   if (!isOpen) return null
 
   const aspectLabel = result?.aspectDegrees === null
@@ -204,38 +211,27 @@ export default function TerrainAnalysisPanel({
 
             {slopeResult && (
               <div className="space-y-2">
-                <div className="grid grid-cols-3 gap-1.5">
-                  <div className="bg-zinc-50 rounded-md px-2 py-1.5">
-                    <div className="text-[8px] text-zinc-500">Ortalama</div>
-                    <div className="text-[10px] font-bold text-zinc-800">%{formatNumber(slopeResult.avgSlopePercent)}</div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider">
+                      <i className="fa-solid fa-droplet text-[8px] mr-1"></i>
+                      Katman Opaklığı
+                    </label>
+                    <span className="text-[10px] font-bold text-zinc-700 tabular-nums">%{opacityPercent}</span>
                   </div>
-                  <div className="bg-zinc-50 rounded-md px-2 py-1.5">
-                    <div className="text-[8px] text-zinc-500">Min</div>
-                    <div className="text-[10px] font-bold text-zinc-800">%{formatNumber(slopeResult.minSlopePercent)}</div>
-                  </div>
-                  <div className="bg-zinc-50 rounded-md px-2 py-1.5">
-                    <div className="text-[8px] text-zinc-500">Max</div>
-                    <div className="text-[10px] font-bold text-zinc-800">%{formatNumber(slopeResult.maxSlopePercent)}</div>
-                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={opacityPercent}
+                    onChange={(e) => onSlopeOpacityChange(Number(e.target.value) / PERCENT_MULTIPLIER)}
+                    className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-red-600"
+                  />
                 </div>
 
-                <div className="text-[9px] text-zinc-600 bg-zinc-50 rounded-md px-2.5 py-1.5 flex items-center justify-between">
-                  <span>
-                    <i className="fa-solid fa-layer-group mr-1 text-emerald-600"></i>
-                    DEM: <strong>~{formatNumber(slopeResult.resolutionMeters, 0)} m</strong> / piksel
-                  </span>
-                  <span className="text-zinc-400">z{slopeResult.tileZoom} · {slopeResult.estimatedTiles} tile</span>
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="text-[9px] font-bold text-zinc-700">Lejant - Eğim Yüzdesi</div>
-                  {slopeResult.classes.map((item) => (
-                    <div key={item.label} className="flex items-center gap-2 text-[9px] text-zinc-700">
-                      <span className="w-5 h-3 rounded-sm border border-zinc-300" style={{ backgroundColor: item.color }} />
-                      <span className="font-medium">{item.label}</span>
-                      <span className="ml-auto text-zinc-400">{item.pixelCount}</span>
-                    </div>
-                  ))}
+                <div className="text-[9px] text-emerald-700 bg-emerald-50 rounded-md px-2.5 py-1.5 leading-relaxed flex items-start gap-1.5">
+                  <i className="fa-solid fa-circle-info mt-0.5"></i>
+                  <span>Lejant sürüklenebilir panele taşındı.</span>
                 </div>
               </div>
             )}

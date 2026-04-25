@@ -18,7 +18,7 @@ import { LegendContainer } from '@/features/legend'
 import { MapContainer, MapControlStack, CoordinateDisplay } from '@/features/map'
 import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-analysis'
 import { StorymapModal } from '@/features/storymap-modal'
-import { TerrainAnalysisPanel, useTerrainAnalysis } from '@/features/terrain-analysis'
+import { TerrainAnalysisPanel, TerrainSlopeLegend, useTerrainAnalysis } from '@/features/terrain-analysis'
 import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -291,15 +291,22 @@ export default function AppLayout() {
         polygonOptions={terrainPolygons}
         selectedPolygonId={terrainAnalysis.selectedPolygonId}
         slopeResult={terrainAnalysis.slopeResult}
+        slopeOpacity={terrainAnalysis.slopeOpacity}
         onModeChange={terrainAnalysis.setMode}
         onSelectedPolygonChange={terrainAnalysis.setSelectedPolygonId}
         onRunSlopeAnalysis={() => {
           const polygon = terrainPolygons.find((item) => item.id === terrainAnalysis.selectedPolygonId)
           if (polygon) void terrainAnalysis.runSlopeAnalysis(polygon)
         }}
+        onSlopeOpacityChange={terrainAnalysis.setSlopeOpacity}
         onClose={() => terrainAnalysis.setPanelOpen(false)}
         onDeactivate={terrainAnalysis.deactivate}
       />
+
+      {/* Terrain Slope - Sürüklenebilir Lejant */}
+      {terrainAnalysis.isActive && terrainAnalysis.mode === 'polygon-slope' && terrainAnalysis.slopeResult && (
+        <TerrainSlopeLegend result={terrainAnalysis.slopeResult} />
+      )}
 
       {/* Visualization Legend */}
       <LegendContainer />

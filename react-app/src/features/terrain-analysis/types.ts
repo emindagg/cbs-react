@@ -78,6 +78,7 @@ export interface TerrainAnalysisState {
   result: TerrainAnalysisResult | null
   selectedPolygonId: string | null
   slopeResult: TerrainSlopeResult | null
+  slopeOpacity: number
 
   activate: () => void
   deactivate: () => void
@@ -90,5 +91,6 @@ export interface TerrainAnalysisState {
   setResult: (result: TerrainAnalysisResult | null) => void
   setSelectedPolygonId: (id: string | null) => void
   setSlopeResult: (result: TerrainSlopeResult | null) => void
+  setSlopeOpacity: (opacity: number) => void
   reset: () => void
 }

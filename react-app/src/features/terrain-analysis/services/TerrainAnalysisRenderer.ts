@@ -124,7 +124,13 @@ export class TerrainAnalysisRenderer {
     this.bringToFront()
   }
 
-  renderSlope(result: TerrainSlopeResult | null): void {
+  setSlopeOpacity(opacity: number): void {
+    if (this.map.getLayer(SLOPE_RASTER_LAYER_ID)) {
+      this.map.setPaintProperty(SLOPE_RASTER_LAYER_ID, 'raster-opacity', Math.max(0, Math.min(1, opacity)))
+    }
+  }
+
+  renderSlope(result: TerrainSlopeResult | null, opacity = 0.92): void {
     if (!result) {
       this.removeSlope()
       return
@@ -164,11 +170,13 @@ export class TerrainAnalysisRenderer {
         type: 'raster',
         source: SLOPE_RASTER_SOURCE_ID,
         paint: {
-          'raster-opacity': 0.92,
+          'raster-opacity': Math.max(0, Math.min(1, opacity)),
           'raster-resampling': 'linear',
           'raster-fade-duration': 0,
         },
       })
+    } else {
+      this.setSlopeOpacity(opacity)
     }
 
     if (!this.map.getLayer(SLOPE_BOUNDARY_LAYER_ID)) {

@@ -1,5 +1,6 @@
 export { default as TerrainAnalysisPanel } from './components/TerrainAnalysisPanel'
 export { default as TerrainAnalysisTool } from './components/TerrainAnalysisTool'
+export { default as TerrainSlopeLegend } from './components/TerrainSlopeLegend'
 export { useTerrainAnalysis } from './hooks/useTerrainAnalysis'
 export { useTerrainAnalysisStore } from './stores/useTerrainAnalysisStore'
 export type * from './types'

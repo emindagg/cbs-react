@@ -22,6 +22,7 @@ export function useTerrainAnalysis() {
     result,
     selectedPolygonId,
     slopeResult,
+    slopeOpacity,
     activate,
     deactivate,
     toggle,
@@ -29,6 +30,7 @@ export function useTerrainAnalysis() {
     setPanelOpen,
     setSelectedPolygonId,
     setSlopeResult,
+    setSlopeOpacity,
     reset,
   } = useTerrainAnalysisStore()
   const rendererRef = useRef<TerrainAnalysisRenderer | null>(null)
@@ -85,11 +87,15 @@ export function useTerrainAnalysis() {
       renderer.removeSlope()
     } else if (isActive && mode === 'polygon-slope' && slopeResult) {
       renderer.removeAspect()
-      renderer.renderSlope(slopeResult)
+      renderer.renderSlope(slopeResult, slopeOpacity)
     } else {
       renderer.remove()
     }
-  }, [isActive, mode, result, slopeResult, getRenderer])
+  }, [isActive, mode, result, slopeResult, slopeOpacity, getRenderer])
+
+  useEffect(() => {
+    rendererRef.current?.setSlopeOpacity(slopeOpacity)
+  }, [slopeOpacity])
 
   useEffect(() => {
     return () => {
@@ -110,6 +116,7 @@ export function useTerrainAnalysis() {
     result,
     selectedPolygonId,
     slopeResult,
+    slopeOpacity,
     activate,
     deactivate: deactivateAnalysis,
     toggle,
@@ -117,6 +124,7 @@ export function useTerrainAnalysis() {
     setPanelOpen,
     setSelectedPolygonId,
     setSlopeResult,
+    setSlopeOpacity,
     runSlopeAnalysis,
     reset,
   }

@@ -2,6 +2,8 @@ import { create } from 'zustand'
 
 import type { TerrainAnalysisState } from '@/features/terrain-analysis'
 
+const DEFAULT_SLOPE_OPACITY = 0.92
+
 export const useTerrainAnalysisStore = create<TerrainAnalysisState>((set) => ({
   isActive: false,
   isPanelOpen: false,
@@ -12,6 +14,7 @@ export const useTerrainAnalysisStore = create<TerrainAnalysisState>((set) => ({
   result: null,
   selectedPolygonId: null,
   slopeResult: null,
+  slopeOpacity: DEFAULT_SLOPE_OPACITY,
 
   activate: () => set({ isActive: true, isPanelOpen: true }),
 
@@ -57,6 +60,7 @@ export const useTerrainAnalysisStore = create<TerrainAnalysisState>((set) => ({
   setResult: (result) => set({ result }),
   setSelectedPolygonId: (id) => set({ selectedPolygonId: id }),
   setSlopeResult: (result) => set({ slopeResult: result }),
+  setSlopeOpacity: (opacity) => set({ slopeOpacity: Math.max(0, Math.min(1, opacity)) }),
 
   reset: () => set({
     isActive: false,
@@ -68,5 +72,6 @@ export const useTerrainAnalysisStore = create<TerrainAnalysisState>((set) => ({
     result: null,
     selectedPolygonId: null,
     slopeResult: null,
+    slopeOpacity: DEFAULT_SLOPE_OPACITY,
   }),
 }))
