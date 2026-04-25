@@ -162,8 +162,9 @@ export default function TerrainAnalysisPanel({
 
         {mode === 'polygon-slope' && (
           <div className="space-y-3">
-            <div className="text-[9px] text-zinc-600 bg-amber-50 rounded-md px-2.5 py-2 leading-relaxed">
-              En fazla {getMaxSlopeAnalysisAreaKm2()} km² polygon analiz edilir. Büyük alanlar tarayıcı performansı için reddedilir.
+            <div className="text-[9px] text-zinc-600 bg-emerald-50 rounded-md px-2.5 py-2 leading-relaxed">
+              <i className="fa-solid fa-layer-group mr-1 text-emerald-600"></i>
+              Dinamik çözünürlük (LOD) etkin. Küçük alanlarda detaylı (~10 m), büyük alanlarda genel (~30-150 m) DEM otomatik seçilir. Maks {getMaxSlopeAnalysisAreaKm2()} km².
             </div>
 
             <div>
@@ -219,6 +220,14 @@ export default function TerrainAnalysisPanel({
                     <div className="text-[8px] text-zinc-500">Max</div>
                     <div className="text-[10px] font-bold text-zinc-800">%{formatNumber(slopeResult.maxSlopePercent)}</div>
                   </div>
+                </div>
+
+                <div className="text-[9px] text-zinc-600 bg-zinc-50 rounded-md px-2.5 py-1.5 flex items-center justify-between">
+                  <span>
+                    <i className="fa-solid fa-layer-group mr-1 text-emerald-600"></i>
+                    DEM: <strong>~{formatNumber(slopeResult.resolutionMeters, 0)} m</strong> / piksel
+                  </span>
+                  <span className="text-zinc-400">z{slopeResult.tileZoom} · {slopeResult.estimatedTiles} tile</span>
                 </div>
 
                 <div className="space-y-1.5">

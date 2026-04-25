@@ -3,47 +3,30 @@ import type { Feature, MultiPolygon, Polygon } from 'geojson'
 
 import type { TerrainSlopeResult } from '../types'
 import { createInitialSlopeClasses, getSlopeClassColor, getSlopeClassIndex } from './slopeClasses'
-import { calculateAspectFromElevationGrid, clampTerrainZoom, DEFAULT_TERRAIN_ZOOM, groundResolutionMeters, lngLatToGlobalPixel } from './terrainMath'
+import {
+  calculateAspectFromElevationGrid,
+  groundResolutionMeters,
+  lngLatToGlobalPixel,
+  MAX_TILES_PER_ANALYSIS,
+  selectLODForArea,
+} from './terrainMath'
 import { readTerrariumElevationAtGlobalPixel } from './terrainTiles'
 
-const MAX_ANALYSIS_AREA_KM2 = 25
-const MAX_RASTER_DIMENSION = 256
+// Üst sınır: tile patlamasını engellemek için. LOD sistemi sayesinde bu sınıra
+// pratikte ulaşılmaz; çok büyük alanlarda zoom otomatik düşer.
+const ABSOLUTE_MAX_AREA_KM2 = 5000
 const MIN_RASTER_DIMENSION = 32
+const MAX_RASTER_DIMENSION = 320
 const ALPHA_INSIDE = 220
 const ALPHA_OUTSIDE = 0
-const MAX_SAMPLE_GRID = MAX_RASTER_DIMENSION + 2
 
 interface PolygonSlopeInput {
   itemId: string
   itemName: string
   geometry: Polygon | MultiPolygon
-  zoom?: number
+  /** Kullanıcı tarafından zorlanmak istenirse zoom override (genelde verilmez) */
+  forceZoom?: number
   signal?: AbortSignal
-}
-
-interface Dimensions {
-  width: number
-  height: number
-}
-
-function computeDimensions(bbox: [number, number, number, number]): Dimensions {
-  const [west, south, east, north] = bbox
-  const midLat = (south + north) / 2
-  const widthMeters = Math.max(1, turf.distance([west, midLat], [east, midLat], { units: 'kilometers' }) * 1000)
-  const heightMeters = Math.max(1, turf.distance([west, south], [west, north], { units: 'kilometers' }) * 1000)
-  const aspect = widthMeters / heightMeters
-
-  if (aspect >= 1) {
-    return {
-      width: MAX_RASTER_DIMENSION,
-      height: Math.max(MIN_RASTER_DIMENSION, Math.round(MAX_RASTER_DIMENSION / aspect)),
-    }
-  }
-
-  return {
-    width: Math.max(MIN_RASTER_DIMENSION, Math.round(MAX_RASTER_DIMENSION * aspect)),
-    height: MAX_RASTER_DIMENSION,
-  }
 }
 
 function createCanvasDataUrl(width: number, height: number, data: Uint8ClampedArray): string {
@@ -63,7 +46,7 @@ function getSampleIndex(x: number, y: number, sampleWidth: number): number {
 }
 
 export function getMaxSlopeAnalysisAreaKm2(): number {
-  return MAX_ANALYSIS_AREA_KM2
+  return ABSOLUTE_MAX_AREA_KM2
 }
 
 export async function analyzePolygonSlopeFromTerrarium(input: PolygonSlopeInput): Promise<TerrainSlopeResult> {
@@ -73,8 +56,8 @@ export async function analyzePolygonSlopeFromTerrarium(input: PolygonSlopeInput)
     properties: {},
   }
   const areaKm2 = turf.area(feature) / 1_000_000
-  if (areaKm2 > MAX_ANALYSIS_AREA_KM2) {
-    throw new Error(`Alan çok büyük. Eğim analizi için en fazla ${MAX_ANALYSIS_AREA_KM2} km² seçilebilir.`)
+  if (areaKm2 > ABSOLUTE_MAX_AREA_KM2) {
+    throw new Error(`Alan çok büyük (${areaKm2.toFixed(0)} km²). Maksimum ${ABSOLUTE_MAX_AREA_KM2} km².`)
   }
 
   const bbox = turf.bbox(feature) as [number, number, number, number]
@@ -83,13 +66,23 @@ export async function analyzePolygonSlopeFromTerrarium(input: PolygonSlopeInput)
     throw new Error('Geçerli bir polygon alanı seçin.')
   }
 
-  const tileZoom = clampTerrainZoom(input.zoom ?? DEFAULT_TERRAIN_ZOOM)
-  const { width, height } = computeDimensions(bbox)
+  const midLat = (south + north) / 2
+  const widthMeters = Math.max(1, turf.distance([west, midLat], [east, midLat], { units: 'kilometers' }) * 1000)
+  const heightMeters = Math.max(1, turf.distance([west, south], [west, north], { units: 'kilometers' }) * 1000)
+  const aspectRatio = widthMeters / heightMeters
+
+  // === LOD: alan büyüklüğüne göre dinamik zoom & raster boyutu seç ===
+  const lod = selectLODForArea(areaKm2, midLat, {
+    aspectRatio,
+    maxTiles: MAX_TILES_PER_ANALYSIS,
+  })
+  const tileZoom = input.forceZoom ?? lod.zoom
+
+  // Raster boyutunu makul aralığa sıkıştır
+  const width = Math.min(MAX_RASTER_DIMENSION, Math.max(MIN_RASTER_DIMENSION, lod.rasterWidth))
+  const height = Math.min(MAX_RASTER_DIMENSION, Math.max(MIN_RASTER_DIMENSION, lod.rasterHeight))
   const sampleWidth = width + 2
   const sampleHeight = height + 2
-  if (sampleWidth > MAX_SAMPLE_GRID || sampleHeight > MAX_SAMPLE_GRID) {
-    throw new Error('Analiz çözünürlüğü sınırı aşıldı.')
-  }
 
   const nw = lngLatToGlobalPixel(west, north, tileZoom)
   const se = lngLatToGlobalPixel(east, south, tileZoom)
@@ -97,22 +90,26 @@ export async function analyzePolygonSlopeFromTerrarium(input: PolygonSlopeInput)
   const globalStepY = (se.y - nw.y) / Math.max(1, height - 1)
   const elevations = new Float32Array(sampleWidth * sampleHeight)
 
+  // Paralel okuma için chunk: sıralı await yerine satır bazlı paralel
   for (let y = 0; y < sampleHeight; y++) {
+    if (input.signal?.aborted) throw new Error('İptal edildi')
+    const rowPromises: Promise<void>[] = []
     for (let x = 0; x < sampleWidth; x++) {
       const globalX = nw.x + (x - 1) * globalStepX
       const globalY = nw.y + (y - 1) * globalStepY
-      elevations[getSampleIndex(x, y, sampleWidth)] = await readTerrariumElevationAtGlobalPixel(
-        globalX,
-        globalY,
-        tileZoom,
-        input.signal,
+      const idx = getSampleIndex(x, y, sampleWidth)
+      rowPromises.push(
+        readTerrariumElevationAtGlobalPixel(globalX, globalY, tileZoom, input.signal).then((value) => {
+          elevations[idx] = value
+        }),
       )
     }
+    await Promise.all(rowPromises)
   }
 
   const classes = createInitialSlopeClasses()
   const imageData = new Uint8ClampedArray(width * height * 4)
-  const cellSizeMeters = Math.max(1, groundResolutionMeters((south + north) / 2, tileZoom))
+  const cellSizeMeters = Math.max(1, groundResolutionMeters(midLat, tileZoom))
   let minSlope = Infinity
   let maxSlope = -Infinity
   let slopeSum = 0
@@ -184,6 +181,8 @@ export async function analyzePolygonSlopeFromTerrarium(input: PolygonSlopeInput)
     maxSlopePercent: Math.round(maxSlope * 10) / 10,
     avgSlopePercent: Math.round((slopeSum / insideCount) * 10) / 10,
     tileZoom,
+    resolutionMeters: Math.round(cellSizeMeters * 10) / 10,
+    estimatedTiles: lod.estimatedTiles,
     source: 'aws-terrarium',
   }
 }

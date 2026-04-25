@@ -2,8 +2,13 @@ import type { AspectDirection } from '../types'
 
 export const TERRAIN_TILE_SIZE = 256
 export const DEFAULT_TERRAIN_ZOOM = 14
-export const MIN_TERRAIN_ZOOM = 12
+export const MIN_TERRAIN_ZOOM = 8
 export const MAX_TERRAIN_ZOOM = 15
+
+// Hedef piksel sayısı (LOD seçimi için): ~256x256 raster (65K) civarı tutulur.
+// Eğer alan büyürse zoom otomatik düşer, böylece tile sayısı ve hesap maliyeti sabit kalır.
+export const TARGET_RASTER_PIXELS = 65_536
+export const MAX_TILES_PER_ANALYSIS = 64
 
 const MAX_MERCATOR_LAT = 85.05112878
 const WEB_MERCATOR_INITIAL_RESOLUTION = 156543.03392804097
@@ -46,6 +51,71 @@ export function normalizeDegrees(degrees: number): number {
 export function groundResolutionMeters(latitude: number, zoom: number): number {
   const latRad = (clampWebMercatorLatitude(latitude) * Math.PI) / 180
   return (WEB_MERCATOR_INITIAL_RESOLUTION * Math.cos(latRad)) / (2 ** zoom)
+}
+
+export interface LODSelection {
+  zoom: number
+  resolutionMeters: number
+  rasterWidth: number
+  rasterHeight: number
+  estimatedTiles: number
+}
+
+/**
+ * Alan büyüklüğüne göre uygun zoom (LOD) seçer. Hedef: piksel sayısını sabit tutmak.
+ * Küçük alan -> yüksek zoom (detay). Büyük alan -> düşük zoom (genel).
+ */
+export function selectLODForArea(
+  areaKm2: number,
+  centerLat: number,
+  options: {
+    targetPixels?: number
+    maxTiles?: number
+    aspectRatio?: number // width / height
+  } = {},
+): LODSelection {
+  const targetPixels = options.targetPixels ?? TARGET_RASTER_PIXELS
+  const maxTiles = options.maxTiles ?? MAX_TILES_PER_ANALYSIS
+  const aspectRatio = options.aspectRatio ?? 1
+
+  const areaM2 = Math.max(1, areaKm2) * 1_000_000
+  const sideMeters = Math.sqrt(areaM2)
+
+  // Hedef çözünürlük: kareye yakın ızgarada her pikselin metre cinsinden boyutu
+  const targetPixelsSide = Math.sqrt(targetPixels)
+  const idealResolution = sideMeters / targetPixelsSide
+
+  // Bu çözünürlüğü veren zoom seviyesini bul: groundResolution = C * cos(lat) / 2^z
+  const latRad = (clampWebMercatorLatitude(centerLat) * Math.PI) / 180
+  const c = WEB_MERCATOR_INITIAL_RESOLUTION * Math.cos(latRad)
+  const idealZoom = Math.log2(c / Math.max(1, idealResolution))
+
+  let zoom = clampTerrainZoom(Math.round(idealZoom))
+
+  // Tile budget koruması: zoom çok yüksekse tile sayısı patlar -> indirgele
+  for (let guard = 0; guard < 10; guard++) {
+    const res = groundResolutionMeters(centerLat, zoom)
+    const widthTiles = Math.ceil((sideMeters * Math.sqrt(aspectRatio)) / (res * TERRAIN_TILE_SIZE)) + 1
+    const heightTiles = Math.ceil((sideMeters / Math.sqrt(aspectRatio)) / (res * TERRAIN_TILE_SIZE)) + 1
+    const totalTiles = widthTiles * heightTiles
+    if (totalTiles <= maxTiles || zoom <= MIN_TERRAIN_ZOOM) break
+    zoom -= 1
+  }
+
+  const resolutionMeters = groundResolutionMeters(centerLat, zoom)
+  const rasterSide = Math.round(targetPixelsSide)
+  const rasterWidth = Math.max(32, Math.round(rasterSide * Math.sqrt(aspectRatio)))
+  const rasterHeight = Math.max(32, Math.round(rasterSide / Math.sqrt(aspectRatio)))
+  const widthTiles = Math.ceil((sideMeters * Math.sqrt(aspectRatio)) / (resolutionMeters * TERRAIN_TILE_SIZE)) + 1
+  const heightTiles = Math.ceil((sideMeters / Math.sqrt(aspectRatio)) / (resolutionMeters * TERRAIN_TILE_SIZE)) + 1
+
+  return {
+    zoom,
+    resolutionMeters,
+    rasterWidth,
+    rasterHeight,
+    estimatedTiles: widthTiles * heightTiles,
+  }
 }
 
 export function lngLatToGlobalPixel(lng: number, lat: number, zoom: number): { x: number; y: number } {

@@ -54,6 +54,10 @@ export interface TerrainSlopeResult {
   maxSlopePercent: number
   avgSlopePercent: number
   tileZoom: number
+  /** Seçilen DEM çözünürlüğü (metre/piksel) - LOD seviyesinin metrik karşılığı */
+  resolutionMeters: number
+  /** Tahmini indirilen DEM tile sayısı */
+  estimatedTiles: number
   source: 'aws-terrarium'
 }
 
