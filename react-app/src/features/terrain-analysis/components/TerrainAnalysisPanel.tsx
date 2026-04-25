@@ -1,5 +1,6 @@
-import { getMaxSlopeAnalysisAreaKm2 } from '../services/polygonSlopeAnalysis'
 import type { TerrainAnalysisMode, TerrainAnalysisPoint, TerrainAnalysisResult, TerrainPolygonOption, TerrainSlopeResult } from '../types'
+import PointAspectResult from './PointAspectResult'
+import PolygonSlopeControls from './PolygonSlopeControls'
 
 interface TerrainAnalysisPanelProps {
   isOpen: boolean
@@ -21,22 +22,6 @@ interface TerrainAnalysisPanelProps {
   onDeactivate: () => void
 }
 
-const PERCENT_MULTIPLIER = 100
-
-function formatCoordinate(value: number): string {
-  return value.toLocaleString('tr-TR', {
-    minimumFractionDigits: 4,
-    maximumFractionDigits: 4,
-  })
-}
-
-function formatNumber(value: number, fractionDigits = 1): string {
-  return value.toLocaleString('tr-TR', {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-  })
-}
-
 export default function TerrainAnalysisPanel({
   isOpen,
   isActive,
@@ -56,15 +41,7 @@ export default function TerrainAnalysisPanel({
   onClose,
   onDeactivate,
 }: TerrainAnalysisPanelProps) {
-  const opacityPercent = Math.round(slopeOpacity * PERCENT_MULTIPLIER)
   if (!isOpen) return null
-
-  const aspectLabel = result?.aspectDegrees === null
-    ? 'Düz'
-    : result
-      ? `${result.aspectDegrees}°`
-      : '-'
-  const selectedPolygon = polygonOptions.find((polygon) => polygon.id === selectedPolygonId) ?? null
 
   return (
     <div className="fixed top-14 right-14 z-1500 w-64 bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-zinc-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
@@ -130,112 +107,19 @@ export default function TerrainAnalysisPanel({
           </div>
         )}
 
-        {mode === 'point-aspect' && result && (
-          <div className="space-y-2">
-            <div className="bg-teal-50 rounded-lg px-3 py-2 text-center">
-              <div className="text-[9px] text-teal-600 font-semibold uppercase tracking-wider">Bakı Yönü</div>
-              <div className="text-lg font-bold text-teal-800 leading-tight">{result.directionLabel}</div>
-              <div className="text-[11px] font-mono text-teal-700">{aspectLabel}</div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-zinc-50 rounded-md px-2 py-1.5">
-                <div className="text-[8px] text-zinc-500">Yükseklik</div>
-                <div className="text-[11px] font-bold text-zinc-800">{formatNumber(result.elevation)} m</div>
-              </div>
-              <div className="bg-zinc-50 rounded-md px-2 py-1.5">
-                <div className="text-[8px] text-zinc-500">Eğim</div>
-                <div className="text-[11px] font-bold text-zinc-800">{formatNumber(result.slopeDegrees)}°</div>
-              </div>
-              <div className="bg-zinc-50 rounded-md px-2 py-1.5">
-                <div className="text-[8px] text-zinc-500">Eğim (%)</div>
-                <div className="text-[11px] font-bold text-zinc-800">%{formatNumber(result.slopePercent)}</div>
-              </div>
-              <div className="bg-zinc-50 rounded-md px-2 py-1.5">
-                <div className="text-[8px] text-zinc-500">DEM Zoom</div>
-                <div className="text-[11px] font-bold text-zinc-800">z{result.tileZoom}</div>
-              </div>
-            </div>
-
-            <div className="text-[9px] text-zinc-500 bg-zinc-50 rounded-md px-2.5 py-2 leading-relaxed">
-              <div>Enlem: {formatCoordinate(result.point.lat)}</div>
-              <div>Boylam: {formatCoordinate(result.point.lng)}</div>
-            </div>
-          </div>
-        )}
+        {mode === 'point-aspect' && result && <PointAspectResult result={result} />}
 
         {mode === 'polygon-slope' && (
-          <div className="space-y-3">
-            <div className="text-[9px] text-zinc-600 bg-emerald-50 rounded-md px-2.5 py-2 leading-relaxed">
-              <i className="fa-solid fa-layer-group mr-1 text-emerald-600"></i>
-              Küçük alanlarda detaylı (~10 m), büyük alanlarda genel (~30-150 m) DEM otomatik seçilir. Maksimum analiz alanı {getMaxSlopeAnalysisAreaKm2()} km².
-            </div>
-
-            <div>
-              <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
-                Polygon Seç
-              </label>
-              <select
-                value={selectedPolygonId ?? ''}
-                onChange={(event) => onSelectedPolygonChange(event.target.value || null)}
-                className="w-full h-8 px-2 rounded-lg border border-zinc-200 bg-white text-[10px] text-zinc-800 outline-hidden focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="">Polygon seçin</option>
-                {polygonOptions.map((polygon) => (
-                  <option key={polygon.id} value={polygon.id}>
-                    {polygon.name} ({formatNumber(polygon.areaKm2, 2)} km²)
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {polygonOptions.length === 0 && (
-              <div className="text-[10px] text-zinc-500 bg-zinc-50 rounded-md px-2.5 py-2 leading-relaxed">
-                Analiz için görünür polygon verisi yok. Önce bir alan çizin veya polygon katmanı yükleyin.
-              </div>
-            )}
-
-            {selectedPolygon && selectedPolygon.areaKm2 > getMaxSlopeAnalysisAreaKm2() && (
-              <div className="text-[10px] text-red-700 bg-red-50 rounded-md px-2.5 py-2 leading-relaxed">
-                Seçili alan {formatNumber(selectedPolygon.areaKm2, 2)} km². En fazla {getMaxSlopeAnalysisAreaKm2()} km² analiz edilebilir.
-              </div>
-            )}
-
-            <button
-              onClick={onRunSlopeAnalysis}
-              disabled={!selectedPolygonId || isLoading || Boolean(selectedPolygon && selectedPolygon.areaKm2 > getMaxSlopeAnalysisAreaKm2())}
-              className="w-full h-8 rounded-lg bg-red-600 text-white text-[10px] font-semibold hover:bg-red-700 disabled:opacity-40 disabled:pointer-events-none transition-colors"
-            >
-              Analizi Çalıştır
-            </button>
-
-            {slopeResult && (
-              <div className="space-y-2">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-[9px] font-semibold text-zinc-600 uppercase tracking-wider">
-                      <i className="fa-solid fa-droplet text-[8px] mr-1"></i>
-                      Katman Opaklığı
-                    </label>
-                    <span className="text-[10px] font-bold text-zinc-700 tabular-nums">%{opacityPercent}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={opacityPercent}
-                    onChange={(e) => onSlopeOpacityChange(Number(e.target.value) / PERCENT_MULTIPLIER)}
-                    className="w-full h-1.5 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-red-600"
-                  />
-                </div>
-
-                <div className="text-[9px] text-emerald-700 bg-emerald-50 rounded-md px-2.5 py-1.5 leading-relaxed flex items-start gap-1.5">
-                  <i className="fa-solid fa-circle-info mt-0.5"></i>
-                  <span>Lejant sürüklenebilir panele taşındı.</span>
-                </div>
-              </div>
-            )}
-          </div>
+          <PolygonSlopeControls
+            polygonOptions={polygonOptions}
+            selectedPolygonId={selectedPolygonId}
+            slopeResult={slopeResult}
+            slopeOpacity={slopeOpacity}
+            isLoading={isLoading}
+            onSelectedPolygonChange={onSelectedPolygonChange}
+            onRunSlopeAnalysis={onRunSlopeAnalysis}
+            onSlopeOpacityChange={onSlopeOpacityChange}
+          />
         )}
 
         <button

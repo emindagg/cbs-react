@@ -18,9 +18,19 @@ const SLOPE_BOUNDARY_LAYER_ID = 'terrain-slope-boundary-layer'
 
 const EMPTY_POINTS: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] }
 const EMPTY_LINES: FeatureCollection<LineString> = { type: 'FeatureCollection', features: [] }
-const ARROW_LENGTH_METERS = 450
+// Eğim şiddetine göre dinamik ok uzunluğu:
+//  düz arazi  ≈ MIN, %100 eğim (≈45°) ≈ MAX
+const ARROW_MIN_LENGTH_METERS = 200
+const ARROW_MAX_LENGTH_METERS = 900
+// Slope yüzde değerini 0-1 arasına normalize etmek için doyum noktası (%100 = doyum)
+const ARROW_SLOPE_SATURATION_PERCENT = 100
 const EARTH_RADIUS_METERS = 6371008.8
 const LABEL_OFFSET_Y = 1.4
+
+function arrowLengthForSlope(slopePercent: number): number {
+  const t = Math.max(0, Math.min(1, slopePercent / ARROW_SLOPE_SATURATION_PERCENT))
+  return ARROW_MIN_LENGTH_METERS + (ARROW_MAX_LENGTH_METERS - ARROW_MIN_LENGTH_METERS) * t
+}
 
 function ensureSource(map: MapLibreMap, id: string, data: FeatureCollection): void {
   const source = map.getSource(id) as GeoJSONSource | undefined
@@ -80,7 +90,8 @@ function createArrowData(result: TerrainAnalysisResult): {
   }
 
   const start: [number, number] = [result.point.lng, result.point.lat]
-  const end = destinationPoint(result.point.lng, result.point.lat, result.aspectDegrees, ARROW_LENGTH_METERS)
+  const arrowLength = arrowLengthForSlope(result.slopePercent)
+  const end = destinationPoint(result.point.lng, result.point.lat, result.aspectDegrees, arrowLength)
   return {
     line: {
       type: 'FeatureCollection',

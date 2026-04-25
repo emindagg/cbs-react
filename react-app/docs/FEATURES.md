@@ -254,17 +254,21 @@ Bu feature tek bileşenli bir sunum katmanıdır.
 - Durum yönetimi `src/stores/useStorymapModalStore.ts` içindedir.
 - Storymap içeriğini iframe modal olarak açar; kapatma ve yeni sekmede açma akışlarını destekler.
 
-### Terrain Analysis
+### Terrain Analysis (Bakı ve Eğim)
 
 **Path:** `src/features/terrain-analysis/`
-**Public API:** `TerrainAnalysisPanel`, `TerrainAnalysisTool`, `useTerrainAnalysis`, `useTerrainAnalysisStore`, tipler
+**Public API:** `TerrainAnalysisPanel`, `TerrainAnalysisTool`, `TerrainSlopeLegend`, `useTerrainAnalysis`, `useTerrainAnalysisStore`, tipler
 
-Feature nokta tabanlı arazi bakı/eğim analizini yönetir.
-- Aktivasyon `GISToolsControl` içindeki `Bakı Analizi` aksiyonuyla yapılır.
-- `TerrainAnalysisTool`, `MapContainer` içinde mount edilir ve aktif araçta harita tıklamasını analiz noktasına çevirir.
-- AWS/Mapzen Terrarium DEM tile kaynağı doğrudan frontend'den okunur; RGB değerleri yükseklik değerine decode edilir.
-- 3x3 komşuluk üzerinde Horn yöntemiyle bakı, eğim ve merkez yükseklik hesaplanır.
-- Sonuç `TerrainAnalysisRenderer` ile marker, yön oku ve etiket olarak haritaya uygulanır; `TerrainAnalysisPanel` sonucu Türkçe gösterir.
+İki modlu arazi analizi (nokta tabanlı bakı + polygon tabanlı eğim) yönetir.
+- Aktivasyon `GISToolsControl` içindeki `Bakı ve Eğim Analizi` aksiyonuyla yapılır.
+- `TerrainAnalysisTool`, `MapContainer` içinde mount edilir; aktif araçta harita tıklamasını analiz noktasına çevirir.
+- AWS/Mapzen Terrarium DEM tile kaynağı doğrudan frontend'den okunur; RGB değerleri yükseklik değerine decode edilir. Kaynak `AttributionInfoButton` paneline atfedilir.
+- **Nokta Bakı modu**: 3x3 komşuluk üzerinde Horn yöntemiyle bakı, eğim ve yükseklik hesaplanır. Sonuç marker + yön oku + etiket olarak çizilir. **Ok uzunluğu eğim yüzdesine göre dinamik** (200–900 m, %100 doyum).
+- **Polygon Eğim modu**: Seçili polygon içinde raster eğim haritası üretir. TKGM bazlı 5 sınıflı renk skalası (yeşil → kırmızı, ColorBrewer RdYlGn) ile renderlanır.
+- **Dinamik LOD (Level-of-Detail)**: `selectLODForArea` alana göre uygun zoom (8–15) seçer; hedef ~512×512 piksel sabit, max 144 tile/analiz. Küçük alan = yüksek detay, büyük alan = genel.
+- **Sürüklenebilir lejant** (`TerrainSlopeLegend`): Ekran alt-orta varsayılan, başlıktan tutup taşınabilir, daraltılabilir. Sınıf başına yüzde + km² gösterimi.
+- **Opaklık slider'ı** ana panelde: Raster opaklığı 0–100 arasında dinamik, altlık haritayı görmek için kullanılır.
+- Maksimum analiz alanı 10.000 km² (LOD sayesinde tile patlaması yok); paralel satır okumayla DEM erişimi hızlandırılmıştır.
 
 ### Timeline
 

@@ -1,11 +1,10 @@
 import type maplibregl from 'maplibre-gl'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import { useDraggable } from '@/hooks'
 import { useMapStore } from '@/stores/useMapStore'
 
- 
 const SCALE_STEPS_M = [
-   
   1, 2, 5, 10, 20, 50, 100, 200, 500,
   // eslint-disable-next-line no-magic-numbers
   1000, 2000, 5000, 10000, 20000, 50000,
@@ -15,19 +14,23 @@ const SCALE_STEPS_M = [
 const MAX_BAR_WIDTH = 100
 const CONTROL_WIDTH = 120
 const CONTROL_HEIGHT = 50
+const MOBILE_BREAKPOINT = 768
+const MOBILE_BOTTOM_OFFSET = 70
+const DESKTOP_BOTTOM_OFFSET = 60
+const DESKTOP_RIGHT_OFFSET = 150
+const EARTH_RADIUS_M = 6_371_008.8
 
 function haversineDistance(
   lat1: number, lon1: number,
   lat2: number, lon2: number,
 ): number {
-  const R = 6_371_008.8
   const toRad = (d: number) => (d * Math.PI) / 180
   const dLat = toRad(lat2 - lat1)
   const dLon = toRad(lon2 - lon1)
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return EARTH_RADIUS_M * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
 function computeScale(map: maplibregl.Map) {
@@ -57,22 +60,28 @@ function computeScale(map: maplibregl.Map) {
   }
 
   const width = Math.round((step / maxMeters) * MAX_BAR_WIDTH)
+  // eslint-disable-next-line no-magic-numbers
   const label = step >= 1000 ? `${step / 1000} km` : `${step} m`
   return { width, label }
+}
+
+function getInitialPosition() {
+  const isMobile = window.innerWidth < MOBILE_BREAKPOINT
+  return {
+    x: isMobile ? Math.max(8, window.innerWidth / 2 - CONTROL_WIDTH / 2) : window.innerWidth - DESKTOP_RIGHT_OFFSET,
+    y: isMobile ? window.innerHeight - MOBILE_BOTTOM_OFFSET : window.innerHeight - DESKTOP_BOTTOM_OFFSET,
+  }
 }
 
 export default function DraggableScaleControl() {
   const { mapInstance } = useMapStore()
   const [scale, setScale] = useState<{ width: number; label: string } | null>(null)
-  const [pos, setPos] = useState(() => {
-    const isMobile = window.innerWidth < 768
-    return {
-      x: isMobile ? Math.max(8, window.innerWidth / 2 - CONTROL_WIDTH / 2) : window.innerWidth - 150,
-      y: isMobile ? window.innerHeight - 70 : window.innerHeight - 60,
-    }
+  const { position, setPosition, handlers } = useDraggable({
+    initial: getInitialPosition,
+    width: CONTROL_WIDTH,
+    height: CONTROL_HEIGHT,
+    recomputeOnResize: false,
   })
-  const isDragging = useRef(false)
-  const dragOrigin = useRef({ mx: 0, my: 0, px: 0, py: 0 })
 
   useEffect(() => {
     if (!mapInstance) return
@@ -87,56 +96,20 @@ export default function DraggableScaleControl() {
   }, [mapInstance])
 
   useEffect(() => {
-    const handleResize = () => {
-      const isMobile = window.innerWidth < 768
-      setPos({
-        x: isMobile ? Math.max(8, window.innerWidth / 2 - CONTROL_WIDTH / 2) : window.innerWidth - 150,
-        y: isMobile ? window.innerHeight - 70 : window.innerHeight - 60,
-      })
-    }
-
+    const handleResize = () => setPosition(getInitialPosition())
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  const onPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      isDragging.current = true
-      dragOrigin.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y }
-      e.currentTarget.setPointerCapture(e.pointerId)
-      e.stopPropagation()
-    },
-    [pos],
-  )
-
-  const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return
-    const dx = e.clientX - dragOrigin.current.mx
-    const dy = e.clientY - dragOrigin.current.my
-    const newX = dragOrigin.current.px + dx
-    const newY = dragOrigin.current.py + dy
-
-    const clampedX = Math.max(8, Math.min(newX, window.innerWidth - CONTROL_WIDTH - 8))
-    const clampedY = Math.max(8, Math.min(newY, window.innerHeight - CONTROL_HEIGHT - 8))
-
-    setPos({ x: clampedX, y: clampedY })
-  }, [])
-
-  const onPointerUp = useCallback(() => {
-    isDragging.current = false
-  }, [])
+  }, [setPosition])
 
   if (!scale || !mapInstance) return null
 
   return (
     <div
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
+      {...handlers}
       style={{
         position: 'fixed',
-        left: pos.x,
-        top: pos.y,
+        left: position.x,
+        top: position.y,
         zIndex: 1300,
         cursor: 'grab',
         userSelect: 'none',
@@ -149,11 +122,9 @@ export default function DraggableScaleControl() {
         fontSize: '11px',
       }}
     >
-      {/* Label */}
       <span style={{ lineHeight: '14px', whiteSpace: 'nowrap', paddingLeft: 2, fontWeight: 'bold' }}>
         {scale.label}
       </span>
-      {/* Bar */}
       <div
         style={{
           width: scale.width,

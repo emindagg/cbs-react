@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
+
+import { useDraggable } from '@/hooks'
 
 import type { TerrainSlopeResult } from '../types'
 
@@ -19,66 +21,57 @@ function formatNumber(value: number, fractionDigits = 1): string {
   })
 }
 
+interface ClassRow {
+  label: string
+  color: string
+  percent: number
+  areaKm2: number
+}
+
+function computeClassRows(result: TerrainSlopeResult): ClassRow[] {
+  const totalPixels = result.classes.reduce((sum, c) => sum + c.pixelCount, 0)
+  return result.classes.map((item) => {
+    const ratio = totalPixels > 0 ? item.pixelCount / totalPixels : 0
+    return {
+      label: item.label,
+      color: item.color,
+      percent: ratio * PERCENT_MULTIPLIER,
+      areaKm2: ratio * result.areaKm2,
+    }
+  })
+}
+
 export default function TerrainSlopeLegend({
   result,
   onClose,
 }: TerrainSlopeLegendProps) {
   const [collapsed, setCollapsed] = useState(false)
-  const [pos, setPos] = useState(() => ({
-    x: Math.max(8, window.innerWidth / 2 - LEGEND_WIDTH / 2),
-    y: Math.max(8, window.innerHeight - ESTIMATED_LEGEND_HEIGHT - LEGEND_DEFAULT_BOTTOM_OFFSET),
-  }))
-  const isDragging = useRef(false)
-  const dragOrigin = useRef({ mx: 0, my: 0, px: 0, py: 0 })
 
-  useEffect(() => {
-    const handleResize = () => {
-      setPos((prev) => ({
-        x: Math.min(prev.x, window.innerWidth - LEGEND_WIDTH - 8),
-        y: Math.min(prev.y, window.innerHeight - 80),
-      }))
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  const { position, isDragging, handlers } = useDraggable({
+    initial: () => ({
+      x: Math.max(8, window.innerWidth / 2 - LEGEND_WIDTH / 2),
+      y: Math.max(8, window.innerHeight - ESTIMATED_LEGEND_HEIGHT - LEGEND_DEFAULT_BOTTOM_OFFSET),
+    }),
+    width: LEGEND_WIDTH,
+    height: ESTIMATED_LEGEND_HEIGHT,
+  })
 
-  const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    isDragging.current = true
-    dragOrigin.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y }
-    e.currentTarget.setPointerCapture(e.pointerId)
-  }, [pos])
-
-  const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return
-    const dx = e.clientX - dragOrigin.current.mx
-    const dy = e.clientY - dragOrigin.current.my
-    const newX = dragOrigin.current.px + dx
-    const newY = dragOrigin.current.py + dy
-    const clampedX = Math.max(8, Math.min(newX, window.innerWidth - LEGEND_WIDTH - 8))
-    const clampedY = Math.max(8, Math.min(newY, window.innerHeight - 60))
-    setPos({ x: clampedX, y: clampedY })
-  }, [])
-
-  const onPointerUp = useCallback(() => {
-    isDragging.current = false
-  }, [])
+  const classRows = useMemo(() => computeClassRows(result), [result])
 
   return (
     <div
       style={{
         position: 'fixed',
-        left: pos.x,
-        top: pos.y,
+        left: position.x,
+        top: position.y,
         width: LEGEND_WIDTH,
         zIndex: 1400,
       }}
       className="bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-zinc-100 overflow-hidden select-none"
     >
       <div
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        style={{ cursor: isDragging.current ? 'grabbing' : 'grab', touchAction: 'none' }}
+        {...handlers}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none' }}
         className="px-3 py-2 bg-gradient-to-r from-red-50 to-amber-50 border-b border-zinc-100 flex items-center justify-between"
       >
         <div className="flex items-center gap-1.5">
@@ -128,23 +121,15 @@ export default function TerrainSlopeLegend({
 
           <div className="space-y-1">
             <div className="text-[9px] font-bold text-zinc-700 mb-1">Eğim Sınıfları</div>
-            {(() => {
-              const totalPixels = result.classes.reduce((sum, c) => sum + c.pixelCount, 0)
-              return result.classes.map((item) => {
-                const ratio = totalPixels > 0 ? item.pixelCount / totalPixels : 0
-                const areaKm2 = ratio * result.areaKm2
-                const percent = ratio * PERCENT_MULTIPLIER
-                return (
-                  <div key={item.label} className="flex items-center gap-2 text-[9px] text-zinc-700">
-                    <span className="w-4 h-3 rounded-sm border border-zinc-300 shrink-0" style={{ backgroundColor: item.color }} />
-                    <span className="font-medium truncate" title={item.label}>{item.label}</span>
-                    <span className="ml-auto text-zinc-500 tabular-nums whitespace-nowrap">
-                      %{formatNumber(percent, 1)} · {formatNumber(areaKm2, 2)} km²
-                    </span>
-                  </div>
-                )
-              })
-            })()}
+            {classRows.map((row) => (
+              <div key={row.label} className="flex items-center gap-2 text-[9px] text-zinc-700">
+                <span className="w-4 h-3 rounded-sm border border-zinc-300 shrink-0" style={{ backgroundColor: row.color }} />
+                <span className="font-medium truncate" title={row.label}>{row.label}</span>
+                <span className="ml-auto text-zinc-500 tabular-nums whitespace-nowrap">
+                  %{formatNumber(row.percent, 1)} · {formatNumber(row.areaKm2, 2)} km²
+                </span>
+              </div>
+            ))}
           </div>
 
           <div className="text-[8px] text-zinc-400 border-t border-zinc-100 pt-1.5 flex items-center justify-between">
