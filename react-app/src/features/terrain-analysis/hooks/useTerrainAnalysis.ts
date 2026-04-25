@@ -65,7 +65,6 @@ export function useTerrainAnalysis() {
         itemId: polygon.id,
         itemName: polygon.name,
         geometry: polygon.geometry,
-        zoom: map?.getZoom?.(),
         signal: controller.signal,
       })
       if (controller.signal.aborted) return

@@ -168,7 +168,7 @@ export default function TerrainAnalysisPanel({
           <div className="space-y-3">
             <div className="text-[9px] text-zinc-600 bg-emerald-50 rounded-md px-2.5 py-2 leading-relaxed">
               <i className="fa-solid fa-layer-group mr-1 text-emerald-600"></i>
-              Dinamik çözünürlük (LOD) etkin. Küçük alanlarda detaylı (~10 m), büyük alanlarda genel (~30-150 m) DEM otomatik seçilir. Maks {getMaxSlopeAnalysisAreaKm2()} km².
+              Küçük alanlarda detaylı (~10 m), büyük alanlarda genel (~30-150 m) DEM otomatik seçilir. Maksimum analiz alanı {getMaxSlopeAnalysisAreaKm2()} km².
             </div>
 
             <div>
