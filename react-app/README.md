@@ -1,8 +1,8 @@
 # OGM Materyal CBS
 
-`OGM Materyal CBS`, React 19 + TypeScript 5 ile geliştirilen feature-first bir harita uygulamasıdır. MapLibre GL üzerinde choropleth, bubble, dot-density, heatmap, isochrone, spatial analysis ve elevation profile gibi farklı CBS iş akışlarını tek uygulama kabuğunda toplar.
+`OGM Materyal CBS`, React 19 + TypeScript 5 ile geliştirilen feature-first bir harita uygulamasıdır. MapLibre GL üzerinde choropleth, bubble, dot-density, heatmap, isochrone, spatial analysis, terrain analysis ve elevation profile gibi farklı CBS iş akışlarını tek uygulama kabuğunda toplar.
 
-Kod tabanı `src/features/` altında **19 feature modülü** içerir. Root orchestrator katmanı `src/components/layout/AppLayout.tsx` içinde sidebar, harita, arama, overlay panelleri, legend ve analiz panellerini compose eder.
+Kod tabanı `src/features/` altında **21 feature modülü** içerir. Root orchestrator katmanı `src/components/layout/AppLayout.tsx` içinde sidebar, harita, arama, overlay panelleri, legend ve analiz panellerini compose eder.
 
 ## Başlangıç
 
@@ -44,6 +44,7 @@ Uygulamadaki feature envanteri:
 - legend
 - map
 - spatial-analysis
+- terrain-analysis
 - storymap-modal
 - timeline
 - visualization
@@ -52,7 +53,7 @@ Uygulamadaki feature envanteri:
 Öne çıkan yetenekler:
 - Excel, CSV, GeoJSON, KML ve Shapefile içe aktarma
 - Choropleth, bubble ve dot-density görselleştirmeleri
-- Heatmap, isochrone, convex hull, Voronoi, nearest-points ve elevation profile analizleri
+- Heatmap, isochrone, convex hull, Voronoi, nearest-points, bakı analizi ve elevation profile analizleri
 - Çizim araçları, ölçüm araçları ve overlay layer yönetimi
 - Legend, map title ve visualization wizard akışları
 - IndexedDB persist ve performans odaklı style senkronizasyonu

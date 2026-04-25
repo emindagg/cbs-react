@@ -4,6 +4,7 @@ import Map, { Source, Layer } from 'react-map-gl/maplibre'
 
 import { DataManagementDrawTool } from '@/features/data-management'
 import { ElevationProfileTool } from '@/features/elevation-profile'
+import { TerrainAnalysisTool } from '@/features/terrain-analysis'
 import { useBubbleTooltip, useChoroplethTooltip } from '@/shared/visualization'
 import { useMapStore } from '@/stores/useMapStore'
 
@@ -193,6 +194,7 @@ export default function MapContainer() {
 
         <DistanceTool />
         <ElevationProfileTool />
+        <TerrainAnalysisTool />
         <DataManagementDrawTool />
         <DataLayer />
         <GISToolsControl />
@@ -208,4 +210,3 @@ export default function MapContainer() {
     </div>
   )
 }
-

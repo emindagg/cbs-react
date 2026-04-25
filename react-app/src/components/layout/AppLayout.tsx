@@ -17,6 +17,7 @@ import { LegendContainer } from '@/features/legend'
 import { MapContainer, MapControlStack, CoordinateDisplay } from '@/features/map'
 import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-analysis'
 import { StorymapModal } from '@/features/storymap-modal'
+import { TerrainAnalysisPanel, useTerrainAnalysis } from '@/features/terrain-analysis'
 import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -71,6 +72,9 @@ export default function AppLayout() {
 
   // Elevation profile
   const elevationProfile = useElevationProfile()
+
+  // Terrain analysis (aspect)
+  const terrainAnalysis = useTerrainAnalysis()
 
   // Toggle sidebar and resize map
   const toggleSidebar = () => {
@@ -262,6 +266,18 @@ export default function AppLayout() {
         onRunAnalysis={() => elevationProfile.finalize(elevationProfile.waypoints)}
       />
 
+      {/* Terrain Aspect Analysis Panel */}
+      <TerrainAnalysisPanel
+        isOpen={terrainAnalysis.isPanelOpen}
+        isActive={terrainAnalysis.isActive}
+        isLoading={terrainAnalysis.isLoading}
+        error={terrainAnalysis.error}
+        selectedPoint={terrainAnalysis.selectedPoint}
+        result={terrainAnalysis.result}
+        onClose={() => terrainAnalysis.setPanelOpen(false)}
+        onDeactivate={terrainAnalysis.deactivate}
+      />
+
       {/* Visualization Legend */}
       <LegendContainer />
       <ImportedDataManagerFab />
@@ -269,7 +285,7 @@ export default function AppLayout() {
       {/* Coordinate Display – sidebar farkındalıklı; mobilde sidebar açıkken ve yükseklik profili paneli açıkken gizle */}
       <CoordinateDisplay
         leftPosition={controlsLeft}
-        hidden={(isSidebarOpen && !isMdUp) || elevationProfile.isPanelOpen}
+        hidden={(isSidebarOpen && !isMdUp) || elevationProfile.isPanelOpen || terrainAnalysis.isPanelOpen}
       />
 
       {/* Hikâye Haritası modal (iframe) */}

@@ -13,6 +13,7 @@ import {
   Trash2,
   TrendingUp,
   Waves,
+  Compass,
 } from 'lucide-react'
 import { useState, useRef, useEffect, type ComponentType } from 'react'
 import toast from 'react-hot-toast'
@@ -20,6 +21,7 @@ import { useMap } from 'react-map-gl/maplibre'
 
 import { useElevationProfileStore } from '@/features/elevation-profile'
 import { useInterpolationStore } from '@/features/interpolation'
+import { useTerrainAnalysisStore } from '@/features/terrain-analysis'
 import { useClusteringStore } from '@/stores/useClusteringStore'
 import { useDataManagementStore } from '@/stores/useDataManagementStore'
 import { useHeatmapStore } from '@/stores/useHeatmapStore'
@@ -94,6 +96,7 @@ const TOOLS: ToolDef[] = [
   { id: 'voronoi', icon: LayoutGrid, label: 'En Yakın Alanlar', activeColor: 'text-emerald-600', activeBg: 'bg-emerald-50', activeBorder: 'border-emerald-200', group: 'analysis' },
   { id: 'nearest-points', icon: Crosshair, label: 'En Yakın Nokta', activeColor: 'text-violet-600', activeBg: 'bg-violet-50', activeBorder: 'border-violet-200', group: 'analysis' },
   { id: 'interpolation', icon: Waves, label: 'Enterpolasyon', activeColor: 'text-indigo-600', activeBg: 'bg-indigo-50', activeBorder: 'border-indigo-200', group: 'analysis' },
+  { id: 'aspect-analysis', icon: Compass, label: 'Bakı Analizi', activeColor: 'text-teal-600', activeBg: 'bg-teal-50', activeBorder: 'border-teal-200', group: 'analysis' },
   { id: 'heatmap', icon: Flame, label: 'Isı Haritası', activeColor: 'text-red-600', activeBg: 'bg-red-50', activeBorder: 'border-red-200', group: 'analysis' },
   { id: 'isochrone', icon: Network, label: 'Erişilebilirlik Analizi', activeColor: 'text-cyan-600', activeBg: 'bg-cyan-50', activeBorder: 'border-cyan-200', group: 'analysis' },
   { id: 'elevation-profile', icon: TrendingUp, label: 'Yükselti Profili Analizi', activeColor: 'text-teal-600', activeBg: 'bg-teal-50', activeBorder: 'border-teal-200', group: 'analysis' },
@@ -116,6 +119,7 @@ export default function GISToolsControl() {
   const { activeAnalysis, toggle: toggleSpatial, deactivate: deactivateSpatial } = useSpatialAnalysisStore()
   const { isActive: isInterpolationActive, toggle: toggleInterpolation, deactivate: deactivateInterpolation } = useInterpolationStore()
   const { isPanelOpen: isElevationPanelOpen, setPanelOpen: setElevationPanelOpen, deactivate: deactivateElevation } = useElevationProfileStore()
+  const { isActive: isTerrainAnalysisActive, activate: activateTerrainAnalysis, deactivate: deactivateTerrainAnalysis } = useTerrainAnalysisStore()
 
   const {
     toolsMenuMode,
@@ -162,6 +166,10 @@ export default function GISToolsControl() {
       deactivateSpatial()
     }
     if (exceptToolId !== 'interpolation' && isInterpolationActive) deactivateInterpolation()
+    if (exceptToolId !== 'aspect-analysis' && isTerrainAnalysisActive) deactivateTerrainAnalysis()
+    if (exceptToolId !== 'aspect-analysis' && activeTool === 'aspect-analysis') {
+      setActiveTool('none' as ToolType)
+    }
     if (exceptToolId !== 'measure-distance' && activeTool === 'measure-distance') {
       setActiveTool('none' as ToolType)
     }
@@ -236,6 +244,14 @@ export default function GISToolsControl() {
       toggleSpatial('nearest-points')
     } else if (toolId === 'interpolation') {
       toggleInterpolation()
+    } else if (toolId === 'aspect-analysis') {
+      if (activeTool === 'aspect-analysis' || isTerrainAnalysisActive) {
+        deactivateTerrainAnalysis()
+        setActiveTool('none' as ToolType)
+      } else {
+        activateTerrainAnalysis()
+        setActiveTool('aspect-analysis' as ToolType)
+      }
     } else if (toolId === 'elevation-profile') {
       if (activeTool === 'elevation-profile') {
         deactivateElevation()
@@ -264,6 +280,7 @@ export default function GISToolsControl() {
     if (toolId === 'voronoi') return activeAnalysis === 'voronoi'
     if (toolId === 'nearest-points') return activeAnalysis === 'nearest-points'
     if (toolId === 'interpolation') return isInterpolationActive
+    if (toolId === 'aspect-analysis') return isTerrainAnalysisActive
     if (toolId === 'elevation-profile') return activeTool === 'elevation-profile'
     return activeTool === toolId
   }
@@ -277,6 +294,7 @@ export default function GISToolsControl() {
     if (tool.id === 'voronoi' && activeAnalysis === 'voronoi') return 'En Yakın Alanları Kapat'
     if (tool.id === 'nearest-points' && activeAnalysis === 'nearest-points') return 'Analizi Kapat'
     if (tool.id === 'interpolation' && isInterpolationActive) return 'Enterpolasyonu Kapat'
+    if (tool.id === 'aspect-analysis' && isTerrainAnalysisActive) return 'Bakı Analizini Kapat'
     if (tool.id === 'elevation-profile' && activeTool === 'elevation-profile') return 'Analizi Kapat'
     return tool.label
   }

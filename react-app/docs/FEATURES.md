@@ -7,7 +7,7 @@
 
 ## Genel Bakış
 
-Bu repo artık `src/features/` altında **20 feature modülü** içeriyor. Eski dokümanlardaki `13 feature` ifadesi güncel durumu yansıtmıyor.
+Bu repo artık `src/features/` altında **21 feature modülü** içeriyor. Eski dokümanlardaki `13 feature` ifadesi güncel durumu yansıtmıyor.
 
 Feature'lar hâlâ Vertical Slice yaklaşımıyla organize ediliyor, ancak hepsi aynı ağırlıkta değil:
 - Bazıları tam feature paketi olarak `component + hook + service/renderer + store` içeriyor.
@@ -56,6 +56,7 @@ Güncel uygulama akışı:
 | Map | `src/features/map/` | `MapContainer`, `MapControlStack`, `DataLayer`, araç/controls export'ları | Çekirdek harita kabuğu, tool mount noktası, veri katmanları ve harita domain'i içinde ikincil orchestration katmanı |
 | Spatial Analysis | `src/features/spatial-analysis/` | `SpatialAnalysisPanel`, `useSpatialAnalysis`, renderer'lar | Convex hull, Voronoi ve nearest-points analizi |
 | Storymap Modal | `src/features/storymap-modal/` | `StorymapModal` | Storymap içeriğini iframe modal olarak gösterir |
+| Terrain Analysis | `src/features/terrain-analysis/` | `TerrainAnalysisPanel`, `TerrainAnalysisTool`, `useTerrainAnalysis` | AWS/Mapzen Terrarium DEM tile kaynağıyla nokta tabanlı bakı/eğim analizi |
 | Timeline | `src/features/timeline/` | `useTimelineStore`, `STEP_MS`, timeline tipleri | Zaman tabanlı filtreleme ve oynatma durumu; UI `map` feature içinde |
 | Visualization | `src/features/visualization/` | renderer'lar, tooltip hook'ları, `VisualizationManager`, `useVisualizationLayerPersistence` | Choropleth, bubble ve dot-density render orkestrasyonu |
 | Viz Wizard | `src/features/viz-wizard/` | `VizWizardStep1`, `VizWizardStep2`, `VizWizardStep3`, `VizWizardSidebar`, `MapTitle` | İçe aktarma, eşleme, render ve harita sunum ayarlarını yöneten sihirbaz |
@@ -230,7 +231,7 @@ Bu feature çekirdek harita kabuğudur.
 - `MapContainer` içinde raster basemap source/layer, `DistanceTool`, `ElevationProfileTool`, `DataManagementDrawTool`, `DataLayer`, `GISToolsControl` ve `TimelineControl` mount edilir.
 - Harita dışı yardımcı kontroller `DraggableScaleControl`, `DraggableNorthArrow` ve `MapCompass` ile tamamlanır.
 - `MapControlStack`, sidebar toggle, zoom, geolocation, injected basemap control ve astronomy toggle içerir.
-- `GISToolsControl` yalnız ölçüm değil; buffer, clustering, heatmap, isochrone, convex hull, voronoi, nearest points, elevation profile, screenshot ve temizleme aksiyonlarını tetikler.
+- `GISToolsControl` yalnız ölçüm değil; buffer, clustering, heatmap, isochrone, convex hull, voronoi, nearest points, bakı analizi, elevation profile, screenshot ve temizleme aksiyonlarını tetikler.
 
 ### Spatial Analysis
 
@@ -252,6 +253,18 @@ Bu feature tek bileşenli bir sunum katmanıdır.
 - `AppLayout` içinde sürekli mount edilir.
 - Durum yönetimi `src/stores/useStorymapModalStore.ts` içindedir.
 - Storymap içeriğini iframe modal olarak açar; kapatma ve yeni sekmede açma akışlarını destekler.
+
+### Terrain Analysis
+
+**Path:** `src/features/terrain-analysis/`
+**Public API:** `TerrainAnalysisPanel`, `TerrainAnalysisTool`, `useTerrainAnalysis`, `useTerrainAnalysisStore`, tipler
+
+Feature nokta tabanlı arazi bakı/eğim analizini yönetir.
+- Aktivasyon `GISToolsControl` içindeki `Bakı Analizi` aksiyonuyla yapılır.
+- `TerrainAnalysisTool`, `MapContainer` içinde mount edilir ve aktif araçta harita tıklamasını analiz noktasına çevirir.
+- AWS/Mapzen Terrarium DEM tile kaynağı doğrudan frontend'den okunur; RGB değerleri yükseklik değerine decode edilir.
+- 3x3 komşuluk üzerinde Horn yöntemiyle bakı, eğim ve merkez yükseklik hesaplanır.
+- Sonuç `TerrainAnalysisRenderer` ile marker, yön oku ve etiket olarak haritaya uygulanır; `TerrainAnalysisPanel` sonucu Türkçe gösterir.
 
 ### Timeline
 
@@ -304,6 +317,7 @@ Adım açıklamaları eski dokümandan farklıdır.
 - `useHeatmapStore`: heatmap durumu ve preset'leri
 - `useIsochroneStore`: isochrone durumu
 - `useSpatialAnalysisStore`: ileri analiz durumu
+- `useTerrainAnalysisStore`: nokta tabanlı bakı/eğim analizi durumu
 - `useStorymapModalStore`: storymap modal açık/kapalı durumu
 - `useTimelineStore`: feature-level timeline store'u re-export eden bridge
 

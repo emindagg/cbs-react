@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type ToolType = 'none' | 'measure-distance' | 'measure-area' | 'analysis' | 'timeline' | 'elevation-profile'
+export type ToolType = 'none' | 'measure-distance' | 'measure-area' | 'analysis' | 'timeline' | 'elevation-profile' | 'aspect-analysis'
 export type ToolsMenuMode = 'closed' | 'full' | 'icons-only'
 
 interface ToolState {

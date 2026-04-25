@@ -63,12 +63,32 @@ export function createMapMock() {
     layer.paint[property] = value
   })
 
+  const setLayoutProperty = vi.fn((layerId: string, property: string, value: unknown) => {
+    const layer = layers.get(layerId)
+    if (!layer) return
+    layer.layout = { ...(layer.layout ?? {}), [property]: value }
+  })
+
+  const removeLayer = vi.fn((layerId: string) => {
+    layers.delete(layerId)
+  })
+
+  const removeSource = vi.fn((sourceId: string) => {
+    sources.delete(sourceId)
+  })
+
+  const moveLayer = vi.fn()
+
   const map = {
     addLayer,
     addSource,
     getLayer: vi.fn((layerId: string) => layers.get(layerId)),
     getSource: vi.fn((sourceId: string) => sources.get(sourceId)),
+    moveLayer,
+    removeLayer,
+    removeSource,
     setFilter,
+    setLayoutProperty,
     setPaintProperty,
   } as unknown as maplibregl.Map
 
@@ -78,7 +98,11 @@ export function createMapMock() {
     sources,
     addLayer,
     addSource,
+    moveLayer,
+    removeLayer,
+    removeSource,
     setFilter,
+    setLayoutProperty,
     setPaintProperty,
   }
 }
