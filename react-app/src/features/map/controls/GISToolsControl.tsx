@@ -361,9 +361,11 @@ export default function GISToolsControl() {
 
       {/* Full Mode Panel */}
       <div
-        className={`mt-2 w-[185px] bg-white/90 backdrop-blur-xl border border-zinc-200/80 rounded-xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.1)] flex flex-col max-h-[calc(100vh-120px)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${toolsMenuMode === 'full'
-          ? 'translate-y-0 opacity-100 scale-100'
-          : '-translate-y-4 opacity-0 scale-95 pointer-events-none'
+        className={`mt-2 bg-white/90 backdrop-blur-xl border border-zinc-200/80 rounded-xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.1)] flex flex-col max-h-[calc(100vh-120px)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${toolsMenuMode === 'full'
+          ? 'w-[185px] translate-y-0 opacity-100 scale-100'
+          : toolsMenuMode === 'icons-only'
+            ? 'w-0 overflow-hidden opacity-0 pointer-events-none'
+            : 'w-[185px] -translate-y-4 opacity-0 scale-95 pointer-events-none'
         }`}
       >
         {/* Header */}
