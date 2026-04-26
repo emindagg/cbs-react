@@ -79,6 +79,7 @@ export default function DistanceTool() {
     distancePoints,
     isDrawingDistance,
     resetDistance,
+    undoDistance,
   } = useToolStore()
 
   const isActive = activeTool === 'measure-distance'
@@ -301,6 +302,8 @@ export default function DistanceTool() {
         formatDistance={formatDistance}
         formatArea={formatArea}
         onReset={resetDistance}
+        onUndo={undoDistance}
+        canUndo={distancePoints.length > 0}
       />
 
       <Source id="measure-source" type="geojson" data={mainGeoJSON}>

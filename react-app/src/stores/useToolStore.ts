@@ -25,6 +25,7 @@ interface ToolState {
   setDistancePoints: (points: [number, number][]) => void
   setIsDrawingDistance: (isDrawing: boolean) => void
   resetDistance: () => void
+  undoDistance: () => void
 }
 
 export const useToolStore = create<ToolState>((set) => ({
@@ -89,4 +90,8 @@ export const useToolStore = create<ToolState>((set) => ({
     distancePoints: [],
     isDrawingDistance: false,
   }),
+
+  undoDistance: () => set((state) => ({
+    distancePoints: state.distancePoints.slice(0, -1),
+  })),
 }))

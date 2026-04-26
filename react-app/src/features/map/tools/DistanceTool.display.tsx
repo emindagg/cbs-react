@@ -17,6 +17,8 @@ interface MeasurementPanelProps {
   formatDistance: (val: number) => string
   formatArea: (val: number) => string
   onReset: () => void
+  onUndo: () => void
+  canUndo: boolean
 }
 
 export const MeasurementPanel = memo(forwardRef<MeasurementPanelHandle, MeasurementPanelProps>(
@@ -28,6 +30,8 @@ export const MeasurementPanel = memo(forwardRef<MeasurementPanelHandle, Measurem
     formatDistance,
     formatArea,
     onReset,
+    onUndo,
+    canUndo,
   }, ref) {
     const tempTotalRef = useRef<HTMLSpanElement>(null)
     const tempSegmentRef = useRef<HTMLSpanElement>(null)
@@ -72,6 +76,19 @@ export const MeasurementPanel = memo(forwardRef<MeasurementPanelHandle, Measurem
             className="flex items-center gap-[3px] text-white/70 text-[8px] font-semibold px-[5px] py-[2px] rounded-[4px] hover:bg-white/10 hover:text-white transition-colors border-none bg-transparent cursor-pointer"
           >
             ESC
+          </button>
+
+          <button
+            onClick={onUndo}
+            disabled={!canUndo}
+            className={`flex items-center gap-[3px] text-[8px] font-semibold px-[5px] py-[2px] rounded-[4px] transition-colors border-none cursor-pointer ${
+              canUndo
+                ? 'text-white/70 hover:bg-white/10 hover:text-white bg-transparent'
+                : 'text-white/30 bg-transparent cursor-not-allowed'
+            }`}
+            title="Son noktayı geri al"
+          >
+            ↶
           </button>
 
           <div className="w-px h-[14px] bg-white/20"></div>
