@@ -50,12 +50,13 @@ export const MeasurementPanel = memo(forwardRef<MeasurementPanelHandle, Measurem
       <>
         <style>{`
           @keyframes slideDownFade {
-            from { transform: translate(-50%, -20px); opacity: 0; }
-            to { transform: translate(-50%, 0); opacity: 1; }
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
           }
         `}</style>
+        <div className="fixed top-[68px] left-0 right-0 flex justify-center px-3 z-2001 pointer-events-none font-sans">
         <div
-          className="fixed top-[68px] left-1/2 transform -translate-x-1/2 flex items-center gap-[6px] z-2001 font-sans pointer-events-auto"
+          className="flex items-center gap-[6px] pointer-events-auto"
           style={{
             backgroundColor: 'rgba(17, 24, 39, 0.95)',
             backdropFilter: 'blur(8px)',
@@ -112,6 +113,7 @@ export const MeasurementPanel = memo(forwardRef<MeasurementPanelHandle, Measurem
               )}
             </div>
           )}
+        </div>
         </div>
       </>
     )
