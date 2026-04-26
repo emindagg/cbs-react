@@ -161,7 +161,7 @@ export default function ElevationProfilePanel({
             disabled={waypointCount < 2 || isLoading}
             className={`px-2.5 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-colors ${
               waypointCount >= 2 && !isLoading
-                ? 'border-slate-800 bg-slate-800 text-white hover:bg-slate-700'
+                ? 'border-gray-900 bg-gray-900 text-white hover:bg-gray-800'
                 : 'bg-zinc-50 border-zinc-100 text-zinc-300 cursor-not-allowed'
             }`}
             title={waypointCount < 2 ? 'En az 2 nokta ekleyin' : 'Analizi çalıştır'}
