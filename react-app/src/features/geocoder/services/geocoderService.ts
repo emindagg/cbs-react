@@ -237,6 +237,21 @@ export class GeocoderManager {
   }
 
   /**
+   * Focus on coordinates directly
+   */
+  focusOnCoordinates(lat: number, lng: number): void {
+    this.map.flyTo({
+      center: [lng, lat],
+      zoom: 14,
+      duration: 1500,
+      essential: true,
+    })
+
+    // Add marker with coordinate label
+    this.addSearchMarker([lng, lat], { name: `${lat.toFixed(6)}, ${lng.toFixed(6)}` })
+  }
+
+  /**
    * Add search marker
    */
   private addSearchMarker(coordinates: [number, number], properties: Record<string, unknown>): void {
