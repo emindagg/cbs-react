@@ -4,7 +4,7 @@
  */
 
 import type maplibregl from 'maplibre-gl'
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { useToolStore } from '@/stores/useToolStore'
 
@@ -28,6 +28,9 @@ export function useDistanceHandlers({
     setIsDrawingDistance,
     resetDistance,
   } = useToolStore()
+
+  const dragPendingRef = useRef<Map<number, [number, number]> | null>(null)
+  const dragRafRef = useRef<number | null>(null)
 
   const handleClick = useCallback((e: maplibregl.MapMouseEvent) => {
     if (!isActive) return
@@ -70,20 +73,34 @@ export function useDistanceHandlers({
   }, [isActive, isDrawingDistance, distancePoints, setDistancePoints, setIsDrawingDistance, onGhostReset])
 
   const handleMarkerDrag = useCallback((idx: number, e: { lngLat: { lng: number; lat: number } }) => {
-    const newPoints: [number, number][] = [...distancePoints]
     const newPoint: [number, number] = [e.lngLat.lng, e.lngLat.lat]
 
-    newPoints[idx] = newPoint
-
-    if (isClosed) {
-      if (idx === 0) {
-        newPoints[newPoints.length - 1] = newPoint
-      } else if (idx === newPoints.length - 1) {
-        newPoints[0] = newPoint
-      }
+    if (!dragPendingRef.current) {
+      dragPendingRef.current = new Map()
     }
+    dragPendingRef.current.set(idx, newPoint)
 
-    setDistancePoints(newPoints)
+    if (dragRafRef.current === null) {
+      dragRafRef.current = requestAnimationFrame(() => {
+        dragRafRef.current = null
+        if (!dragPendingRef.current || dragPendingRef.current.size === 0) return
+
+        const newPoints: [number, number][] = [...distancePoints]
+        dragPendingRef.current.forEach((point, markerIdx) => {
+          newPoints[markerIdx] = point
+
+          if (isClosed) {
+            if (markerIdx === 0) {
+              newPoints[newPoints.length - 1] = point
+            } else if (markerIdx === newPoints.length - 1) {
+              newPoints[0] = point
+            }
+          }
+        })
+        dragPendingRef.current.clear()
+        setDistancePoints(newPoints)
+      })
+    }
   }, [distancePoints, isClosed, setDistancePoints])
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
