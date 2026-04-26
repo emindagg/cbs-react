@@ -81,7 +81,7 @@ export const MeasurementPanel = memo(forwardRef<MeasurementPanelHandle, Measurem
           <button
             onClick={onUndo}
             disabled={!canUndo}
-            className={`flex items-center gap-[3px] text-[8px] font-semibold px-[5px] py-[2px] rounded-[4px] transition-colors border-none cursor-pointer ${
+            className={`flex items-center gap-[3px] text-[10px] font-semibold px-[6px] py-[2.5px] rounded-[4px] transition-colors border-none cursor-pointer ${
               canUndo
                 ? 'text-white/70 hover:bg-white/10 hover:text-white bg-transparent'
                 : 'text-white/30 bg-transparent cursor-not-allowed'
