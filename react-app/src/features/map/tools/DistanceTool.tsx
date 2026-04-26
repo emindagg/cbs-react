@@ -120,8 +120,10 @@ export default function DistanceTool() {
   const resetGhost = useCallback(() => {
     ghostPointRef.current = null
     updateGhostSource()
-    panelRef.current?.updateLive(0, 0)
-  }, [updateGhostSource])
+    if (distancePoints.length === 0) {
+      panelRef.current?.updateLive(0, 0)
+    }
+  }, [updateGhostSource, distancePoints.length])
 
   const {
     handleClick,
@@ -207,9 +209,11 @@ export default function DistanceTool() {
     if (!isDrawingDistance) {
       ghostPointRef.current = null
       updateGhostSource()
-      panelRef.current?.updateLive(0, 0)
+      if (distancePoints.length === 0) {
+        panelRef.current?.updateLive(0, 0)
+      }
     }
-  }, [isDrawingDistance, updateGhostSource])
+  }, [isDrawingDistance, distancePoints.length, updateGhostSource])
 
   const mainGeoJSON = useMemo((): FeatureCollection<LineString | Polygon> => {
     if (distancePoints.length < 2) return { type: 'FeatureCollection', features: [] }
