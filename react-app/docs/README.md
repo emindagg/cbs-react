@@ -10,6 +10,10 @@ Bu klasör, projenin tüm dokümantasyon dosyalarını içerir.
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Katkıda bulunma rehberi, kod standartları, test ve PR süreci
 - [FEATURES.md](./FEATURES.md) - Tüm feature'ların detaylı dökümü, public API'leri ve bağımlılık grafiği (Interpolation dahil)
+- [PRD.md](./PRD.md) - Ürün gereksinimleri, kullanıcı hikayeleri, kabul kriterleri
+- [TechStack.md](./TechStack.md) - Teknoloji yığını, altyapı ve teknik güncellemeler
+- [FeatureList.md](./FeatureList.md) - Milestone bazlı özellik listesi (MVP -> v1.0)
+- [BrandGuide.md](./BrandGuide.md) - Marka dili, renk tokenları, tipografi ve mikro metin kuralları
 
 ## Entegrasyonlar
 
