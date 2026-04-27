@@ -19,9 +19,20 @@ import {
 
 const GHOST_SOURCE_ID = 'measure-ghost-source'
 const EMPTY_GHOST_DATA: FeatureCollection<LineString> = { type: 'FeatureCollection', features: [] }
-const NORMAL_VERTEX_DIAMETER_PX = 10
-const SELECTED_VERTEX_DIAMETER_PX = 12
+const NORMAL_VERTEX_DIAMETER_PX = 11
+const SELECTED_VERTEX_DIAMETER_PX = 13
 const MIDPOINT_DIAMETER_PX = 7
+const DISTANCE_TOOL_COLORS = {
+  line: '#211F1F',
+  lineGhost: '#4b4646',
+  fill: '#2b2828',
+  vertex: '#211F1F',
+  vertexSelected: '#141212',
+  vertexBorder: '#d6d3d1',
+  vertexSelectedBorder: '#60a5fa',
+  midpoint: '#3a3535',
+  midpointBorder: '#cfc9c9',
+} as const
 
 interface MarkerListProps {
   points: [number, number][]
@@ -75,8 +86,8 @@ const MidpointList = memo(function MidpointList({
             style={{
               width: `${MIDPOINT_DIAMETER_PX}px`,
               height: `${MIDPOINT_DIAMETER_PX}px`,
-              backgroundColor: '#94a3b8',
-              border: '1px solid #ffffff',
+              backgroundColor: DISTANCE_TOOL_COLORS.midpoint,
+              border: `1px solid ${DISTANCE_TOOL_COLORS.midpointBorder}`,
               boxShadow: '0 1px 2px rgba(0, 0, 0, 0.35)',
               transition: 'none',
             }}
@@ -119,8 +130,12 @@ const MarkerList = memo(function MarkerList({
               style={{
                 width: `${vertexSizePx}px`,
                 height: `${vertexSizePx}px`,
-                backgroundColor: '#1a1a1a',
-                border: '2px solid #ffffff',
+                backgroundColor: isSelectedVertex
+                  ? DISTANCE_TOOL_COLORS.vertexSelected
+                  : DISTANCE_TOOL_COLORS.vertex,
+                border: `2px solid ${isSelectedVertex
+                  ? DISTANCE_TOOL_COLORS.vertexSelectedBorder
+                  : DISTANCE_TOOL_COLORS.vertexBorder}`,
                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
                 transition: 'none',
               }}
@@ -360,9 +375,9 @@ export default function DistanceTool() {
     id: 'measure-line',
     type: 'line',
     paint: {
-      'line-color': '#475569',
+      'line-color': DISTANCE_TOOL_COLORS.line,
       'line-width': 2,
-      'line-opacity': 0.75,
+      'line-opacity': 0.72,
     },
   }
 
@@ -370,8 +385,8 @@ export default function DistanceTool() {
     id: 'measure-fill',
     type: 'fill',
     paint: {
-      'fill-color': '#9ca3af',
-      'fill-opacity': 0.0,
+      'fill-color': DISTANCE_TOOL_COLORS.fill,
+      'fill-opacity': 0.08,
     },
   }
 
@@ -379,10 +394,10 @@ export default function DistanceTool() {
     id: 'measure-ghost-line',
     type: 'line',
     paint: {
-      'line-color': '#94a3b8',
+      'line-color': DISTANCE_TOOL_COLORS.lineGhost,
       'line-width': 2,
       'line-dasharray': [2, 2],
-      'line-opacity': 0.6,
+      'line-opacity': 0.68,
     },
   }
 
