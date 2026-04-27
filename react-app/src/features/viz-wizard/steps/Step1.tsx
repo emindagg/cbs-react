@@ -150,7 +150,7 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
         </div>
       </div>
 
-      <p className="text-[10px] text-zinc-400">Excel (.xlsx, .xls) veya CSV (.csv)</p>
+      <p className="text-[10px] text-zinc-400">Türkiye il veya ilçe verisi içeren Excel (.xlsx, .xls) veya CSV (.csv) dosyası yükleyin</p>
 
       {!isLoading && fileInfo && fileName && (
         <div className="bg-emerald-50/50 rounded-md p-2.5">
@@ -165,14 +165,6 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
         </div>
       )}
 
-      {!fileName && !isLoading && (
-        <div className="flex items-start gap-2 p-2 bg-zinc-50/50 rounded-md">
-          <i className="fa-solid fa-lightbulb text-amber-500 text-xs mt-0.5" />
-          <p className="text-[10px] text-zinc-600 leading-relaxed">
-            Türkiye il veya ilçe verisi içeren Excel/CSV dosyası yükleyin.
-          </p>
-        </div>
-      )}
     </div>
   )
 }

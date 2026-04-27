@@ -13,6 +13,7 @@ export function DataCatalogSection() {
   const items = useDataManagementStore(state => state.items)
   const updateItemFillColor = useDataManagementStore(state => state.updateItemFillColor)
   const toggleVisibility = useDataManagementStore(state => state.toggleVisibility)
+  const removeItem = useDataManagementStore(state => state.removeItem)
   const [colorPickerItemId, setColorPickerItemId] = useState<string | null>(null)
   const [colorPickerPosition, setColorPickerPosition] = useState<{ top: number; left: number } | null>(null)
   const colorPickerRef = useRef<HTMLDivElement>(null)
@@ -197,6 +198,16 @@ export function DataCatalogSection() {
                     title={item.visible ? 'Gizle' : 'Göster'}
                   >
                     <i className={item.visible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'}></i>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeItem(item.id)
+                    }}
+                    className="shrink-0 text-[10px] text-zinc-300 hover:text-red-500 transition-colors"
+                    title="Sil"
+                  >
+                    <i className="fa-solid fa-trash"></i>
                   </button>
                 </div>
               </div>
