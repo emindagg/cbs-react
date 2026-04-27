@@ -45,6 +45,7 @@ interface MarkerListProps {
 
 interface MidpointListProps {
   points: [number, number][]
+  onMidpointClick: (insertIndex: number, e: { originalEvent?: Event } | Event) => void
   onMidpointDragStart: (insertIndex: number) => void
   onMidpointDrag: (insertIndex: number, e: { lngLat: { lng: number; lat: number } }) => void
   onMidpointDragEnd: () => void
@@ -52,6 +53,7 @@ interface MidpointListProps {
 
 const MidpointList = memo(function MidpointList({
   points,
+  onMidpointClick,
   onMidpointDragStart,
   onMidpointDrag,
   onMidpointDragEnd,
@@ -76,6 +78,7 @@ const MidpointList = memo(function MidpointList({
           longitude={pt[0]}
           latitude={pt[1]}
           draggable={true}
+          onClick={(e) => onMidpointClick(idx + 1, e)}
           onDragStart={() => onMidpointDragStart(idx + 1)}
           onDrag={(e) => onMidpointDrag(idx + 1, e)}
           onDragEnd={onMidpointDragEnd}
@@ -370,6 +373,29 @@ export default function DistanceTool() {
     setTimeout(() => { isDraggingMarker.current = false }, 50)
   }, [])
 
+  const handleMidpointClick = useCallback((insertIndex: number, e: { originalEvent?: Event } | Event) => {
+    const hasOriginalEvent = (evt: unknown): evt is { originalEvent: Event } =>
+      typeof evt === 'object' && evt !== null && 'originalEvent' in evt
+
+    if (hasOriginalEvent(e) && e.originalEvent && typeof e.originalEvent.stopPropagation === 'function') {
+      e.originalEvent.stopPropagation()
+    } else if (e && typeof (e as Event).stopPropagation === 'function') {
+      (e as Event).stopPropagation()
+    }
+
+    const prevPoints = useToolStore.getState().distancePoints
+    if (insertIndex < 1 || insertIndex > prevPoints.length - 1) return
+    const prevPoint = prevPoints[insertIndex - 1]
+    const nextPoint = prevPoints[insertIndex]
+    const midpoint: [number, number] = [
+      (prevPoint[0] + nextPoint[0]) / 2,
+      (prevPoint[1] + nextPoint[1]) / 2,
+    ]
+    const updated = [...prevPoints]
+    updated.splice(insertIndex, 0, midpoint)
+    setDistancePoints(updated)
+  }, [setDistancePoints])
+
   if (!isActive) return null
   if (distancePoints.length === 0 && !isDrawingDistance) return null
 
@@ -438,6 +464,7 @@ export default function DistanceTool() {
       />
       <MidpointList
         points={distancePoints}
+        onMidpointClick={handleMidpointClick}
         onMidpointDragStart={handleMidpointDragStart}
         onMidpointDrag={handleMidpointDrag}
         onMidpointDragEnd={handleMidpointDragEnd}
