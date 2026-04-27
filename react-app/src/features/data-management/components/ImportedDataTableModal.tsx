@@ -6,7 +6,7 @@ import type {
 } from 'ag-grid-community'
 import { themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
-import { AlertTriangle, Check, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Check, Loader2, Trash2, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -54,7 +54,7 @@ interface ConfirmState {
   message: string
   confirmLabel: string
   variant: ConfirmVariant
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
 }
 
 interface ConfirmDialogProps {
@@ -63,62 +63,91 @@ interface ConfirmDialogProps {
 }
 
 function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   useEffect(() => {
     if (!state) return
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onCancel()
+      if (event.key === 'Escape' && !isSubmitting) onCancel()
     }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
-  }, [state, onCancel])
+  }, [state, onCancel, isSubmitting])
+
+  useEffect(() => {
+    setIsSubmitting(false)
+  }, [state])
 
   if (!state) return null
 
+  const handleConfirm = async () => {
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      await state.onConfirm()
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return createPortal(
     <div
-      className="fixed inset-0 z-[2100] flex items-center justify-center bg-slate-900/40 p-4"
-      onClick={onCancel}
+      className="fixed inset-0 z-[2100] flex items-center justify-center bg-black/10 p-4"
+      onClick={() => {
+        if (!isSubmitting) onCancel()
+      }}
     >
       <div
         role="alertdialog"
         aria-modal="true"
-        className="w-full max-w-sm bg-white rounded-2xl shadow-[0_20px_50px_rgba(15,23,42,0.18)] border border-slate-200/80 overflow-hidden"
+        className="w-full max-w-[560px] bg-[#f4f4f5] rounded-2xl border border-black/[0.06] shadow-[0_20px_34px_rgba(17,24,28,0.08)] overflow-hidden"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="px-5 pt-5 pb-4">
-          <div className="flex items-start gap-3">
+        <div className="px-6 pt-6 pb-5">
+          <div className="flex items-start gap-4">
             <div
-              className={`shrink-0 w-9 h-9 rounded-full inline-flex items-center justify-center ${
-                state.variant === 'danger' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600'
+              className={`shrink-0 w-12 h-12 rounded-xl inline-flex items-center justify-center border ${
+                state.variant === 'danger'
+                  ? 'bg-[#FFF1F0] text-[#FF3B30] border-[#FFC9C5]'
+                  : 'bg-slate-100 text-slate-600 border-slate-200'
               }`}
             >
-              <AlertTriangle className="w-[18px] h-[18px]" strokeWidth={2.2} />
+              <AlertTriangle className="w-[22px] h-[22px]" strokeWidth={2.1} />
             </div>
             <div className="min-w-0 flex-1 pt-0.5">
-              <h3 className="text-sm font-semibold text-slate-900 leading-tight">{state.title}</h3>
-              <p className="mt-1.5 text-xs text-slate-600 leading-relaxed">{state.message}</p>
+              <h3 className="text-[14px] font-semibold text-[#11181C] leading-tight">{state.title}</h3>
+              <p className="mt-2 text-[13px] text-[#687076] leading-relaxed">{state.message}</p>
             </div>
           </div>
         </div>
-        <div className="px-5 py-3 bg-slate-50/80 border-t border-slate-200/80 flex justify-end gap-2">
+        <div className="px-6 pb-5 flex justify-end gap-2.5">
           <button
             type="button"
             onClick={onCancel}
-            className="px-3.5 py-1.5 text-xs font-medium text-slate-700 border border-slate-200 bg-white rounded-lg hover:bg-slate-100"
+            disabled={isSubmitting}
+            className="h-9 min-w-[66px] px-3.5 text-[13px] font-medium text-[#5f6b73] border border-black/[0.08] bg-[#f3f3f4] rounded-[9px] hover:bg-[#ededee] hover:text-[#2f363d] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             İptal
           </button>
           <button
             type="button"
-            onClick={state.onConfirm}
+            onClick={handleConfirm}
             autoFocus
-            className={`px-3.5 py-1.5 text-xs font-semibold text-white rounded-lg shadow-sm ${
+            disabled={isSubmitting}
+            className={`h-9 min-w-[86px] px-4 text-[13px] font-medium text-white rounded-[9px] transition-colors disabled:cursor-not-allowed disabled:opacity-75 inline-flex items-center justify-center gap-1 ${
               state.variant === 'danger'
-                ? 'bg-red-600 hover:bg-red-700'
+                ? 'bg-[#FF3B30] hover:bg-[#F02A1F]'
                 : 'bg-slate-900 hover:bg-slate-800'
             }`}
           >
-            {state.confirmLabel}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                İşleniyor...
+              </>
+            ) : (
+              state.confirmLabel
+            )}
           </button>
         </div>
       </div>
@@ -162,11 +191,12 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
     if (selected.length === 0) return
     const ids = selected.map(r => r.__id)
     setConfirm({
-      title: ids.length === 1 ? 'Satırı sil' : 'Satırları sil',
+      title: ids.length === 1 ? 'Veriyi sil' : 'Verileri sil',
       message: `${ids.length} satır kalıcı olarak silinecek. Bu işlem geri alınamaz.`,
       confirmLabel: 'Sil',
       variant: 'danger',
-      onConfirm: () => {
+      onConfirm: async () => {
+        await new Promise(resolve => setTimeout(resolve, 1500))
         dropPendingEdits(ids)
         ids.forEach(id => removeItem(id))
         setSelectedCount(0)
