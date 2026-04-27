@@ -37,8 +37,10 @@ const DISTANCE_TOOL_COLORS = {
 interface MarkerListProps {
   points: [number, number][]
   isDrawingDistance: boolean
+  isClosed: boolean
   onMarkerDrag: (idx: number, e: { lngLat: { lng: number; lat: number } }) => void
   onFirstPointClick: (e: { originalEvent?: Event } | Event) => void
+  onLastPointClick: (e: { originalEvent?: Event } | Event) => void
   onPointerDownCapture: () => void
   onPointerUpCapture: () => void
 }
@@ -104,8 +106,10 @@ const MidpointList = memo(function MidpointList({
 const MarkerList = memo(function MarkerList({
   points,
   isDrawingDistance,
+  isClosed,
   onMarkerDrag,
   onFirstPointClick,
+  onLastPointClick,
   onPointerDownCapture,
   onPointerUpCapture,
 }: MarkerListProps) {
@@ -122,7 +126,11 @@ const MarkerList = memo(function MarkerList({
             latitude={pt[1]}
             draggable={true}
             onDrag={(e) => onMarkerDrag(idx, e)}
-            onClick={idx === 0 ? onFirstPointClick : undefined}
+            onClick={
+              idx === 0
+                ? onFirstPointClick
+                : (!isDrawingDistance && !isClosed && idx === points.length - 1 ? onLastPointClick : undefined)
+            }
             style={{ transition: 'none' }}
           >
             <div
@@ -163,6 +171,7 @@ export default function DistanceTool() {
     isDrawingDistance,
     resetDistance,
     setDistancePoints,
+    setIsDrawingDistance,
     undoDistance,
   } = useToolStore()
 
@@ -396,6 +405,21 @@ export default function DistanceTool() {
     setDistancePoints(updated)
   }, [setDistancePoints])
 
+  const handleLastPointClick = useCallback((e: { originalEvent?: Event } | Event) => {
+    const hasOriginalEvent = (evt: unknown): evt is { originalEvent: Event } =>
+      typeof evt === 'object' && evt !== null && 'originalEvent' in evt
+
+    if (hasOriginalEvent(e) && e.originalEvent && typeof e.originalEvent.stopPropagation === 'function') {
+      e.originalEvent.stopPropagation()
+    } else if (e && typeof (e as Event).stopPropagation === 'function') {
+      (e as Event).stopPropagation()
+    }
+
+    if (!isClosed && !isDrawingDistance && distancePoints.length > 0) {
+      setIsDrawingDistance(true)
+    }
+  }, [distancePoints.length, isClosed, isDrawingDistance, setIsDrawingDistance])
+
   if (!isActive) return null
   if (distancePoints.length === 0 && !isDrawingDistance) return null
 
@@ -457,8 +481,10 @@ export default function DistanceTool() {
       <MarkerList
         points={distancePoints}
         isDrawingDistance={isDrawingDistance}
+        isClosed={isClosed}
         onMarkerDrag={handleMarkerDrag}
         onFirstPointClick={handleFirstPointClick}
+        onLastPointClick={handleLastPointClick}
         onPointerDownCapture={handleMarkerPointerDown}
         onPointerUpCapture={handleMarkerPointerUp}
       />
