@@ -73,6 +73,8 @@ export interface DataManagementStore {
   drawPoints: [number, number][]
   drawGhostPoint: [number, number] | null
   isDrawing: boolean
+  drawUndoStack: [number, number][][]
+  drawRedoStack: [number, number][][]
 
   addItem: (item: NewDataItem) => void
   addItems: (items: NewDataItem[]) => void
@@ -94,5 +96,7 @@ export interface DataManagementStore {
   setDrawGhostPoint: (point: [number, number] | null) => void
   setIsDrawing: (isDrawing: boolean) => void
   updateDrawPoint: (index: number, point: [number, number]) => void
+  undoDraw: () => void
+  redoDraw: () => void
   resetDraw: () => void
 }

@@ -27,6 +27,10 @@ const createPersistedItem = (item: NewDataItem, source: 'drawn' | 'imported') =>
   source,
 })
 
+const clonePoints = (points: [number, number][]): [number, number][] => (
+  points.map(([lng, lat]) => [lng, lat])
+)
+
 export const useDataManagementStore = create<DataManagementStore>()((set, get) => ({
   items: [],
   activeItemId: null,
@@ -39,6 +43,8 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
   drawPoints: [],
   drawGhostPoint: null,
   isDrawing: false,
+  drawUndoStack: [],
+  drawRedoStack: [],
 
   addItem: (item) => set((state) => ({
     items: [...state.items, createPersistedItem(item, 'drawn')],
@@ -167,9 +173,18 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
   }),
 
   updateDrawPoint: (index, point) => set((state) => {
-    const next = [...state.drawPoints]
+    const next = clonePoints(state.drawPoints)
+    const currentPoint = next[index]
+    if (!currentPoint || (currentPoint[0] === point[0] && currentPoint[1] === point[1])) {
+      return state
+    }
+
     next[index] = point
-    return { drawPoints: next }
+    return {
+      drawPoints: next,
+      drawUndoStack: [...state.drawUndoStack, clonePoints(state.drawPoints)],
+      drawRedoStack: [],
+    }
   }),
   setDrawMode: (mode) => set((state) => {
     if (mode !== state.drawMode) {
@@ -178,17 +193,57 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
         drawPoints: [],
         drawGhostPoint: null,
         isDrawing: mode !== 'none',
+        drawUndoStack: [],
+        drawRedoStack: [],
       }
     }
     return { drawMode: mode }
   }),
-  setDrawPoints: (points) => set({ drawPoints: points }),
+  setDrawPoints: (points) => set((state) => ({
+    drawPoints: points,
+    drawUndoStack: [...state.drawUndoStack, clonePoints(state.drawPoints)],
+    drawRedoStack: [],
+  })),
   setDrawGhostPoint: (point) => set({ drawGhostPoint: point }),
   setIsDrawing: (isDrawing) => set({ isDrawing }),
+  undoDraw: () => set((state) => {
+    if (state.drawUndoStack.length === 0 || state.drawMode === 'none') {
+      return state
+    }
+
+    const previousPoints = state.drawUndoStack[state.drawUndoStack.length - 1]
+    const nextUndoStack = state.drawUndoStack.slice(0, -1)
+
+    return {
+      drawPoints: clonePoints(previousPoints),
+      drawUndoStack: nextUndoStack,
+      drawRedoStack: [...state.drawRedoStack, clonePoints(state.drawPoints)],
+      drawGhostPoint: null,
+      isDrawing: state.drawMode === 'point' ? previousPoints.length === 0 : state.isDrawing,
+    }
+  }),
+  redoDraw: () => set((state) => {
+    if (state.drawRedoStack.length === 0 || state.drawMode === 'none') {
+      return state
+    }
+
+    const nextPoints = state.drawRedoStack[state.drawRedoStack.length - 1]
+    const nextRedoStack = state.drawRedoStack.slice(0, -1)
+
+    return {
+      drawPoints: clonePoints(nextPoints),
+      drawUndoStack: [...state.drawUndoStack, clonePoints(state.drawPoints)],
+      drawRedoStack: nextRedoStack,
+      drawGhostPoint: null,
+      isDrawing: state.drawMode === 'point' ? nextPoints.length === 0 : state.isDrawing,
+    }
+  }),
   resetDraw: () => set({
     drawPoints: [],
     drawGhostPoint: null,
     isDrawing: false,
     drawMode: 'none',
+    drawUndoStack: [],
+    drawRedoStack: [],
   }),
 }))

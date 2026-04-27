@@ -21,6 +21,8 @@ export function DataManagementDrawTool() {
     setIsDrawing,
     resetDraw,
     updateDrawPoint,
+    undoDraw,
+    redoDraw,
   } = useDataManagementStore()
 
   const isDraggingRef    = useRef(false)
@@ -85,6 +87,23 @@ export function DataManagementDrawTool() {
   }, [map])
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const isUndoShortcut = (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z'
+    const isRedoShortcut =
+      (e.ctrlKey || e.metaKey) &&
+      (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))
+
+    if (isUndoShortcut) {
+      e.preventDefault()
+      undoDraw()
+      return
+    }
+
+    if (isRedoShortcut) {
+      e.preventDefault()
+      redoDraw()
+      return
+    }
+
     if (e.key === 'Escape') {
       if (isDraggingRef.current) {
         isDraggingRef.current    = false
@@ -97,7 +116,7 @@ export function DataManagementDrawTool() {
         if (map) map.getCanvas().style.cursor = ''
       }
     }
-  }, [resetDraw, map])
+  }, [resetDraw, map, undoDraw, redoDraw])
 
   useEffect(() => {
     if (!map || drawMode === 'none') return

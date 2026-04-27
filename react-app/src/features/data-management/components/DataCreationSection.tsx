@@ -16,6 +16,10 @@ export function DataCreationSection() {
     isDrawing,
     setDrawMode,
     drawPoints,
+    drawUndoStack,
+    drawRedoStack,
+    undoDraw,
+    redoDraw,
     resetDraw,
     addItem,
   } = useDataManagementStore()
@@ -89,6 +93,9 @@ export function DataCreationSection() {
     }
   }
 
+  const canUndo = drawUndoStack.length > 0 && drawMode !== 'none'
+  const canRedo = drawRedoStack.length > 0 && drawMode !== 'none'
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
@@ -148,6 +155,29 @@ export function DataCreationSection() {
         <div className="mt-3 space-y-2.5 animate-in fade-in duration-150">
 
           {/* Durum satırı */}
+          {(drawMode === 'line' || drawMode === 'polygon' || drawMode === 'point') && (
+            <div className="flex items-center justify-end gap-1.5">
+              <button
+                type="button"
+                onClick={undoDraw}
+                disabled={!canUndo}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10.5px] font-semibold text-slate-500 border border-slate-200 hover:bg-slate-50 transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <i className="fa-solid fa-rotate-left text-[10px]" aria-hidden />
+                Geri Al
+              </button>
+              <button
+                type="button"
+                onClick={redoDraw}
+                disabled={!canRedo}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10.5px] font-semibold text-slate-500 border border-slate-200 hover:bg-slate-50 transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <i className="fa-solid fa-rotate-right text-[10px]" aria-hidden />
+                İleri Al
+              </button>
+            </div>
+          )}
+
           {isEditing ? (
             <div
               className="flex items-center gap-2 px-2.5 py-2 rounded-md"
