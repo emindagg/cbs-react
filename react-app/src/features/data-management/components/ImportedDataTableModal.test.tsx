@@ -24,6 +24,8 @@ describe('ConfirmDialog', () => {
 
     render(<ConfirmDialog state={createConfirmState(onConfirm)} onCancel={onCancel} />)
 
+    expect(screen.getByRole('alertdialog', { name: 'Verileri sil' })).toBeInTheDocument()
+
     const confirmButton = screen.getByRole('button', { name: 'Sil' })
     const cancelButton = screen.getByRole('button', { name: 'İptal' })
 

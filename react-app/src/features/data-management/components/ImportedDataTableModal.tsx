@@ -7,7 +7,7 @@ import type {
 import { themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { AlertTriangle, Check, Loader2, Trash2, X } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { agGridTurkishLocaleText } from '@/shared/ag-grid'
@@ -64,6 +64,8 @@ interface ConfirmDialogProps {
 
 export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const titleId = useId()
+  const messageId = useId()
 
   useEffect(() => {
     if (!state) return
@@ -80,6 +82,16 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
 
   if (!state) return null
 
+  const isDanger = state.variant === 'danger'
+  const hideVisibleTitle = isDanger && state.confirmLabel === 'Sil'
+  const confirmIcon = isSubmitting ? (
+    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+  ) : isDanger ? (
+    <Trash2 className="w-4 h-4" aria-hidden="true" />
+  ) : (
+    <Check className="w-4 h-4" aria-hidden="true" />
+  )
+
   const handleConfirm = async () => {
     if (isSubmitting) return
     setIsSubmitting(true)
@@ -92,7 +104,7 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[2100] flex items-center justify-center bg-black/10 p-4"
+      className="fixed inset-0 z-[2100] flex items-center justify-center bg-black/15 p-4"
       onClick={() => {
         if (!isSubmitting) onCancel()
       }}
@@ -100,33 +112,42 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
       <div
         role="alertdialog"
         aria-modal="true"
-        className="w-full max-w-[560px] bg-[#f4f4f5] rounded-2xl border border-black/[0.06] shadow-[0_20px_34px_rgba(17,24,28,0.08)] overflow-hidden"
+        aria-label={hideVisibleTitle ? state.title : undefined}
+        aria-labelledby={hideVisibleTitle ? undefined : titleId}
+        aria-describedby={messageId}
+        className="relative w-full max-w-[420px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.18)]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="px-6 pt-6 pb-5">
-          <div className="flex items-start gap-4">
+        <div className="px-5 pt-5 pb-4">
+          <div className="flex items-start gap-3">
             <div
-              className={`shrink-0 w-12 h-12 rounded-xl inline-flex items-center justify-center border ${
-                state.variant === 'danger'
+              className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
+                isDanger
                   ? 'bg-[#FFF1F0] text-[#FF3B30] border-[#FFC9C5]'
-                  : 'bg-slate-100 text-slate-600 border-slate-200'
+                  : 'bg-slate-100 text-slate-700 border-slate-200'
               }`}
             >
-              <AlertTriangle className="w-[22px] h-[22px]" strokeWidth={2.1} />
+              <AlertTriangle className="h-5 w-5" strokeWidth={2.1} aria-hidden="true" />
             </div>
-            <div className="min-w-0 flex-1 pt-0.5">
-              <h3 className="text-[14px] font-semibold text-[#11181C] leading-tight">{state.title}</h3>
-              <p className="mt-2 text-[13px] text-[#687076] leading-relaxed">{state.message}</p>
+            <div className="min-w-0 flex-1">
+              {!hideVisibleTitle && (
+                <h3 id={titleId} className="text-[15px] font-semibold leading-5 text-slate-950">{state.title}</h3>
+              )}
+              <p id={messageId} className={`${hideVisibleTitle ? 'mt-0' : 'mt-1.5'} text-[13px] leading-5 text-slate-600`}>
+                {state.message}
+              </p>
             </div>
           </div>
         </div>
-        <div className="px-6 pb-5 flex justify-end gap-2.5">
+
+        <div className="flex items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50 px-5 py-3">
           <button
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="h-9 min-w-[66px] px-3.5 text-[13px] font-medium text-[#5f6b73] border border-black/[0.08] bg-[#f3f3f4] rounded-[9px] hover:bg-[#ededee] hover:text-[#2f363d] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex h-9 min-w-[78px] items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-100 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
           >
+            <X className="h-4 w-4" aria-hidden="true" />
             İptal
           </button>
           <button
@@ -134,20 +155,14 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
             onClick={handleConfirm}
             autoFocus
             disabled={isSubmitting}
-            className={`h-9 min-w-[86px] px-4 text-[13px] font-medium text-white rounded-[9px] transition-colors disabled:cursor-not-allowed disabled:opacity-75 inline-flex items-center justify-center gap-1 ${
-              state.variant === 'danger'
-                ? 'bg-[#FF3B30] hover:bg-[#F02A1F]'
+            className={`inline-flex h-9 min-w-[92px] items-center justify-center gap-1.5 rounded-lg px-3.5 text-[13px] font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-75 ${
+              isDanger
+                ? 'bg-red-600 hover:bg-red-700'
                 : 'bg-slate-900 hover:bg-slate-800'
             }`}
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                İşleniyor...
-              </>
-            ) : (
-              state.confirmLabel
-            )}
+            {confirmIcon}
+            {isSubmitting ? 'İşleniyor...' : state.confirmLabel}
           </button>
         </div>
       </div>
