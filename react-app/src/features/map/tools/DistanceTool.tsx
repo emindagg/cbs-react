@@ -133,9 +133,11 @@ const MarkerList = memo(function MarkerList({
                 backgroundColor: isSelectedVertex
                   ? DISTANCE_TOOL_COLORS.vertexSelected
                   : DISTANCE_TOOL_COLORS.vertex,
-                border: `2px solid ${isSelectedVertex
-                  ? DISTANCE_TOOL_COLORS.vertexSelectedBorder
-                  : DISTANCE_TOOL_COLORS.vertexBorder}`,
+                border: `2px solid ${idx === 0
+                  ? (isSelectedVertex
+                    ? DISTANCE_TOOL_COLORS.vertexSelectedBorder
+                    : DISTANCE_TOOL_COLORS.vertexBorder)
+                  : '#ffffff'}`,
                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
                 transition: 'none',
               }}
@@ -396,7 +398,6 @@ export default function DistanceTool() {
     paint: {
       'line-color': DISTANCE_TOOL_COLORS.lineGhost,
       'line-width': 2,
-      'line-dasharray': [2, 2],
       'line-opacity': 0.68,
     },
   }
