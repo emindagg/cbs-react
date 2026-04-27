@@ -21,6 +21,7 @@ const GHOST_SOURCE_ID = 'measure-ghost-source'
 const EMPTY_GHOST_DATA: FeatureCollection<LineString> = { type: 'FeatureCollection', features: [] }
 const NORMAL_VERTEX_DIAMETER_PX = 10
 const SELECTED_VERTEX_DIAMETER_PX = 12
+const MIDPOINT_DIAMETER_PX = 7
 
 interface MarkerListProps {
   points: [number, number][]
@@ -30,6 +31,61 @@ interface MarkerListProps {
   onPointerDownCapture: () => void
   onPointerUpCapture: () => void
 }
+
+interface MidpointListProps {
+  points: [number, number][]
+  onMidpointDragStart: (insertIndex: number) => void
+  onMidpointDrag: (insertIndex: number, e: { lngLat: { lng: number; lat: number } }) => void
+  onMidpointDragEnd: () => void
+}
+
+const MidpointList = memo(function MidpointList({
+  points,
+  onMidpointDragStart,
+  onMidpointDrag,
+  onMidpointDragEnd,
+}: MidpointListProps) {
+  const midpointCoords = useMemo(() => {
+    if (points.length < 2) return []
+
+    return points.slice(0, -1).map((startPoint, idx) => {
+      const endPoint = points[idx + 1]
+      return [
+        (startPoint[0] + endPoint[0]) / 2,
+        (startPoint[1] + endPoint[1]) / 2,
+      ] as [number, number]
+    })
+  }, [points])
+
+  return (
+    <>
+      {midpointCoords.map((pt, idx) => (
+        <Marker
+          key={`midpoint-${idx}`}
+          longitude={pt[0]}
+          latitude={pt[1]}
+          draggable={true}
+          onDragStart={() => onMidpointDragStart(idx + 1)}
+          onDrag={(e) => onMidpointDrag(idx + 1, e)}
+          onDragEnd={onMidpointDragEnd}
+          style={{ transition: 'none' }}
+        >
+          <div
+            className="box-content rounded-full cursor-default"
+            style={{
+              width: `${MIDPOINT_DIAMETER_PX}px`,
+              height: `${MIDPOINT_DIAMETER_PX}px`,
+              backgroundColor: '#94a3b8',
+              border: '1px solid #ffffff',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.35)',
+              transition: 'none',
+            }}
+          />
+        </Marker>
+      ))}
+    </>
+  )
+})
 
 const MarkerList = memo(function MarkerList({
   points,
@@ -86,6 +142,7 @@ export default function DistanceTool() {
     distancePoints,
     isDrawingDistance,
     resetDistance,
+    setDistancePoints,
     undoDistance,
   } = useToolStore()
 
@@ -268,6 +325,34 @@ export default function DistanceTool() {
     setTimeout(() => { isDraggingMarker.current = false }, 50)
   }, [])
 
+  const handleMidpointDragStart = useCallback((insertIndex: number) => {
+    isDraggingMarker.current = true
+    const prevPoints = useToolStore.getState().distancePoints
+    if (insertIndex < 1 || insertIndex > prevPoints.length - 1) return
+    const prevPoint = prevPoints[insertIndex - 1]
+    const nextPoint = prevPoints[insertIndex]
+    const midpoint: [number, number] = [
+      (prevPoint[0] + nextPoint[0]) / 2,
+      (prevPoint[1] + nextPoint[1]) / 2,
+    ]
+    const updated = [...prevPoints]
+    updated.splice(insertIndex, 0, midpoint)
+    setDistancePoints(updated)
+  }, [setDistancePoints])
+
+  const handleMidpointDrag = useCallback((insertIndex: number, e: { lngLat: { lng: number; lat: number } }) => {
+    const newPoint: [number, number] = [e.lngLat.lng, e.lngLat.lat]
+    const prevPoints = useToolStore.getState().distancePoints
+    if (insertIndex < 1 || insertIndex > prevPoints.length - 2) return
+    const updated = [...prevPoints]
+    updated[insertIndex] = newPoint
+    setDistancePoints(updated)
+  }, [setDistancePoints])
+
+  const handleMidpointDragEnd = useCallback(() => {
+    setTimeout(() => { isDraggingMarker.current = false }, 50)
+  }, [])
+
   if (!isActive) return null
   if (distancePoints.length === 0 && !isDrawingDistance) return null
 
@@ -334,6 +419,12 @@ export default function DistanceTool() {
         onFirstPointClick={handleFirstPointClick}
         onPointerDownCapture={handleMarkerPointerDown}
         onPointerUpCapture={handleMarkerPointerUp}
+      />
+      <MidpointList
+        points={distancePoints}
+        onMidpointDragStart={handleMidpointDragStart}
+        onMidpointDrag={handleMidpointDrag}
+        onMidpointDragEnd={handleMidpointDragEnd}
       />
     </>
   )
