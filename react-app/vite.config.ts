@@ -82,33 +82,50 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-hot-toast')) {
+            const match = id.match(/node_modules[\\/](?:\.pnpm[\\/](?:@[^\\/+]+\+[^\\/]+|[^\\/]+)[\\/]node_modules[\\/])?((?:@[^\\/]+[\\/])?[^\\/]+)/)
+            const pkg = match?.[1] ?? ''
+
+            if (pkg === 'react' || pkg === 'react-dom' || pkg === 'scheduler') {
               return 'react-vendor'
             }
-            if (id.includes('maplibre-gl') || id.includes('react-map-gl')) {
+            if (pkg === 'maplibre-gl') {
               return 'map-vendor'
             }
-            if (id.includes('@turf') || id.includes('xlsx') || id.includes('shpjs') || id.includes('togeojson')) {
+            if (pkg === 'react-map-gl') {
+              return 'map-react-vendor'
+            }
+            if (pkg === 'ag-grid-community' || pkg === 'ag-grid-react') {
+              return 'aggrid-vendor'
+            }
+            if (pkg === 'recharts' || pkg.startsWith('victory-')) {
+              return 'recharts-vendor'
+            }
+            if (pkg === 'jspdf' || pkg === 'html-to-image' || pkg === '@zumer/snapdom') {
+              return 'export-vendor'
+            }
+            if (pkg.startsWith('@turf/') || pkg === 'xlsx' || pkg === 'shpjs' || pkg === 'togeojson'
+              || pkg === '@tmcw/togeojson' || pkg === '@mapbox/shp-write' || pkg.startsWith('@placemarkio/')
+              || pkg === 'fflate' || pkg === 'papaparse' || pkg === 'proj4' || pkg === 'polylabel'
+              || pkg === 'topojson-client' || pkg === 'betterknown' || pkg === '@sakitam-gis/kriging') {
               return 'data-vendor'
             }
-            if (id.includes('framer-motion') || id.includes('lucide-react') || id.includes('ag-grid')) {
+            if (pkg === 'framer-motion' || pkg === 'lucide-react' || pkg === 'rc-slider' || pkg === 'tailwind-merge' || pkg === 'clsx') {
               return 'ui-vendor'
             }
-            if (id.includes('chroma-js') || id.includes('d3-') || id.includes('simple-statistics')) {
+            if (pkg === 'chroma-js' || pkg.startsWith('d3-') || pkg === 'simple-statistics' || pkg === 'date-fns'
+              || pkg === 'fuse.js' || pkg === 'uuid' || pkg === 'astronomy-engine' || pkg === 'zustand' || pkg === 'usehooks-ts') {
               return 'utils-vendor'
             }
             return 'vendor'
           }
-          
-          // Feature chunks
+
           if (id.includes('src/features/astronomy')) return 'astronomy'
           if (id.includes('src/features/viz-wizard')) return 'viz-wizard'
           if (id.includes('src/features/data-management')) return 'data-management'
         },
       },
     },
-    chunkSizeWarningLimit: 1000, // 1MB'a çıkar
+    chunkSizeWarningLimit: 1100,
   },
 })
