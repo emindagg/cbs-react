@@ -270,8 +270,9 @@ export default function DistanceTool() {
     id: 'measure-line',
     type: 'line',
     paint: {
-      'line-color': '#111827',
-      'line-width': 3,
+      'line-color': '#475569',
+      'line-width': 2,
+      'line-opacity': 0.75,
     },
   }
 
@@ -288,7 +289,7 @@ export default function DistanceTool() {
     id: 'measure-ghost-line',
     type: 'line',
     paint: {
-      'line-color': '#111827',
+      'line-color': '#94a3b8',
       'line-width': 2,
       'line-dasharray': [2, 2],
       'line-opacity': 0.6,
