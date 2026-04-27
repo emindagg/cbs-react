@@ -53,7 +53,7 @@ export default function PolygonSlopeControls({
           onChange={(event) => onSelectedPolygonChange(event.target.value || null)}
           className="w-full h-8 px-2 rounded-lg border border-zinc-200 bg-white text-[10px] text-zinc-800 outline-hidden focus:ring-2 focus:ring-teal-500"
         >
-          <option value="">Polygon seçin</option>
+          <option value="">Alan seçin</option>
           {polygonOptions.map((polygon) => (
             <option key={polygon.id} value={polygon.id}>
               {polygon.name} ({formatNumber(polygon.areaKm2)} km²)
