@@ -110,7 +110,7 @@ export function DataCreationSection() {
         {drawMode !== 'none' && (
           <button
             onClick={handleCancel}
-            className="text-[10.5px] text-slate-300 hover:text-slate-500 transition-colors duration-150 tracking-wide"
+            className="text-[10.5px] text-rose-500 hover:text-rose-700 transition-colors duration-150 tracking-wide"
           >
             iptal
           </button>
