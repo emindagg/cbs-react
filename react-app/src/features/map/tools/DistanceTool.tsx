@@ -56,7 +56,7 @@ const MarkerList = memo(function MarkerList({
             style={{ transition: 'none' }}
           >
             <div
-              className={`box-content rounded-full cursor-move ${isSelectedVertex
+              className={`box-content rounded-full cursor-crosshair ${isSelectedVertex
                 ? 'ring-2 ring-emerald-500 ring-offset-2'
                 : ''
               }`}
@@ -199,9 +199,7 @@ export default function DistanceTool() {
     mapInstance.on('dblclick', handleDblClick)
     document.addEventListener('keydown', handleKeyDown)
 
-    if (isDrawingDistance) {
-      mapInstance.getCanvas().style.cursor = 'crosshair'
-    }
+    mapInstance.getCanvas().style.cursor = 'crosshair'
 
     return () => {
       mapInstance.off('click', handleClickSafe)
