@@ -19,6 +19,8 @@ import {
 
 const GHOST_SOURCE_ID = 'measure-ghost-source'
 const EMPTY_GHOST_DATA: FeatureCollection<LineString> = { type: 'FeatureCollection', features: [] }
+const NORMAL_VERTEX_DIAMETER_PX = 10
+const SELECTED_VERTEX_DIAMETER_PX = 12
 
 interface MarkerListProps {
   points: [number, number][]
@@ -39,35 +41,40 @@ const MarkerList = memo(function MarkerList({
 }: MarkerListProps) {
   return (
     <>
-      {points.map((pt, idx) => (
-        <Marker
-          key={idx}
-          longitude={pt[0]}
-          latitude={pt[1]}
-          draggable={true}
-          onDrag={(e) => onMarkerDrag(idx, e)}
-          onClick={idx === 0 ? onFirstPointClick : undefined}
-          style={{ transition: 'none' }}
-        >
-          <div
-            className={`box-content rounded-full cursor-move ${idx === 0 && isDrawingDistance && points.length >= 3
-              ? 'ring-2 ring-emerald-500 ring-offset-2'
-              : ''
-            }`}
-            style={{
-              width: '10px',
-              height: '10px',
-              backgroundColor: '#1a1a1a',
-              border: '2px solid #ffffff',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
-              transition: 'none',
-            }}
-            title={idx === 0 && isDrawingDistance ? 'Kapatmak için tıkla' : ''}
-            onPointerDown={onPointerDownCapture}
-            onPointerUp={onPointerUpCapture}
-          />
-        </Marker>
-      ))}
+      {points.map((pt, idx) => {
+        const isSelectedVertex = idx === 0 && isDrawingDistance && points.length >= 3
+        const vertexSizePx = isSelectedVertex ? SELECTED_VERTEX_DIAMETER_PX : NORMAL_VERTEX_DIAMETER_PX
+
+        return (
+          <Marker
+            key={idx}
+            longitude={pt[0]}
+            latitude={pt[1]}
+            draggable={true}
+            onDrag={(e) => onMarkerDrag(idx, e)}
+            onClick={idx === 0 ? onFirstPointClick : undefined}
+            style={{ transition: 'none' }}
+          >
+            <div
+              className={`box-content rounded-full cursor-move ${isSelectedVertex
+                ? 'ring-2 ring-emerald-500 ring-offset-2'
+                : ''
+              }`}
+              style={{
+                width: `${vertexSizePx}px`,
+                height: `${vertexSizePx}px`,
+                backgroundColor: '#1a1a1a',
+                border: '2px solid #ffffff',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
+                transition: 'none',
+              }}
+              title={idx === 0 && isDrawingDistance ? 'Kapatmak için tıkla' : ''}
+              onPointerDown={onPointerDownCapture}
+              onPointerUp={onPointerUpCapture}
+            />
+          </Marker>
+        )
+      })}
     </>
   )
 })
