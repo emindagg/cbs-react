@@ -22,6 +22,14 @@
 - Bakı/Eğim analizinde polygon seçim metni iyileştirmesi:
   - `Polygon seçin` -> `Alan seçin`
 
+## Milestone: v0.1.2 (2026-04-27, Tamamlanan)
+- Öznitelik tablosu silme uyarı modalı Linear benzeri kompakt stile güncellendi
+- Uyarı metinleri standardize edildi:
+  - `Satırları sil` -> `Verileri sil`
+- Silme aksiyonuna loading durumu eklendi:
+  - `İşleniyor...` spinner
+  - İşlem süresinde aksiyon butonları `disabled`
+
 ## v1.0 Hedefleri
 - Gelişmiş düzenleme geçmişi (çok adımlı history paneli)
 - Kısayol görünürlüğü ve yardım tooltipleri

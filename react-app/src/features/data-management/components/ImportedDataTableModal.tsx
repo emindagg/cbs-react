@@ -49,7 +49,7 @@ interface ImportedDataTableModalProps {
 
 type ConfirmVariant = 'danger' | 'default'
 
-interface ConfirmState {
+export interface ConfirmState {
   title: string
   message: string
   confirmLabel: string
@@ -62,7 +62,7 @@ interface ConfirmDialogProps {
   onCancel: () => void
 }
 
-function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
+export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
