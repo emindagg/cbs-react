@@ -17,12 +17,14 @@ import {
   CellStyleModule,
   RenderApiModule,
   RowStyleModule,
+  RowSelectionModule,
   ModuleRegistry,
 } from 'ag-grid-community'
 
 export const baseGridModules = [
   ClientSideRowModelModule,
   LocaleModule,
+  RowSelectionModule,
 ]
 
 export const filterModules = [

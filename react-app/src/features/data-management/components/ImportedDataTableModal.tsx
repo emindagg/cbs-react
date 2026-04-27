@@ -1,7 +1,12 @@
-import type { CellValueChangedEvent, ColDef, GetRowIdParams } from 'ag-grid-community'
+import type {
+  CellValueChangedEvent,
+  ColDef,
+  GetRowIdParams,
+  SelectionChangedEvent,
+} from 'ag-grid-community'
 import { themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
-import { Check, X } from 'lucide-react'
+import { Check, Trash2, X } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -55,9 +60,37 @@ function buildRowData(items: DataItem[]) {
 
 export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataTableModalProps) {
   const updateItemProperties = useDataManagementStore(s => s.updateItemProperties)
+  const removeItem = useDataManagementStore(s => s.removeItem)
   const gridRef = useRef<AgGridReact>(null)
   const pendingEdits = useRef<Map<string, Record<string, unknown>>>(new Map())
   const [pendingCount, setPendingCount] = useState(0)
+  const [selectedCount, setSelectedCount] = useState(0)
+
+  const dropPendingEdits = useCallback((ids: string[]) => {
+    let changed = false
+    ids.forEach((id) => {
+      if (pendingEdits.current.delete(id)) changed = true
+    })
+    if (changed) setPendingCount(pendingEdits.current.size)
+  }, [])
+
+  const handleDeleteSelected = useCallback(() => {
+    const api = gridRef.current?.api
+    if (!api) return
+    const selected = api.getSelectedRows() as Array<{ __id: string }>
+    if (selected.length === 0) return
+    // eslint-disable-next-line no-alert
+    const confirmed = window.confirm(`${selected.length} satır silinecek. Emin misiniz?`)
+    if (!confirmed) return
+    const ids = selected.map(r => r.__id)
+    dropPendingEdits(ids)
+    ids.forEach(id => removeItem(id))
+    setSelectedCount(0)
+  }, [dropPendingEdits, removeItem])
+
+  const onSelectionChanged = useCallback((event: SelectionChangedEvent) => {
+    setSelectedCount(event.api.getSelectedRows().length)
+  }, [])
 
   const importedItems = useMemo(
     () => items.filter(item => item.source === 'imported'),
@@ -130,6 +163,7 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
       pendingEdits.current.clear()
       setPendingCount(0)
     }
+    setSelectedCount(0)
     onClose()
   }, [onClose, setPendingCount])
 
@@ -144,6 +178,16 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
             <p className="text-xs text-slate-500">{rowData.length} satır — hücreye çift tıklayarak düzenleyin</p>
           </div>
           <div className="flex items-center gap-2">
+            {selectedCount > 0 && (
+              <button
+                type="button"
+                onClick={handleDeleteSelected}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <Trash2 className="w-3 h-3" />
+                Seçilenleri Sil ({selectedCount})
+              </button>
+            )}
             {pendingCount > 0 && (
               <>
                 <span className="text-xs text-amber-600 font-medium">{pendingCount} satırda değişiklik</span>
@@ -189,6 +233,21 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
               animateRows={false}
               localeText={agGridTurkishLocaleText}
               onCellValueChanged={onCellValueChanged}
+              onSelectionChanged={onSelectionChanged}
+              rowSelection={{
+                mode: 'multiRow',
+                checkboxes: true,
+                headerCheckbox: true,
+                enableClickSelection: false,
+              }}
+              selectionColumnDef={{
+                pinned: 'left',
+                width: 48,
+                minWidth: 48,
+                maxWidth: 48,
+                resizable: false,
+                suppressHeaderMenuButton: true,
+              }}
               stopEditingWhenCellsLoseFocus
             />
           </div>
