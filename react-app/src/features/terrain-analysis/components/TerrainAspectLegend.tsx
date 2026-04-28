@@ -55,6 +55,8 @@ export default function TerrainAspectLegend({
 }: TerrainAspectLegendProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [groupSummaryOpen, setGroupSummaryOpen] = useState(false)
+  const [legendTitle, setLegendTitle] = useState('Lejant')
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
 
   const { position, isDragging, handlers } = useDraggable({
     initial: () => ({
@@ -87,7 +89,38 @@ export default function TerrainAspectLegend({
       >
         <div className="flex items-center gap-1.5">
           <i className="fa-solid fa-grip-vertical text-zinc-400 text-[9px]"></i>
-          <h4 className="text-[11px] font-bold text-zinc-800">Bakı Lejantı</h4>
+          {isEditingTitle ? (
+            <input
+              autoFocus
+              type="text"
+              value={legendTitle}
+              onPointerDown={(e) => e.stopPropagation()}
+              onChange={(e) => setLegendTitle(e.target.value)}
+              onBlur={() => setIsEditingTitle(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setIsEditingTitle(false)
+                } else if (e.key === 'Escape') {
+                  setLegendTitle('Lejant')
+                  setIsEditingTitle(false)
+                }
+              }}
+              className="h-5 px-1.5 text-[11px] font-bold text-zinc-800 bg-white border border-zinc-200 rounded outline-none focus:border-violet-300"
+              aria-label="Lejant başlığı"
+            />
+          ) : (
+            <h4
+              className="text-[11px] font-bold text-zinc-800 cursor-text"
+              onPointerDown={(e) => e.stopPropagation()}
+              onDoubleClick={(e) => {
+                e.stopPropagation()
+                setIsEditingTitle(true)
+              }}
+              title="Çift tıklayarak başlığı düzenle"
+            >
+              {legendTitle}
+            </h4>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -127,7 +160,7 @@ export default function TerrainAspectLegend({
           </div>
 
           <div className="space-y-1">
-            <div className="text-[9px] font-bold text-zinc-700 mb-1">Bakı Yönleri</div>
+            <div className="text-[9px] font-bold text-zinc-700 mb-1">Bakı Yönleri (Yamaç Yönü)</div>
             {classRows.map((row) => (
               <div key={row.label} className="flex items-center gap-2 text-[9px] text-zinc-700">
                 <span className="w-4 h-3 rounded-sm border border-zinc-300 shrink-0" style={{ backgroundColor: row.color }} />

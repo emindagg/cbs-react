@@ -66,7 +66,7 @@ export default function TerrainAnalysisPanel({
           <div className="w-6 h-6 rounded-lg bg-teal-500 flex items-center justify-center">
             <i className="fa-solid fa-compass text-white text-[10px]"></i>
           </div>
-          <h3 className="text-[11px] font-bold text-zinc-800">Bakı ve Eğim Analizi</h3>
+          <h3 className="text-[11px] font-bold text-zinc-800">Bakı (Yamaç Yönü) ve Eğim Analizi</h3>
         </div>
         <button
           onClick={onClose}
