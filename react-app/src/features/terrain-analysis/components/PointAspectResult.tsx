@@ -27,7 +27,7 @@ export default function PointAspectResult({ result }: PointAspectResultProps) {
   return (
     <div className="space-y-2">
       <div className="bg-teal-50 rounded-lg px-3 py-2 text-center">
-        <div className="text-[9px] text-teal-600 font-semibold uppercase tracking-wider">Bakı Yönü</div>
+        <div className="text-[9px] text-teal-600 font-semibold uppercase tracking-wider">Yamaç Yönü</div>
         <div className="text-lg font-bold text-teal-800 leading-tight">{result.directionLabel}</div>
         <div className="text-[11px] font-mono text-teal-700">{aspectLabel}</div>
       </div>

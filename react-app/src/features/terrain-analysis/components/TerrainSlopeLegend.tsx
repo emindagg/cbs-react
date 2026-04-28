@@ -132,9 +132,8 @@ export default function TerrainSlopeLegend({
             ))}
           </div>
 
-          <div className="text-[8px] text-zinc-400 border-t border-zinc-100 pt-1.5 flex items-center justify-between">
+          <div className="text-[8px] text-zinc-400 border-t border-zinc-100 pt-1.5">
             <span>z{result.tileZoom} · ~{formatNumber(result.resolutionMeters, 0)} m/px</span>
-            <span>{result.estimatedTiles} tile</span>
           </div>
         </div>
       )}
