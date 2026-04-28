@@ -1,7 +1,7 @@
 import type { FeatureCollection, LineString, Point } from 'geojson'
 import type { GeoJSONSource, ImageSource, Map as MapLibreMap } from 'maplibre-gl'
 
-import type { TerrainAnalysisResult, TerrainSlopeResult } from '../types'
+import type { TerrainAnalysisResult, TerrainAspectResult, TerrainSlopeResult } from '../types'
 
 const POINT_SOURCE_ID = 'terrain-aspect-point-source'
 const ARROW_SOURCE_ID = 'terrain-aspect-arrow-source'
@@ -15,14 +15,15 @@ const SLOPE_RASTER_SOURCE_ID = 'terrain-slope-raster-source'
 const SLOPE_RASTER_LAYER_ID = 'terrain-slope-raster-layer'
 const SLOPE_BOUNDARY_SOURCE_ID = 'terrain-slope-boundary-source'
 const SLOPE_BOUNDARY_LAYER_ID = 'terrain-slope-boundary-layer'
+const ASPECT_RASTER_SOURCE_ID = 'terrain-aspect-raster-source'
+const ASPECT_RASTER_LAYER_ID = 'terrain-aspect-raster-layer'
+const ASPECT_BOUNDARY_SOURCE_ID = 'terrain-aspect-boundary-source'
+const ASPECT_BOUNDARY_LAYER_ID = 'terrain-aspect-boundary-layer'
 
 const EMPTY_POINTS: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] }
 const EMPTY_LINES: FeatureCollection<LineString> = { type: 'FeatureCollection', features: [] }
-// Eğim şiddetine göre dinamik ok uzunluğu:
-//  düz arazi  ≈ MIN, %100 eğim (≈45°) ≈ MAX
 const ARROW_MIN_LENGTH_METERS = 200
 const ARROW_MAX_LENGTH_METERS = 900
-// Slope yüzde değerini 0-1 arasına normalize etmek için doyum noktası (%100 = doyum)
 const ARROW_SLOPE_SATURATION_PERCENT = 100
 const EARTH_RADIUS_METERS = 6371008.8
 const LABEL_OFFSET_Y = 1.4
@@ -141,6 +142,12 @@ export class TerrainAnalysisRenderer {
     }
   }
 
+  setAspectOpacity(opacity: number): void {
+    if (this.map.getLayer(ASPECT_RASTER_LAYER_ID)) {
+      this.map.setPaintProperty(ASPECT_RASTER_LAYER_ID, 'raster-opacity', Math.max(0, Math.min(1, opacity)))
+    }
+  }
+
   renderSlope(result: TerrainSlopeResult | null, opacity = 0.92): void {
     if (!result) {
       this.removeSlope()
@@ -208,18 +215,80 @@ export class TerrainAnalysisRenderer {
     }
   }
 
-  remove(): void {
-    removeLayer(this.map, LABEL_LAYER_ID)
-    removeLayer(this.map, POINT_LAYER_ID)
-    removeLayer(this.map, ARROW_HEAD_LAYER_ID)
-    removeLayer(this.map, ARROW_LAYER_ID)
-    removeSource(this.map, POINT_SOURCE_ID)
-    removeSource(this.map, ARROW_HEAD_SOURCE_ID)
-    removeSource(this.map, ARROW_SOURCE_ID)
-    this.removeSlope()
+  renderAspect(result: TerrainAspectResult | null, opacity = 0.92): void {
+    if (!result) {
+      this.removeAspect()
+      return
+    }
+
+    const [w, s, e, n] = result.raster.bbox
+    const coordinates: [[number, number], [number, number], [number, number], [number, number]] = [
+      [w, n],
+      [e, n],
+      [e, s],
+      [w, s],
+    ]
+    const rasterSource = this.map.getSource(ASPECT_RASTER_SOURCE_ID) as ImageSource | undefined
+    if (rasterSource) {
+      rasterSource.updateImage({ url: result.raster.imageDataUrl, coordinates })
+    } else {
+      this.map.addSource(ASPECT_RASTER_SOURCE_ID, {
+        type: 'image',
+        url: result.raster.imageDataUrl,
+        coordinates,
+      })
+    }
+
+    const boundaryData: FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon> = {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        geometry: result.geometry,
+        properties: { name: result.itemName },
+      }],
+    }
+    ensureSource(this.map, ASPECT_BOUNDARY_SOURCE_ID, boundaryData)
+
+    if (!this.map.getLayer(ASPECT_RASTER_LAYER_ID)) {
+      this.map.addLayer({
+        id: ASPECT_RASTER_LAYER_ID,
+        type: 'raster',
+        source: ASPECT_RASTER_SOURCE_ID,
+        paint: {
+          'raster-opacity': Math.max(0, Math.min(1, opacity)),
+          'raster-resampling': 'linear',
+          'raster-fade-duration': 0,
+        },
+      })
+    } else {
+      this.setAspectOpacity(opacity)
+    }
+
+    if (!this.map.getLayer(ASPECT_BOUNDARY_LAYER_ID)) {
+      this.map.addLayer({
+        id: ASPECT_BOUNDARY_LAYER_ID,
+        type: 'line',
+        source: ASPECT_BOUNDARY_SOURCE_ID,
+        paint: {
+          'line-color': '#0f172a',
+          'line-width': 2.5,
+          'line-opacity': 0.95,
+        },
+      })
+    }
+
+    for (const layerId of [ASPECT_RASTER_LAYER_ID, ASPECT_BOUNDARY_LAYER_ID]) {
+      if (this.map.getLayer(layerId)) this.map.moveLayer(layerId)
+    }
   }
 
-  removeAspect(): void {
+  remove(): void {
+    this.removeAspectPoint()
+    this.removeSlope()
+    this.removeAspect()
+  }
+
+  removeAspectPoint(): void {
     removeLayer(this.map, LABEL_LAYER_ID)
     removeLayer(this.map, POINT_LAYER_ID)
     removeLayer(this.map, ARROW_HEAD_LAYER_ID)
@@ -234,6 +303,13 @@ export class TerrainAnalysisRenderer {
     removeLayer(this.map, SLOPE_RASTER_LAYER_ID)
     removeSource(this.map, SLOPE_BOUNDARY_SOURCE_ID)
     removeSource(this.map, SLOPE_RASTER_SOURCE_ID)
+  }
+
+  removeAspect(): void {
+    removeLayer(this.map, ASPECT_BOUNDARY_LAYER_ID)
+    removeLayer(this.map, ASPECT_RASTER_LAYER_ID)
+    removeSource(this.map, ASPECT_BOUNDARY_SOURCE_ID)
+    removeSource(this.map, ASPECT_RASTER_SOURCE_ID)
   }
 
   private ensureLayers(): void {

@@ -26,7 +26,7 @@ export interface TerrainAnalysisResult {
   source: 'aws-terrarium'
 }
 
-export type TerrainAnalysisMode = 'point-aspect' | 'polygon-slope'
+export type TerrainAnalysisMode = 'point-aspect' | 'polygon-slope' | 'polygon-aspect'
 
 export interface TerrainSlopeClass {
   min: number
@@ -61,6 +61,34 @@ export interface TerrainSlopeResult {
   source: 'aws-terrarium'
 }
 
+export interface TerrainAspectClass {
+  direction: AspectDirection
+  label: string
+  color: string
+  pixelCount: number
+  /** Sınıfın açı aralığı başlangıcı (derece). flat sınıfı için -1. */
+  fromDeg: number
+  /** Sınıfın açı aralığı bitişi (derece). flat sınıfı için -1. */
+  toDeg: number
+}
+
+export interface TerrainAspectResult {
+  itemId: string
+  itemName: string
+  geometry: GeoJSON.Polygon | GeoJSON.MultiPolygon
+  areaKm2: number
+  raster: TerrainSlopeRaster
+  classes: TerrainAspectClass[]
+  /** En çok piksele sahip yön (flat hariç) */
+  dominantDirection: AspectDirection
+  /** Düz piksellerin polygon içindeki oranı (0-100) */
+  flatPercent: number
+  tileZoom: number
+  resolutionMeters: number
+  estimatedTiles: number
+  source: 'aws-terrarium'
+}
+
 export interface TerrainPolygonOption {
   id: string
   name: string
@@ -79,6 +107,8 @@ export interface TerrainAnalysisState {
   selectedPolygonId: string | null
   slopeResult: TerrainSlopeResult | null
   slopeOpacity: number
+  aspectResult: TerrainAspectResult | null
+  aspectOpacity: number
 
   activate: () => void
   deactivate: () => void
@@ -92,5 +122,7 @@ export interface TerrainAnalysisState {
   setSelectedPolygonId: (id: string | null) => void
   setSlopeResult: (result: TerrainSlopeResult | null) => void
   setSlopeOpacity: (opacity: number) => void
+  setAspectResult: (result: TerrainAspectResult | null) => void
+  setAspectOpacity: (opacity: number) => void
   reset: () => void
 }

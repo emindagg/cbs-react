@@ -18,7 +18,7 @@ import { LegendContainer } from '@/features/legend'
 import { MapContainer, MapControlStack, CoordinateDisplay } from '@/features/map'
 import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-analysis'
 import { StorymapModal } from '@/features/storymap-modal'
-import { TerrainAnalysisPanel, TerrainSlopeLegend, useTerrainAnalysis } from '@/features/terrain-analysis'
+import { TerrainAnalysisPanel, TerrainAspectLegend, TerrainSlopeLegend, useTerrainAnalysis } from '@/features/terrain-analysis'
 import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -292,6 +292,8 @@ export default function AppLayout() {
         selectedPolygonId={terrainAnalysis.selectedPolygonId}
         slopeResult={terrainAnalysis.slopeResult}
         slopeOpacity={terrainAnalysis.slopeOpacity}
+        aspectResult={terrainAnalysis.aspectResult}
+        aspectOpacity={terrainAnalysis.aspectOpacity}
         onModeChange={terrainAnalysis.setMode}
         onSelectedPolygonChange={terrainAnalysis.setSelectedPolygonId}
         onRunSlopeAnalysis={() => {
@@ -299,6 +301,11 @@ export default function AppLayout() {
           if (polygon) void terrainAnalysis.runSlopeAnalysis(polygon)
         }}
         onSlopeOpacityChange={terrainAnalysis.setSlopeOpacity}
+        onRunAspectAnalysis={() => {
+          const polygon = terrainPolygons.find((item) => item.id === terrainAnalysis.selectedPolygonId)
+          if (polygon) void terrainAnalysis.runAspectAnalysis(polygon)
+        }}
+        onAspectOpacityChange={terrainAnalysis.setAspectOpacity}
         onClose={() => terrainAnalysis.setPanelOpen(false)}
         onDeactivate={terrainAnalysis.deactivate}
       />
@@ -306,6 +313,11 @@ export default function AppLayout() {
       {/* Terrain Slope - Sürüklenebilir Lejant */}
       {terrainAnalysis.isActive && terrainAnalysis.mode === 'polygon-slope' && terrainAnalysis.slopeResult && (
         <TerrainSlopeLegend result={terrainAnalysis.slopeResult} />
+      )}
+
+      {/* Terrain Aspect - Sürüklenebilir Lejant */}
+      {terrainAnalysis.isActive && terrainAnalysis.mode === 'polygon-aspect' && terrainAnalysis.aspectResult && (
+        <TerrainAspectLegend result={terrainAnalysis.aspectResult} />
       )}
 
       {/* Visualization Legend */}

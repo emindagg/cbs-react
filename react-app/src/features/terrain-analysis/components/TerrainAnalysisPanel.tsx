@@ -1,5 +1,13 @@
-import type { TerrainAnalysisMode, TerrainAnalysisPoint, TerrainAnalysisResult, TerrainPolygonOption, TerrainSlopeResult } from '../types'
+import type {
+  TerrainAnalysisMode,
+  TerrainAnalysisPoint,
+  TerrainAnalysisResult,
+  TerrainAspectResult,
+  TerrainPolygonOption,
+  TerrainSlopeResult,
+} from '../types'
 import PointAspectResult from './PointAspectResult'
+import PolygonAspectControls from './PolygonAspectControls'
 import PolygonSlopeControls from './PolygonSlopeControls'
 
 interface TerrainAnalysisPanelProps {
@@ -14,10 +22,14 @@ interface TerrainAnalysisPanelProps {
   selectedPolygonId: string | null
   slopeResult: TerrainSlopeResult | null
   slopeOpacity: number
+  aspectResult: TerrainAspectResult | null
+  aspectOpacity: number
   onModeChange: (mode: TerrainAnalysisMode) => void
   onSelectedPolygonChange: (id: string | null) => void
   onRunSlopeAnalysis: () => void
   onSlopeOpacityChange: (opacity: number) => void
+  onRunAspectAnalysis: () => void
+  onAspectOpacityChange: (opacity: number) => void
   onClose: () => void
   onDeactivate: () => void
 }
@@ -34,10 +46,14 @@ export default function TerrainAnalysisPanel({
   selectedPolygonId,
   slopeResult,
   slopeOpacity,
+  aspectResult,
+  aspectOpacity,
   onModeChange,
   onSelectedPolygonChange,
   onRunSlopeAnalysis,
   onSlopeOpacityChange,
+  onRunAspectAnalysis,
+  onAspectOpacityChange,
   onClose,
   onDeactivate,
 }: TerrainAnalysisPanelProps) {
@@ -62,18 +78,24 @@ export default function TerrainAnalysisPanel({
       </div>
 
       <div className="px-3.5 py-3 space-y-3">
-        <div className="grid grid-cols-2 gap-1 rounded-lg bg-zinc-100 p-1">
+        <div className="grid grid-cols-3 gap-1 rounded-lg bg-zinc-100 p-1">
           <button
             onClick={() => onModeChange('point-aspect')}
             className={`h-7 rounded-md text-[10px] font-semibold transition-colors ${mode === 'point-aspect' ? 'bg-white text-teal-700 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}
           >
-            Bakı Analizi
+            Nokta
+          </button>
+          <button
+            onClick={() => onModeChange('polygon-aspect')}
+            className={`h-7 rounded-md text-[10px] font-semibold transition-colors ${mode === 'polygon-aspect' ? 'bg-white text-violet-700 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}
+          >
+            Bakı Haritası
           </button>
           <button
             onClick={() => onModeChange('polygon-slope')}
             className={`h-7 rounded-md text-[10px] font-semibold transition-colors ${mode === 'polygon-slope' ? 'bg-white text-red-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}
           >
-            Eğim Analizi
+            Eğim Haritası
           </button>
         </div>
 
@@ -119,6 +141,19 @@ export default function TerrainAnalysisPanel({
             onSelectedPolygonChange={onSelectedPolygonChange}
             onRunSlopeAnalysis={onRunSlopeAnalysis}
             onSlopeOpacityChange={onSlopeOpacityChange}
+          />
+        )}
+
+        {mode === 'polygon-aspect' && (
+          <PolygonAspectControls
+            polygonOptions={polygonOptions}
+            selectedPolygonId={selectedPolygonId}
+            aspectResult={aspectResult}
+            aspectOpacity={aspectOpacity}
+            isLoading={isLoading}
+            onSelectedPolygonChange={onSelectedPolygonChange}
+            onRunAspectAnalysis={onRunAspectAnalysis}
+            onAspectOpacityChange={onAspectOpacityChange}
           />
         )}
 
