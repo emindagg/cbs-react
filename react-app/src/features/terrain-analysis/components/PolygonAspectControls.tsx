@@ -40,7 +40,6 @@ export default function PolygonAspectControls({
   return (
     <div className="space-y-3">
       <div className="text-[9px] text-zinc-600 bg-violet-50 rounded-md px-2.5 py-2 leading-relaxed">
-        <i className="fa-solid fa-compass mr-1 text-violet-600"></i>
         Alan içindeki her DEM hücresi için bakı yönü hesaplanır.
       </div>
 
@@ -102,10 +101,6 @@ export default function PolygonAspectControls({
             />
           </div>
 
-          <div className="text-[9px] text-violet-700 bg-violet-50 rounded-md px-2.5 py-1.5 leading-relaxed flex items-start gap-1.5">
-            <i className="fa-solid fa-circle-info mt-0.5"></i>
-            <span>Lejant sürüklenebilir panele taşındı.</span>
-          </div>
         </div>
       )}
     </div>
