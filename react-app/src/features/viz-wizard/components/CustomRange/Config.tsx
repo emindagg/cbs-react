@@ -8,6 +8,11 @@ import type { CustomRange } from '@/types/visualization'
 import { CustomRangeConfigFields } from './ConfigFields'
 import { useCustomRange } from './useCustomRange'
 
+const TOGGLE_BUTTON_CLASS =
+  'relative w-10 h-5 cursor-pointer flex items-center justify-center group/neur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 rounded-sm'
+const TOGGLE_TRACK_CLASS = 'w-full h-[2px] rounded-full transition-colors duration-500'
+const TOGGLE_KNOB_CLASS = 'absolute w-3 h-3 border transition-all duration-500 ease-in-out'
+
 interface CustomRangeConfigProps {
   customRange: CustomRange
   autoMin: number
@@ -50,11 +55,11 @@ export default function CustomRangeConfig({
           role="switch"
           aria-checked={customRange.enabled}
           onClick={toggleEnabled}
-          className="relative w-12 h-6 cursor-pointer flex items-center justify-center group/neur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 rounded-sm"
+          className={TOGGLE_BUTTON_CLASS}
         >
-          <div className={`w-full h-[2px] rounded-full transition-colors duration-500 ${customRange.enabled ? 'bg-zinc-900' : 'bg-zinc-300 group-hover/neur:bg-zinc-400'}`} />
-          <div className={`absolute w-3.5 h-3.5 border transition-all duration-500 ease-in-out ${
-            customRange.enabled ? 'translate-x-4 bg-zinc-900 border-zinc-900 rotate-45 scale-110 shadow-md' : '-translate-x-4 bg-white border-zinc-400 rotate-0 scale-100 shadow-sm group-hover/neur:border-zinc-500 group-hover/neur:shadow'
+          <div className={`${TOGGLE_TRACK_CLASS} ${customRange.enabled ? 'bg-zinc-900' : 'bg-zinc-300 group-hover/neur:bg-zinc-400'}`} />
+          <div className={`${TOGGLE_KNOB_CLASS} ${
+            customRange.enabled ? 'translate-x-3 bg-zinc-900 border-zinc-900 rotate-45 scale-110 shadow-md' : '-translate-x-3 bg-white border-zinc-400 rotate-0 scale-100 shadow-sm group-hover/neur:border-zinc-500 group-hover/neur:shadow'
           }`} />
         </button>
       </div>

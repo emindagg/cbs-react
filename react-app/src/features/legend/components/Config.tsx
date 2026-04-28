@@ -12,6 +12,11 @@ import { ConfigLabelsSection } from './ConfigLabelsSection'
 import { ConfigSizeSection } from './ConfigSizeSection'
 import { ConfigTitleSection } from './ConfigTitleSection'
 
+const TOGGLE_BUTTON_CLASS =
+  'relative w-10 h-5 cursor-pointer flex items-center justify-center group/neur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 rounded-sm'
+const TOGGLE_TRACK_CLASS = 'w-full h-[2px] rounded-full transition-colors duration-500'
+const TOGGLE_KNOB_CLASS = 'absolute w-3 h-3 border transition-all duration-500 ease-in-out'
+
 interface LegendConfigProps {
   config: LegendConfiguration;
   onChange: (config: Partial<LegendConfiguration>) => void;
@@ -37,11 +42,11 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
             role="switch"
             aria-checked={config.visible}
             onClick={() => onChange({ visible: !config.visible })}
-            className="relative w-12 h-6 cursor-pointer flex items-center justify-center group/neur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 rounded-sm"
+            className={TOGGLE_BUTTON_CLASS}
           >
-            <div className={`w-full h-[2px] rounded-full transition-colors duration-500 ${config.visible ? 'bg-zinc-900' : 'bg-zinc-300 group-hover/neur:bg-zinc-400'}`} />
-            <div className={`absolute w-3.5 h-3.5 border transition-all duration-500 ease-in-out ${
-              config.visible ? 'translate-x-4 bg-zinc-900 border-zinc-900 rotate-45 scale-110 shadow-md' : '-translate-x-4 bg-white border-zinc-400 rotate-0 scale-100 shadow-sm group-hover/neur:border-zinc-500 group-hover/neur:shadow'
+            <div className={`${TOGGLE_TRACK_CLASS} ${config.visible ? 'bg-zinc-900' : 'bg-zinc-300 group-hover/neur:bg-zinc-400'}`} />
+            <div className={`${TOGGLE_KNOB_CLASS} ${
+              config.visible ? 'translate-x-3 bg-zinc-900 border-zinc-900 rotate-45 scale-110 shadow-md' : '-translate-x-3 bg-white border-zinc-400 rotate-0 scale-100 shadow-sm group-hover/neur:border-zinc-500 group-hover/neur:shadow'
             }`} />
           </button>
         </div>
@@ -125,11 +130,11 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
             role="switch"
             aria-checked={northArrowVisible}
             onClick={() => setNorthArrowVisible(!northArrowVisible)}
-            className="relative w-12 h-6 cursor-pointer flex items-center justify-center group/neur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 rounded-sm"
+            className={TOGGLE_BUTTON_CLASS}
           >
-            <div className={`w-full h-[2px] rounded-full transition-colors duration-500 ${northArrowVisible ? 'bg-zinc-900' : 'bg-zinc-300 group-hover/neur:bg-zinc-400'}`} />
-            <div className={`absolute w-3.5 h-3.5 border transition-all duration-500 ease-in-out ${
-              northArrowVisible ? 'translate-x-4 bg-zinc-900 border-zinc-900 rotate-45 scale-110 shadow-md' : '-translate-x-4 bg-white border-zinc-400 rotate-0 scale-100 shadow-sm group-hover/neur:border-zinc-500 group-hover/neur:shadow'
+            <div className={`${TOGGLE_TRACK_CLASS} ${northArrowVisible ? 'bg-zinc-900' : 'bg-zinc-300 group-hover/neur:bg-zinc-400'}`} />
+            <div className={`${TOGGLE_KNOB_CLASS} ${
+              northArrowVisible ? 'translate-x-3 bg-zinc-900 border-zinc-900 rotate-45 scale-110 shadow-md' : '-translate-x-3 bg-white border-zinc-400 rotate-0 scale-100 shadow-sm group-hover/neur:border-zinc-500 group-hover/neur:shadow'
             }`} />
           </button>
         </div>
