@@ -66,7 +66,7 @@ describe('terrainMath', () => {
   })
 
   it('clamps DEM zoom to supported range', () => {
-    expect(clampTerrainZoom(2)).toBe(12)
+    expect(clampTerrainZoom(2)).toBe(8)
     expect(clampTerrainZoom(14.4)).toBe(14)
     expect(clampTerrainZoom(20)).toBe(15)
   })
