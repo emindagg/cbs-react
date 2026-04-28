@@ -3,7 +3,8 @@ import { useMemo, useState } from 'react'
 import { useDraggable } from '@/hooks'
 
 import { ASPECT_CLASS_DEFINITIONS } from '../services/aspectClasses'
-import type { AspectDirection, TerrainAspectResult } from '../types'
+import { computeDirectionGroups } from '../services/aspectGrouping'
+import type { TerrainAspectResult } from '../types'
 
 interface TerrainAspectLegendProps {
   result: TerrainAspectResult
@@ -15,10 +16,6 @@ const LEGEND_DEFAULT_BOTTOM_OFFSET = 24
 const LEGEND_DEFAULT_LEFT_OFFSET = 24
 const ESTIMATED_LEGEND_HEIGHT = 320
 const PERCENT_MULTIPLIER = 100
-
-const NORTH_GROUP_DIRECTIONS: AspectDirection[] = ['north', 'northeast', 'northwest']
-const EAST_WEST_DIRECTIONS: AspectDirection[] = ['east', 'west']
-const SOUTH_GROUP_DIRECTIONS: AspectDirection[] = ['south', 'southeast', 'southwest']
 
 function formatNumber(value: number, fractionDigits = 1): string {
   return value.toLocaleString('tr-TR', {
@@ -34,15 +31,6 @@ interface ClassRow {
   areaKm2: number
 }
 
-interface DirectionGroup {
-  key: 'north' | 'east-west' | 'south'
-  label: string
-  members: string
-  swatchColors: string[]
-  percent: number
-  areaKm2: number
-}
-
 function computeClassRows(result: TerrainAspectResult): ClassRow[] {
   const totalPixels = result.classes.reduce((sum, c) => sum + c.pixelCount, 0)
   return result.classes.map((item) => {
@@ -54,39 +42,6 @@ function computeClassRows(result: TerrainAspectResult): ClassRow[] {
       areaKm2: ratio * result.areaKm2,
     }
   })
-}
-
-function computeDirectionGroups(result: TerrainAspectResult): DirectionGroup[] {
-  const totalPixels = result.classes.reduce((sum, c) => sum + c.pixelCount, 0)
-  const colorFor = (dir: AspectDirection): string =>
-    ASPECT_CLASS_DEFINITIONS.find((d) => d.direction === dir)?.color ?? '#a9a9a9'
-  const sumFor = (dirs: AspectDirection[]): number => result.classes
-    .filter((cls) => dirs.includes(cls.direction))
-    .reduce((sum, cls) => sum + cls.pixelCount, 0)
-
-  const buildGroup = (
-    key: DirectionGroup['key'],
-    label: string,
-    members: string,
-    dirs: AspectDirection[],
-  ): DirectionGroup => {
-    const pixels = sumFor(dirs)
-    const ratio = totalPixels > 0 ? pixels / totalPixels : 0
-    return {
-      key,
-      label,
-      members,
-      swatchColors: dirs.map(colorFor),
-      percent: ratio * PERCENT_MULTIPLIER,
-      areaKm2: ratio * result.areaKm2,
-    }
-  }
-
-  return [
-    buildGroup('north', 'Kuzey grubu', 'K · KD · KB', NORTH_GROUP_DIRECTIONS),
-    buildGroup('east-west', 'Doğu - Batı', 'D · B', EAST_WEST_DIRECTIONS),
-    buildGroup('south', 'Güney grubu', 'G · GD · GB', SOUTH_GROUP_DIRECTIONS),
-  ]
 }
 
 function findDominantLabel(directionKey: string): string {
