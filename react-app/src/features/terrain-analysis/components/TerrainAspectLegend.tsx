@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { useDraggable } from '@/hooks'
 
 import { ASPECT_CLASS_DEFINITIONS } from '../services/aspectClasses'
-import type { TerrainAspectResult } from '../types'
+import type { AspectDirection, TerrainAspectResult } from '../types'
 
 interface TerrainAspectLegendProps {
   result: TerrainAspectResult
@@ -16,6 +16,10 @@ const LEGEND_DEFAULT_LEFT_OFFSET = 24
 const ESTIMATED_LEGEND_HEIGHT = 320
 const PERCENT_MULTIPLIER = 100
 
+const NORTH_GROUP_DIRECTIONS: AspectDirection[] = ['north', 'northeast', 'northwest']
+const EAST_WEST_DIRECTIONS: AspectDirection[] = ['east', 'west']
+const SOUTH_GROUP_DIRECTIONS: AspectDirection[] = ['south', 'southeast', 'southwest']
+
 function formatNumber(value: number, fractionDigits = 1): string {
   return value.toLocaleString('tr-TR', {
     minimumFractionDigits: fractionDigits,
@@ -26,6 +30,15 @@ function formatNumber(value: number, fractionDigits = 1): string {
 interface ClassRow {
   label: string
   color: string
+  percent: number
+  areaKm2: number
+}
+
+interface DirectionGroup {
+  key: 'north' | 'east-west' | 'south'
+  label: string
+  members: string
+  swatchColors: string[]
   percent: number
   areaKm2: number
 }
@@ -43,6 +56,39 @@ function computeClassRows(result: TerrainAspectResult): ClassRow[] {
   })
 }
 
+function computeDirectionGroups(result: TerrainAspectResult): DirectionGroup[] {
+  const totalPixels = result.classes.reduce((sum, c) => sum + c.pixelCount, 0)
+  const colorFor = (dir: AspectDirection): string =>
+    ASPECT_CLASS_DEFINITIONS.find((d) => d.direction === dir)?.color ?? '#a9a9a9'
+  const sumFor = (dirs: AspectDirection[]): number => result.classes
+    .filter((cls) => dirs.includes(cls.direction))
+    .reduce((sum, cls) => sum + cls.pixelCount, 0)
+
+  const buildGroup = (
+    key: DirectionGroup['key'],
+    label: string,
+    members: string,
+    dirs: AspectDirection[],
+  ): DirectionGroup => {
+    const pixels = sumFor(dirs)
+    const ratio = totalPixels > 0 ? pixels / totalPixels : 0
+    return {
+      key,
+      label,
+      members,
+      swatchColors: dirs.map(colorFor),
+      percent: ratio * PERCENT_MULTIPLIER,
+      areaKm2: ratio * result.areaKm2,
+    }
+  }
+
+  return [
+    buildGroup('north', 'Kuzey grubu', 'K · KD · KB', NORTH_GROUP_DIRECTIONS),
+    buildGroup('east-west', 'Doğu - Batı', 'D · B', EAST_WEST_DIRECTIONS),
+    buildGroup('south', 'Güney grubu', 'G · GD · GB', SOUTH_GROUP_DIRECTIONS),
+  ]
+}
+
 function findDominantLabel(directionKey: string): string {
   const def = ASPECT_CLASS_DEFINITIONS.find((item) => item.direction === directionKey)
   return def?.label ?? '—'
@@ -53,6 +99,7 @@ export default function TerrainAspectLegend({
   onClose,
 }: TerrainAspectLegendProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [groupSummaryOpen, setGroupSummaryOpen] = useState(false)
 
   const { position, isDragging, handlers } = useDraggable({
     initial: () => ({
@@ -64,6 +111,7 @@ export default function TerrainAspectLegend({
   })
 
   const classRows = useMemo(() => computeClassRows(result), [result])
+  const directionGroups = useMemo(() => computeDirectionGroups(result), [result])
   const dominantLabel = findDominantLabel(result.dominantDirection)
 
   return (
@@ -139,6 +187,49 @@ export default function TerrainAspectLegend({
           <div className="text-[8px] text-zinc-400 border-t border-zinc-100 pt-1.5 flex items-center justify-between">
             <span>z{result.tileZoom} · ~{formatNumber(result.resolutionMeters, 0)} m/px</span>
             <span>{result.estimatedTiles} tile</span>
+          </div>
+
+          <div className="border-t border-zinc-100 -mx-3 px-3 pt-1.5">
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => setGroupSummaryOpen((prev) => !prev)}
+              className="w-full flex items-center justify-between text-[9px] font-semibold text-zinc-700 hover:text-violet-700 transition-colors py-1"
+              title={groupSummaryOpen ? 'Özeti gizle' : 'Yön gruplarını göster'}
+            >
+              <span>Yön Grupları</span>
+              <i className={`fa-solid ${groupSummaryOpen ? 'fa-chevron-up' : 'fa-chevron-down'} text-[8px] text-zinc-400`}></i>
+            </button>
+
+            {groupSummaryOpen && (
+              <div className="space-y-1.5 pt-1.5 pb-0.5">
+                {directionGroups.map((group) => (
+                  <div key={group.key} className="bg-zinc-50 rounded-md px-2 py-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="flex gap-0.5 shrink-0">
+                          {group.swatchColors.map((color, idx) => (
+                            <span
+                              key={idx}
+                              className="w-2 h-2 rounded-sm border border-zinc-300"
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </span>
+                        <span className="text-[10px] font-bold text-zinc-800 truncate">{group.label}</span>
+                      </div>
+                      <span className="text-[10px] font-bold tabular-nums text-zinc-800 whitespace-nowrap">
+                        %{formatNumber(group.percent)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <span className="text-[8px] text-zinc-500 truncate">{group.members}</span>
+                      <span className="text-[8px] text-zinc-500 tabular-nums whitespace-nowrap">{formatNumber(group.areaKm2, 2)} km²</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
