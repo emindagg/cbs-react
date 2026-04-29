@@ -6,6 +6,9 @@ import react from '@vitejs/plugin-react'
 const STORYMAP_PREFIX = '/cbs-react/storymap'
 const STORYMAP_DIR = path.resolve(__dirname, 'storymap')
 
+const VIDEO_MODAL_PREFIX = '/cbs-react/video-modal'
+const VIDEO_MODAL_DIR = path.resolve(__dirname, 'video-modal')
+
 const mime: Record<string, string> = {
   '.html': 'text/html',
   '.js': 'application/javascript',
@@ -69,10 +72,61 @@ function copyStorymapToDist() {
   }
 }
 
+function serveVideoModal() {
+  return {
+    name: 'serve-video-modal',
+    configureServer(server: { middlewares: { use: (fn: (req: any, res: any, next: () => void) => void) => void } }) {
+      server.middlewares.use((req: any, res: any, next: () => void) => {
+        let url = req.url ?? ''
+        const q = url.indexOf('?')
+        if (q !== -1) url = url.slice(0, q)
+        if (!url.startsWith(VIDEO_MODAL_PREFIX)) {
+          next()
+          return
+        }
+        const subPath = url.slice(VIDEO_MODAL_PREFIX.length).replace(/^\//, '') || 'index.html'
+        let filePath = path.resolve(VIDEO_MODAL_DIR, subPath)
+        if (!filePath.startsWith(VIDEO_MODAL_DIR + path.sep) && filePath !== VIDEO_MODAL_DIR) {
+          next()
+          return
+        }
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+          filePath = path.join(filePath, 'index.html')
+        }
+        if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+          next()
+          return
+        }
+        const ext = path.extname(filePath)
+        const type = mime[ext] ?? 'application/octet-stream'
+        res.setHeader('Content-Type', type)
+        res.statusCode = 200
+        const stream = fs.createReadStream(filePath)
+        stream.on('error', () => { next() })
+        stream.pipe(res)
+      })
+    },
+  }
+}
+
+function copyVideoModalToDist() {
+  return {
+    name: 'copy-video-modal-to-dist',
+    closeBundle() {
+      const distVideoModalDir = path.resolve(__dirname, 'dist/video-modal')
+      if (!fs.existsSync(VIDEO_MODAL_DIR) || !fs.statSync(VIDEO_MODAL_DIR).isDirectory()) {
+        return
+      }
+      fs.rmSync(distVideoModalDir, { recursive: true, force: true })
+      fs.cpSync(VIDEO_MODAL_DIR, distVideoModalDir, { recursive: true })
+    },
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/cbs-react/',
-  plugins: [react(), serveStorymap(), copyStorymapToDist()],
+  plugins: [react(), serveStorymap(), copyStorymapToDist(), serveVideoModal(), copyVideoModalToDist()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

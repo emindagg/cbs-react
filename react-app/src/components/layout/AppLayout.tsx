@@ -19,6 +19,7 @@ import { MapContainer, MapControlStack, CoordinateDisplay } from '@/features/map
 import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-analysis'
 import { StorymapModal } from '@/features/storymap-modal'
 import { TerrainAnalysisPanel, TerrainAspectLegend, TerrainSlopeLegend, useTerrainAnalysis } from '@/features/terrain-analysis'
+import { VideoModal } from '@/features/video-modal'
 import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -332,6 +333,9 @@ export default function AppLayout() {
 
       {/* Hikâye Haritası modal (iframe) */}
       <StorymapModal />
+
+      {/* Eğitim Videoları modal (iframe) */}
+      <VideoModal />
     </div>
   )
 }

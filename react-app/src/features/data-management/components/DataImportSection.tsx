@@ -1,6 +1,8 @@
 import { Loader2, Upload } from 'lucide-react'
 import { useState } from 'react'
 
+import { useVideoModalStore } from '@/stores/useVideoModalStore'
+
 import ColumnMapperModal from './ColumnMapperModal'
 import { UrlImporter } from './UrlImporter'
 import { FILE_ACCEPT_PATTERN } from '../constants/formats'
@@ -89,6 +91,16 @@ export function DataImportSection() {
         onImport={handleUrlImport}
         isLoading={urlLoading}
       />
+
+      <button
+        type="button"
+        onClick={() => useVideoModalStore.getState().open()}
+        className="mt-3 w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-50 text-xs font-normal text-[#1c1c1e] transition-colors"
+        title="Eğitim videolarını aç"
+      >
+        <i className="fa-regular fa-circle-question text-sm" aria-hidden />
+        <span>Nasıl Kullanılır?</span>
+      </button>
 
       {mapperData && (
         <ColumnMapperModal
