@@ -129,9 +129,6 @@ export function AstroPanel() {
         <div className="overflow-hidden rounded-[24px] border border-white/70 bg-linear-to-br from-[#f8fafc] via-[#f5f7fb] to-[#edf2f9] shadow-[0_18px_34px_rgba(15,23,42,0.18)]">
           <div className="flex items-center justify-between border-b border-slate-200/70 bg-white/65 px-3 py-2.5 backdrop-blur-[1px]">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]">
-                <i className="fa-solid fa-satellite-dish text-[10px] text-slate-700"></i>
-              </div>
               <div>
                 <h3 className="text-[10px] font-bold tracking-tight text-slate-900">Astronomi Modülü</h3>
                 {isPlaying && (
@@ -211,7 +208,7 @@ export function AstroPanel() {
                   onClick={() => setIsPlaying(!isPlaying)}
                   className={`flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border text-[8px] font-bold uppercase tracking-wider transition-colors ${isPlaying
                     ? 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50'
-                    : 'border-slate-900 bg-slate-900 text-white hover:bg-slate-800'
+                    : 'border-none bg-[#1c1c1e] text-white hover:bg-[#2a2a2c] active:bg-[#2c2c2e]'
                   }`}
                 >
                   <i className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'} text-[8px]`}></i>

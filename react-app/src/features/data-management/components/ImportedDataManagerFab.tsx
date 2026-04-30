@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import { ImportedDataTableModal } from './ImportedDataTableModal'
 import { useDataManagementStore } from '../store/useDataManagementStore'
 
-const FAB_SIZE = 30
+const FAB_SIZE = 35
 const FAB_MARGIN = 16
 const PANEL_WIDTH = 260
 const PANEL_HEIGHT = 535
@@ -206,7 +206,7 @@ export function ImportedDataManagerFab() {
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          className="w-[30px] h-[30px] rounded-full bg-slate-900 border border-slate-700 shadow-lg text-white flex items-center justify-center touch-none select-none"
+          className="w-[35px] h-[35px] rounded-full bg-[#1c1c1e] hover:bg-[#2a2a2c] active:bg-[#2c2c2e] border border-slate-700 shadow-lg text-white flex items-center justify-center touch-none select-none"
           aria-label="İçerik yönetim paneli"
           title="İçerik yönetim paneli"
         >
@@ -267,7 +267,7 @@ export function ImportedDataManagerFab() {
               <button
                 type="button"
                 onClick={() => setShowTable(true)}
-                className="w-full h-10 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white text-xs font-semibold inline-flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.98]"
+                className="w-full h-9 rounded-xl bg-[#1c1c1e] hover:bg-[#2a2a2c] active:bg-[#2c2c2e] text-white text-xs font-semibold inline-flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.98]"
               >
                 <FileSpreadsheet className="w-4 h-4" />
                 Öznitelik Tablosunu Aç
@@ -486,7 +486,7 @@ export function ImportedDataManagerFab() {
                   className="w-full h-9 bg-gradient-to-r from-slate-50 to-white hover:from-slate-100 hover:to-slate-50 rounded-xl flex items-center justify-between px-3 text-xs font-semibold text-slate-800 transition-all duration-200 border border-slate-200/60 shadow-sm hover:shadow-md active:scale-[0.98]"
                 >
                   <span className="inline-flex items-center gap-2.5">
-                    <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white inline-flex items-center justify-center shadow-sm">
+                    <span className="w-6 h-6 rounded-lg bg-[#1c1c1e] hover:bg-[#2a2a2c] active:bg-[#2c2c2e] text-white inline-flex items-center justify-center shadow-sm">
                       <Settings2 className="w-3.5 h-3.5" />
                     </span>
                     <span>Etiket ve Yazı</span>
