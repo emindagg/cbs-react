@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { useStorymapModalStore } from '@/stores/useStorymapModalStore'
+import { useVideoModalStore } from '@/stores/useVideoModalStore'
 
 const STORYMAP_URL = `${import.meta.env.BASE_URL}storymap/index.html`
 const Z_INDEX = 20000
@@ -45,13 +46,17 @@ export function StorymapModal() {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [isOpen, handleClose])
 
-  // Iframe'den gelen mesajlar (yeni sekmede aç isteği)
+  // Iframe'den gelen mesajlar
+  // - storymap-open-new-tab: yeni sekmede storymap aç
+  // - open-video-tutorial: storymap'in "Nasıl Kullanılır" linkinden video modal'ı tetikle
   useEffect(() => {
     if (!isOpen) return
     const onMessage = (e: MessageEvent) => {
       if (e.data?.type === 'storymap-open-new-tab' && typeof e.data?.url === 'string') {
         const url = resolveStorymapUrl(e.data.url)
         window.open(url, '_blank', 'noopener,noreferrer')
+      } else if (e.data?.type === 'open-video-tutorial') {
+        useVideoModalStore.getState().open()
       }
     }
     window.addEventListener('message', onMessage)
