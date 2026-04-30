@@ -32,7 +32,7 @@ const VIDEO_CATALOG: Suggestion[] = [
 ]
 
 /** Boş sorguda öne çıkan 3 öneri */
-const DEFAULT_HIGHLIGHT_IDS = ['5', '2', '11']
+const DEFAULT_HIGHLIGHT_IDS = ['1', '2', '3']
 
 /** Tarayıcı sesli komutu desteklemediğinde butonun yanıp söneceği süre (ms) */
 const VOICE_FALLBACK_FLASH_MS = 600
@@ -176,7 +176,7 @@ export function SmartAssistant() {
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-controls={popoverId}
-        title="Akıllı Yardım"
+        title="Nasıl Kullanılır?"
       >
         {/* Ortam ışığı yansıması — radial gradient */}
         <span
@@ -214,7 +214,7 @@ export function SmartAssistant() {
         </svg>
 
         <span className="relative text-[12px] font-medium tracking-wide text-zinc-800">
-          Akıllı Yardım
+          Nasıl Kullanılır?
         </span>
 
         {/* Aşağı ok — açıklığı belli etsin */}
@@ -232,7 +232,7 @@ export function SmartAssistant() {
         <div
           id={popoverId}
           role="dialog"
-          aria-label="Akıllı Yardım Asistanı"
+          aria-label="Nasıl Kullanılır? — Eğitim Videoları"
           className="absolute bottom-full left-0 right-0 z-30 mb-2 rounded-2xl border border-white/60 bg-white/75 p-2.5 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.25),0_0_0_1px_rgba(255,255,255,0.5)_inset] backdrop-blur-2xl animate-in fade-in slide-in-from-bottom-1 duration-200"
         >
           {/* Hafif iç parıltı */}
