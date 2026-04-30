@@ -9,6 +9,8 @@ const Z_INDEX = 20000
 export function VideoModal() {
   const isOpen = useVideoModalStore((s) => s.isOpen)
   const close = useVideoModalStore((s) => s.close)
+  const targetVideoId = useVideoModalStore((s) => s.targetVideoId)
+  const clearTarget = useVideoModalStore((s) => s.clearTarget)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [iframeLoaded, setIframeLoaded] = useState(false)
 
@@ -20,6 +22,24 @@ export function VideoModal() {
     setIframeLoaded(false)
     close()
   }, [close])
+
+  // İframe içinden VIDEO_MODAL_READY mesajı gelince hedef videoyu oynat
+  useEffect(() => {
+    if (!isOpen) return
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { type?: string } | null
+      if (!data || typeof data !== 'object') return
+      if (data.type !== 'VIDEO_MODAL_READY') return
+      if (!targetVideoId) return
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: 'PLAY_VIDEO', videoId: targetVideoId },
+        '*',
+      )
+      clearTarget()
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [isOpen, targetVideoId, clearTarget])
 
   // Body scroll kilidi
   useEffect(() => {

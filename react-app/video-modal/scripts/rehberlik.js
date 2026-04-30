@@ -52,7 +52,8 @@ class RehberlikPlatform {
     init() {
         this.setupEventListeners();
         this.renderContent();
-        
+        this.setupParentMessageListener();
+
         // Set initial glider position
         const initialActiveButton = document.querySelector('.filter-btn.active');
         if (initialActiveButton) {
@@ -62,6 +63,56 @@ class RehberlikPlatform {
             filterButtonsContainer.style.setProperty('--glider-left', `${left}px`);
             filterButtonsContainer.style.setProperty('--glider-width', `${width}px`);
         }
+
+        // Parent SPA hazır olduğumuzu bilsin — varsa beklenen PLAY_VIDEO mesajını gönderebilir
+        try {
+            window.parent?.postMessage({ type: 'VIDEO_MODAL_READY' }, '*');
+        } catch (_) { /* iframe sandbox vs. */ }
+    }
+
+    /**
+     * Parent SPA'dan gelen mesajları dinle:
+     *   { type: 'PLAY_VIDEO', videoId: 'cbs-7' }
+     */
+    setupParentMessageListener() {
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            if (!data || typeof data !== 'object') return;
+            if (data.type !== 'PLAY_VIDEO') return;
+            const videoId = String(data.videoId || '');
+            if (!videoId) return;
+            this.playVideoById(videoId);
+        });
+    }
+
+    /**
+     * Belirli bir video ID'sine ait kartı bulur, viewport'a kaydırır
+     * ve oynatmayı başlatır.
+     */
+    playVideoById(videoId) {
+        const tryPlay = (attempt = 0) => {
+            const card = document.querySelector(`.video-card[data-video-id="${videoId}"]`);
+            if (!card) {
+                // Render henüz tamamlanmamış olabilir — birkaç frame bekle
+                if (attempt < 10) {
+                    requestAnimationFrame(() => tryPlay(attempt + 1));
+                }
+                return;
+            }
+            const playBtn = card.querySelector('.play-button');
+            if (!playBtn) return;
+            const videoSrc = playBtn.dataset.videoSrc;
+            const videoPoster = playBtn.dataset.videoPoster;
+            // Viewport'a yumuşak kaydır
+            try {
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (_) {
+                card.scrollIntoView();
+            }
+            // Render'ın oturması için kısa gecikme
+            setTimeout(() => this.playVideo(videoSrc, videoPoster), 120);
+        };
+        tryPlay();
     }
 
     setupEventListeners() {

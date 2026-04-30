@@ -1,9 +1,8 @@
 import { Loader2, Upload } from 'lucide-react'
 import { useState } from 'react'
 
-import { useVideoModalStore } from '@/stores/useVideoModalStore'
-
 import ColumnMapperModal from './ColumnMapperModal'
+import { SmartAssistant } from './SmartAssistant'
 import { UrlImporter } from './UrlImporter'
 import { FILE_ACCEPT_PATTERN } from '../constants/formats'
 import { useFileImport } from '../hooks/useFileImport'
@@ -92,27 +91,7 @@ export function DataImportSection() {
         isLoading={urlLoading}
       />
 
-      <button
-        type="button"
-        onClick={() => useVideoModalStore.getState().open()}
-        className="group relative mt-3 w-full overflow-hidden rounded-lg bg-gradient-to-br from-zinc-900 to-black px-3 py-2 shadow-none transition-[box-shadow] duration-300 hover:shadow-[0_6px_18px_-6px_rgba(16,185,129,0.4)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-        title="Eğitim videolarını aç"
-      >
-        <span className="relative flex items-center justify-center gap-2.5">
-          {/* Play üçgeni — dinlenmede zinc, hover'da emerald */}
-          <svg
-            className="h-2.5 w-2.5 fill-zinc-400 transition-colors duration-300 group-hover:fill-emerald-400"
-            viewBox="0 0 12 12"
-            aria-hidden="true"
-          >
-            <path d="M2 1.5L10 6L2 10.5z" />
-          </svg>
-
-          <span className="text-[12px] font-medium tracking-wide text-white">
-            Nasıl Kullanılır?
-          </span>
-        </span>
-      </button>
+      <SmartAssistant />
 
       {mapperData && (
         <ColumnMapperModal
