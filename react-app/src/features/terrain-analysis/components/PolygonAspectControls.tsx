@@ -44,9 +44,6 @@ export default function PolygonAspectControls({
       </div>
 
       <div>
-        <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
-          Polygon Seç
-        </label>
         <select
           value={selectedPolygonId ?? ''}
           onChange={(event) => onSelectedPolygonChange(event.target.value || null)}
@@ -63,7 +60,7 @@ export default function PolygonAspectControls({
 
       {polygonOptions.length === 0 && (
         <div className="text-[10px] text-zinc-500 bg-zinc-50 rounded-md px-2.5 py-2 leading-relaxed">
-          Analiz için görünür polygon verisi yok. Önce bir alan çizin veya polygon katmanı yükleyin.
+          Analiz için görünür alan verisi yok. Önce bir alan çizin veya alan katmanı yükleyin.
         </div>
       )}
 
