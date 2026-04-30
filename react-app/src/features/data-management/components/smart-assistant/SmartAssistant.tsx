@@ -13,6 +13,7 @@ import { useVoiceSearch } from './useVoiceSearch'
 
 const FOCUS_DELAY_MS = 80
 const SEARCH_TRACK_DEBOUNCE_MS = 600
+const normalizeQueryForAnalytics = (value: string) => value.trim().toLowerCase()
 
 export function SmartAssistant() {
   const [open, setOpen] = useState(false)
@@ -53,8 +54,9 @@ export function SmartAssistant() {
   useEffect(() => {
     if (!open || !query.trim()) return
     const t = setTimeout(() => {
-      track.search(query)
-      if (displayed.length === 0) track.noResult(query)
+      const normalizedQuery = normalizeQueryForAnalytics(query)
+      track.search(normalizedQuery)
+      if (displayed.length === 0) track.noResult(normalizedQuery)
     }, SEARCH_TRACK_DEBOUNCE_MS)
     return () => clearTimeout(t)
   }, [query, displayed.length, open])
