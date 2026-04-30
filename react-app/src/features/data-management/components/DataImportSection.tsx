@@ -2,7 +2,7 @@ import { Loader2, Upload } from 'lucide-react'
 import { useState } from 'react'
 
 import ColumnMapperModal from './ColumnMapperModal'
-import { SmartAssistant } from './SmartAssistant'
+import { SmartAssistant } from './smart-assistant'
 import { UrlImporter } from './UrlImporter'
 import { FILE_ACCEPT_PATTERN } from '../constants/formats'
 import { useFileImport } from '../hooks/useFileImport'

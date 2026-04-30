@@ -1,0 +1,1 @@
+export { SmartAssistant } from './SmartAssistant'

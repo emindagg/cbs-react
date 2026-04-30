@@ -7,26 +7,10 @@ class RehberlikPlatform {
     constructor() {
         this.currentFilter = 'videos';
         this.players = new Map();
-        
-        // CBS içerik verileri - tek düz liste (kategorisiz)
+
+        // Tek katalog kaynağı: data/videos.json — SmartAssistant ile paylaşılan
         this.content = {
-            videos: [
-                { id: 'cbs-1', type: 'video', title: '1. OGM Materyal CBS Platformu Arayüz Tanıtımı', description: 'OGM Materyal CBS Platformuna giriş ve arayüz tanıtımı.', duration: '03:10', thumbnail: 'thumbnails/1.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/1_cbs_arayuz.mp4', isNew: false },
-                { id: 'cbs-2', type: 'video', title: '2. Veri Görselleştirme', description: 'Veri görselleştirme ve harita üretme.', duration: '06:06', thumbnail: 'thumbnails/2.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/2_veri_gorsellestirme.mp4', isNew: false },
-                { id: 'cbs-3', type: 'video', title: '3. Harita Etiketleme Seçenekleri', description: 'Harita etiketleme ve sınıflandırma seçenekleri.', duration: '02:56', thumbnail: 'thumbnails/3.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/3_etiketleme.mp4', isNew: false },
-                { id: 'cbs-4', type: 'video', title: '4. Astronomi Modülü', description: 'Astronomi modülü kullanımı.', duration: '01:43', thumbnail: 'thumbnails/4.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/4_astronomi_modulu.mp4', isNew: false },
-                { id: 'cbs-5', type: 'video', title: '5. Veri Oluşturma', description: 'Veri oluşturma ve yönetimi.', duration: '03:41', thumbnail: 'thumbnails/5.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/5_veri_olusturma.mp4', isNew: false },
-                { id: 'cbs-6', type: 'video', title: '6. Zaman Çizelgesi', description: 'Zaman çizelgesi modülünün kullanımı.', duration: '02:57', thumbnail: 'thumbnails/6.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/6_zaman_cizelgesi.mp4', isNew: false },
-                { id: 'cbs-7', type: 'video', title: '7. Ölçüm Araçları', description: 'Mesafe ve alan ölçüm araçları kullanımı.', duration: '01:34', thumbnail: 'thumbnails/7.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/7_olcum_araclari.mp4', isNew: false },
-                { id: 'cbs-8', type: 'video', title: '8. Mekânsal Analiz Araçları-1', description: 'Mekânsal analiz araçlarına giriş ve etki alanı analizi.', duration: '01:46', thumbnail: 'thumbnails/8.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/8_mekansal_analiz_1.mp4', isNew: false },
-                { id: 'cbs-9', type: 'video', title: '9. Mekânsal Analiz Araçları-2', description: 'Nokta kümeleri, dış sınır analizi, en yakın alanlar analizi, iki nokta analizi ve ısı haritası.', duration: '04:17', thumbnail: 'thumbnails/9.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/9_mekansal_analiz_2.mp4', isNew: false },
-                { id: 'cbs-10', type: 'video', title: '10. Altlık Harita ve Katmanlar', description: 'Altlık harita seçimi ve katman yönetimi.', duration: '02:33', thumbnail: 'thumbnails/10.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/10_altlik_harita_ve_katmanlar.mp4', isNew: false },
-                { id: 'cbs-11', type: 'video', title: '11. Proje Yönetimi', description: 'Proje oluşturma, veri yükleme,veri kaydetme ve veri yönetimi.', duration: '03:20', thumbnail: 'thumbnails/11.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/11_proje_yonetimi.mp4', isNew: false },
-                { id: 'cbs-12', type: 'video', title: '12. Hikâye Haritası Giriş', description: 'Hikâye haritasına giriş ve platforma giriş seçenekleri.', duration: '01:45', thumbnail: 'thumbnails/12.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/12_hikaye_haritasi_giris.mp4', isNew: false },
-                { id: 'cbs-13', type: 'video', title: '13. Hikâye Haritası arayüz Tanıtımı', description: 'Hikâye Haritası arayüz özellikleri ve çizim araçlarının kullanımı.', duration: '02:17', thumbnail: 'thumbnails/13.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/13_arayuz_hikaye.mp4', isNew: false },
-                { id: 'cbs-14', type: 'video', title: '14. Hikâye Haritası Oluşturma 1', description: 'Varsayılan ve Hikâye Haritası şablonlarından hikâye haritası oluşturma.', duration: '04:00', thumbnail: 'thumbnails/14.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/14_hikaye_haritasi_olusturma_1.mp4', isNew: false },
-                { id: 'cbs-15', type: 'video', title: '15. Hikâye Haritası Oluşturma 2', description: 'Rota Hikâyesi ve Zaman Çizelgesi şablonlarından hikâye haritası oluşturma ve paylaşılan hikâye haritasını görüntüleme .', duration: '04:36', thumbnail: 'thumbnails/15.png', src: 'https://ogm-large-cdn.eba.gov.tr/Cbs/videos/15_hikaye_haritasi_olusturma_2.mp4', isNew: false }
-            ],
+            videos: [],
             documents: [
                 {
                     id: 'cbs-doc-1',
@@ -46,6 +30,27 @@ class RehberlikPlatform {
             ]
         };
 
+        this.bootstrap();
+    }
+
+    async bootstrap() {
+        try {
+            const res = await fetch('data/videos.json');
+            const raw = await res.json();
+            // JSON şeması: { id, num, title, fullTitle, hint, description, duration, thumbnail, src, keywords, isNew }
+            this.content.videos = raw.map((v) => ({
+                id: v.id,
+                type: 'video',
+                title: v.fullTitle || v.title,
+                description: v.description,
+                duration: v.duration,
+                thumbnail: v.thumbnail,
+                src: v.src,
+                isNew: !!v.isNew,
+            }));
+        } catch (err) {
+            console.error('Video kataloğu yüklenemedi:', err);
+        }
         this.init();
     }
 
