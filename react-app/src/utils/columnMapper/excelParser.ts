@@ -5,10 +5,12 @@ import {
   ExcelParseError,
   type ExcelSelectionMode,
   type ExcelSelectionPreview,
+  type ExcelSheetEntry,
   type ParsedExcelResult,
   type ParsedExcelStats,
   type ParsedExcelWarning,
   type PendingExcelSelection,
+  type PendingExcelWorkbook,
 } from './types'
 
 const MAX_SHEET_ROWS = 100_000
@@ -454,24 +456,55 @@ export function parseWorksheetToTable(sheet: WorkSheet): ParsedExcelResult {
   )
 }
 
-export function analyzeExcelArrayBuffer(buffer: ArrayBuffer): PendingExcelSelection & { preview: ExcelSelectionPreview } {
+export function analyzeExcelArrayBuffer(buffer: ArrayBuffer): PendingExcelWorkbook {
   const workbook = XLSX.read(buffer, { type: 'array' })
-  const firstSheetName = workbook.SheetNames[0]
 
-  if (!firstSheetName) {
+  if (!workbook.SheetNames.length) {
     throw new ExcelParseError('EMPTY_WORKBOOK', 'Excel çalışma kitabında sayfa bulunamadı.')
   }
 
-  const worksheet = workbook.Sheets[firstSheetName]
-  if (!worksheet) {
-    throw new ExcelParseError('EMPTY_SHEET', 'İlk Excel sayfası okunamadı.')
+  const sheets: ExcelSheetEntry[] = workbook.SheetNames.map((name) => {
+    const worksheet = workbook.Sheets[name]
+    if (!worksheet) {
+      return { name, selection: null, error: 'Sayfa okunamadı.', estimatedDataRows: 0 }
+    }
+    try {
+      const selection = analyzeWorksheetForSelection(worksheet)
+      const dataRows = Math.max(0, selection.lastNonEmptyRow - selection.suggestedHeaderRowIndex)
+      return { name, selection, estimatedDataRows: dataRows }
+    } catch (error) {
+      const message = error instanceof ExcelParseError
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : 'Sayfa analiz edilemedi.'
+      return { name, selection: null, error: message, estimatedDataRows: 0 }
+    }
+  })
+
+  // Pick the sheet with the most data rows as default; if none parseable, throw.
+  let activeSheetIndex = -1
+  let bestRows = -1
+  sheets.forEach((sheet, index) => {
+    if (!sheet.selection) return
+    if (sheet.estimatedDataRows > bestRows) {
+      bestRows = sheet.estimatedDataRows
+      activeSheetIndex = index
+    }
+  })
+
+  if (activeSheetIndex === -1) {
+    const firstError = sheets.find((s) => s.error)?.error ?? 'Excel sayfaları okunamadı.'
+    throw new ExcelParseError('EMPTY_SHEET', firstError)
   }
 
-  return analyzeWorksheetForSelection(worksheet)
+  return { sheets, activeSheetIndex }
 }
 
 export function parseExcelArrayBuffer(buffer: ArrayBuffer): ParsedExcelResult {
-  const selection = analyzeExcelArrayBuffer(buffer)
+  const workbook = analyzeExcelArrayBuffer(buffer)
+  const active = workbook.sheets[workbook.activeSheetIndex]
+  const selection = active.selection!
   return finalizeExcelSelection(
     selection,
     selection.suggestedHeaderRowIndex,

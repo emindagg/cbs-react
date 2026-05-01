@@ -5,12 +5,12 @@
 
 import { create } from 'zustand'
 
-import type { ExcelSelectionPreview, PendingExcelSelection } from '@/utils/columnMapper/types'
-import type { ColumnLocaleReport, NumberLocale } from '@/utils/numberFormatter'
+import type { PendingExcelWorkbook } from '@/utils/columnMapper/types'
 import {
   clampLegendClassCount,
   isValidCustomBreaksLength,
 } from '@/utils/legendClassCount'
+import type { ColumnLocaleReport, NumberLocale } from '@/utils/numberFormatter'
 
 
 import type {
@@ -24,17 +24,16 @@ import type {
   MapTitleConfiguration,
 } from '../types/visualization'
 
-type PendingExcel = PendingExcelSelection & { preview: ExcelSelectionPreview }
-
 interface VisualizationStore {
   // Wizard state
   currentStep: number
   setCurrentStep: (step: number) => void
   goToStep: (step: number) => void
 
-  // Pending Excel header selection
-  pendingExcel: PendingExcel | null
-  setPendingExcel: (data: PendingExcel | null) => void
+  // Pending Excel header selection (workbook-aware: contains all sheets)
+  pendingExcel: PendingExcelWorkbook | null
+  setPendingExcel: (data: PendingExcelWorkbook | null) => void
+  setPendingExcelActiveSheet: (sheetIndex: number) => void
 
   // File data
   rawData: Record<string, unknown>[] | null
@@ -226,6 +225,13 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
   // Pending Excel
   pendingExcel: null,
   setPendingExcel: (data) => set({ pendingExcel: data }),
+  setPendingExcelActiveSheet: (sheetIndex) =>
+    set((state) => {
+      if (!state.pendingExcel) return state
+      const sheet = state.pendingExcel.sheets[sheetIndex]
+      if (!sheet || !sheet.selection) return state
+      return { pendingExcel: { ...state.pendingExcel, activeSheetIndex: sheetIndex } }
+    }),
 
   // File data
   rawData: null,

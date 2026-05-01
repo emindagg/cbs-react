@@ -73,16 +73,33 @@ export interface PendingExcelSelection {
   suggestedHeaderRowIndex: number
 }
 
+export type PendingExcelSheetSelection = PendingExcelSelection & { preview: ExcelSelectionPreview }
+
+export interface ExcelSheetEntry {
+  name: string
+  /** null when the sheet is empty or unparseable */
+  selection: PendingExcelSheetSelection | null
+  /** human-readable reason why the sheet is unusable (only set when selection is null) */
+  error?: string
+  /** estimated number of data rows (used for picking the default active sheet and for display) */
+  estimatedDataRows: number
+}
+
+export interface PendingExcelWorkbook {
+  sheets: ExcelSheetEntry[]
+  activeSheetIndex: number
+}
+
 export type FileLoadResult =
   | { kind: 'ready'; fileInfo: FileInfo }
-  | { kind: 'needs-header-selection'; pending: PendingExcelSelection & { preview: ExcelSelectionPreview } }
+  | { kind: 'needs-header-selection'; pending: PendingExcelWorkbook }
 
 export interface ExcelWorkerInput {
   buffer: ArrayBuffer
 }
 
 export type ExcelWorkerOutput =
-  | { success: true; result: PendingExcelSelection & { preview: ExcelSelectionPreview } }
+  | { success: true; result: PendingExcelWorkbook }
   | {
     success: false
     error: {

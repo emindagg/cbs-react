@@ -11,12 +11,11 @@ import { analyzeExcelArrayBuffer, finalizeExcelSelection } from './columnMapper/
 import type {
   ColumnDetectionResult,
   ColumnMapperIndexes,
-  ExcelSelectionPreview,
   FileLoadResult,
   ExcelWorkerOutput,
   FileInfo,
   ParsedExcelResult,
-  PendingExcelSelection,
+  PendingExcelWorkbook,
   RawDataRow,
 } from './columnMapper/types'
 
@@ -30,9 +29,7 @@ function toFileInfo(result: ParsedExcelResult): FileInfo {
   }
 }
 
-async function parseExcelWithWorker(
-  file: File,
-): Promise<PendingExcelSelection & { preview: ExcelSelectionPreview }> {
+async function parseExcelWithWorker(file: File): Promise<PendingExcelWorkbook> {
   const buffer = await file.arrayBuffer()
 
   if (typeof Worker === 'undefined') {
@@ -73,7 +70,7 @@ async function parseExcelWithWorker(
 export class ColumnMapper {
   rawData: RawDataRow[] | null = null
   columns: string[] = []
-  private pendingExcelSelection: PendingExcelSelection | null = null
+  private pendingExcelWorkbook: PendingExcelWorkbook | null = null
   columnMapping: ColumnMapping = {
     locationColumn: null,
     districtColumn: null,
@@ -120,7 +117,7 @@ export class ColumnMapper {
 
         this.rawData = jsonData
         this.columns = Object.keys(jsonData[0])
-        this.pendingExcelSelection = null
+        this.pendingExcelWorkbook = null
         const fileInfo: FileInfo = {
           rowCount: jsonData.length,
           columns: this.columns,
@@ -131,12 +128,7 @@ export class ColumnMapper {
         const result = await parseExcelWithWorker(file)
         this.rawData = null
         this.columns = []
-        this.pendingExcelSelection = {
-          matrix: result.matrix,
-          firstNonEmptyRow: result.firstNonEmptyRow,
-          lastNonEmptyRow: result.lastNonEmptyRow,
-          suggestedHeaderRowIndex: result.suggestedHeaderRowIndex,
-        }
+        this.pendingExcelWorkbook = result
 
         return {
           kind: 'needs-header-selection',
@@ -149,12 +141,21 @@ export class ColumnMapper {
     }
   }
 
-  finalizeExcelSelection(headerRowIndex: number | null, dataStartRowIndex: number): FileInfo {
-    if (!this.pendingExcelSelection) {
+  finalizeExcelSelection(
+    sheetIndex: number,
+    headerRowIndex: number | null,
+    dataStartRowIndex: number,
+  ): FileInfo {
+    if (!this.pendingExcelWorkbook) {
       throw new Error('Excel önizlemesi hazır değil')
     }
 
-    const result = finalizeExcelSelection(this.pendingExcelSelection, headerRowIndex, dataStartRowIndex)
+    const sheet = this.pendingExcelWorkbook.sheets[sheetIndex]
+    if (!sheet || !sheet.selection) {
+      throw new Error('Seçilen sayfa kullanılabilir değil')
+    }
+
+    const result = finalizeExcelSelection(sheet.selection, headerRowIndex, dataStartRowIndex)
     const jsonData = result.rows
 
     if (!jsonData || jsonData.length === 0) {
@@ -163,9 +164,9 @@ export class ColumnMapper {
 
     this.rawData = jsonData
     this.columns = result.columns
-    this.pendingExcelSelection = null
+    this.pendingExcelWorkbook = null
 
-    console.debug('✅ Excel finalized:', jsonData.length, 'rows')
+    console.debug('✅ Excel finalized:', jsonData.length, 'rows from', sheet.name)
     console.debug('📊 Columns:', this.columns)
 
     return toFileInfo(result)

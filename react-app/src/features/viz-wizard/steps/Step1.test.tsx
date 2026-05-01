@@ -56,28 +56,37 @@ describe('VizWizardStep1', () => {
     loadFileMock.mockResolvedValue({
       kind: 'needs-header-selection',
       pending: {
-        matrix: [
-          ['2024 Türkiye il bazlı özet raporu', '', ''],
-          ['İl', 'Değer', 'Not'],
-          ['Ankara', '10', 'Merkez'],
-          ['İzmir', '20', 'Kıyı'],
+        sheets: [
+          {
+            name: 'Sayfa1',
+            estimatedDataRows: 2,
+            selection: {
+              matrix: [
+                ['2024 Türkiye il bazlı özet raporu', '', ''],
+                ['İl', 'Değer', 'Not'],
+                ['Ankara', '10', 'Merkez'],
+                ['İzmir', '20', 'Kıyı'],
+              ],
+              firstNonEmptyRow: 2,
+              lastNonEmptyRow: 5,
+              suggestedHeaderRowIndex: 3,
+              preview: {
+                previewRows: [
+                  ['2024 Türkiye il bazlı özet raporu', '', ''],
+                  ['İl', 'Değer', 'Not'],
+                  ['Ankara', '10', 'Merkez'],
+                  ['İzmir', '20', 'Kıyı'],
+                ],
+                previewRowIndices: [2, 3, 4, 5],
+                firstNonEmptyRow: 2,
+                lastNonEmptyRow: 5,
+                suggestedHeaderRowIndex: 3,
+                hasReliableHeaderSuggestion: true,
+              },
+            },
+          },
         ],
-        firstNonEmptyRow: 2,
-        lastNonEmptyRow: 5,
-        suggestedHeaderRowIndex: 3,
-        preview: {
-          previewRows: [
-            ['2024 Türkiye il bazlı özet raporu', '', ''],
-            ['İl', 'Değer', 'Not'],
-            ['Ankara', '10', 'Merkez'],
-            ['İzmir', '20', 'Kıyı'],
-          ],
-          previewRowIndices: [2, 3, 4, 5],
-          firstNonEmptyRow: 2,
-          lastNonEmptyRow: 5,
-          suggestedHeaderRowIndex: 3,
-          hasReliableHeaderSuggestion: true,
-        },
+        activeSheetIndex: 0,
       },
     })
 
@@ -113,28 +122,37 @@ describe('VizWizardStep1', () => {
     expect(onNext).toHaveBeenCalledTimes(1)
     expect(useVisualizationStore.getState().rawData).toBeNull()
     expect(useVisualizationStore.getState().pendingExcel).toEqual({
-      matrix: [
-        ['2024 Türkiye il bazlı özet raporu', '', ''],
-        ['İl', 'Değer', 'Not'],
-        ['Ankara', '10', 'Merkez'],
-        ['İzmir', '20', 'Kıyı'],
+      sheets: [
+        {
+          name: 'Sayfa1',
+          estimatedDataRows: 2,
+          selection: {
+            matrix: [
+              ['2024 Türkiye il bazlı özet raporu', '', ''],
+              ['İl', 'Değer', 'Not'],
+              ['Ankara', '10', 'Merkez'],
+              ['İzmir', '20', 'Kıyı'],
+            ],
+            firstNonEmptyRow: 2,
+            lastNonEmptyRow: 5,
+            suggestedHeaderRowIndex: 3,
+            preview: {
+              previewRows: [
+                ['2024 Türkiye il bazlı özet raporu', '', ''],
+                ['İl', 'Değer', 'Not'],
+                ['Ankara', '10', 'Merkez'],
+                ['İzmir', '20', 'Kıyı'],
+              ],
+              previewRowIndices: [2, 3, 4, 5],
+              firstNonEmptyRow: 2,
+              lastNonEmptyRow: 5,
+              suggestedHeaderRowIndex: 3,
+              hasReliableHeaderSuggestion: true,
+            },
+          },
+        },
       ],
-      firstNonEmptyRow: 2,
-      lastNonEmptyRow: 5,
-      suggestedHeaderRowIndex: 3,
-      preview: {
-        previewRows: [
-          ['2024 Türkiye il bazlı özet raporu', '', ''],
-          ['İl', 'Değer', 'Not'],
-          ['Ankara', '10', 'Merkez'],
-          ['İzmir', '20', 'Kıyı'],
-        ],
-        previewRowIndices: [2, 3, 4, 5],
-        firstNonEmptyRow: 2,
-        lastNonEmptyRow: 5,
-        suggestedHeaderRowIndex: 3,
-        hasReliableHeaderSuggestion: true,
-      },
+      activeSheetIndex: 0,
     })
   })
 
