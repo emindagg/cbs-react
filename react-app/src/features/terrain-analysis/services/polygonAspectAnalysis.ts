@@ -15,9 +15,14 @@ import { readTerrariumElevationAtGlobalPixel } from './terrainTiles'
 const ABSOLUTE_MAX_AREA_KM2 = 10000
 const MIN_RASTER_DIMENSION = 64
 const MAX_RASTER_DIMENSION = 640
+// DEM native pixel başına izin verilen analiz cell sayısı. Bilinear sampling ile
+// 2× oversampling pürüzsüz görüntü üretir; daha yükseği gereksiz hesap maliyetidir.
+const MAX_OVERSAMPLE_FACTOR = 2
 const ALPHA_INSIDE = 255
 const ALPHA_OUTSIDE = 0
 const PERCENT_MULTIPLIER = 100
+const EARTH_RADIUS_M = 6_378_137
+const DEG_TO_RAD = Math.PI / 180
 
 interface PolygonAspectInput {
   itemId: string
@@ -75,23 +80,40 @@ export async function analyzePolygonAspectFromTerrarium(input: PolygonAspectInpu
   })
   const tileZoom = input.forceZoom ?? lod.zoom
 
-  const width = Math.min(MAX_RASTER_DIMENSION, Math.max(MIN_RASTER_DIMENSION, lod.rasterWidth))
-  const height = Math.min(MAX_RASTER_DIMENSION, Math.max(MIN_RASTER_DIMENSION, lod.rasterHeight))
-  const sampleWidth = width + 2
-  const sampleHeight = height + 2
-
+  // Native DEM çözünürlüğünü aşan oversampling step-function aliasing üretir;
+  // raster boyutunu DEM native pixel sayısının MAX_OVERSAMPLE_FACTOR katıyla sınırla.
   const nw = lngLatToGlobalPixel(west, north, tileZoom)
   const se = lngLatToGlobalPixel(east, south, tileZoom)
-  const globalStepX = (se.x - nw.x) / Math.max(1, width - 1)
-  const globalStepY = (se.y - nw.y) / Math.max(1, height - 1)
+  const tilePixelsWide = Math.max(2, se.x - nw.x)
+  const tilePixelsTall = Math.max(2, se.y - nw.y)
+  const maxAllowedWidth = Math.max(MIN_RASTER_DIMENSION, Math.ceil(tilePixelsWide * MAX_OVERSAMPLE_FACTOR))
+  const maxAllowedHeight = Math.max(MIN_RASTER_DIMENSION, Math.ceil(tilePixelsTall * MAX_OVERSAMPLE_FACTOR))
+
+  const width = Math.min(
+    MAX_RASTER_DIMENSION,
+    Math.max(MIN_RASTER_DIMENSION, lod.rasterWidth),
+    maxAllowedWidth,
+  )
+  const height = Math.min(
+    MAX_RASTER_DIMENSION,
+    Math.max(MIN_RASTER_DIMENSION, lod.rasterHeight),
+    maxAllowedHeight,
+  )
+  const sampleWidth = width + 2
+  const sampleHeight = height + 2
   const elevations = new Float32Array(sampleWidth * sampleHeight)
 
+  // Sample noktalarını equirectangular grid'de hesapla (analiz cell merkezleriyle
+  // tutarlı), sonra Web Mercator tile pixel uzayına çevirip bilinear oku.
+  // Bu, Mercator y-grid ile equirectangular cell-grid arası eski uyuşmazlığı
+  // ve nearest-neighbor step aliasing'ini birlikte çözer.
   for (let y = 0; y < sampleHeight; y++) {
     if (input.signal?.aborted) throw new Error('İptal edildi')
+    const sampleLat = north - ((y - 1 + 0.5) / height) * (north - south)
     const rowPromises: Promise<void>[] = []
     for (let x = 0; x < sampleWidth; x++) {
-      const globalX = nw.x + (x - 1) * globalStepX
-      const globalY = nw.y + (y - 1) * globalStepY
+      const sampleLng = west + ((x - 1 + 0.5) / width) * (east - west)
+      const { x: globalX, y: globalY } = lngLatToGlobalPixel(sampleLng, sampleLat, tileZoom)
       const idx = getSampleIndex(x, y, sampleWidth)
       rowPromises.push(
         readTerrariumElevationAtGlobalPixel(globalX, globalY, tileZoom, input.signal).then((value) => {
@@ -104,7 +126,12 @@ export async function analyzePolygonAspectFromTerrarium(input: PolygonAspectInpu
 
   const classes = createInitialAspectClasses()
   const imageData = new Uint8ClampedArray(width * height * 4)
-  const cellSizeMeters = Math.max(1, groundResolutionMeters(midLat, tileZoom))
+  const tileResolutionMeters = Math.max(1, groundResolutionMeters(midLat, tileZoom))
+  // Equirectangular grid'de dx ve dy farklıdır (yüksek enlemde dx küçülür).
+  // Anisotropic Horn kerneli için cell boyutlarını metre cinsinden ayrı hesapla.
+  const cosLat = Math.cos(midLat * DEG_TO_RAD)
+  const cellSizeXMeters = Math.max(1, ((east - west) / width) * DEG_TO_RAD * EARTH_RADIUS_M * cosLat)
+  const cellSizeYMeters = Math.max(1, ((north - south) / height) * DEG_TO_RAD * EARTH_RADIUS_M)
   let insideCount = 0
 
   for (let y = 0; y < height; y++) {
@@ -136,7 +163,7 @@ export async function analyzePolygonAspectFromTerrarium(input: PolygonAspectInpu
           elevations[getSampleIndex(sx, sy + 1, sampleWidth)],
           elevations[getSampleIndex(sx + 1, sy + 1, sampleWidth)],
         ],
-      ], cellSizeMeters)
+      ], { x: cellSizeXMeters, y: cellSizeYMeters })
 
       const classIndex = getAspectClassIndex(aspect.direction)
       const [r, g, b] = getAspectClassColor(classIndex)
@@ -186,7 +213,7 @@ export async function analyzePolygonAspectFromTerrarium(input: PolygonAspectInpu
     dominantDirection,
     flatPercent,
     tileZoom,
-    resolutionMeters: Math.round(cellSizeMeters * 10) / 10,
+    resolutionMeters: Math.round(tileResolutionMeters * 10) / 10,
     estimatedTiles: lod.estimatedTiles,
     source: 'aws-terrarium',
   }
