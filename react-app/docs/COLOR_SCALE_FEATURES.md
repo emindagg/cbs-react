@@ -1,59 +1,45 @@
 # Renk Ölçeği ve Sınıflandırma Özellikleri
 
-Bu doküman, projedeki güncel renk ölçeği akışını kod tabanına göre özetler. Odak noktası `VizWizardStep3` içinde kullanılan renk paleti, sınıflandırma, sürekli ölçek, özel aralık ve legend entegrasyonudur. Mimari zincir için `docs/COLOR_SCALE_INTEGRATION.md`, üst seviye sistem görünümü için `docs/ARCHITECTURE.md` dosyasına bakılmalıdır.
+Güncellendi: 2026-05-01
+
+Bu doküman, projedeki güncel renk ölçeği özelliklerini kaynak koda göre özetler. Entegrasyon zinciri için `docs/COLOR_SCALE_INTEGRATION.md`, üst seviye mimari için `docs/ARCHITECTURE.md` referans alınmalıdır.
 
 ## Kapsam
 
-Renk ölçeği akışı şu senaryolarda kullanılır:
+Renk ölçeği akışı üç görselleştirme türünde farklı davranır:
 
-- **Koroplet harita**: ana renk ölçeği akışı doğrudan kullanılır.
-- **Bubble harita**: yalnızca `colorColumn` seçilmişse renk ölçeği paneli aktif biçimde kullanılır.
-- **Dot density**: ayrı nokta/dot legend akışı vardır; bu dokümandaki stepped/continuous renk ölçeği paneli kullanılmaz. Buna rağmen Step3 içindeki veri önizlemesi ve değer aralığı kartları veri varsa açılabilir.
+| Görselleştirme | Renk ölçeği davranışı |
+|---|---|
+| Koroplet harita | Basamaklı veya sürekli renk ölçeği doğrudan polygon dolgusuna uygulanır. |
+| Kabarcık harita | `colorColumn` seçilirse bivariate renk ölçeği çalışır; seçilmezse kabarcıklar tek `symbolFillColor` ile çizilir. |
+| Nokta yoğunluk | Basamaklı/sürekli renk ölçeği kullanılmaz; nokta rengi, nokta değeri ve nokta boyutu ayrı ayarlanır. |
 
-İlgili merkez dosya:
+Ana UI orkestrasyonu:
 
 - `src/features/viz-wizard/steps/Step3/index.tsx`
+- `src/features/viz-wizard/steps/Step3/useVizWizardStep3.ts`
 
-## Mevcut Özellik Özeti
+## Tip Sözleşmesi
 
-### 1. İki ölçek türü
+Güncel tipler `src/types/visualization.ts` içindedir.
 
-`ColorScaleConfig` iki temel ölçek türü sunar:
+`ClassificationMethod`:
 
-- `steps`: sınıflı/basamaklı renkler
-- `continuous`: sürekli gradyan
-
-UI bileşeni:
-
-- `src/features/viz-wizard/components/ColorScale/Config.tsx`
-
-Store tipi:
-
-- `src/types/visualization.ts` içindeki `ColorScaleType = 'steps' | 'continuous'`
-
-### 2. Basamaklı sınıflandırma yöntemleri
-
-Step3 içindeki `StepsSection` bugün şu yöntemleri gösterir:
-
-- `jenks`
-- `equal`
 - `quantile`
-- `kmeans`
+- `equal`
+- `jenks`
 - `custom`
+- `stddev`
+- `continuous-linear`
+- `continuous-quantile`
+- `continuous-natural`
 
-İlgili dosyalar:
+`ColorScaleType`:
 
-- `src/features/viz-wizard/steps/Step3/components/StepsSection.tsx`
-- `src/utils/classification.ts`
+- `steps`
+- `continuous`
 
-Notlar:
-
-- `custom` seçildiğinde sınır değerleri `CustomBreaksInput` ile elle girilir.
-- `stddev` desteği `src/utils/classification.ts` ve bazı legend akışlarında mevcut olsa da mevcut Step3 sınıflandırma açılır menüsünde sunulmaz.
-
-### 3. Sürekli ölçek interpolasyon preset'leri
-
-Sürekli modda serbest renk uzayı seçimi değil, hazır interpolasyon preset'leri kullanılır:
+`InterpolationMethod`:
 
 - `equidistant`
 - `quantiles-4`
@@ -61,45 +47,123 @@ Sürekli modda serbest renk uzayı seçimi değil, hazır interpolasyon preset'l
 - `quantiles-10`
 - `natural-9`
 
-İlgili dosya:
+Not: Projede `kmeans` sınıflandırma tipi yoktur. Eski dokümanlarda görülen `classificationMethods.ts` dosyası da mevcut değildir.
 
-- `src/utils/interpolation.ts`
+## Ölçek Türleri
 
-Bu dosya şu görevleri üstlenir:
+`ColorScaleConfig` iki ölçek türü sunar:
 
-- preset'e göre break hesaplama: `calculateBreaksFromInterpolation`
-- preset'e göre sınıf sayısı belirleme: `getClassCountFromInterpolation`
-- sürekli renkte 0-1 normalizasyonu: `normalizeValue`
-- UI açıklama metinleri: `INTERPOLATION_INFO`
+- `steps`: sınıflı/basamaklı renkler
+- `continuous`: sürekli gradyan
 
-### 4. Renk paletleri
+İlgili bileşen:
 
-Paletler `src/constants/colorSchemes.ts` içinde tanımlıdır. UI tarafında kullanılan liste `COLOR_SCHEME_LIST` ile gelir.
+- `src/features/viz-wizard/components/ColorScale/Config.tsx`
 
-Öne çıkan sıralı paletler:
+Step 3 görünürlük koşulları:
 
-- `greenBlue`
-- `teal`
-- `sunset`
-- `orange`
-- `amber`
-- `yellowGreen`
-- `pinkPurple`
-- `yellowBlue`
-- `rosePurple`
-- `slate`
-- `plasma`
-- `viridis`
+| UI parçası | Gösterim koşulu |
+|---|---|
+| `ColorScaleConfig` | `choropleth` veya `bubble + colorColumn` |
+| `ColorSchemePicker` | `ColorScaleConfig` ile aynı |
+| `StepsSection` | `scaleType === 'steps'`, `dot` değil, tek renkli `bubble` değil |
+| `CustomRangeConfig` | Her zaman "Değer Aralığı" kartında görünür, iç alanlar toggle ile açılır |
+| `DataDistributionPreview` | `showDataPreview === true` ve `dataValues.length > 0` |
+| Akıllı öneri | Sadece koroplet akışında görünür |
+| `BubbleSettings` | Sadece `bubble` |
+| `DotDensitySettings` | Sadece `dot` |
+
+## Basamaklı Sınıflandırma
+
+Step 3'te görünen yöntemler `src/features/viz-wizard/steps/Step3/components/StepsSection.tsx` içinde tanımlıdır:
+
+- `jenks`: Doğal kırılmalar
+- `equal`: Eşit aralık
+- `quantile`: Eşit sayım/yüzdelik
+- `custom`: Kullanıcı tanımlı sınır değerleri
+
+`custom` seçildiğinde `CustomBreaksInput` devreye girer:
+
+- En az 4 sınır değeri girilir ve 3 sınıf oluşur.
+- En fazla 8 sınır değeri girilir ve 7 sınıf oluşur.
+- Değerlerin artan sırada olması gerekir.
+- Türkçe binlik ayraçlı giriş desteklenir.
+
+Sınıf sayısı kuralları `src/utils/legendClassCount.ts` üzerinden gelir:
+
+- `classCount`: 3 ile 7 arasında tutulur.
+- `bubbleLegendCount`: aynı clamp kuralını kullanır.
+- Geçerli `customBreaks` gelirse `classCount = customBreaks.length - 1` olarak normalize edilir.
+
+`stddev` desteği:
+
+- `ClassificationMethod` tipinde ve `src/utils/classification.ts` içinde vardır.
+- Dereceli bubble boyut lejantında kullanılır.
+- Ana koroplet `StepsSection` açılır menüsünde sunulmaz.
+
+## Sürekli Ölçek
+
+Sürekli moddaki preset'ler `src/utils/interpolation.ts` içinde tanımlıdır:
+
+| Preset | Sınıf sayısı | Render sınıflandırması |
+|---|---:|---|
+| `equidistant` | 5 | `continuous-linear` |
+| `quantiles-4` | 4 | `continuous-quantile` |
+| `quantiles-5` | 5 | `continuous-quantile` |
+| `quantiles-10` | 10 | `continuous-quantile` |
+| `natural-9` | 9 | `continuous-natural` |
+
+Step 3, preset değişiminde `vizSettings.classificationMethod` ve `vizSettings.interpolation` alanlarını senkronize eder. Renderer tarafında sürekli renk için 16 stop'lu MapLibre `interpolate` ifadesi üretilir; lejant tarafında gradyan için 30 renk örneklenir.
+
+Sürekli normalizasyon:
+
+- `equidistant`: min/max aralığında doğrusal normalizasyon
+- `quantiles-*`: quantile break'leri üzerinden segmentli normalizasyon
+- `natural-9`: Jenks break'leri üzerinden segmentli normalizasyon
+
+## Renk Paletleri
+
+Paletler `src/constants/colorSchemes.ts` içinde tanımlıdır. UI listesi `COLOR_SCHEME_LIST` sırasını kullanır.
+
+Tek renkli/sıralı paletler:
+
+- `blues`: Maviler
+- `reds`: Kırmızılar
+- `greens`: Yeşiller
+- `purples`: Morlar
+- `amber`: Kehribar
+- `greenBlue`: Yeşil-Mavi
+- `teal`: Deniz Yeşili
+- `yellowGreen`: Sarı-Yeşil
+- `yellowBlue`: Sarı-Mavi
+- `sunset`: Gün Batımı
+- `orange`: Turuncu
+- `pinkPurple`: Pembe-Mor
+- `rosePurple`: Gül-Mor
+- `slate`: Arduvaz
+- `plasma`: Plazma
+- `viridis`: Viridis
+
+Yükseklik paletleri:
+
+- `elevationTerrain`: Yükseklik - Arazi
+- `elevationLand`: Yükseklik - Kara
+- `elevationAnalytic`: Yükseklik - Analitik
+- `elevationArctic`: Yükseklik - Arktik
+
+Kategorik amaçlı paletler:
+
+- `tropicalBliss`: Boncuklu Pastel
+- `colorblindSafe`: Renk Körü Güvenli
 
 Ayrık paletler:
 
-- `brownTeal`
-- `pinkGreen`
-- `redBlue`
-- `redBlueDiverging`
-- `redTeal`
-- `redGreen`
-- `centeredPink`
+- `brownTeal`: Kahve-Deniz
+- `redTeal`: Kırmızı-Deniz
+- `redBlue`: Kırmızı-Mavi
+- `redBlueDiverging`: Kırmızı-Mavi Ayrık
+- `tealPurple`: Mor-Yeşil
+- `pinkGreen`: Pembe-Yeşil
 
 Temel yardımcılar:
 
@@ -109,94 +173,149 @@ Temel yardımcılar:
 - `getColorForValue`
 - `getContinuousColorForValue`
 
-### 5. Özel aralık
+## Özel Aralık
 
-Step3 içinde `CustomRangeConfig` her zaman görünür ve şu alanları içerir:
+`CustomRangeConfig` şu alanları yönetir:
 
+- `enabled`
 - `min`
 - `center`
 - `max`
 - `outOfRangeMode`
 
-İlgili dosyalar:
+`outOfRangeMode` seçenekleri:
 
-- `src/features/viz-wizard/components/CustomRange/Config.tsx`
-- `src/features/viz-wizard/components/CustomRange/useCustomRange.ts`
-- `src/features/visualization/shared/customRange.ts`
+- `gray`: Aralık dışı öğeleri griye boyar.
+- `transparent`: Aralık dışı öğeleri filtreler veya görünmez yapar.
 
 Gerçek render davranışı:
 
-- Render katmanı bugün yalnızca `min`, `max` ve `outOfRangeMode` değerlerini kullanır.
-- `center` alanı UI ve validasyon akışında vardır; mevcut renderer/legend hesaplarında aktif kullanılmaz.
-- `outOfRangeMode` seçenekleri:
-  - `gray`
-  - `transparent`
+- Renderer'lar `min`, `max` ve `outOfRangeMode` kullanır.
+- `center` UI ve doğrulama state'inde bulunur, render hesaplarına bugün bağlanmamıştır.
+- Koroplet akışında özel aralık renk değerlerini clamp eder.
+- Bubble akışında özel aralık renk değerlerine uygulanır, boyut hesabına uygulanmaz.
+- Dot density akışında özel aralık nokta üretimi ve görünürlüğü için kullanılır.
 
-### 6. Veri dağılımı önizlemesi
+İlgili dosyalar:
 
-`DataDistributionPreview` bileşeni seçilen ölçeğin veriyi nasıl böleceğini özetler.
+- `src/features/viz-wizard/components/CustomRange/Config.tsx`
+- `src/features/viz-wizard/components/CustomRange/ConfigFields.tsx`
+- `src/features/viz-wizard/components/CustomRange/useCustomRange.ts`
+- `src/features/visualization/shared/customRange.ts`
 
-Gösterilen başlıca bilgiler:
+## Veri Dağılımı Önizlemesi
 
-- minimum
-- maksimum
-- ortalama
-- medyan
-- CV
-- çarpıklık ve varyasyon uyarıları
-- yönteme göre açıklama metni
+`DataDistributionPreview`, seçilen ölçeğin veri dağılımını nasıl böleceğini gösterir.
 
 İlgili dosyalar:
 
 - `src/features/viz-wizard/components/ColorScale/DistributionPreview.tsx`
 - `src/utils/dataStats.ts`
 
-`calculateDataStats` şu alanları hesaplar:
+Gösterilen istatistikler:
 
-- `min`
-- `max`
-- `mean`
-- `median`
-- `stdDev`
-- `cv`
-- `range`
-- `skewness`
-- `hasOutliers`
+- en küçük değer
+- en büyük değer
+- ortalama
+- medyan
+- CV
+- çarpıklık uyarısı
+- aykırı değer uyarısı
 
-### 7. Akıllı öneri
+Hesaplama davranışı:
+
+- `steps` modunda `calculateBreaks(values, classificationMethod, classCount)` kullanılır.
+- `continuous` modunda `calculateBreaksFromInterpolation(values, interpolation)` kullanılır.
+- Sürekli moddaki efektif sınıf sayısı `getClassCountFromInterpolation()` ile alınır.
+
+## Akıllı Öneri
 
 Akıllı öneri akışı:
 
 - `src/features/viz-wizard/hooks/useVizSuggestion.ts`
 - `src/utils/dataStats.ts`
 
-Bugünkü davranış:
+Güncel öneri motoru yalnızca şu iki yöntemi döndürür:
 
-- öneri motoru pratikte `jenks` veya `quantile` önerir
-- karar verirken CV, çarpıklık ve aykırı değer sinyallerini kullanır
-- logaritmik veya rounded gibi yöntemler önerilmez, çünkü projede böyle bir UI akışı yoktur
+- `jenks`
+- `quantile`
 
-### 8. Legend entegrasyonu
+Karar verirken CV, çarpıklık ve aykırı değer sinyallerini kullanır. Logaritmik, rounded veya color-space tabanlı yöntem önermez.
 
-Legend yapılandırması Step3 içinde ayrı bir panel olarak açılır:
+## Bubble Özellikleri
+
+Bubble ayarları:
+
+- `src/features/visualization/bubble/components/BubbleSettings.tsx`
+- `src/features/visualization/bubble/services/BubbleRenderer.ts`
+
+Desteklenen boyut modları:
+
+- `proportional`: Oransal boyutlandırma
+- `graduated`: Sınıflı/dereceli boyutlandırma
+
+Oransal boyut ölçekleri:
+
+- `sqrt`
+- `log`
+
+Dereceli bubble boyut sınıflandırması:
+
+- `jenks`
+- `quantile`
+- `equal`
+- `stddev`
+
+Renk davranışı:
+
+- `colorColumn` yoksa bubble tek renkli çalışır.
+- `colorColumn` varsa bivariate modda renk sütunu ayrı sınıflandırılır.
+- Tek renkli bubble modunda renk lejantı gösterilmez, boyut lejantı anlamlıdır.
+- Bivariate bubble modunda renk lejantı ve boyut lejantı birlikte gösterilebilir.
+
+## Dot Density Özellikleri
+
+Dot density akışı:
+
+- `src/features/visualization/point/components/DotDensitySettings.tsx`
+- `src/features/visualization/point/services/PointRenderer.ts`
+- `src/features/visualization/point/utils/dot-density.ts`
+
+Desteklenen ayarlar:
+
+- `dotValue`: 1 noktanın temsil ettiği değer
+- `dotSize`: nokta boyutu
+- `dotColor`: nokta rengi
+- `dotOpacity`: nokta opaklığı
+- `dotLabel`: lejant etiketi
+
+Davranış:
+
+- Noktalar seeded PRNG ile deterministik saçılır.
+- Global ve feature başına nokta limitleri uygulanır.
+- Basamaklı veya sürekli renk sınıflandırması kullanılmaz.
+- Özel aralık açıkken `gray` modu aralık dışı noktaları gri yapar, `transparent` modu filtreler.
+
+## Lejant Özellikleri
+
+Lejant yapılandırması:
 
 - `src/shared/legend/index.ts`
 - `src/features/legend/components/Config.tsx`
 - `src/features/legend/components/Container.tsx`
 
-Desteklenen başlıca ayarlar:
+Config panelinde görünen ayarlar:
 
-- görünürlük
-- boyut
-- yön: `horizontal | vertical`
-- etiket türü: `ruler | ranges | custom`
-- sayı formatı
-- başlık metni ve başlık font boyutu
-- hover vurgulama
-- sıralamayı ters çevirme
-- yön oku ayarları
+- Lejant görünürlüğü
+- Boyut
+- Yönlendirme: `horizontal` veya `vertical`
+- Etiket tipi: `ruler`, `ranges`, `custom`
+- Sayı formatı
+- Başlık görünürlüğü, metni ve yazı boyutu
+- Lejant sırasını tersine çevirme
+- Yön oku görünürlüğü, modeli, pusula yönü ve boyutu
 
-Legend konum tipleri:
+`LegendPosition` tipi şu değerleri destekler:
 
 - `above`
 - `below`
@@ -207,92 +326,19 @@ Legend konum tipleri:
 - `inside-center-bottom`
 - `inside-right-bottom`
 
-Legend üretimi:
+Not: Güncel `LegendConfig` paneli konum seçicisi göstermiyor; render bileşenleri `config.position` değerini destekliyor.
 
-- continuous modda: LAB tabanlı 30 renkli gradyan örneklenir
-- steps modda: sınıf sayısı veya custom break sayısı kadar renk üretilir
-- bubble tek renk modunda renk legend'i yerine yalnızca boyut legend'i anlamlıdır
-- dot density modunda `DotDensityLegend` kullanılır; stepped/continuous renk legend'i devreye girmez
+Lejant seçim mantığı:
 
-## Wizard Akışı
+- Dot density için `DotDensityLegend`
+- Tek renkli bubble için `BubbleSizeLegend`
+- Bivariate bubble için renk lejantı ve boyut lejantı
+- Yatay renk lejantı için `DynamicLegend`
+- Dikey renk lejantı için `ColorLegend`
 
-Renk ölçeği davranışının ana orkestrasyonu `VizWizardStep3` içindedir.
+## Utility Katmanı
 
-### Görünürlük özeti
-
-| UI parçası | Gösterim koşulu |
-|------------|------------------|
-| `ColorScaleConfig` | `choropleth` veya `bubble` + `colorColumn` |
-| `ColorSchemePicker` | `ColorScaleConfig` ile aynı |
-| `StepsSection` | `scaleType === 'steps'` ve `dot` değil ve tek renkli `bubble` değil |
-| `CustomRangeConfig` | her zaman kart olarak görünür; iç alanlar toggle ile açılır |
-| `DataDistributionPreview` | `showDataPreview === true` ve `dataValues.length > 0` |
-| Akıllı öneri paneli | yalnızca `choropleth` akışı |
-
-### Sürekli moda geçiş
-
-`scaleType = 'continuous'` seçildiğinde Step3 şunları senkronize eder:
-
-- `classificationMethod = 'continuous-linear'`
-- `legendType = 'continuous'`
-- `interpolation = colorConfig.interpolation ?? 'equidistant'`
-
-Interpolasyon preset'i değiştiğinde Step3, bunu uygun sürekli sınıflandırma türüne map eder:
-
-- `equidistant` -> `continuous-linear`
-- `quantiles-4` / `quantiles-5` / `quantiles-10` -> `continuous-quantile`
-- `natural-9` -> `continuous-natural`
-
-### Basamaklı moda dönüş
-
-`scaleType = 'steps'` seçildiğinde Step3 varsayılan olarak şunları kurar:
-
-- `classificationMethod = 'equal'`
-- `legendType = 'discrete'`
-
-### Render zinciri
-
-Renk ölçeğiyle ilgili ayarlar önce store'da tutulur, sonra render katmanına taşınır:
-
-- store: `src/stores/useVisualizationStore.ts`
-- render köprüsü: `src/features/viz-wizard/hooks/useVizRender.ts`
-- render servisleri:
-  - `src/features/visualization/choropleth/services/ChoroplethRenderer.ts`
-  - `src/features/visualization/bubble/services/BubbleRenderer.ts`
-  - `src/features/visualization/point/services/PointRenderer.ts`
-
-`useVizRender`, `colorConfig.customRange` değerini `VisualizationSettings` içine taşıyarak renderer'lara iletir.
-
-Renderer seviyesinde stepped/continuous ayrımı doğrudan `colorConfig.scaleType` ile değil, render settings içindeki `legendType` (`continuous` veya `discrete`) üzerinden yapılır. Bubble tek renk modunda (`colorColumn` yoksa) bu ayrım render seviyesinde bypass edilir.
-
-## Renderer Davranışı
-
-### Choropleth
-
-`ChoroplethRenderer` içinde:
-
-- steps modda `calculateBreaks` + `buildStepExpression` kullanılır
-- continuous modda 16 duraklı (`CONTINUOUS_STOPS = 16`) interpolate ifadesi üretilir
-- continuous renkte `normalizeValue(..., interpolation, values)` ile quantile/natural warping uygulanır
-- custom range açıksa değerler önce min/max aralığına clamp edilir
-- `gray` dış aralık modunda aralık dışı alanlar gri boyanır
-- `transparent` modunda aralık dışı öğeler katman filtresiyle dışlanır
-- `classificationMethod = 'custom'` ise `customBreaks` doğrudan kullanılır; son break üstünü son renge sonsuza kadar boyamamak için ek `case` koruması uygulanır
-
-### Bubble
-
-`BubbleRenderer` içinde:
-
-- tek renkli bubble modunda renk ölçeği yerine sabit `symbolFillColor` kullanılır
-- bivariate bubble modunda renk sütunu için aynı stepped/continuous akış devreye girer
-- continuous modda yine 16 duraklı LAB tabanlı interpolate ifadesi üretilir
-- color range clamp ve `outOfRangeMode` mantığı choropleth ile uyumludur
-- `customRange` yalnızca renk değerlerine uygulanır; boyut hesaplarına uygulanmaz
-- size legend'i proportional veya graduated bubble moduna göre ayrı üretilir
-
-## Utility Düzeyi ile UI Düzeyi Arasındaki Fark
-
-`src/utils/colorInterpolation.ts` utility düzeyinde şu yetenekleri sağlar:
+`src/utils/colorInterpolation.ts` utility düzeyinde daha geniş kapasite sağlar:
 
 - renk uzayları: `rgb`, `hsl`, `lab`, `hcl`
 - `interpolateColor`
@@ -301,26 +347,26 @@ Renderer seviyesinde stepped/continuous ayrımı doğrudan `colorConfig.scaleTyp
 - `bezierInterpolate`
 - `generateBezierColorScale`
 
-Ancak mevcut wizard UI bu yetenekleri doğrudan açmaz:
+Güncel wizard UI bu yeteneklerin tamamını açmaz:
 
-- kullanıcıya açık bir **color space selector** yoktur
-- kullanıcıya açık bir **Bezier / Linear interpolation mode** anahtarı yoktur
-- render ve legend entegrasyonunun pratikte kullandığı renk uzayı çoğunlukla **LAB**'dır
-
-Bu nedenle utility katmanı, UI'nin sunduğundan daha geniş kapasiteye sahiptir.
+- Kullanıcıya açık color-space seçici yoktur.
+- Kullanıcıya açık Bezier/linear interpolation anahtarı yoktur.
+- Render ve lejant akışında pratik renk uzayı çoğunlukla `lab` olarak sabittir.
 
 ## Destek Matrisi
 
 | Alan | Gerçek destek | UI'de görünür mü? | Ana dosya |
-|------|---------------|-------------------|-----------|
-| Basamaklı sınıflandırma | `jenks`, `equal`, `quantile`, `kmeans`, `custom` | Evet | `src/features/viz-wizard/steps/Step3/components/StepsSection.tsx` |
-| Ek sınıflandırma | `stddev` | Hayır | `src/utils/classification.ts` |
+|---|---|---|---|
+| Koroplet basamaklı sınıflandırma | `jenks`, `equal`, `quantile`, `custom` | Evet | `src/features/viz-wizard/steps/Step3/components/StepsSection.tsx` |
+| Bubble dereceli boyut sınıflandırması | `jenks`, `quantile`, `equal`, `stddev` | Evet | `src/features/visualization/bubble/components/BubbleSettings.tsx` |
+| Ek utility sınıflandırması | `stddev`, `continuous-*` | Kısmen | `src/utils/classification.ts` |
 | Sürekli preset'ler | `equidistant`, `quantiles-4`, `quantiles-5`, `quantiles-10`, `natural-9` | Evet | `src/utils/interpolation.ts` |
 | Renk uzayları | `rgb`, `hsl`, `lab`, `hcl` | Hayır | `src/utils/colorInterpolation.ts` |
 | Bezier renk üretimi | Var | Hayır | `src/utils/colorInterpolation.ts` |
-| Custom range min/max | Var | Evet | `src/features/viz-wizard/components/CustomRange/*` |
-| Custom range center | Var | Evet | `src/features/viz-wizard/components/CustomRange/*` |
-| Render'da center kullanımı | Yok | Hayır | `src/features/visualization/shared/customRange.ts` ve renderer'lar |
+| Özel aralık min/max | Var | Evet | `src/features/visualization/shared/customRange.ts` |
+| Özel aralık center | State ve validasyon var | Evet | `src/features/viz-wizard/components/CustomRange/*` |
+| Render'da center kullanımı | Yok | Hayır | Renderer servisleri |
+| `kmeans` | Yok | Hayır | Yok |
 
 ## Test Kapsamı
 
@@ -328,42 +374,27 @@ Renk ölçeği akışını doğrudan destekleyen testler:
 
 - `src/utils/classification.test.ts`
 - `src/utils/interpolation.test.ts`
+- `src/utils/legendClassCount.test.ts`
 - `src/constants/colorSchemes.test.ts`
+- `src/stores/useVisualizationStore.test.ts`
 - `src/features/visualization/shared/customRange.test.ts`
 - `src/features/viz-wizard/steps/Step3/components/StepsSection.test.tsx`
+- `src/features/viz-wizard/steps/Step3/components/CustomBreaksInput.test.tsx`
+- `src/features/viz-wizard/hooks/useVizRender.test.ts`
+- `src/features/legend/components/Container.test.tsx`
 - `src/features/legend/components/BarContent.test.tsx`
 - `src/features/legend/components/LegendLabels.test.tsx`
+- `src/features/visualization/choropleth/services/ChoroplethRenderer.test.ts`
+- `src/features/visualization/bubble/services/BubbleRenderer.test.ts`
+- `src/features/visualization/point/services/PointRenderer.test.ts`
 
-Not:
+`src/utils/colorInterpolation.ts` için ayrı bir test dosyası bulunmaz.
 
-- `src/utils/colorInterpolation.ts` için ayrı bir test dosyası bulunmaz.
+## Eski Referanslara Dikkat
 
-## Mevcut Kısıtlar
-
-- Step3 dokümantasyonunda bazen bahsedilen `VizWizardStep4` bu projede yoktur; renk ölçeği akışı Step3 içindedir.
-- `src/utils/classificationMethods.ts` adlı bir dosya yoktur; gerçek ayrım `classification.ts`, `interpolation.ts` ve `dataStats.ts` üzerindedir.
-- Logaritmik, rounded veya kullanıcıya açık color-space seçimi bugün wizard UI'nin parçası değildir.
-- `customRange.center` alanı henüz renderer hesaplarına bağlanmamıştır.
-- `src/features/viz-wizard/components/StyleConfig.tsx` projede bulunsa da Step3'ün gerçek orkestrasyon kaynağı değildir; görünürlük kuralları `steps/Step3/index.tsx` üzerinden okunmalıdır.
-
-## Başvuru Dosyaları
-
-- `src/types/visualization.ts`
-- `src/stores/useVisualizationStore.ts`
-- `src/utils/colorInterpolation.ts`
-- `src/utils/classification.ts`
-- `src/utils/interpolation.ts`
-- `src/utils/dataStats.ts`
-- `src/constants/colorSchemes.ts`
-- `src/features/viz-wizard/components/ColorScale/Config.tsx`
-- `src/features/viz-wizard/components/ColorScale/DistributionPreview.tsx`
-- `src/features/viz-wizard/components/CustomRange/Config.tsx`
-- `src/features/viz-wizard/hooks/useVizSuggestion.ts`
-- `src/features/viz-wizard/hooks/useVizRender.ts`
-- `src/features/viz-wizard/steps/Step3/index.tsx`
-- `src/features/legend/components/Config.tsx`
-- `src/features/legend/components/Container.tsx`
-- `src/features/visualization/choropleth/services/ChoroplethRenderer.ts`
-- `src/features/visualization/bubble/services/BubbleRenderer.ts`
-- `docs/COLOR_SCALE_INTEGRATION.md`
-- `docs/ARCHITECTURE.md`
+- `VizWizardStep4` güncel runtime akışında yoktur; görselleştirme ayarları Step 3 içindedir.
+- `src/utils/classificationMethods.ts` yoktur.
+- `kmeans` sınıflandırması yoktur.
+- Logaritmik sınıflandırma renk ölçeği yöntemi değildir; sadece bubble boyut ölçeklemede `symbolScaling = 'log'` olarak vardır.
+- `hoverHighlight` benzeri bir lejant config alanı yoktur.
+- `CustomRange.center` render sonucunu değiştirmez.
