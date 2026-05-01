@@ -104,7 +104,7 @@ async function readElevationAtOffset(
   )
 }
 
-export async function readTerrariumElevationAtGlobalPixel(
+async function readNearestAtIntegerGlobalPixel(
   globalX: number,
   globalY: number,
   zoom: number,
@@ -121,6 +121,35 @@ export async function readTerrariumElevationAtGlobalPixel(
     image.data[idx + 1],
     image.data[idx + 2],
   )
+}
+
+/**
+ * Yükseklik okuma. Fraksiyonlu pixel koordinatlarda 4-komşu bilinear interpolation
+ * yapar. Tile sınırını geçen 4-komşu örneklerinde otomatik olarak komşu tile'a geçer.
+ * Bu, raster cell adımı DEM native pixel boyutundan küçük olduğunda oluşan
+ * step-function aliasing'ini (çizgi/şerit pattern'i) tamamen ortadan kaldırır.
+ */
+export async function readTerrariumElevationAtGlobalPixel(
+  globalX: number,
+  globalY: number,
+  zoom: number,
+  signal?: AbortSignal,
+): Promise<number> {
+  const x0 = Math.floor(globalX)
+  const y0 = Math.floor(globalY)
+  const fx = globalX - x0
+  const fy = globalY - y0
+
+  const [v00, v10, v01, v11] = await Promise.all([
+    readNearestAtIntegerGlobalPixel(x0, y0, zoom, signal),
+    readNearestAtIntegerGlobalPixel(x0 + 1, y0, zoom, signal),
+    readNearestAtIntegerGlobalPixel(x0, y0 + 1, zoom, signal),
+    readNearestAtIntegerGlobalPixel(x0 + 1, y0 + 1, zoom, signal),
+  ])
+
+  const top = v00 * (1 - fx) + v10 * fx
+  const bottom = v01 * (1 - fx) + v11 * fx
+  return top * (1 - fy) + bottom * fy
 }
 
 export async function analyzeAspectFromTerrarium(

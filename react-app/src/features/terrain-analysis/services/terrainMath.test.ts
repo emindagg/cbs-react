@@ -65,6 +65,56 @@ describe('terrainMath', () => {
     expect(result.directionLabel).toBe('Düz')
   })
 
+  it('honors anisotropic cell size — equirectangular grid where dx ≠ dy', () => {
+    // Aynı yükseklik gradyanı, ama dx (10m) dy'den (20m) küçük.
+    // Doğu-batı yönündeki gradyan, kuzey-güney gradyanından 2× daha dik olmalı.
+    const grid: [
+      [number, number, number],
+      [number, number, number],
+      [number, number, number],
+    ] = [
+      [110, 100, 90],
+      [110, 100, 90],
+      [110, 100, 90],
+    ]
+    const isotropic = calculateAspectFromElevationGrid(grid, 10)
+    const anisotropic = calculateAspectFromElevationGrid(grid, { x: 10, y: 20 })
+
+    // X yönündeki cell size aynı (10m) -> aynı slopePercent
+    expect(anisotropic.slopePercent).toBeCloseTo(isotropic.slopePercent, 5)
+
+    // Şimdi tam tersi: y'de gradient olsun
+    const ngrid: [
+      [number, number, number],
+      [number, number, number],
+      [number, number, number],
+    ] = [
+      [120, 120, 120],
+      [100, 100, 100],
+      [80, 80, 80],
+    ]
+    const yIsotropic = calculateAspectFromElevationGrid(ngrid, 20)
+    const yAnisotropic = calculateAspectFromElevationGrid(ngrid, { x: 10, y: 20 })
+    // Y yönü cell size aynı -> aynı slope
+    expect(yAnisotropic.slopePercent).toBeCloseTo(yIsotropic.slopePercent, 5)
+  })
+
+  it('isotropic call equals anisotropic with x === y', () => {
+    const grid: [
+      [number, number, number],
+      [number, number, number],
+      [number, number, number],
+    ] = [
+      [100, 105, 110],
+      [102, 108, 115],
+      [105, 112, 120],
+    ]
+    const a = calculateAspectFromElevationGrid(grid, 10)
+    const b = calculateAspectFromElevationGrid(grid, { x: 10, y: 10 })
+    expect(a.slopePercent).toBeCloseTo(b.slopePercent, 10)
+    expect(a.aspectDegrees).toBeCloseTo(b.aspectDegrees ?? 0, 10)
+  })
+
   it('clamps DEM zoom to supported range', () => {
     expect(clampTerrainZoom(2)).toBe(8)
     expect(clampTerrainZoom(14.4)).toBe(14)

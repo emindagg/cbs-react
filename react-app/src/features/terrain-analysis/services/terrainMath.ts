@@ -180,15 +180,30 @@ export function classifyAspectDirection(aspectDegrees: number | null): {
   return { direction: 'northwest', directionLabel: 'Kuzeybatı' }
 }
 
+export interface CellSizeMeters {
+  x: number
+  y: number
+}
+
+/**
+ * Horn (1981) 3x3 hareketli pencere ile eğim ve bakı hesaplar (ArcGIS Pro
+ * "Slope (Spatial Analyst)" Planar yönteminin matematik karşılığı).
+ * cellSize parametresi tek bir sayı (izotropik) ya da {x, y} (anisotropic, dx ≠ dy)
+ * olarak verilebilir. Equirectangular grid'de meridyene göre x ve y mesafeleri
+ * farklıdır; bu durumda anisotropic değer kullanın.
+ */
 export function calculateAspectFromElevationGrid(
   grid: readonly [
     readonly [number, number, number],
     readonly [number, number, number],
     readonly [number, number, number],
   ],
-  cellSizeMeters: number,
+  cellSize: number | CellSizeMeters,
 ): AspectComputation {
-  const safeCellSize = Math.max(1, cellSizeMeters)
+  const cellSizeX = typeof cellSize === 'number' ? cellSize : cellSize.x
+  const cellSizeY = typeof cellSize === 'number' ? cellSize : cellSize.y
+  const safeCellSizeX = Math.max(1, cellSizeX)
+  const safeCellSizeY = Math.max(1, cellSizeY)
   const z1 = grid[0][0]
   const z2 = grid[0][1]
   const z3 = grid[0][2]
@@ -198,8 +213,8 @@ export function calculateAspectFromElevationGrid(
   const z8 = grid[2][1]
   const z9 = grid[2][2]
 
-  const dzdx = ((z3 + 2 * z6 + z9) - (z1 + 2 * z4 + z7)) / (HORN_KERNEL_DIVISOR * safeCellSize)
-  const dzdyNorth = ((z1 + 2 * z2 + z3) - (z7 + 2 * z8 + z9)) / (HORN_KERNEL_DIVISOR * safeCellSize)
+  const dzdx = ((z3 + 2 * z6 + z9) - (z1 + 2 * z4 + z7)) / (HORN_KERNEL_DIVISOR * safeCellSizeX)
+  const dzdyNorth = ((z1 + 2 * z2 + z3) - (z7 + 2 * z8 + z9)) / (HORN_KERNEL_DIVISOR * safeCellSizeY)
   const gradient = Math.sqrt(dzdx * dzdx + dzdyNorth * dzdyNorth)
   const slopeDegrees = (Math.atan(gradient) * 180) / Math.PI
   const slopePercent = gradient * 100
