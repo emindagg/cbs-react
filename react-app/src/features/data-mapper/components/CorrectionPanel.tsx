@@ -7,24 +7,48 @@ import { normalizeTurkishText } from '@/utils/turkishNormalizer'
 interface CorrectionPanelProps {
   rawData: Record<string, unknown>[] | null
   locationColumn: string
+  districtColumn?: string | null
+  locationLevel?: 'province' | 'mixed'
   geoJsonKeys: string[]
-  matchedKeys: Set<string>
-  onApplyCorrection: (originalValue: string, newValue: string, rowIndices: number[]) => void
-  onApplyAll: (corrections: Array<{ original: string; suggestion: string; rowIndices: number[] }>) => void
+  unmatchedIndices: Set<number>
+  onApplyCorrection: (
+    targetColumn: string,
+    originalValue: string,
+    newValue: string,
+    rowIndices: number[],
+  ) => void
+  onApplyAll: (
+    corrections: Array<{
+      targetColumn: string
+      original: string
+      suggestion: string
+      rowIndices: number[]
+    }>,
+  ) => void
 }
 
 export function CorrectionPanel({
   rawData,
   locationColumn,
+  districtColumn,
+  locationLevel = 'province',
   geoJsonKeys,
-  matchedKeys,
+  unmatchedIndices,
   onApplyCorrection,
   onApplyAll,
 }: CorrectionPanelProps) {
   const groups = useMemo<UnmatchedGroup[]>(() => {
     if (!rawData || !locationColumn || geoJsonKeys.length === 0) return []
-    return groupUnmatchedValues(rawData, locationColumn, geoJsonKeys, matchedKeys, normalizeTurkishText)
-  }, [rawData, locationColumn, geoJsonKeys, matchedKeys])
+    if (unmatchedIndices.size === 0) return []
+    return groupUnmatchedValues(
+      rawData,
+      locationColumn,
+      unmatchedIndices,
+      geoJsonKeys,
+      normalizeTurkishText,
+      { districtColumn, locationLevel },
+    )
+  }, [rawData, locationColumn, districtColumn, locationLevel, geoJsonKeys, unmatchedIndices])
 
   const autoFixable = useMemo(
     () => groups.filter(g => g.suggestion && g.suggestion.similarity >= 0.6),
@@ -47,7 +71,8 @@ export function CorrectionPanel({
           <button
             onClick={() => onApplyAll(
               autoFixable.map(g => ({
-                original: g.originalValue,
+                targetColumn: g.targetColumn,
+                original: g.replaceValue,
                 suggestion: g.suggestion!.value,
                 rowIndices: g.rowIndices,
               })),
@@ -82,7 +107,7 @@ export function CorrectionPanel({
                   ({Math.round(group.suggestion.similarity * 100)}%)
                 </span>
                 <button
-                  onClick={() => onApplyCorrection(group.originalValue, group.suggestion!.value, group.rowIndices)}
+                  onClick={() => onApplyCorrection(group.targetColumn, group.replaceValue, group.suggestion!.value, group.rowIndices)}
                   className="ml-auto flex-shrink-0 text-[9px] font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded"
                 >
                   Düzelt

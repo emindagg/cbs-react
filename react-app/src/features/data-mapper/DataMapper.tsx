@@ -204,42 +204,42 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
   )
 
   const applyCorrection = useCallback(
-    (_originalValue: string, newValue: string, rowIndices: number[]) => {
+    (targetColumn: string, _originalValue: string, newValue: string, rowIndices: number[]) => {
       const currentRawData = useVisualizationStore.getState().rawData
-      if (!currentRawData || !selectedProvince) return
+      if (!currentRawData || !targetColumn) return
       const updated = [...currentRawData]
       for (const idx of rowIndices) {
-        updated[idx] = { ...updated[idx], [selectedProvince]: newValue }
+        updated[idx] = { ...updated[idx], [targetColumn]: newValue }
       }
       setRawData(updated)
     },
-    [selectedProvince, setRawData],
+    [setRawData],
   )
 
   const applyAllCorrections = useCallback(
-    (corrections: Array<{ original: string; suggestion: string; rowIndices: number[] }>) => {
+    (corrections: Array<{ targetColumn: string; original: string; suggestion: string; rowIndices: number[] }>) => {
       const currentRawData = useVisualizationStore.getState().rawData
-      if (!currentRawData || !selectedProvince) return
+      if (!currentRawData) return
       const updated = [...currentRawData]
       for (const c of corrections) {
+        if (!c.targetColumn) continue
         for (const idx of c.rowIndices) {
-          updated[idx] = { ...updated[idx], [selectedProvince]: c.suggestion }
+          updated[idx] = { ...updated[idx], [c.targetColumn]: c.suggestion }
         }
       }
       setRawData(updated)
     },
-    [selectedProvince, setRawData],
+    [setRawData],
   )
 
-  const matchedKeysSet = useMemo(() => {
-    const set = new Set<string>()
-    if (!rawData || !selectedProvince) return set
-    for (const row of rawData) {
-      const val = normalizeTurkishText(String(row[selectedProvince] ?? ''))
-      if (geoJsonKeysSet.has(val)) set.add(val)
+  const unmatchedIndices = useMemo(() => {
+    const set = new Set<number>()
+    for (const row of rowData) {
+      if (row.__excluded) continue
+      if (row.__status === 'unmatched') set.add(row.__rowIndex)
     }
     return set
-  }, [rawData, selectedProvince, geoJsonKeysSet])
+  }, [rowData])
 
   const gridContext = useMemo(() => ({
     selectedProvince,
@@ -275,8 +275,10 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
         <CorrectionPanel
           rawData={rawData}
           locationColumn={selectedProvince}
+          districtColumn={selectedDistrict}
+          locationLevel={locationLevel}
           geoJsonKeys={geoJsonKeys}
-          matchedKeys={matchedKeysSet}
+          unmatchedIndices={unmatchedIndices}
           onApplyCorrection={applyCorrection}
           onApplyAll={applyAllCorrections}
         />
@@ -322,8 +324,10 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
       <CorrectionPanel
         rawData={rawData}
         locationColumn={selectedProvince}
+        districtColumn={selectedDistrict}
+        locationLevel={locationLevel}
         geoJsonKeys={geoJsonKeys}
-        matchedKeys={matchedKeysSet}
+        unmatchedIndices={unmatchedIndices}
         onApplyCorrection={applyCorrection}
         onApplyAll={applyAllCorrections}
       />
