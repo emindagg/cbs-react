@@ -3,6 +3,7 @@
  * Smart column detection with keyword matching + content-based detection
  */
 
+import { parseFormattedNumber } from '../numberFormatter'
 import { normalizeTurkishText } from '../turkishNormalizer'
 import type { ColumnDetectionResult, RawDataRow } from './types'
 
@@ -271,7 +272,8 @@ function detectLocationColumnByContent(
 
 /**
  * Detect numeric columns
- * Enhanced: handles %, ₺, TL, spaces in numbers
+ * Uses parseFormattedNumber which handles tr/en thousand+decimal separators,
+ * currency symbols, percentages and abbreviations.
  */
 function detectNumericColumns(rawData: RawDataRow[], columns: string[]): string[] {
   if (!rawData || rawData.length === 0) {
@@ -287,16 +289,12 @@ function detectNumericColumns(rawData: RawDataRow[], columns: string[]): string[
 
     for (const row of rawData) {
       const value = row[col]
-      if (value !== null && value !== undefined && value !== '') {
-        totalCount++
-        if (typeof value === 'number') {
-          numericCount++
-        } else {
-          const cleaned = cleanNumericString(String(value))
-          if (cleaned !== null) {
-            numericCount++
-          }
-        }
+      if (value === null || value === undefined || value === '') continue
+      totalCount++
+      if (typeof value === 'number') {
+        numericCount++
+      } else if (parseFormattedNumber(String(value)) !== null) {
+        numericCount++
       }
     }
 
@@ -306,42 +304,4 @@ function detectNumericColumns(rawData: RawDataRow[], columns: string[]): string[
   }
 
   return numericColumns
-}
-
-/**
- * Clean a string value to check if it's numeric.
- * Handles: %, ₺, TL, spaces, Turkish decimal/thousand separators
- * Returns cleaned number or null if not numeric.
- */
-function cleanNumericString(value: string): number | null {
-  let cleaned = value.trim()
-
-  // Remove currency symbols and text
-  cleaned = cleaned.replace(/[₺$€]/g, '').replace(/\bTL\b/gi, '').trim()
-
-  // Handle percentage
-  const isPercent = cleaned.includes('%')
-  cleaned = cleaned.replace(/%/g, '').trim()
-
-  // Remove spaces (thousand separator: "1 234 567")
-  cleaned = cleaned.replace(/\s/g, '')
-
-  // Handle parentheses for negatives: "(1234)" → "-1234"
-  if (cleaned.startsWith('(') && cleaned.endsWith(')')) {
-    cleaned = '-' + cleaned.slice(1, -1)
-  }
-
-  // Turkish format: "1.234,56" → "1234.56"
-  // If has both . and , → dots are thousand sep, comma is decimal
-  if (cleaned.includes('.') && cleaned.includes(',')) {
-    cleaned = cleaned.replace(/\./g, '').replace(',', '.')
-  } else if (cleaned.includes(',')) {
-    // Only comma → could be decimal separator
-    cleaned = cleaned.replace(',', '.')
-  }
-
-  const num = Number(cleaned)
-  if (isNaN(num)) return null
-
-  return isPercent ? num / 100 : num
 }
