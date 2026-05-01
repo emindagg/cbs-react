@@ -68,7 +68,7 @@ export function matchData(
     }
     // Mixed level matching
     else if (columnMapping.locationLevel === 'mixed') {
-      matchMixed(result, row, columnMapping, districtValue, indexes, results, provinceKeys, districtKeys)
+      matchMixed(result, row, columnMapping, districtValue, indexes, results, districtKeys)
     }
   })
 
@@ -120,22 +120,9 @@ function matchProvince(
     return
   }
 
-  // ── Fuzzy fallback ──
-  const fuzzy = findClosestMatch(normalizedLocation, provinceKeys)
-  if (fuzzy && fuzzy.distance <= 2) {
-    const fuzzyData = indexes.provinceIndex[fuzzy.key]
-    if (fuzzyData) {
-      result.matched = true
-      result.province = fuzzyData.name
-      result.location = fuzzyData.name
-      result.plateCode = extractPlateCode(fuzzyData.properties as Record<string, unknown>)
-      results.successful.push(result)
-      return
-    }
-  }
-
-  // ── Failed with suggestion ──
+  // ── Failed with suggestion (no silent auto-correction) ──
   result.location = String(locationValue)
+  const fuzzy = findClosestMatch(normalizedLocation, provinceKeys)
   if (fuzzy) {
     const suggestedName = indexes.provinceIndex[fuzzy.key]?.name || fuzzy.key
     result.error = `İl bulunamadı: "${String(locationValue)}" — Bunu mu demek istediniz: "${suggestedName}"?`
@@ -187,35 +174,9 @@ function matchDistrict(
     return
   }
 
-  // ── Fuzzy fallback ──
-  const fuzzy = findClosestMatch(normalizedLocation, districtKeys)
-  if (fuzzy && fuzzy.distance <= 2) {
-    const fuzzyMatches = indexes.districtIndex[fuzzy.key]
-    if (fuzzyMatches && fuzzyMatches.length > 0) {
-      if (fuzzyMatches.length === 1) {
-        result.matched = true
-        result.province = fuzzyMatches[0].province
-        result.district = fuzzyMatches[0].name
-        result.location = fuzzyMatches[0].name
-        result.plateCode = extractPlateCode(fuzzyMatches[0].properties as Record<string, unknown>)
-        results.successful.push(result)
-      } else {
-        result.ambiguous = true
-        result.ambiguousOptions = fuzzyMatches.map((d) => ({
-          name: d.name,
-          province: d.province,
-          properties: d.properties as Record<string, unknown>,
-          geometry: d.geometry as unknown as Record<string, unknown>,
-        }))
-        result.location = String(locationValue)
-        results.ambiguous.push(result)
-      }
-      return
-    }
-  }
-
-  // ── Failed with suggestion ──
+  // ── Failed with suggestion (no silent auto-correction) ──
   result.location = String(locationValue)
+  const fuzzy = findClosestMatch(normalizedLocation, districtKeys)
   if (fuzzy) {
     const suggestedMatches = indexes.districtIndex[fuzzy.key]
     const suggestedName = suggestedMatches?.[0]?.name || fuzzy.key
@@ -236,7 +197,6 @@ function matchMixed(
   districtValue: unknown,
   indexes: ColumnMapperIndexes,
   results: MatchResults,
-  provinceKeys: string[],
   districtKeys: string[],
 ): void {
   if (!indexes.provinceIndex || !indexes.districtIndex) {
@@ -246,28 +206,12 @@ function matchMixed(
     return
   }
 
-  let normalizedProvince = columnMapping.locationColumn
+  const normalizedProvince = columnMapping.locationColumn
     ? normalizeTurkishText(String(row[columnMapping.locationColumn]))
     : ''
-  let normalizedDistrict = districtValue
+  const normalizedDistrict = districtValue
     ? normalizeTurkishText(String(districtValue))
     : ''
-
-  // ── Fuzzy correct province if not found ──
-  if (normalizedProvince && !indexes.provinceIndex[normalizedProvince]) {
-    const fuzzyProv = findClosestMatch(normalizedProvince, provinceKeys)
-    if (fuzzyProv && fuzzyProv.distance <= 2) {
-      normalizedProvince = fuzzyProv.key
-    }
-  }
-
-  // ── Fuzzy correct district if not found ──
-  if (normalizedDistrict && !indexes.districtIndex[normalizedDistrict]) {
-    const fuzzyDist = findClosestMatch(normalizedDistrict, districtKeys)
-    if (fuzzyDist && fuzzyDist.distance <= 2) {
-      normalizedDistrict = fuzzyDist.key
-    }
-  }
 
   // Create composite key (province name based)
   const compositeKey = `${normalizedProvince}_${normalizedDistrict}`
