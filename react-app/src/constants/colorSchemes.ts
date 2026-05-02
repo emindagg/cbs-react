@@ -228,6 +228,17 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#1E3A8A',
   ],
 
+  // Kırmızı-Yeşil Ayrık
+  redGreenDiverging: [
+    '#741d15',
+    '#9f281d',
+    '#e57a71',
+    '#ffffff',
+    '#62ba87',
+    '#179a5c',
+    '#003d1d',
+  ],
+
   // Yükseklik - Klasik Hipsometrik (ESRI Terrain)
   elevationTerrain: [
     '#006994',
@@ -291,6 +302,26 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#d99d5b',
     '#c8f2a9',
     '#d4b8ff',
+  ],
+
+  // Yumuşak Pastel (Kategorik) — mavi · turuncu · sarı · yeşil · mercan
+  softPastel: [
+    '#5B9BD5',
+    '#ED9645',
+    '#ECD55E',
+    '#A8C26B',
+    '#D97A6A',
+  ],
+
+  // Şeftali-Toprak (Sıralı) — krem · şeftali · mercan · kahve
+  peachEarth: [
+    '#fcfefc',
+    '#fdf4c9',
+    '#fdcb96',
+    '#f8ac80',
+    '#f2967a',
+    '#dc8d75',
+    '#724640',
   ],
 
   // Renk Körü Güvenli / Okabe-Ito (Kategorik)
@@ -399,7 +430,10 @@ export const COLOR_SCHEME_INFO: Record<ColorScheme, { name: string; type: 'seque
   orange: { name: 'Turuncu', type: 'sequential' },
   tealPurple: { name: 'Mor-Yeşil', type: 'diverging' },
   redBlueDiverging: { name: 'Kırmızı-Mavi Ayrık', type: 'diverging' },
+  redGreenDiverging: { name: 'Kırmızı-Yeşil Ayrık', type: 'diverging' },
   tropicalBliss: { name: 'Boncuklu Pastel', type: 'sequential' },
+  softPastel: { name: 'Yumuşak Pastel', type: 'sequential' },
+  peachEarth: { name: 'Şeftali-Toprak', type: 'sequential' },
   colorblindSafe: { name: 'Renk Körü Güvenli', type: 'sequential' },
 
   // Tek-Renk Skalalar
@@ -436,6 +470,7 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
   // Sıralı — Sıcak ailesi
   { value: 'sunset', label: 'Gün Batımı' },
   { value: 'orange', label: 'Turuncu' },
+  { value: 'peachEarth', label: 'Şeftali-Toprak' },
 
   // Sıralı — Pembe/Mor ailesi
   { value: 'pinkPurple', label: 'Pembe-Mor' },
@@ -454,6 +489,7 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
 
   // Kategorik
   { value: 'tropicalBliss', label: 'Boncuklu Pastel' },
+  { value: 'softPastel', label: 'Yumuşak Pastel' },
   { value: 'colorblindSafe', label: 'Renk Körü Güvenli' },
 
   // Ayrık — Deniz ailesi
@@ -463,6 +499,7 @@ export const COLOR_SCHEME_LIST: { value: ColorScheme; label: string }[] = [
   // Ayrık — Kırmızı ailesi
   { value: 'redBlue', label: 'Kırmızı-Mavi' },
   { value: 'redBlueDiverging', label: 'Kırmızı-Mavi Ayrık' },
+  { value: 'redGreenDiverging', label: 'Kırmızı-Yeşil Ayrık' },
 
   // Ayrık — Teal/Mor ailesi
   { value: 'tealPurple', label: 'Mor-Yeşil' },

@@ -44,6 +44,7 @@ export type ColorScheme =
   | 'orange'
   | 'amber'
   | 'redBlueDiverging'
+  | 'redGreenDiverging'
   | 'tealPurple'
   | 'tropicalBliss'
   // Tek-Renk Skalalar
@@ -53,6 +54,8 @@ export type ColorScheme =
   | 'purples'
   // Kategorik
   | 'colorblindSafe'
+  | 'softPastel'
+  | 'peachEarth'
   // Yükseklik Paletleri
   | 'elevationTerrain'
   | 'elevationLand'
