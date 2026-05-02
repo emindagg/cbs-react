@@ -15,6 +15,7 @@ import { useVizWizardStep3 } from './useVizWizardStep3'
 import { ColorScaleConfig, DataDistributionPreview } from '../../components/ColorScale'
 import ColorSchemePicker from '../../components/ColorSchemePicker'
 import { CustomRangeConfig } from '../../components/CustomRange'
+import { DebouncedColorInput } from '../../components/DebouncedColorInput'
 
 
 interface VizWizardStep3Props {
@@ -274,10 +275,9 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
               </div>
               <div className="flex items-center gap-2">
                 {(vizSettings.showLabels ?? false) && (
-                  <input
-                    type="color"
+                  <DebouncedColorInput
                     value={vizSettings.labelColor ?? '#000000'}
-                    onChange={(e) => setVizSettings({ labelColor: e.target.value })}
+                    onChange={(c) => setVizSettings({ labelColor: c })}
                     className="w-5 h-5 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
                     title="İsim etiket rengi"
                   />
@@ -300,10 +300,9 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
               </div>
               <div className="flex items-center gap-2">
                 {(vizSettings.showValues ?? false) && (
-                  <input
-                    type="color"
+                  <DebouncedColorInput
                     value={vizSettings.valueColor ?? '#000000'}
-                    onChange={(e) => setVizSettings({ valueColor: e.target.value })}
+                    onChange={(c) => setVizSettings({ valueColor: c })}
                     className="w-5 h-5 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
                     title="Değer etiket rengi"
                   />
@@ -320,10 +319,9 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
               <div>
                 <span className="text-[10px] font-medium text-zinc-700">Harita Dolgu Rengi</span>
               </div>
-              <input
-                type="color"
+              <DebouncedColorInput
                 value={vizSettings.noDataColor ?? '#e4e4e4'}
-                onChange={(e) => setVizSettings({ noDataColor: e.target.value })}
+                onChange={(c) => setVizSettings({ noDataColor: c })}
                 className="w-7 h-7 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
               />
             </div>
@@ -363,10 +361,9 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
                 <div className="border-t border-zinc-100" />
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-medium text-zinc-700">İl/İlçe Sınır Rengi</span>
-                  <input
-                    type="color"
+                  <DebouncedColorInput
                     value={vizSettings.outlineColor ?? '#6b7280'}
-                    onChange={(e) => setVizSettings({ outlineColor: e.target.value })}
+                    onChange={(c) => setVizSettings({ outlineColor: c })}
                     className="w-7 h-7 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
                     title="İl/İlçe dış sınır rengi"
                   />
