@@ -304,24 +304,25 @@ export const COLOR_SCHEMES: Record<ColorScheme, string[]> = {
     '#d4b8ff',
   ],
 
-  // Yumuşak Pastel (Kategorik) — mavi · turuncu · sarı · yeşil · mercan
+  // Yumuşak Pastel (Kategorik) — mavi · yeşil · sarı · turuncu · mercan · kahve
   softPastel: [
-    '#5B9BD5',
-    '#ED9645',
-    '#ECD55E',
-    '#A8C26B',
-    '#D97A6A',
+    '#698dc2',
+    '#b3be8b',
+    '#f3e880',
+    '#f4ab6b',
+    '#f3795b',
+    '#c7856f',
   ],
 
   // Şeftali-Toprak (Sıralı) — krem · şeftali · mercan · kahve
   peachEarth: [
     '#fcfefc',
     '#fdf4c9',
+    '#fde3ad',
     '#fdcb96',
-    '#f8ac80',
     '#f2967a',
     '#dc8d75',
-    '#724640',
+    '#ac746c',
   ],
 
   // Renk Körü Güvenli / Okabe-Ito (Kategorik)
