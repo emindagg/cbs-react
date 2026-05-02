@@ -362,7 +362,7 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-medium text-zinc-700">İl/İlçe Sınır Rengi</span>
                   <DebouncedColorInput
-                    value={vizSettings.outlineColor ?? '#6b7280'}
+                    value={vizSettings.outlineColor ?? '#010109'}
                     onChange={(c) => setVizSettings({ outlineColor: c })}
                     className="w-7 h-7 rounded border border-zinc-200 cursor-pointer p-0.5 bg-white"
                     title="İl/İlçe dış sınır rengi"
@@ -374,7 +374,7 @@ export default function VizWizardStep3({ onBack }: VizWizardStep3Props) {
                   min={0}
                   max={1}
                   step={0.05}
-                  value={vizSettings.outlineOpacity ?? 0.8}
+                  value={vizSettings.outlineOpacity ?? 1}
                   formatValue={(v) => `%${Math.round(v * 100)}`}
                   onChange={(v) => setVizSettings({ outlineOpacity: v })}
                 />
