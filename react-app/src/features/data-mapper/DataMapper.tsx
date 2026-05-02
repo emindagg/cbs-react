@@ -40,6 +40,8 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
     setRawData,
     excludedRows,
     toggleExcludedRow,
+    clearExcludedRows,
+    setExcludedRows,
   } = useVisualizationStore()
 
   const gridRef = useRef<AgGridReact>(null)
@@ -146,7 +148,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
     api.setGridOption('context', { selectedProvince, selectedDistrict, selectedData, locationLevel })
     api.refreshCells({ force: true })
     api.refreshHeader()
-  }, [selectedProvince, selectedDistrict, selectedData, locationLevel])
+  }, [selectedProvince, selectedDistrict, selectedData, locationLevel, excludedRows.length])
 
   // Handle cell edit
   const onCellValueChanged = useCallback(
@@ -170,6 +172,17 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
 
   const { columnDefs, defaultColDef } = useColumns(columns)
 
+  const totalRowCount = rowData.length
+  const anyExcluded = excludedRows.length > 0
+
+  const toggleAllExclusion = useCallback(() => {
+    if (anyExcluded) {
+      clearExcludedRows()
+    } else {
+      setExcludedRows(rowData.map((r) => r.__rowIndex))
+    }
+  }, [anyExcluded, clearExcludedRows, setExcludedRows, rowData])
+
   const exclusionColDef = useMemo((): ColDef => ({
     field: '__excluded',
     headerName: '',
@@ -181,6 +194,35 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
     sortable: false,
     suppressMovable: true,
     cellStyle: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
+    headerComponent: () => {
+      const allHidden = totalRowCount > 0 && excludedRows.length >= totalRowCount
+      const title = anyExcluded
+        ? (allHidden ? 'Tümünü göster' : 'Tümünü göster (gizlileri aç)')
+        : 'Tümünü gizle'
+      return (
+        <button
+          onClick={toggleAllExclusion}
+          title={title}
+          style={{
+            border: 'none',
+            background: 'none',
+            cursor: 'pointer',
+            lineHeight: 1,
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          <i
+            className={`fa-solid ${anyExcluded ? 'fa-eye-slash' : 'fa-eye'}`}
+            style={{ fontSize: 12, color: anyExcluded ? '#9ca3af' : '#374151' }}
+          />
+        </button>
+      )
+    },
     cellRenderer: (params: ICellRendererParams) => {
       const isExcluded = params.data?.__excluded === true
       return (
@@ -196,7 +238,7 @@ export default function DataMapper({ geoJsonKeys, isLoading, variant = 'default'
         </button>
       )
     },
-  }), [toggleExcludedRow])
+  }), [toggleExcludedRow, toggleAllExclusion, anyExcluded, excludedRows.length, totalRowCount])
 
   const allColumnDefs = useMemo(
     () => [exclusionColDef, ...columnDefs],

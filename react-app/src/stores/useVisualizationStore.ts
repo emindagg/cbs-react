@@ -92,6 +92,7 @@ interface VisualizationStore {
   excludedRows: number[]
   toggleExcludedRow: (rowIndex: number) => void
   clearExcludedRows: () => void
+  setExcludedRows: (rowIndices: number[]) => void
 
   // Numeric locale parsing (data column)
   numericLocalePreference: NumberLocale
@@ -323,6 +324,7 @@ export const useVisualizationStore = create<VisualizationStore>((set) => ({
         : [...state.excludedRows, rowIndex],
     })),
   clearExcludedRows: () => set({ excludedRows: [] }),
+  setExcludedRows: (rowIndices) => set({ excludedRows: [...rowIndices] }),
 
   // Numeric locale parsing
   numericLocalePreference: 'ambiguous',
