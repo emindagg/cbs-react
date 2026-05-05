@@ -318,7 +318,7 @@ Teknik davranış:
 - TopoJSON kaynakları `topojson-client` ile GeoJSON'a dönüştürülür.
 - Arazi örtüsü katmanı için vertex sayısı `@turf/simplify` ile düşürülür.
 - Style reload sonrasında aktif overlay layer'lar yeniden haritaya eklenir ve en üste taşınır.
-- Arazi Örtüsü kısa URL presetleri desteklenir: `/cbs/lc2018`, `/cbs/arazi-ortusu-2018` ve `?landCover=1`.
+- Arazi Örtüsü kısa URL presetleri desteklenir: `/cbs/lc2018`, `/cbs/arazi-2018`, `/cbs/arazi-ortusu-2018` (geri uyumluluk) ve `?landCover=1`.
 - `LandCoverLegend`, arazi örtüsü aktifken sınıf lejantını gösterir.
 
 ### Legend

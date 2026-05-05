@@ -109,7 +109,9 @@ npm run test:watch
 Arazi Örtüsü (2018) katmanını hızlı açılış için:
 
 - `https://ogmmateryal.eba.gov.tr/cbs/lc2018`
-- `https://ogmmateryal.eba.gov.tr/cbs/arazi-ortusu-2018`
+- `https://ogmmateryal.eba.gov.tr/cbs/arazi-2018`
+- `https://ogmmateryal.eba.gov.tr/cbs/arazi-ortusu-2018` (geri uyumluluk alias)
+- `https://ogmmateryal.eba.gov.tr/cbs/corine`
 
 ## Sorun Giderme
 

@@ -272,8 +272,14 @@ export function useOverlayLayers() {
     const pathname = window.location.pathname.toLowerCase()
     // Kısa URL örnekleri:
     // https://ogmmateryal.eba.gov.tr/cbs/lc2018
+    // https://ogmmateryal.eba.gov.tr/cbs/arazi-2018
     // https://ogmmateryal.eba.gov.tr/cbs/arazi-ortusu-2018
-    const isLandCoverPresetPath = pathname.endsWith('/cbs/lc2018') || pathname.endsWith('/cbs/arazi-ortusu-2018')
+    // https://ogmmateryal.eba.gov.tr/cbs/corine
+    const isLandCoverPresetPath =
+      pathname.endsWith('/cbs/lc2018')
+      || pathname.endsWith('/cbs/arazi-2018')
+      || pathname.endsWith('/cbs/arazi-ortusu-2018')
+      || pathname.endsWith('/cbs/corine')
     const shouldOpenLandCover = params.get('landCover') === '1'
     if (!shouldOpenLandCover && !isLandCoverPresetPath) return
 

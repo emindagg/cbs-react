@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 
 import { useMapStore } from '@/stores/useMapStore'
 import { useToolStore } from '@/stores/useToolStore'
@@ -7,6 +7,7 @@ const DIRECTIONS = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB']
 const DIRECTION_COUNT = DIRECTIONS.length
 const SECTOR_DEGREES = 360 / DIRECTION_COUNT
 const SECTOR_HALF = SECTOR_DEGREES / 2
+const DRAG_SENSITIVITY = 0.35
 
 function getDirectionText(bearing: number): string {
   const normalized = ((bearing % 360) + 360) % 360
@@ -19,6 +20,10 @@ export function MapCompass() {
   const isGisOpen = useToolStore((s) => s.toolsMenuMode !== 'closed')
   const [bearing, setBearing] = useState(0)
   const [compassText, setCompassText] = useState('K')
+  const isDraggingRef = useRef(false)
+  const hasDraggedRef = useRef(false)
+  const dragStartXRef = useRef(0)
+  const dragStartBearingRef = useRef(0)
 
   useEffect(() => {
     if (!mapInstance) return
@@ -38,15 +43,46 @@ export function MapCompass() {
   }, [mapInstance])
 
   const handleClick = useCallback(() => {
-    if (!mapInstance) return
+    if (!mapInstance || hasDraggedRef.current) {
+      hasDraggedRef.current = false
+      return
+    }
     mapInstance.easeTo({ bearing: 0, pitch: 0, duration: 600 })
   }, [mapInstance])
+
+  const handlePointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!mapInstance) return
+    event.preventDefault()
+    isDraggingRef.current = true
+    hasDraggedRef.current = false
+    dragStartXRef.current = event.clientX
+    dragStartBearingRef.current = mapInstance.getBearing()
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }, [mapInstance])
+
+  const handlePointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!mapInstance || !isDraggingRef.current) return
+    const deltaX = event.clientX - dragStartXRef.current
+    const nextBearing = dragStartBearingRef.current + (deltaX * DRAG_SENSITIVITY)
+    hasDraggedRef.current = Math.abs(deltaX) > 1
+    mapInstance.setBearing(nextBearing)
+  }, [mapInstance])
+
+  const handlePointerUp = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return
+    isDraggingRef.current = false
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }, [])
 
   if (!mapInstance) return null
 
   return (
     <div
       onClick={handleClick}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
       title="Kuzeye Sıfırla"
       data-export-ignore="true"
       style={{
@@ -63,6 +99,7 @@ export function MapCompass() {
         // eslint-disable-next-line no-magic-numbers
         zIndex: isGisOpen ? 0 : 1200,
         userSelect: 'none',
+        touchAction: 'none',
         background: 'rgba(28,28,30,0.85)',
         backdropFilter: 'blur(15px)',
         WebkitBackdropFilter: 'blur(15px)',

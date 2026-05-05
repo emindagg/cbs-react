@@ -809,6 +809,7 @@ Arazi örtüsü kısa URL presetleri `useOverlayLayers` içinde işlenir:
 
 ```text
 /cbs/lc2018
+/cbs/arazi-2018
 /cbs/arazi-ortusu-2018
 ?landCover=1
 ```
