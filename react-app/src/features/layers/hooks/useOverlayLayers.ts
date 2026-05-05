@@ -180,9 +180,9 @@ function ensureLayerOnMap(
       type: 'line',
       source: sourceId,
       paint: {
-        'line-color': '#000000',
-        'line-width': 1,
-        'line-opacity': 0.5,
+        'line-color': layerState.color,
+        'line-width': Math.max(0, layerState.opacity),
+        'line-opacity': layerState.opacity,
       },
     })
   }
@@ -240,9 +240,10 @@ function applyLayerStyles(map: MapLibreMap, definition: OverlayLayerDefinition, 
     map.setPaintProperty(
       `${definition.id}-outline`,
       'line-color',
-      '#000000',
+      layerState.color,
     )
-    map.setPaintProperty(`${definition.id}-outline`, 'line-opacity', 0.5)
+    map.setPaintProperty(`${definition.id}-outline`, 'line-width', Math.max(0, layerState.opacity))
+    map.setPaintProperty(`${definition.id}-outline`, 'line-opacity', layerState.opacity)
   }
 
   if (definition.type === 'circle' && map.getLayer(definition.id)) {
