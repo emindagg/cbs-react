@@ -33,11 +33,11 @@ jobs:
 
       - name: Install dependencies
         working-directory: react-app
-        run: pnpm install --frozen-lockfile
+        run: corepack pnpm install --frozen-lockfile
 
       - name: Build
         working-directory: react-app
-        run: pnpm run build
+        run: corepack pnpm run build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
