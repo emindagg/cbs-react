@@ -60,7 +60,7 @@ export default function DataMapperModal({ isOpen, onClose, geoJsonKeys, isLoadin
           <div className="px-4 py-2 border-t border-zinc-100 flex items-center justify-end shrink-0 bg-[#fafbfc]">
             <button
               onClick={onClose}
-              className="px-5 py-1.5 text-[11px] text-white bg-[#1e2330] hover:bg-[#2a3040] rounded-lg font-semibold transition-all flex items-center gap-1.5 shadow-sm"
+              className="px-5 py-1.5 text-[11px] text-white bg-[#18181B] hover:bg-zinc-800 rounded-lg font-semibold transition-all flex items-center gap-1.5 shadow-sm"
             >
               <i className="fa-solid fa-check text-emerald-400 text-[10px]"></i>
               Tamam

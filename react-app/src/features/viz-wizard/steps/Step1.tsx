@@ -122,7 +122,7 @@ export default function VizWizardStep1({ onNext }: VizWizardStep1Props) {
         onDrop={(event) => { void handleDrop(event) }}
       >
         <div className="flex">
-          <label className={`shrink-0 px-4 py-2 text-white text-[11px] font-medium cursor-pointer transition-colors ${isDragOver && !isLoading ? 'bg-zinc-700' : 'bg-zinc-800 hover:bg-zinc-700'}`}>
+          <label className={`shrink-0 px-4 py-2 text-white text-[11px] font-medium cursor-pointer transition-colors ${isDragOver && !isLoading ? 'bg-[var(--color-brand-chrome-hover)]' : 'bg-[var(--color-brand-chrome)] hover:bg-[var(--color-brand-chrome-hover)]'}`}>
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
