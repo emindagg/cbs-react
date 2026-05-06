@@ -114,7 +114,7 @@ export default function AppLayout() {
   }, [isSidebarOpen, isMdUp])
 
   return (
-    <div id="app-root" className="relative h-screen w-full overflow-hidden bg-zinc-50">
+    <div id="app-root" className="relative h-screen w-full overflow-hidden bg-zinc-50" style={{ height: '100dvh' }}>
 
       {/* Sidebar */}
       <aside
@@ -126,7 +126,7 @@ export default function AppLayout() {
                     flex flex-col transition-transform duration-300 ease-in-out
                     ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                 `}
-        style={{ maxWidth: `${LAYOUT.SIDEBAR_WIDTH}px` }}
+        style={{ maxWidth: `${LAYOUT.SIDEBAR_WIDTH}px`, height: '100dvh' }}
       >
         <Sidebar />
       </aside>
