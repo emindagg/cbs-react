@@ -31,7 +31,7 @@ export default function DataMapperModal({ isOpen, onClose, geoJsonKeys, isLoadin
     <div className="fixed inset-0 z-99999 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
       <div className="bg-white rounded-xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25)] w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="bg-[#1e2330] text-white px-5 py-2.5 flex items-center justify-between shrink-0">
+        <div className="bg-[var(--color-brand-chrome)] text-white px-5 py-2.5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-6 h-6 rounded-md bg-white/10 flex items-center justify-center">
               <i className={`fa-solid ${icon} text-[11px] text-emerald-400`}></i>

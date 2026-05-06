@@ -92,9 +92,9 @@ export function ExcelHeaderPanel({ pending }: ExcelHeaderPanelProps) {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 border-b border-zinc-100 bg-zinc-50 px-5 py-3">
-        <div className="flex flex-1 items-center gap-4">
+        <div className="flex flex-1 items-center gap-3">
           <div>
-            <p className="text-[11px] text-zinc-500">
+            <p className="max-w-[420px] text-[11px] leading-4 text-zinc-500">
               {showSheetPicker
                 ? 'Sayfayı, başlık satırını ve verinin hangi satırdan başladığını seçin.'
                 : 'Başlık satırını ve verinin hangi satırdan başladığını seçin.'}
