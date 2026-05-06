@@ -40,8 +40,7 @@ export default function SidebarTools() {
             className="rounded-sm border-zinc-300 text-[#1c1c1e] accent-[#1c1c1e] focus:ring-[#1c1c1e] mr-2.5 h-4 w-4"
           />
           <div className="flex items-center">
-            <i className="fa-solid fa-ruler text-[#1c1c1e] mr-2 text-sm w-4 text-center"></i>
-            <span className="text-sm text-[#1c1c1e] font-normal">Ölçüm Araçları (Mesafe)</span>
+            <span className="text-sm text-[#1c1c1e] font-normal">Ölçüm Araçları</span>
           </div>
         </label>
 
@@ -53,7 +52,6 @@ export default function SidebarTools() {
             className="rounded-sm border-zinc-300 text-[#1c1c1e] accent-[#1c1c1e] focus:ring-[#1c1c1e] mr-2.5 h-4 w-4"
           />
           <div className="flex items-center">
-            <i className="fa-solid fa-chart-line text-[#1c1c1e] mr-2 text-sm w-4 text-center"></i>
             <span className="text-sm text-[#1c1c1e] font-normal">Mekânsal Analiz</span>
           </div>
         </label>
@@ -66,7 +64,6 @@ export default function SidebarTools() {
             className="rounded-sm border-zinc-300 text-[#1c1c1e] accent-[#1c1c1e] focus:ring-[#1c1c1e] mr-2.5 h-4 w-4"
           />
           <div className="flex items-center">
-            <i className="fa-solid fa-clock text-[#1c1c1e] mr-2 text-sm w-4 text-center"></i>
             <span className="text-sm text-[#1c1c1e] font-normal">Zaman Çizelgesi</span>
           </div>
         </label>
