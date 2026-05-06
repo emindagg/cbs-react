@@ -7,7 +7,7 @@ export default function SidebarFooter() {
           <span className="font-medium">CBS Platform</span>
           <span className="bg-emerald-100 text-emerald-700 text-[8px] font-bold px-1.5 py-0.5 rounded-full">v1.1b</span>
         </div>
-        <div className="hidden md:flex items-center gap-2.5 text-zinc-400">
+        <div className="flex items-center gap-2.5 text-zinc-400">
           <span className="flex items-center gap-0.5"><i className="fa-solid fa-chart-area text-emerald-500 text-[9px]"></i>Analiz</span>
           <span className="flex items-center gap-0.5"><i className="fa-solid fa-layer-group text-emerald-500 text-[9px]"></i>Katman</span>
         </div>
