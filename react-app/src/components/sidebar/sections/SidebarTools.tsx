@@ -27,8 +27,8 @@ export default function SidebarTools() {
 
   return (
     <section className="hover:bg-zinc-50 rounded-lg px-2.5 py-1.5 transition-colors group">
-      <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#1c1c1e] mb-2 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
-        <i className="fa-solid fa-toolbox text-[#1c1c1e] text-[10px]"></i>
+      <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#18181B] mb-2 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
+        <i className="fa-solid fa-toolbox text-[#18181B] text-[10px]"></i>
         Aktif CBS Araç Kiti
       </h3>
       <div className="space-y-2">
@@ -37,10 +37,10 @@ export default function SidebarTools() {
             type="checkbox"
             checked={showMeasurementTools}
             onChange={toggleMeasurementTools}
-            className="rounded-sm border-zinc-300 text-[#1c1c1e] accent-[#1c1c1e] focus:ring-[#1c1c1e] mr-2.5 h-4 w-4"
+            className="rounded-sm border-zinc-300 text-[#18181B] accent-[#18181B] focus:ring-[#18181B] mr-2.5 h-4 w-4"
           />
           <div className="flex items-center">
-            <span className="text-sm text-[#1c1c1e] font-normal">Ölçüm Araçları</span>
+            <span className="text-sm text-[#18181B] font-normal">Ölçüm Araçları</span>
           </div>
         </label>
 
@@ -49,10 +49,10 @@ export default function SidebarTools() {
             type="checkbox"
             checked={showAdvancedAnalysis}
             onChange={toggleAdvancedAnalysis}
-            className="rounded-sm border-zinc-300 text-[#1c1c1e] accent-[#1c1c1e] focus:ring-[#1c1c1e] mr-2.5 h-4 w-4"
+            className="rounded-sm border-zinc-300 text-[#18181B] accent-[#18181B] focus:ring-[#18181B] mr-2.5 h-4 w-4"
           />
           <div className="flex items-center">
-            <span className="text-sm text-[#1c1c1e] font-normal">Mekânsal Analiz</span>
+            <span className="text-sm text-[#18181B] font-normal">Mekânsal Analiz</span>
           </div>
         </label>
 
@@ -61,10 +61,10 @@ export default function SidebarTools() {
             type="checkbox"
             checked={activeTool === 'timeline'}
             onChange={() => handleToolToggle('timeline')}
-            className="rounded-sm border-zinc-300 text-[#1c1c1e] accent-[#1c1c1e] focus:ring-[#1c1c1e] mr-2.5 h-4 w-4"
+            className="rounded-sm border-zinc-300 text-[#18181B] accent-[#18181B] focus:ring-[#18181B] mr-2.5 h-4 w-4"
           />
           <div className="flex items-center">
-            <span className="text-sm text-[#1c1c1e] font-normal">Zaman Çizelgesi</span>
+            <span className="text-sm text-[#18181B] font-normal">Zaman Çizelgesi</span>
           </div>
         </label>
       </div>

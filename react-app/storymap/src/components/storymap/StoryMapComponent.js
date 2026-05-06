@@ -202,7 +202,7 @@ export class StoryMapComponent {
         if (!this.markerElements || this.markerElements.length === 0) return;
         this.markerElements.forEach(({ sceneId, element }) => {
             element.style.border = (activeSceneId && sceneId === activeSceneId)
-                ? '2px solid #1c1c1e'
+                ? '2px solid #18181B'
                 : '2px solid #fff';
         });
     }

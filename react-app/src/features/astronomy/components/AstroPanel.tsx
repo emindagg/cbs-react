@@ -208,7 +208,7 @@ export function AstroPanel() {
                   onClick={() => setIsPlaying(!isPlaying)}
                   className={`flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border text-[8px] font-bold uppercase tracking-wider transition-colors ${isPlaying
                     ? 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50'
-                    : 'border-none bg-[#1c1c1e] text-white hover:bg-[#2a2a2c] active:bg-[#2c2c2e]'
+                    : 'border-none bg-[#18181B] text-white hover:bg-[#2a2a2c] active:bg-[#2c2c2e]'
                   }`}
                 >
                   <i className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'} text-[8px]`}></i>

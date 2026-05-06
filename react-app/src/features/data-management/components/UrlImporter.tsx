@@ -14,8 +14,8 @@ export function UrlImporter({ onImport, isLoading }: UrlImporterProps) {
 
   return (
     <div className="border-t border-zinc-200 pt-3 mt-3">
-      <label className="flex items-center gap-1.5 mb-1 text-xs font-normal text-[#1c1c1e] select-none">
-        <i className="fa-solid fa-link shrink-0 text-[10px] text-[#1c1c1e]" aria-hidden />
+      <label className="flex items-center gap-1.5 mb-1 text-xs font-normal text-[#18181B] select-none">
+        <i className="fa-solid fa-link shrink-0 text-[10px] text-[#18181B]" aria-hidden />
         URL'den Veri Yükle
       </label>
       <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
@@ -37,7 +37,7 @@ export function UrlImporter({ onImport, isLoading }: UrlImporterProps) {
         </button>
       </div>
       <p className="text-[10px] font-normal text-zinc-500 mt-1.5 flex items-center gap-1">
-        <i className="fa-solid fa-circle-info shrink-0 text-[10px] text-[#1c1c1e]/70" aria-hidden />
+        <i className="fa-solid fa-circle-info shrink-0 text-[10px] text-[#18181B]/70" aria-hidden />
         <span>GeoJSON, KML (.kml), Shapefile (.zip)</span>
       </p>
     </div>

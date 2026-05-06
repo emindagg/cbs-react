@@ -16,7 +16,7 @@ export function ZoomControls() {
   }
 
   return (
-    <div className="flex flex-col bg-[#1c1c1e] rounded-[12px] overflow-hidden shadow-[0_2px_8px_rgba(34,34,34,0.35)]">
+    <div className="flex flex-col bg-[#18181B] rounded-[12px] overflow-hidden shadow-[0_2px_8px_rgba(34,34,34,0.35)]">
       <button
         type="button"
         id="zoom-in-button"

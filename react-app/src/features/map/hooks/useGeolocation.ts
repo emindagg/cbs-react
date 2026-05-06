@@ -124,7 +124,7 @@ export function useGeolocation(): UseGeolocationReturn {
           style.id = 'geo-popup-style'
           style.textContent = `
                         .geo-popup .maplibregl-popup-content {
-                            background: #1c1c1e;
+                            background: #18181B;
                             border: 1px solid rgba(255,255,255,0.10);
                             border-radius: 10px;
                             box-shadow: 0 8px 28px rgba(0,0,0,0.45);
@@ -133,7 +133,7 @@ export function useGeolocation(): UseGeolocationReturn {
                             font-family: system-ui, -apple-system, sans-serif;
                         }
                         .geo-popup .maplibregl-popup-tip {
-                            border-top-color: #1c1c1e !important;
+                            border-top-color: #18181B !important;
                         }
                         .geo-popup .maplibregl-popup-close-button {
                             color: #475569;

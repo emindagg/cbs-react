@@ -72,7 +72,7 @@ export function GeolocationButton() {
                   : 'Konumuma git'
         }
         className={[
-          'w-9 h-9 bg-[#1c1c1e] hover:bg-[#2a2a2c] hover:text-white/70 active:bg-[#2c2c2e] rounded-[12px]',
+          'w-9 h-9 bg-[#18181B] hover:bg-[#2a2a2c] hover:text-white/70 active:bg-[#2c2c2e] rounded-[12px]',
           'shadow-[0_2px_8px_rgba(34,34,34,0.35)]',
           'border-none flex items-center justify-center',
           'text-sm cursor-pointer',
@@ -129,7 +129,7 @@ export function GeolocationButton() {
           left: 'calc(100% + 10px)',
           top: '50%',
           transform: 'translateY(-50%)',
-          background: '#1c1c1e',
+          background: '#18181B',
           border: '1px solid rgba(255,255,255,0.10)',
           borderRadius: 10,
           padding: '12px 14px',

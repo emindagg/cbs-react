@@ -99,8 +99,8 @@ export function DataCatalogSection() {
 
   return (
     <section className="hover:bg-zinc-50 rounded-lg px-2.5 py-1.5 transition-colors group">
-      <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#1c1c1e] mb-2 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
-        <i className="fa-solid fa-database text-[#1c1c1e] text-[10px]"></i>
+      <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#18181B] mb-2 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
+        <i className="fa-solid fa-database text-[#18181B] text-[10px]"></i>
         Veri Kataloğu
       </h3>
 
@@ -133,7 +133,7 @@ export function DataCatalogSection() {
           visibleItems.map(item => {
             const rawStyle = item.properties.style
             const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
-            const currentFillColor = style.fillColor || '#1c1c1e'
+            const currentFillColor = style.fillColor || '#18181B'
             const iconColor = currentFillColor || '#94a3b8' // Fallback: gri renk
 
             return (
@@ -222,7 +222,7 @@ export function DataCatalogSection() {
         if (!item) return null
         const rawStyle = item.properties.style
         const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
-        const currentFillColor = style.fillColor || '#1c1c1e'
+        const currentFillColor = style.fillColor || '#18181B'
 
         return createPortal(
           <div
@@ -270,7 +270,7 @@ export function DataCatalogSection() {
                     }
                   }}
                   className="w-full px-2 py-1 text-xs border border-zinc-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="#1c1c1e"
+                  placeholder="#18181B"
                 />
               </div>
             </div>

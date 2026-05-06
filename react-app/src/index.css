@@ -5,7 +5,7 @@
   --font-sans: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 
   /* Marka renkleri: birincil = harita/krom (koyu nötr), ikincil = emerald vurgu */
-  --color-brand-chrome: #1c1c1e;
+  --color-brand-chrome: #18181B;
   --color-brand-chrome-hover: #2a2a2c;
   --color-brand-chrome-active: #2c2c2e;
 
@@ -454,7 +454,7 @@ body {
 }
 
 .floating-input:focus {
-    border-color: #1c1c1e;
+    border-color: #18181B;
     box-shadow: 0 0 0 2px rgba(28, 28, 30, 0.12);
     background-color: #ffffff;
 }
@@ -483,7 +483,7 @@ body {
 .floating-input:focus~.floating-label,
 .floating-input:not(:placeholder-shown)~.floating-label {
     transform: translate3d(0, -1.65rem, 0) scale(0.85);
-    color: #1c1c1e;
+    color: #18181B;
     font-weight: 400;
     background-color: #ffffff;
     padding: 0 0.25rem;
@@ -524,7 +524,7 @@ body {
 .zoom-control-custom {
     display: flex;
     flex-direction: column;
-    background: #1c1c1e;
+    background: #18181B;
     border-radius: 18px;
     border: none;
     overflow: hidden;
@@ -620,7 +620,7 @@ body {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: #1c1c1e;
+    background: #18181B;
     color: #ffffff;
     border: none;
     box-shadow: rgba(34, 34, 34, 0.35) 0px 2px 8px;

@@ -1888,7 +1888,7 @@ export class ModalComponent {
             const el = p.marker.getElement && p.marker.getElement();
             if (el) {
                 const isActive = activeId != null && String(p.id) === activeId;
-                el.style.border = isActive ? '2px solid #1c1c1e' : '2px solid #fff';
+                el.style.border = isActive ? '2px solid #18181B' : '2px solid #fff';
             }
         });
     }

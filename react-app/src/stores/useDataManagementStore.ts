@@ -12,7 +12,7 @@ const defaultLayerStyles: LayerStyles = {
   strokeOpacity: 1,
   width: 5,
   lineWidth: 2,
-  fillColor: '#1c1c1e',
+  fillColor: '#18181B',
   strokeWidth: 2,
   strokeColor: '#111111',
   labelField: '',

@@ -319,7 +319,7 @@
     padding: 0;
     border: none;
     border-radius: 10px;
-    background: var(--color-black, #1c1c1e);
+    background: var(--color-black, #18181B);
     box-shadow: rgba(34, 34, 34, 0.35) 0 2px 8px;
     color: #fff;
     cursor: pointer;

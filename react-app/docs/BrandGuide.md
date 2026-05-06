@@ -6,7 +6,7 @@
 - Kullanıcı akışını hızlandıran mikro metinler tercih edilir.
 
 ## Renk Sistemi (Design Tokens)
-- `brand-chrome`: `#1c1c1e`
+- `brand-chrome`: `#18181B`
 - `brand-chrome-hover`: `#2a2a2c`
 - `brand-chrome-active`: `#2c2c2e`
 - `brand-secondary`: `#059669`

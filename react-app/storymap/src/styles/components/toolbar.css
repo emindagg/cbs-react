@@ -378,7 +378,7 @@
 
 /* Navigation Control Group (Zoom In/Out) - Birleşik rounded rectangle */
 .maplibregl-ctrl-group {
-    background-color: var(--color-black, #1c1c1e) !important;
+    background-color: var(--color-black, #18181B) !important;
     border: none !important;
     border-radius: 18px !important;
     box-shadow: rgba(34, 34, 34, 0.35) 0px 2px 8px !important;
@@ -471,7 +471,7 @@
     transition: opacity 0.3s, background-color 0.3s !important;
     cursor: pointer !important;
     padding: 0 !important;
-    background-color: var(--color-black, #1c1c1e) !important;
+    background-color: var(--color-black, #18181B) !important;
     box-shadow: rgba(34, 34, 34, 0.35) 0px 2px 8px !important;
     color: rgb(255, 255, 255) !important;
     font-size: 12px;
@@ -517,7 +517,7 @@
     transition: opacity 0.3s, background-color 0.3s !important;
     cursor: pointer !important;
     padding: 0 !important;
-    background-color: var(--color-black, #1c1c1e) !important;
+    background-color: var(--color-black, #18181B) !important;
     box-shadow: rgba(34, 34, 34, 0.35) 0px 2px 8px !important;
     color: rgb(255, 255, 255) !important;
     z-index: 9999 !important;
