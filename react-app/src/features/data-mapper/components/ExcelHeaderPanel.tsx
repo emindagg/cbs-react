@@ -94,8 +94,7 @@ export function ExcelHeaderPanel({ pending }: ExcelHeaderPanelProps) {
       <div className="flex items-center justify-between gap-3 border-b border-zinc-100 bg-zinc-50 px-5 py-3">
         <div className="flex flex-1 items-center gap-4">
           <div>
-            <p className="text-[12px] font-semibold text-zinc-800">Excel Yapılandırması</p>
-            <p className="mt-0.5 text-[11px] text-zinc-500">
+            <p className="text-[11px] text-zinc-500">
               {showSheetPicker
                 ? 'Sayfayı, başlık satırını ve verinin hangi satırdan başladığını seçin.'
                 : 'Başlık satırını ve verinin hangi satırdan başladığını seçin.'}
