@@ -8,6 +8,9 @@ const DIRECTION_COUNT = DIRECTIONS.length
 const SECTOR_DEGREES = 360 / DIRECTION_COUNT
 const SECTOR_HALF = SECTOR_DEGREES / 2
 const DRAG_SENSITIVITY = 0.35
+const PITCH_DRAG_SENSITIVITY = 0.35
+const MIN_PITCH = 0
+const MAX_PITCH = 88
 
 function getDirectionText(bearing: number): string {
   const normalized = ((bearing % 360) + 360) % 360
@@ -23,7 +26,9 @@ export function MapCompass() {
   const isDraggingRef = useRef(false)
   const hasDraggedRef = useRef(false)
   const dragStartXRef = useRef(0)
+  const dragStartYRef = useRef(0)
   const dragStartBearingRef = useRef(0)
+  const dragStartPitchRef = useRef(0)
 
   useEffect(() => {
     if (!mapInstance) return
@@ -56,16 +61,24 @@ export function MapCompass() {
     isDraggingRef.current = true
     hasDraggedRef.current = false
     dragStartXRef.current = event.clientX
+    dragStartYRef.current = event.clientY
     dragStartBearingRef.current = mapInstance.getBearing()
+    dragStartPitchRef.current = mapInstance.getPitch()
     event.currentTarget.setPointerCapture(event.pointerId)
   }, [mapInstance])
 
   const handlePointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (!mapInstance || !isDraggingRef.current) return
     const deltaX = event.clientX - dragStartXRef.current
+    const deltaY = event.clientY - dragStartYRef.current
     const nextBearing = dragStartBearingRef.current + (deltaX * DRAG_SENSITIVITY)
-    hasDraggedRef.current = Math.abs(deltaX) > 1
+    const nextPitch = Math.min(
+      MAX_PITCH,
+      Math.max(MIN_PITCH, dragStartPitchRef.current - (deltaY * PITCH_DRAG_SENSITIVITY)),
+    )
+    hasDraggedRef.current = Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1
     mapInstance.setBearing(nextBearing)
+    mapInstance.setPitch(nextPitch)
   }, [mapInstance])
 
   const handlePointerUp = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
