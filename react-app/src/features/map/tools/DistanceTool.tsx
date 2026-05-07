@@ -7,6 +7,7 @@ import type { LayerProps } from 'react-map-gl/maplibre'
 
 import { useToolStore } from '@/stores/useToolStore'
 
+import { DRAG_CURSOR, DRAW_CURSOR } from './cursors'
 import { MeasurementPanel } from './DistanceTool.display'
 import type { MeasurementPanelHandle } from './DistanceTool.display'
 import { useDistanceHandlers } from './DistanceTool.handlers'
@@ -285,13 +286,27 @@ export default function DistanceTool() {
     mapInstance.on('dblclick', handleDblClick)
     document.addEventListener('keydown', handleKeyDown)
 
-    mapInstance.getCanvas().style.cursor = 'default'
+    // Canvas cursor
+    mapInstance.getCanvas().style.cursor = DRAW_CURSOR
+
+    // Override cursor on HTML overlays (Markers, controls, etc.) inside the map
+    const container = mapInstance.getContainer()
+    container.classList.add('map-draw-active')
+    const styleEl = document.createElement('style')
+    styleEl.dataset.owner = 'distance-tool'
+    styleEl.textContent = [
+      `.map-draw-active, .map-draw-active * { cursor: ${DRAW_CURSOR} !important; }`,
+      `.map-draw-active .maplibregl-marker:hover * { cursor: ${DRAG_CURSOR} !important; }`,
+    ].join('\n')
+    document.head.appendChild(styleEl)
 
     return () => {
       mapInstance.off('click', handleClickSafe)
       mapInstance.off('dblclick', handleDblClick)
       document.removeEventListener('keydown', handleKeyDown)
       mapInstance.getCanvas().style.cursor = ''
+      container.classList.remove('map-draw-active')
+      styleEl.remove()
     }
   }, [map, isActive, handleClickSafe, handleDblClick, handleKeyDown, isDrawingDistance])
 
