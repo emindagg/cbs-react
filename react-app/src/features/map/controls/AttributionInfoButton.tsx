@@ -34,7 +34,7 @@ export default function AttributionInfoButton() {
         <div className="mb-2 w-[320px] max-w-[calc(100vw-24px)] rounded-xl border border-white/40 bg-white/40 backdrop-blur-2xl p-3 shadow-[0_8px_32px_rgba(0,0,0,0.08)]">
           <div className="space-y-1.5 text-[11px] text-zinc-700 leading-relaxed">
             <p>© HGM - Harita Genel Müdürlüğü</p>
-            <p>© openrouteservice.org by HeiGIT | Map data © OpenStreetMap contributors</p>
+            <p>© openrouteservice.org | © OSM contributors</p>
             <p>© European Union, Copernicus Land Monitoring Service</p>
             <p>AWS Terrarium DEM</p>
           </div>
