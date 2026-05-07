@@ -7,6 +7,26 @@ import { useDataManagementStore } from '../store/useDataManagementStore'
 
 // Vertex bg rengi — Monokrom Editoryal: node.fill
 const VERTEX_BG = '#fffdf9'
+const CUSTOM_CURSOR = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'>
+    <defs>
+      <filter id='shadow' x='-20%' y='-20%' width='160%' height='160%'>
+        <feDropShadow dx='0.5' dy='1' stdDeviation='0.5' flood-color='rgba(0,0,0,0.3)'/>
+      </filter>
+    </defs>
+    <path d='M4 3v15l4-4 3 7 1.5-0.7-3-7h6z'
+      fill='#312E81'
+      stroke='#ffffff'
+      stroke-width='1.2'
+      stroke-linejoin='round'
+      filter='url(#shadow)'/>
+  </svg>`,
+)}") 4 3, auto`
+
+const getMidpoint = (a: [number, number], b: [number, number]): [number, number] => [
+  (a[0] + b[0]) / 2,
+  (a[1] + b[1]) / 2,
+]
 
 export function DataManagementDrawTool() {
   const { current: map } = useMap()
@@ -25,14 +45,19 @@ export function DataManagementDrawTool() {
     redoDraw,
   } = useDataManagementStore()
 
-  const isDraggingRef    = useRef(false)
+  const isDraggingRef = useRef(false)
   const draggingIndexRef = useRef<number | null>(null)
+  const drawPointsRef = useRef<[number, number][]>([])
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
+    drawPointsRef.current = drawPoints
+  }, [drawPoints])
+
+  useEffect(() => {
     if (drawMode === 'none') {
-      isDraggingRef.current    = false
+      isDraggingRef.current = false
       draggingIndexRef.current = null
     }
   }, [drawMode])
@@ -48,7 +73,7 @@ export function DataManagementDrawTool() {
     if (!isDrawing) return
     setDrawGhostPoint([e.lngLat.lng, e.lngLat.lat])
     setCursorPos({ x: e.point.x, y: e.point.y })
-    if (map) map.getCanvas().style.cursor = 'crosshair'
+    if (map) map.getCanvas().style.cursor = CUSTOM_CURSOR
   }, [isDrawing, map, setDrawGhostPoint, updateDrawPoint])
 
   const handleClick = useCallback((e: maplibregl.MapMouseEvent) => {
@@ -58,7 +83,7 @@ export function DataManagementDrawTool() {
       setDrawPoints([lngLat])
       setIsDrawing(false)
       setDrawGhostPoint(null)
-      if (map) map.getCanvas().style.cursor = 'grab'
+      if (map) map.getCanvas().style.cursor = CUSTOM_CURSOR
     } else if (drawMode === 'line' || drawMode === 'polygon') {
       setDrawPoints([...drawPoints, lngLat])
     }
@@ -79,11 +104,11 @@ export function DataManagementDrawTool() {
 
   const handleMouseUp = useCallback(() => {
     if (!isDraggingRef.current) return
-    isDraggingRef.current    = false
+    isDraggingRef.current = false
     draggingIndexRef.current = null
     setDraggingIndex(null)
     map?.dragPan.enable()
-    if (map) map.getCanvas().style.cursor = 'grab'
+    if (map) map.getCanvas().style.cursor = CUSTOM_CURSOR
   }, [map])
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -106,11 +131,11 @@ export function DataManagementDrawTool() {
 
     if (e.key === 'Escape') {
       if (isDraggingRef.current) {
-        isDraggingRef.current    = false
+        isDraggingRef.current = false
         draggingIndexRef.current = null
         setDraggingIndex(null)
         map?.dragPan.enable()
-        if (map) map.getCanvas().style.cursor = 'grab'
+        if (map) map.getCanvas().style.cursor = CUSTOM_CURSOR
       } else {
         resetDraw()
         if (map) map.getCanvas().style.cursor = ''
@@ -125,7 +150,7 @@ export function DataManagementDrawTool() {
     map.on('dblclick', handleDblClick)
     map.on('mouseup', handleMouseUp)
     document.addEventListener('keydown', handleKeyDown)
-    if (isDrawing) map.getCanvas().style.cursor = 'crosshair'
+    if (isDrawing) map.getCanvas().style.cursor = CUSTOM_CURSOR
     return () => {
       map.off('mousemove', handleMouseMove)
       map.off('click', handleClick)
@@ -139,29 +164,43 @@ export function DataManagementDrawTool() {
   // Vertex düzenleme — sadece edit modunda
   useEffect(() => {
     if (!map || drawMode === 'none' || isDrawing) return
-    const onEnter = () => { if (!isDraggingRef.current) map.getCanvas().style.cursor = 'move' }
-    const onLeave = () => { if (!isDraggingRef.current) map.getCanvas().style.cursor = 'grab' }
-    const onDown  = (e: maplibregl.MapLayerMouseEvent) => {
+    const onEnter = () => { if (!isDraggingRef.current) map.getCanvas().style.cursor = CUSTOM_CURSOR }
+    const onLeave = () => { if (!isDraggingRef.current) map.getCanvas().style.cursor = CUSTOM_CURSOR }
+    const onDown = (e: maplibregl.MapLayerMouseEvent) => {
       if (!e.features?.length) return
-      const idx = e.features[0].properties?.vertexIndex
-      if (idx === undefined || idx === null) return
-      draggingIndexRef.current = Number(idx)
-      isDraggingRef.current    = true
-      setDraggingIndex(Number(idx))
+      const properties = e.features[0].properties
+      const insertIndex = properties?.insertIndex
+      const vertexIndex = properties?.vertexIndex
+      let nextDragIndex: number | null = null
+
+      if (insertIndex !== undefined && insertIndex !== null) {
+        nextDragIndex = Number(insertIndex)
+        const nextPoints = [...drawPointsRef.current]
+        nextPoints.splice(nextDragIndex, 0, [e.lngLat.lng, e.lngLat.lat])
+        drawPointsRef.current = nextPoints
+        setDrawPoints(nextPoints)
+      } else if (vertexIndex !== undefined && vertexIndex !== null) {
+        nextDragIndex = Number(vertexIndex)
+      }
+
+      if (nextDragIndex === null) return
+      draggingIndexRef.current = nextDragIndex
+      isDraggingRef.current = true
+      setDraggingIndex(nextDragIndex)
       map.dragPan.disable()
-      map.getCanvas().style.cursor = 'grabbing'
+      map.getCanvas().style.cursor = CUSTOM_CURSOR
       e.preventDefault()
     }
     map.on('mouseenter', 'draw-point', onEnter)
     map.on('mouseleave', 'draw-point', onLeave)
-    map.on('mousedown',  'draw-point', onDown)
+    map.on('mousedown', 'draw-point', onDown)
     return () => {
       map.off('mouseenter', 'draw-point', onEnter)
       map.off('mouseleave', 'draw-point', onLeave)
-      map.off('mousedown',  'draw-point', onDown)
+      map.off('mousedown', 'draw-point', onDown)
       if (isDraggingRef.current) { map.dragPan.enable(); isDraggingRef.current = false; draggingIndexRef.current = null }
     }
-  }, [map, drawMode, isDrawing])
+  }, [map, drawMode, isDrawing, setDrawPoints])
 
   // ── GeoJSON — basit yaklaşım, DataLayer ile aynı renk referansı ─────────────
 
@@ -177,6 +216,22 @@ export function DataManagementDrawTool() {
           properties: { type: 'vertex', vertexIndex: idx, active: idx === draggingIndex ? 1 : 0 },
         })
       })
+
+      if (!isDrawing && drawPoints.length > 1) {
+        const segmentCount = drawMode === 'polygon' && drawPoints.length > 2
+          ? drawPoints.length
+          : drawPoints.length - 1
+
+        for (let idx = 0; idx < segmentCount; idx++) {
+          const current = drawPoints[idx]
+          const next = drawPoints[(idx + 1) % drawPoints.length]
+          features.push({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: getMidpoint(current, next) },
+            properties: { type: 'midpoint', insertIndex: idx + 1 },
+          })
+        }
+      }
     }
 
     if (drawMode === 'line' && drawPoints.length > 0) {
@@ -225,7 +280,7 @@ export function DataManagementDrawTool() {
 
     if (drawMode === 'line' && activePoints.length > 1) {
       const line = turf.lineString(activePoints)
-      const km   = turf.length(line, { units: 'kilometers' })
+      const km = turf.length(line, { units: 'kilometers' })
       return km >= 1
         ? `${km.toFixed(2)} km`
         : `${(km * 1000).toFixed(0)} m`
@@ -233,7 +288,7 @@ export function DataManagementDrawTool() {
 
     if (drawMode === 'polygon' && activePoints.length > 2) {
       const poly = turf.polygon([[...activePoints, activePoints[0]]])
-      const km2  = turf.area(poly) / 1_000_000
+      const km2 = turf.area(poly) / 1_000_000
       return km2 >= 1
         ? `${km2.toFixed(2)} km²`
         : `${(km2 * 1_000_000).toFixed(0)} m²`
@@ -245,12 +300,12 @@ export function DataManagementDrawTool() {
   if (drawMode === 'none') return null
 
   // DataLayer ile birebir aynı formüller — kaydetme sonrası görünüm eşleşir
-  const lineColor    = layerStyles.fillColor              // çizgi rengi
+  const lineColor = layerStyles.fillColor              // çizgi rengi
   const outlineColor = layerStyles.strokeColor            // polygon kenar rengi
-  const fillOpacity  = layerStyles.opacity                // dolgu şeffaflığı
+  const fillOpacity = layerStyles.opacity                // dolgu şeffaflığı
   const strokeOpacity = layerStyles.strokeOpacity         // kenar şeffaflığı
-  const lineW        = layerStyles.lineWidth               // çizgi kalınlığı
-  const strokeW      = layerStyles.strokeWidth             // polygon kenar kalınlığı
+  const lineW = layerStyles.lineWidth               // çizgi kalınlığı
+  const strokeW = layerStyles.strokeWidth             // polygon kenar kalınlığı
 
   return (
     <>
@@ -260,7 +315,7 @@ export function DataManagementDrawTool() {
           style={{
             position: 'absolute',
             left: cursorPos.x + 16,
-            top:  cursorPos.y - 28,
+            top: cursorPos.y - 28,
             pointerEvents: 'none',
             zIndex: 10,
             background: layerStyles.fillColor,
@@ -334,17 +389,34 @@ export function DataManagementDrawTool() {
             'circle-radius': [
               'case',
               ['==', ['get', 'type'], 'point'], layerStyles.width,
+              ['==', ['get', 'type'], 'midpoint'], 3.5,
               ['==', ['get', 'active'], 1], 7,
               5,
             ],
             'circle-radius-transition': { duration: 0 },
-            'circle-color': VERTEX_BG,
+            'circle-color': [
+              'case',
+              ['==', ['get', 'type'], 'midpoint'], '#ffffff',
+              VERTEX_BG,
+            ],
             'circle-color-transition': { duration: 0 },
-            'circle-stroke-width': strokeW,
+            'circle-stroke-width': [
+              'case',
+              ['==', ['get', 'type'], 'midpoint'], 1.5,
+              strokeW,
+            ],
             'circle-stroke-width-transition': { duration: 0 },
-            'circle-stroke-color': outlineColor,
+            'circle-stroke-color': [
+              'case',
+              ['==', ['get', 'type'], 'midpoint'], lineColor,
+              outlineColor,
+            ],
             'circle-stroke-color-transition': { duration: 0 },
-            'circle-opacity': layerStyles.opacity,
+            'circle-opacity': [
+              'case',
+              ['==', ['get', 'type'], 'midpoint'], 0.9,
+              layerStyles.opacity,
+            ],
             'circle-opacity-transition': { duration: 0 },
             'circle-pitch-alignment': 'map',
           }}

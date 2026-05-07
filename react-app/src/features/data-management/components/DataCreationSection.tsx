@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
 import { useDataManagementStore } from '../store/useDataManagementStore'
@@ -14,6 +14,8 @@ export function DataCreationSection() {
   const {
     drawMode,
     isDrawing,
+    items,
+    editingItemId,
     setDrawMode,
     drawPoints,
     drawUndoStack,
@@ -22,10 +24,22 @@ export function DataCreationSection() {
     redoDraw,
     resetDraw,
     addItem,
+    updateItem,
+    stopEditingItem,
   } = useDataManagementStore()
 
   const [name, setName] = useState('')
   const [date, setDate] = useState('')
+  const editingItem = useMemo(
+    () => items.find((item) => item.id === editingItemId) ?? null,
+    [items, editingItemId],
+  )
+
+  useEffect(() => {
+    if (!editingItem) return
+    setName(editingItem.name)
+    setDate(editingItem.date ?? '')
+  }, [editingItem])
 
   const isEditing =
     !isDrawing &&
@@ -36,8 +50,10 @@ export function DataCreationSection() {
     if (drawMode === toolId) {
       setDrawMode('none')
       resetDraw()
+      stopEditingItem()
     } else {
       setDrawMode(toolId)
+      if (editingItemId) stopEditingItem()
     }
     setName('')
     setDate('')
@@ -46,6 +62,7 @@ export function DataCreationSection() {
   const handleCancel = () => {
     setDrawMode('none')
     resetDraw()
+    stopEditingItem()
     setName('')
     setDate('')
   }
@@ -76,18 +93,27 @@ export function DataCreationSection() {
         drawMode === 'line' || drawMode === 'polygon' || drawMode === 'point'
           ? drawMode : 'point'
 
-      addItem({
-        name: name.trim(),
-        date,
-        type: dataType,
-        geometry,
-        properties: { createdAt: new Date().toISOString() },
-      })
+      if (editingItem) {
+        updateItem(editingItem.id, {
+          name: name.trim(),
+          date,
+          geometry,
+        })
+      } else {
+        addItem({
+          name: name.trim(),
+          date,
+          type: dataType,
+          geometry,
+          properties: { createdAt: new Date().toISOString() },
+        })
+      }
 
       resetDraw()
+      stopEditingItem()
       setName('')
       setDate('')
-      toast.success('Veri eklendi.')
+      toast.success(editingItem ? 'Veri güncellendi.' : 'Veri eklendi.')
     } catch {
       toast.error('Geometri oluşturulamadı.')
     }
@@ -250,7 +276,7 @@ export function DataCreationSection() {
             className="w-full flex items-center justify-center gap-2 py-[8px] rounded-md text-[12px] font-semibold text-white bg-brand-chrome hover:bg-brand-chrome-hover active:bg-brand-chrome-active transition-colors duration-150 active:scale-[0.98]"
           >
             <i className="fa-solid fa-plus text-[10px]" />
-            Veri Ekle
+            {editingItem ? 'Veriyi Güncelle' : 'Veri Ekle'}
           </button>
 
         </div>

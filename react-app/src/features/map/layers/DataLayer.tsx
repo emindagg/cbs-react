@@ -43,6 +43,7 @@ const fillColorExpression = (defaultFill: string) => [
 
 export default function DataLayer() {
   const items = useDataManagementStore(state => state.items)
+  const editingItemId = useDataManagementStore(state => state.editingItemId)
   const activeItemId = useDataManagementStore(state => state.activeItemId)
   const labelField = useDataManagementStore(state => state.layerStyles.labelField)
   const defaultFillColor = useDataManagementStore(state => state.layerStyles.fillColor)
@@ -60,12 +61,14 @@ export default function DataLayer() {
   const numericFilter = useTimelineStore(s => s.numericFilter)
 
   const visibleItems = useMemo(() => {
-    if (!timelineActive) return items.filter(i => i.visible)
+    if (!timelineActive) {
+      return items.filter(i => i.visible && i.id !== editingItemId)
+    }
 
     const effectiveStart = getEffectiveStart()
 
     return items.filter(i => {
-      if (!i.visible) return false
+      if (!i.visible || i.id === editingItemId) return false
 
       if (i.date) {
         const ts = new Date(i.date).getTime()
@@ -83,7 +86,7 @@ export default function DataLayer() {
 
       return true
     })
-  }, [items, timelineActive, timeEnd, getEffectiveStart, numericFilter])
+  }, [items, timelineActive, timeEnd, getEffectiveStart, numericFilter, editingItemId])
 
   const pointData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',

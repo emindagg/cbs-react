@@ -75,6 +75,7 @@ export interface DataManagementStore {
   isDrawing: boolean
   drawUndoStack: [number, number][][]
   drawRedoStack: [number, number][][]
+  editingItemId: string | null
 
   addItem: (item: NewDataItem) => void
   addItems: (items: NewDataItem[]) => void
@@ -86,10 +87,14 @@ export interface DataManagementStore {
   setActiveItem: (id: string | null) => void
   updateLayerStyle: (styles: Partial<LayerStyles>) => void
   updateItemFillColor: (id: string, fillColor: string) => void
+  updateItem: (id: string, updates: Partial<Pick<DataItem, 'name' | 'date' | 'geometry'>>) => void
+  updateItemGeometry: (id: string, geometry: Geometry) => void
   updateItemProperties: (id: string, properties: Record<string, unknown>) => void
   setFabPosition: (position: FabPosition) => void
   clearAll: () => void
   clearBufferAnalysisItems: () => void
+  startEditingItem: (id: string) => void
+  stopEditingItem: () => void
 
   setDrawMode: (mode: DrawMode) => void
   setDrawPoints: (points: [number, number][]) => void

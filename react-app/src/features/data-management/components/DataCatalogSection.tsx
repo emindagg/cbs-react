@@ -14,6 +14,8 @@ export function DataCatalogSection() {
   const updateItemFillColor = useDataManagementStore(state => state.updateItemFillColor)
   const toggleVisibility = useDataManagementStore(state => state.toggleVisibility)
   const removeItem = useDataManagementStore(state => state.removeItem)
+  const editingItemId = useDataManagementStore(state => state.editingItemId)
+  const startEditingItem = useDataManagementStore(state => state.startEditingItem)
   const [colorPickerItemId, setColorPickerItemId] = useState<string | null>(null)
   const [colorPickerPosition, setColorPickerPosition] = useState<{ top: number; left: number } | null>(null)
   const colorPickerRef = useRef<HTMLDivElement>(null)
@@ -146,7 +148,7 @@ export function DataCatalogSection() {
                 className="relative"
               >
                 <div
-                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-zinc-100 bg-white hover:bg-zinc-50 transition-colors cursor-pointer select-none ${!item.visible ? 'opacity-40' : ''}`}
+                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-zinc-100 bg-white hover:bg-zinc-50 transition-colors cursor-pointer select-none ${!item.visible ? 'opacity-40' : ''} ${editingItemId === item.id ? 'ring-1 ring-emerald-400 border-emerald-200' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation()
                     if (lastClickItemIdRef.current === item.id && clickTimeoutRef.current) {
@@ -199,6 +201,18 @@ export function DataCatalogSection() {
                   >
                     <i className={item.visible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'}></i>
                   </button>
+                  {(item.type === 'line' || item.type === 'polygon') && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        startEditingItem(item.id)
+                      }}
+                      className={`shrink-0 text-[10px] transition-colors ${editingItemId === item.id ? 'text-emerald-500' : 'text-zinc-300 hover:text-emerald-500'}`}
+                      title="Geometriyi düzenle"
+                    >
+                      <i className="fa-solid fa-pen-to-square"></i>
+                    </button>
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation()

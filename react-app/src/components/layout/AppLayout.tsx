@@ -34,7 +34,12 @@ import { useVisualizationStore } from '@/stores/useVisualizationStore'
  * Refactored to Feature-Based Architecture
  */
 export default function AppLayout() {
-  const [isSidebarOpen, setSidebarOpen] = useState(false)
+  const [isSidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true
+    const saved = window.localStorage.getItem('sidebar-open')
+    if (saved === null) return true
+    return saved === 'true'
+  })
   const mapInstance = useMapStore((state) => state.mapInstance)
   const dataItems = useDataManagementStore((state) => state.items)
   const { isEnabled: isAstronomyEnabled, setIsEnabled: setAstronomyEnabled } = useAstroStore()
@@ -92,7 +97,9 @@ export default function AppLayout() {
 
   // Toggle sidebar and resize map
   const toggleSidebar = () => {
-    setSidebarOpen(!isSidebarOpen)
+    const nextOpen = !isSidebarOpen
+    setSidebarOpen(nextOpen)
+    window.localStorage.setItem('sidebar-open', String(nextOpen))
     setTimeout(() => {
       mapInstance?.resize?.()
     }, LAYOUT.ANIMATION_DURATION)

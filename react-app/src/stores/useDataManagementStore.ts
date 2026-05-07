@@ -31,6 +31,30 @@ const clonePoints = (points: [number, number][]): [number, number][] => (
   points.map(([lng, lat]) => [lng, lat])
 )
 
+const toEditableDrawState = (item: DataItem): { drawMode: 'line' | 'polygon'; drawPoints: [number, number][] } | null => {
+  if (item.type === 'line' && item.geometry.type === 'LineString') {
+    return {
+      drawMode: 'line',
+      drawPoints: clonePoints(item.geometry.coordinates as [number, number][]),
+    }
+  }
+
+  if (item.type === 'polygon' && item.geometry.type === 'Polygon') {
+    const ring = item.geometry.coordinates[0] as [number, number][]
+    if (!ring || ring.length < 3) return null
+    const first = ring[0]
+    const last = ring[ring.length - 1]
+    const isClosed = Boolean(first && last && first[0] === last[0] && first[1] === last[1])
+    const openRing = clonePoints(isClosed ? ring.slice(0, -1) : ring)
+    return {
+      drawMode: 'polygon',
+      drawPoints: openRing,
+    }
+  }
+
+  return null
+}
+
 export const useDataManagementStore = create<DataManagementStore>()((set, get) => ({
   items: [],
   activeItemId: null,
@@ -45,6 +69,7 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
   isDrawing: false,
   drawUndoStack: [],
   drawRedoStack: [],
+  editingItemId: null,
 
   addItem: (item) => set((state) => ({
     items: [...state.items, createPersistedItem(item, 'drawn')],
@@ -71,6 +96,7 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
       hasImportedData: stillHasImported,
       importedLayerName: stillHasImported ? state.importedLayerName : null,
       activeItemId: state.activeItemId === id ? null : state.activeItemId,
+      editingItemId: state.editingItemId === id ? null : state.editingItemId,
     }
   }),
 
@@ -146,6 +172,20 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
         : item,
     ),
   })),
+  updateItem: (id, updates) => set((state) => ({
+    items: state.items.map(item =>
+      item.id === id
+        ? { ...item, ...updates }
+        : item,
+    ),
+  })),
+  updateItemGeometry: (id, geometry) => set((state) => ({
+    items: state.items.map(item =>
+      item.id === id
+        ? { ...item, geometry }
+        : item,
+    ),
+  })),
   setFabPosition: (position) => set({ fabPosition: position }),
 
   clearAll: () => set({
@@ -154,6 +194,7 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
     hasImportedData: false,
     importedLayerName: null,
     layerStyles: defaultLayerStyles,
+    editingItemId: null,
   }),
 
   clearBufferAnalysisItems: () => set((state) => {
@@ -169,8 +210,28 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
       importedLayerName: nextItems.some(item => item.source === 'imported')
         ? state.importedLayerName
         : null,
+      editingItemId: state.editingItemId && nextItems.some(item => item.id === state.editingItemId)
+        ? state.editingItemId
+        : null,
     }
   }),
+  startEditingItem: (id) => set((state) => {
+    const item = state.items.find(entry => entry.id === id)
+    if (!item) return state
+    const drawState = toEditableDrawState(item)
+    if (!drawState) return state
+
+    return {
+      editingItemId: id,
+      drawMode: drawState.drawMode,
+      drawPoints: drawState.drawPoints,
+      drawGhostPoint: null,
+      isDrawing: false,
+      drawUndoStack: [],
+      drawRedoStack: [],
+    }
+  }),
+  stopEditingItem: () => set({ editingItemId: null }),
 
   updateDrawPoint: (index, point) => set((state) => {
     const next = clonePoints(state.drawPoints)
@@ -245,5 +306,6 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
     drawMode: 'none',
     drawUndoStack: [],
     drawRedoStack: [],
+    editingItemId: null,
   }),
 }))
