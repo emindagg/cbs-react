@@ -3,7 +3,7 @@ import type { FeatureCollection, LineString, Point, Polygon } from 'geojson'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Layer, Source, useMap } from 'react-map-gl/maplibre'
 
-import { DRAW_CURSOR } from '@/features/map/tools/cursors'
+import { DRAG_CURSOR, DRAW_CURSOR } from '@/features/map/tools/cursors'
 
 import { useDataManagementStore } from '../store/useDataManagementStore'
 
@@ -152,7 +152,7 @@ export function DataManagementDrawTool() {
   // Vertex düzenleme — sadece edit modunda
   useEffect(() => {
     if (!map || drawMode === 'none' || isDrawing) return
-    const onEnter = () => { if (!isDraggingRef.current) map.getCanvas().style.cursor = CUSTOM_CURSOR }
+    const onEnter = () => { if (!isDraggingRef.current) map.getCanvas().style.cursor = DRAG_CURSOR }
     const onLeave = () => { if (!isDraggingRef.current) map.getCanvas().style.cursor = CUSTOM_CURSOR }
     const onDown = (e: maplibregl.MapLayerMouseEvent) => {
       if (!e.features?.length) return
