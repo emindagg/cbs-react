@@ -1,5 +1,5 @@
 import * as turf from '@turf/turf'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 import Sidebar from '@/components/sidebar/Sidebar'
 import { LAYOUT } from '@/constants/layout'
@@ -20,6 +20,7 @@ import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-ana
 import { StorymapModal } from '@/features/storymap-modal'
 import { TerrainAnalysisPanel, TerrainAspectLegend, TerrainSlopeLegend, useTerrainAnalysis } from '@/features/terrain-analysis'
 import { VideoModal } from '@/features/video-modal'
+import { useVideoModalStore } from '@/stores/useVideoModalStore'
 import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -45,6 +46,12 @@ export default function AppLayout() {
   const { isEnabled: isAstronomyEnabled, setIsEnabled: setAstronomyEnabled } = useAstroStore()
   const isMdUp = useMediaQuery('(min-width: 768px)')
   const { mapTitle, setMapTitle } = useVisualizationStore()
+
+  const openVideoModal = useVideoModalStore((s) => s.open)
+
+  useEffect(() => {
+    openVideoModal()
+  }, [openVideoModal])
 
   // Viz persistence önce kayıt olmalı: styledata anında önce viz layer'ları üste
   // çıkar, ardından overlay layer'lar (sular vb.) onların üstüne alınsın.
