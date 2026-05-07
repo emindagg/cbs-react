@@ -26,10 +26,15 @@ export function useGeolocation(): UseGeolocationReturn {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isPermissionDenied, setIsPermissionDenied] = useState(false)
   const markerRef = useRef<maplibregl.Marker | null>(null)
+  const watchIdRef = useRef<number | null>(null)
 
-  // Harita değiştiğinde eski marker'ı temizle
+  // Harita değiştiğinde eski marker ve watch'ı temizle
   useEffect(() => {
     return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current)
+        watchIdRef.current = null
+      }
       markerRef.current?.remove()
       markerRef.current = null
     }
@@ -44,11 +49,17 @@ export function useGeolocation(): UseGeolocationReturn {
       return
     }
 
+    // Önceki watch varsa iptal et
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current)
+      watchIdRef.current = null
+    }
+
     setStatus('loading')
     setErrorMessage(null)
     setIsPermissionDenied(false)
 
-    navigator.geolocation.getCurrentPosition(
+    watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
         const { longitude, latitude, accuracy } = position.coords
 
@@ -191,23 +202,30 @@ export function useGeolocation(): UseGeolocationReturn {
         markerRef.current!.togglePopup() // ilk açılışta otomatik göster
 
         setStatus('success')
+        // İlk başarılı konum geldi — artık izlemeye gerek yok
+        if (watchIdRef.current !== null) {
+          navigator.geolocation.clearWatch(watchIdRef.current)
+          watchIdRef.current = null
+        }
       },
       (err) => {
-        setStatus('error')
+        // PERMISSION_DENIED kalıcı hata — hemen göster
         if (err.code === err.PERMISSION_DENIED) {
+          if (watchIdRef.current !== null) {
+            navigator.geolocation.clearWatch(watchIdRef.current)
+            watchIdRef.current = null
+          }
+          setStatus('error')
           setIsPermissionDenied(true)
           setErrorMessage('Konum izni reddedildi.')
-        } else if (err.code === err.POSITION_UNAVAILABLE) {
-          setErrorMessage('Konum bilgisi alınamadı.')
-        } else if (err.code === err.TIMEOUT) {
-          setErrorMessage('Konum isteği zaman aşımına uğradı.')
-        } else {
-          setErrorMessage('Bilinmeyen bir konum hatası oluştu.')
+          return
         }
+        // Diğer hatalar (POSITION_UNAVAILABLE, TIMEOUT): watchPosition devam eder,
+        // bir sonraki konum güncellemesinde başarılı olabilir — hata gösterme.
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 15000,
         maximumAge: 0,
       },
     )
@@ -215,6 +233,11 @@ export function useGeolocation(): UseGeolocationReturn {
 
   const clear = useCallback(() => {
     if (!mapInstance) return
+
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current)
+      watchIdRef.current = null
+    }
 
     // Marker'ı kaldır
     if (markerRef.current) {
