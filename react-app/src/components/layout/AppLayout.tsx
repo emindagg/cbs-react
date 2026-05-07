@@ -35,12 +35,7 @@ import { useVisualizationStore } from '@/stores/useVisualizationStore'
  * Refactored to Feature-Based Architecture
  */
 export default function AppLayout() {
-  const [isSidebarOpen, setSidebarOpen] = useState(() => {
-    if (typeof window === 'undefined') return true
-    const saved = window.localStorage.getItem('sidebar-open')
-    if (saved === null) return true
-    return saved === 'true'
-  })
+  const [isSidebarOpen, setSidebarOpen] = useState(true)
   const mapInstance = useMapStore((state) => state.mapInstance)
   const dataItems = useDataManagementStore((state) => state.items)
   const { isEnabled: isAstronomyEnabled, setIsEnabled: setAstronomyEnabled } = useAstroStore()
