@@ -15,7 +15,6 @@ export type BasemapType =
   | 'CARTO_LIGHT'
   | 'CARTO_DARK'
   | 'CARTO_VOYAGER'
-  | 'ESRI_SATELLITE'
 
 interface MapState {
   isLoaded: boolean

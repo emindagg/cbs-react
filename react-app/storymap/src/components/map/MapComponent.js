@@ -1,5 +1,6 @@
 import { MapHelpers } from './modules/MapHelpers.js';
 import { MapLayers } from './modules/MapLayers.js';
+import { HGM_TILE_URLS } from '../../config/hgm.js';
 import { MapMarkers } from './modules/MapMarkers.js';
 import { MapDrawing } from './modules/MapDrawing.js';
 import { RouteManager } from './modules/RouteManager.js';
@@ -84,9 +85,7 @@ export class MapComponent {
                 sources: {
                     'hgm-temel': {
                         type: 'raster',
-                        tiles: [
-                            'https://atlas.harita.gov.tr/webservis/harita/hgm_harita/{z}/{x}/{y}.png?apikey=AlkVjf0YFkkDuvu58l7Ndc1oiHk71IbF'
-                        ],
+                        tiles: [HGM_TILE_URLS.temel],
                         tileSize: 256,
                         maxzoom: 19
                     }

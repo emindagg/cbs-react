@@ -2,45 +2,18 @@
  * MapLayers - Harita katmanları ve altlık harita yönetimi
  * HGM Atlas API entegrasyonu ile
  */
+import { HGM_TILE_URLS } from '../../../config/hgm.js';
 
 export class MapLayers {
     constructor(map) {
         this.map = map;
         
-        // HGM Atlas API Key
-        this.hgmApiKey = 'AlkVjf0YFkkDuvu58l7Ndc1oiHk71IbF';
-        
         this.basemapStyles = {
-            // HGM Temel Harita (Atlas endpoint - CORS uyumlu) - Varsayılan
-            'hgm-temel': {
-                tiles: [
-                    `https://atlas.harita.gov.tr/webservis/harita/hgm_harita/{z}/{x}/{y}.png?apikey=${this.hgmApiKey}`
-                ]
-            },
-            // HGM Uydu Görüntüsü (Atlas endpoint - CORS uyumlu)
-            'hgm-uydu': {
-                tiles: [
-                    `https://atlas.harita.gov.tr/webservis/ortofoto/{z}/{x}/{y}.jpg?apikey=${this.hgmApiKey}`
-                ]
-            },
-            // HGM Gece Haritası (Atlas endpoint - CORS uyumlu)
-            'hgm-gece': {
-                tiles: [
-                    `https://atlas.harita.gov.tr/webservis/harita/hgm_gece/{z}/{x}/{y}.png?apikey=${this.hgmApiKey}`
-                ]
-            },
-            // HGM Siyasi Harita (Atlas endpoint - CORS uyumlu)
-            'hgm-siyasi': {
-                tiles: [
-                    `https://atlas.harita.gov.tr/webservis/harita/hgm_siyasi/{z}/{x}/{y}.png?apikey=${this.hgmApiKey}`
-                ]
-            },
-            // HGM Yükseklik Haritası (Atlas endpoint - CORS uyumlu)
-            'hgm-yukseklik': {
-                tiles: [
-                    `https://atlas.harita.gov.tr/webservis/harita/hgm_yukseklik/{z}/{x}/{y}.png?apikey=${this.hgmApiKey}`
-                ]
-            }
+            'hgm-temel':     { tiles: [HGM_TILE_URLS.temel] },
+            'hgm-uydu':      { tiles: [HGM_TILE_URLS.uydu] },
+            'hgm-gece':      { tiles: [HGM_TILE_URLS.gece] },
+            'hgm-siyasi':    { tiles: [HGM_TILE_URLS.siyasi] },
+            'hgm-yukseklik': { tiles: [HGM_TILE_URLS.yukseklik] },
         };
     }
 

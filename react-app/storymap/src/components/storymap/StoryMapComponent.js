@@ -8,6 +8,7 @@ const maplibregl = window.maplibregl;
 import { StoryMapRenderer } from './StoryMapRenderer.js';
 import { StoryMapScroller } from './StoryMapScroller.js';
 import { Toggle3DControl } from '../map/modules/Toggle3DControl.js';
+import { HGM_TILE_URLS } from '../../config/hgm.js';
 
 export class StoryMapComponent {
     constructor(containerId, data, template) {
@@ -82,7 +83,7 @@ export class StoryMapComponent {
                 sources: {
                     'hgm-temel': {
                         type: 'raster',
-                        tiles: ['https://atlas.harita.gov.tr/webservis/harita/hgm_harita/{z}/{x}/{y}.png?apikey=AlkVjf0YFkkDuvu58l7Ndc1oiHk71IbF'],
+                        tiles: [HGM_TILE_URLS.temel],
                         tileSize: 256
                     }
                 },

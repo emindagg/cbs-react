@@ -2,6 +2,7 @@
  * Harita altlık sabitleri
  * HGM Atlas API entegrasyonu
  */
+import { HGM_TILE_URLS } from '../../../config/hgm.js';
 
 export const BASEMAPS = [
     {
@@ -12,7 +13,7 @@ export const BASEMAPS = [
     {
         id: 'hgm-uydu',
         name: 'HGM Uydu',
-        thumbnail: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/5/10/15'
+        thumbnail: HGM_TILE_URLS.uydu.replace('{z}/{x}/{y}', '5/10/15')
     },
     {
         id: 'hgm-gece',
