@@ -83,6 +83,84 @@ function removeSources(m: maplibregl.Map, ids: string[]) {
 const C_WHITE = '#ffffff'
 const C_RED   = '#f43f5e'
 
+function ensurePreviewLayers(m: maplibregl.Map) {
+  ensureSource(m, SRC_PREVIEW)
+  ensureSource(m, SRC_WAYPOINTS)
+
+  // Preview çizgisi: 2.5px siyah
+  ensureLayer(m, {
+    id: LYR_PREVIEW,
+    type: 'line',
+    source: SRC_PREVIEW,
+    paint: {
+      'line-color': '#000000',
+      'line-width': 2,
+      'line-opacity': 0.85,
+    },
+  } as maplibregl.LineLayerSpecification)
+
+  // Waypoints: beyaz dolgulu halka
+  ensureLayer(m, {
+    id: LYR_WAYPOINTS,
+    type: 'circle',
+    source: SRC_WAYPOINTS,
+    paint: {
+      'circle-radius': 7,
+      'circle-color': C_WHITE,
+      'circle-stroke-width': 2,
+      'circle-stroke-color': '#000000',
+      'circle-stroke-opacity': 0.85,
+      'circle-opacity': 1,
+    },
+  } as maplibregl.CircleLayerSpecification)
+}
+
+function ensureRouteLayers(m: maplibregl.Map) {
+  ensureSource(m, SRC_ROUTE)
+
+  // Route: glow
+  ensureLayer(m, {
+    id: LYR_ROUTE_GLOW,
+    type: 'line',
+    source: SRC_ROUTE,
+    paint: {
+      'line-color': '#000000',
+      'line-width': 16,
+      'line-opacity': 0.08,
+      'line-blur': 10,
+    },
+  } as maplibregl.LineLayerSpecification)
+
+  // Route: çizgi
+  ensureLayer(m, {
+    id: LYR_ROUTE,
+    type: 'line',
+    source: SRC_ROUTE,
+    paint: {
+      'line-color': '#000000',
+      'line-width': 2,
+      'line-opacity': 0.85,
+    },
+  } as maplibregl.LineLayerSpecification)
+}
+
+function ensureHoverLayers(m: maplibregl.Map) {
+  ensureSource(m, SRC_HOVER)
+  ensureLayer(m, {
+    id: LYR_HOVER_DOT,
+    type: 'circle',
+    source: SRC_HOVER,
+    paint: {
+      'circle-radius': 4.5,
+      'circle-color': C_WHITE,
+      'circle-stroke-width': 2.5,
+      'circle-stroke-color': C_RED,
+      'circle-stroke-opacity': 1,
+      'circle-opacity': 1,
+    },
+  } as maplibregl.CircleLayerSpecification)
+}
+
 // ─── Bileşen ──────────────────────────────────────────────────────────────────
 export default function ElevationProfileTool() {
   const { current: mapObj } = useMap()
@@ -121,35 +199,7 @@ export default function ElevationProfileTool() {
       return
     }
 
-    ensureSource(map, SRC_PREVIEW)
-    ensureSource(map, SRC_WAYPOINTS)
-
-    // Preview çizgisi: 2.5px siyah
-    ensureLayer(map, {
-      id: LYR_PREVIEW,
-      type: 'line',
-      source: SRC_PREVIEW,
-      paint: {
-        'line-color': '#000000',
-        'line-width': 2,
-        'line-opacity': 0.85,
-      },
-    } as maplibregl.LineLayerSpecification)
-
-    // Waypoints: beyaz dolgulu halka
-    ensureLayer(map, {
-      id: LYR_WAYPOINTS,
-      type: 'circle',
-      source: SRC_WAYPOINTS,
-      paint: {
-        'circle-radius': 7,
-        'circle-color': C_WHITE,
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#000000',
-        'circle-stroke-opacity': 0.85,
-        'circle-opacity': 1,
-      },
-    } as maplibregl.CircleLayerSpecification)
+    ensurePreviewLayers(map)
 
     map.getCanvas().style.cursor = 'crosshair'
     map.doubleClickZoom.disable()
@@ -236,33 +286,7 @@ export default function ElevationProfileTool() {
     }
 
     const coords = store.elevationData.map((p): [number, number] => [p.lng, p.lat])
-    ensureSource(map, SRC_ROUTE)
-
-    // Route: glow
-    ensureLayer(map, {
-      id: LYR_ROUTE_GLOW,
-      type: 'line',
-      source: SRC_ROUTE,
-      paint: {
-        'line-color': '#000000',
-        'line-width': 16,
-        'line-opacity': 0.08,
-        'line-blur': 10,
-      },
-    } as maplibregl.LineLayerSpecification)
-
-    // Route: çizgi
-    ensureLayer(map, {
-      id: LYR_ROUTE,
-      type: 'line',
-      source: SRC_ROUTE,
-      paint: {
-        'line-color': '#000000',
-        'line-width': 2,
-        'line-opacity': 0.85,
-      },
-    } as maplibregl.LineLayerSpecification)
-
+    ensureRouteLayers(map)
     setSource(map, SRC_ROUTE, lineFC(coords))
 
     // Analiz tamamlandı: preview + waypoint marker'larını temizle
@@ -276,25 +300,6 @@ export default function ElevationProfileTool() {
     const map = mapObj?.getMap() as maplibregl.Map | null ?? null
     if (!map) return
 
-    // Hover kaynak/katmanlarını oluştur (idempotent — reset sonrası da yeniden oluşturur)
-    const ensureHoverLayers = () => {
-      ensureSource(map, SRC_HOVER)
-      // Nokta
-      ensureLayer(map, {
-        id: LYR_HOVER_DOT,
-        type: 'circle',
-        source: SRC_HOVER,
-        paint: {
-          'circle-radius': 4.5,
-          'circle-color': C_WHITE,
-          'circle-stroke-width': 2.5,
-          'circle-stroke-color': C_RED,
-          'circle-stroke-opacity': 1,
-          'circle-opacity': 1,
-        },
-      } as maplibregl.CircleLayerSpecification)
-    }
-
     // Doğrudan Zustand aboneliği — setActivePoint her çağrıldığında
     // React render tetiklenmeden MapLibre source güncellenir
     const unsub = useElevationProfileStore.subscribe((state, prev) => {
@@ -303,12 +308,55 @@ export default function ElevationProfileTool() {
         setSource(map, SRC_HOVER, EMPTY_FC as FeatureCollection<Point>)
         return
       }
-      ensureHoverLayers()
+      ensureHoverLayers(map)
       setSource(map, SRC_HOVER, pointFC([[state.activePoint.lng, state.activePoint.lat]]))
     })
 
     return unsub
   }, [mapObj])
+
+  // ─── Style yenilenince kaybolan katmanları geri kur ───────────────────────
+  useEffect(() => {
+    const map = mapObj?.getMap() as maplibregl.Map | null ?? null
+    if (!map) return
+
+    const syncElevationLayers = () => {
+      if (!map.isStyleLoaded()) return
+
+      if (isActive) {
+        ensurePreviewLayers(map)
+        const pts = waypointsRef.current
+        const previewCoords = !drawingDoneRef.current && ghostRef.current
+          ? [...pts, ghostRef.current]
+          : pts
+        setSource(map, SRC_PREVIEW, previewCoords.length >= 2 ? lineFC(previewCoords) : EMPTY_FC as FeatureCollection<LineString>)
+        setSource(map, SRC_WAYPOINTS, store.elevationData ? EMPTY_FC as FeatureCollection<Point> : pointFC(pts))
+      }
+
+      if (store.elevationData && store.elevationData.length >= 2) {
+        const coords = store.elevationData.map((p): [number, number] => [p.lng, p.lat])
+        ensureRouteLayers(map)
+        setSource(map, SRC_ROUTE, lineFC(coords))
+        setSource(map, SRC_PREVIEW, EMPTY_FC as FeatureCollection<LineString>)
+        setSource(map, SRC_WAYPOINTS, EMPTY_FC as FeatureCollection<Point>)
+      }
+
+      const activePoint = useElevationProfileStore.getState().activePoint
+      if (activePoint) {
+        ensureHoverLayers(map)
+        setSource(map, SRC_HOVER, pointFC([[activePoint.lng, activePoint.lat]]))
+      }
+    }
+
+    syncElevationLayers()
+    map.on('styledata', syncElevationLayers)
+    map.on('idle', syncElevationLayers)
+
+    return () => {
+      map.off('styledata', syncElevationLayers)
+      map.off('idle', syncElevationLayers)
+    }
+  }, [mapObj, isActive, store.elevationData, store.waypoints])
 
   // ─── Reset ────────────────────────────────────────────────────────────────
   useEffect(() => {
