@@ -2,8 +2,8 @@
  * Harita başlığı ayarları paneli (VizWizardStep3 içinde kullanılır)
  */
 
-import type { MapTitleConfiguration } from '@/types/visualization'
 import { SliderWithInput } from '@/components/ui'
+import type { MapTitleConfiguration } from '@/types/visualization'
 
 interface MapTitleSectionProps {
   mapTitle: MapTitleConfiguration
@@ -52,23 +52,6 @@ export function MapTitleSection({
 
           {mapTitle.visible && (
             <>
-              <div>
-                <label className="text-[11px] font-medium text-zinc-600 mb-1.5 block">
-                  Pozisyon
-                </label>
-                <select
-                  value={mapTitle.position}
-                  onChange={(e) =>
-                    setMapTitle({ position: e.target.value as 'top-left' | 'top-center' | 'top-right' })
-                  }
-                  className="w-full px-2.5 py-1.5 text-[11px] border border-zinc-200 rounded bg-white hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                >
-                  <option value="top-left">Sol Üst</option>
-                  <option value="top-center">Orta Üst</option>
-                  <option value="top-right">Sağ Üst</option>
-                </select>
-              </div>
-
               <SliderWithInput
                 label="Yazı Boyutu"
                 min={5}
