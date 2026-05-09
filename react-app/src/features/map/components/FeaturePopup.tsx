@@ -11,6 +11,7 @@ import {
   X,
 } from 'lucide-react'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import { Popup } from 'react-map-gl/maplibre'
 
 import type { DataItem } from '@/stores/useDataManagementStore'
@@ -50,8 +51,8 @@ function formatValue(value: unknown): string {
   return String(value)
 }
 
-function getCreatedPointCoordinate(item: DataItem): string | null {
-  if (item.source !== 'drawn' || item.geometry.type !== 'Point') return null
+function getPointCoordinate(item: DataItem): string | null {
+  if (item.geometry.type !== 'Point') return null
 
   const [longitude, latitude] = item.geometry.coordinates
 
@@ -60,6 +61,15 @@ function getCreatedPointCoordinate(item: DataItem): string | null {
   })}, ${longitude.toLocaleString('tr-TR', {
     maximumFractionDigits: COORDINATE_FRACTION_DIGITS,
   })}`
+}
+
+async function copyToClipboard(value: string) {
+  try {
+    await navigator.clipboard.writeText(value)
+    toast.success('Koordinat kopyalandı.')
+  } catch {
+    toast.error('Koordinat kopyalanamadı.')
+  }
 }
 
 function PropIcon({ propKey }: { propKey: string }) {
@@ -82,7 +92,7 @@ function DetailView({ item, showBack, onBack, onClose }: DetailViewProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const userProps = Object.entries(item.properties).filter(([key]) => key !== 'style')
   const measurements = getGeometryMeasurements(item.geometry)
-  const coordinate = getCreatedPointCoordinate(item)
+  const coordinate = getPointCoordinate(item)
   const typeLabel = TYPE_LABELS[item.type] ?? item.type
 
   return (
@@ -158,7 +168,11 @@ function DetailView({ item, showBack, onBack, onClose }: DetailViewProps) {
                         <span className="truncate" title="Koordinat">Koordinat</span>
                       </div>
                     </th>
-                    <td className="py-2.5 px-4 text-[12px] font-medium text-gray-800 tabular-nums break-all">
+                    <td
+                      className="py-2.5 px-4 text-[12px] font-medium text-gray-800 tabular-nums break-all cursor-copy hover:text-slate-950"
+                      title="Kopyalamak için tıklayın"
+                      onClick={() => void copyToClipboard(coordinate)}
+                    >
                       {coordinate}
                     </td>
                   </tr>
