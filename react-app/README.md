@@ -7,8 +7,8 @@ Kod tabanı `src/features/` altında **21 feature modülü** içerir. Root orche
 ## Başlangıç
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 Varsayılan geliştirme adresi: `http://localhost:5173`
@@ -69,25 +69,31 @@ Proje Vertical Slice Architecture yaklaşımını izler.
 
 Harita kabuğu `src/features/map/` altında toplanır. Veri yaşam döngüsünün kanonik alanı `src/features/data-management/`, render orkestrasyonu `src/features/visualization/`, kullanıcı yönlendirmeli kurulum akışı ise `src/features/viz-wizard/` içindedir.
 
+## Kamu ve Eğitim İçin Açık CBS
+
+Proje, kamu ve eğitim kurumlarının temel CBS iş akışlarını açık kaynak bir istemciyle karşılamayı hedefler. Ticari CBS araçlarına bağımlılığı azaltmak için yaygın veri formatlarını, tematik haritalamayı, analiz araçlarını ve öğretim odaklı görselleştirme akışlarını tek uygulama kabuğunda toplar.
+
+İlk kamuya açık sürüm vanilla JavaScript tabanlı geliştirildi: [emindagg/cbsv5](https://github.com/emindagg/cbsv5). Bu sürümün canlı dağıtımı [emindagg.github.io/cbsv5](https://emindagg.github.io/cbsv5/) adresindedir. Mevcut React 19 + TypeScript mimarisi, bu deneyimi daha sürdürülebilir, test edilebilir ve katkıya açık bir platforma dönüştürmek için hazırlanmıştır.
+
 ## Komutlar
 
 ```bash
 # Development
-npm run dev
-npm run build
-npm run preview
+pnpm run dev
+pnpm run build
+pnpm run preview
 
 # Lint
-npm run lint
-npm run lint:fix
-npm run lint:strict
+pnpm run lint
+pnpm run lint:fix
+pnpm run lint:strict
 
 # Test
-npm run test
-npm run test:run
-npm run test:coverage
-npm run test:ui
-npm run test:watch
+pnpm run test
+pnpm run test:run
+pnpm run test:coverage
+pnpm run test:ui
+pnpm run test:watch
 ```
 
 ## Dokümantasyon
@@ -97,6 +103,10 @@ npm run test:watch
 - [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
 - [docs/COLOR_SCALE_FEATURES.md](docs/COLOR_SCALE_FEATURES.md)
 - [docs/COLOR_SCALE_INTEGRATION.md](docs/COLOR_SCALE_INTEGRATION.md)
+
+## Lisans
+
+Bu proje [MIT Lisansı](LICENSE) ile lisanslanmıştır.
 
 ## Notlar
 
