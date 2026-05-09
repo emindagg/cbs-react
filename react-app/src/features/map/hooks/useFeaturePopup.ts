@@ -48,19 +48,19 @@ export function useFeaturePopup() {
         features.map(f => f.properties?.id as string).filter(Boolean),
       )]
 
-      const importedItems = ids
+      const dataItems = ids
         .map(id => items.find(item => item.id === id))
-        .filter((item): item is DataItem => !!item && item.source === 'imported')
+        .filter((item): item is DataItem => !!item)
 
-      if (!importedItems.length) {
+      if (!dataItems.length) {
         setPopup(null)
         return
       }
 
       setPopup({
         lngLat: [e.lngLat.lng, e.lngLat.lat],
-        candidates: importedItems,
-        selected: importedItems.length === 1 ? importedItems[0] : null,
+        candidates: dataItems,
+        selected: dataItems.length === 1 ? dataItems[0] : null,
       })
     }
 
@@ -70,11 +70,11 @@ export function useFeaturePopup() {
       if (!existingLayers.length) return
 
       const features = map.queryRenderedFeatures(e.point, { layers: existingLayers })
-      const hasImported = features.some(f => {
+      const hasDataItem = features.some(f => {
         const id = f.properties?.id as string
-        return id && items.some(item => item.id === id && item.source === 'imported')
+        return id && items.some(item => item.id === id)
       })
-      map.getCanvas().style.cursor = hasImported ? 'pointer' : ''
+      map.getCanvas().style.cursor = hasDataItem ? 'pointer' : ''
     }
 
     map.on('click', handleClick)

@@ -24,6 +24,8 @@ const TYPE_LABELS: Record<string, string> = {
   polygon: 'Alan',
 }
 
+const COORDINATE_FRACTION_DIGITS = 6
+
 function formatKey(key: string): string {
   return key
     .replace(/_/g, ' ')
@@ -48,6 +50,18 @@ function formatValue(value: unknown): string {
   return String(value)
 }
 
+function getCreatedPointCoordinate(item: DataItem): string | null {
+  if (item.source !== 'drawn' || item.geometry.type !== 'Point') return null
+
+  const [longitude, latitude] = item.geometry.coordinates
+
+  return `${latitude.toLocaleString('tr-TR', {
+    maximumFractionDigits: COORDINATE_FRACTION_DIGITS,
+  })}, ${longitude.toLocaleString('tr-TR', {
+    maximumFractionDigits: COORDINATE_FRACTION_DIGITS,
+  })}`
+}
+
 function PropIcon({ propKey }: { propKey: string }) {
   const k = propKey.toLowerCase()
   if (k.includes('id')) return <Info className="w-3 h-3" />
@@ -68,6 +82,7 @@ function DetailView({ item, showBack, onBack, onClose }: DetailViewProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const userProps = Object.entries(item.properties).filter(([key]) => key !== 'style')
   const measurements = getGeometryMeasurements(item.geometry)
+  const coordinate = getCreatedPointCoordinate(item)
   const typeLabel = TYPE_LABELS[item.type] ?? item.type
 
   return (
@@ -132,9 +147,22 @@ function DetailView({ item, showBack, onBack, onClose }: DetailViewProps) {
       {/* Tablo */}
       {isExpanded && (
         <div className="overflow-hidden max-h-60 overflow-y-auto">
-          {userProps.length > 0 || measurements.area || measurements.length ? (
+          {userProps.length > 0 || measurements.area || measurements.length || coordinate ? (
             <table className="w-full text-left border-collapse">
               <tbody>
+                {coordinate && (
+                  <tr className="group hover:bg-gray-50/50 transition-colors border-b border-gray-50">
+                    <th className="py-2.5 px-4 w-5/12 align-top font-normal">
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400 uppercase tracking-tight">
+                        <MapPin className="w-3 h-3" />
+                        <span className="truncate" title="Koordinat">Koordinat</span>
+                      </div>
+                    </th>
+                    <td className="py-2.5 px-4 text-[12px] font-medium text-gray-800 tabular-nums break-all">
+                      {coordinate}
+                    </td>
+                  </tr>
+                )}
                 {measurements.area && (
                   <tr className="group hover:bg-gray-50/50 transition-colors border-b border-gray-50">
                     <th className="py-2.5 px-4 w-5/12 align-top font-normal">
