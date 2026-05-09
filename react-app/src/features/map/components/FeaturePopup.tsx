@@ -14,6 +14,7 @@ import { useState } from 'react'
 import { Popup } from 'react-map-gl/maplibre'
 
 import type { DataItem } from '@/stores/useDataManagementStore'
+import { getGeometryMeasurements } from '@/utils/geometryMeasurements'
 
 import type { FeaturePopupState } from '../hooks/useFeaturePopup'
 
@@ -66,6 +67,7 @@ interface DetailViewProps {
 function DetailView({ item, showBack, onBack, onClose }: DetailViewProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const userProps = Object.entries(item.properties).filter(([key]) => key !== 'style')
+  const measurements = getGeometryMeasurements(item.geometry)
   const typeLabel = TYPE_LABELS[item.type] ?? item.type
 
   return (
@@ -130,9 +132,35 @@ function DetailView({ item, showBack, onBack, onClose }: DetailViewProps) {
       {/* Tablo */}
       {isExpanded && (
         <div className="overflow-hidden max-h-60 overflow-y-auto">
-          {userProps.length > 0 ? (
+          {userProps.length > 0 || measurements.area || measurements.length ? (
             <table className="w-full text-left border-collapse">
               <tbody>
+                {measurements.area && (
+                  <tr className="group hover:bg-gray-50/50 transition-colors border-b border-gray-50">
+                    <th className="py-2.5 px-4 w-5/12 align-top font-normal">
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400 uppercase tracking-tight">
+                        <Activity className="w-3 h-3" />
+                        <span className="truncate" title="Alan">Alan</span>
+                      </div>
+                    </th>
+                    <td className="py-2.5 px-4 text-[12px] font-medium text-gray-800 tabular-nums break-all">
+                      {measurements.area}
+                    </td>
+                  </tr>
+                )}
+                {measurements.length && (
+                  <tr className="group hover:bg-gray-50/50 transition-colors border-b border-gray-50">
+                    <th className="py-2.5 px-4 w-5/12 align-top font-normal">
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400 uppercase tracking-tight">
+                        <Navigation className="w-3 h-3" />
+                        <span className="truncate" title="Uzunluk">Uzunluk</span>
+                      </div>
+                    </th>
+                    <td className="py-2.5 px-4 text-[12px] font-medium text-gray-800 tabular-nums break-all">
+                      {measurements.length}
+                    </td>
+                  </tr>
+                )}
                 {userProps.map(([key, value]) => (
                   <tr
                     key={key}

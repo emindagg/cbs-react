@@ -12,6 +12,7 @@ import { createPortal } from 'react-dom'
 
 import { agGridTurkishLocaleText } from '@/shared/ag-grid'
 import { useDataManagementStore } from '@/stores/useDataManagementStore'
+import { getGeometryMeasurements } from '@/utils/geometryMeasurements'
 
 import type { DataItem } from '../types'
 
@@ -48,6 +49,8 @@ interface ImportedDataTableModalProps {
 }
 
 type ConfirmVariant = 'danger' | 'default'
+
+const DELETE_CONFIRM_DELAY_MS = 1500
 
 export interface ConfirmState {
   title: string
@@ -174,12 +177,18 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
 function buildRowData(items: DataItem[]) {
   return items
     .filter(item => item.source === 'imported')
-    .map(item => ({
-      __id: item.id,
-      __name: item.name,
-      __geometry: item.geometry.type,
-      ...item.properties,
-    }))
+    .map(item => {
+      const measurements = getGeometryMeasurements(item.geometry)
+
+      return {
+        __id: item.id,
+        __name: item.name,
+        __geometry: item.geometry.type,
+        __area: measurements.area ?? '',
+        __length: measurements.length ?? '',
+        ...item.properties,
+      }
+    })
 }
 
 export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataTableModalProps) {
@@ -211,7 +220,7 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
       confirmLabel: 'Sil',
       variant: 'danger',
       onConfirm: async () => {
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        await new Promise(resolve => setTimeout(resolve, DELETE_CONFIRM_DELAY_MS))
         dropPendingEdits(ids)
         ids.forEach(id => removeItem(id))
         setSelectedCount(0)
@@ -242,6 +251,8 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
   const columnDefs = useMemo<ColDef[]>(() => [
     { field: '__name', headerName: 'Ad', minWidth: 180, pinned: 'left', editable: false },
     { field: '__geometry', headerName: 'Geometri', minWidth: 140, editable: false },
+    { field: '__area', headerName: 'Alan', minWidth: 140, editable: false },
+    { field: '__length', headerName: 'Uzunluk', minWidth: 140, editable: false },
     ...propertyKeys.map(key => ({
       field: key,
       headerName: COLUMN_HEADER_TR[key] ?? key,
