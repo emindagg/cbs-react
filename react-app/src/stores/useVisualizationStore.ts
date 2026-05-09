@@ -158,6 +158,7 @@ const defaultLegendConfig: LegendConfiguration = {
     fontSize: 16,
   },
   reverseOrder: false,
+  showFrame: true,
 }
 
 const defaultCustomRange: CustomRange = {

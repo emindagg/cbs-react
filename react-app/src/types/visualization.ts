@@ -258,6 +258,8 @@ export interface LegendConfiguration {
     fontSize?: number; // pixels
   };
   reverseOrder: boolean;
+  /** Lejantı beyaz arka planlı, ince siyah çerçeveli kutu içinde gösterir */
+  showFrame?: boolean;
   /** Bivariate bubble modunda boyut lejantının bağımsız başlığı */
   sizeLegendTitle?: string;
 }

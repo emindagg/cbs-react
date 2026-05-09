@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { coerceNumberFormat, formatNumber } from '@/utils/numberFormatter'
 
 import type { LegendConfiguration } from '../types'
+import { getLegendFrameClass } from '../utils/legendFrame'
 
 interface GraduatedClass {
   minVal: number
@@ -142,16 +143,18 @@ export default function BubbleSizeLegend({
       onMouseDown={handleMouseDown}
       className={`
         dynamic-legend
-        fixed z-[1000] rounded-lg p-3
+        fixed z-[1000] px-5 pt-4 pb-5
+        ${getLegendFrameClass(config)}
         ${position ? '' : (positionClasses[config.position] || positionClasses['above'])}
         ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}
         select-none
       `}
       style={{
+        '--title-font-size': `${config.title?.fontSize || 16}px`,
         ...(position
           ? { left: `${position.x}px`, top: `${position.y}px`, transform: 'none' }
           : {}),
-      }}
+      } as React.CSSProperties}
     >
       {/* Title */}
       {config.title?.show && (

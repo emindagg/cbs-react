@@ -18,6 +18,7 @@ import './DynamicLegend.css'
 import type { DynamicLegendProps } from '../types'
 import LegendBar from './LegendBar'
 import LegendLabels from './LegendLabels'
+import { getLegendFrameClass } from '../utils/legendFrame'
 
 export default function DynamicLegend({
   config,
@@ -132,7 +133,8 @@ export default function DynamicLegend({
       onMouseDown={handleMouseDown}
       className={`
         dynamic-legend
-        fixed z-[1000] rounded-lg p-3
+        fixed z-[1000] px-5 pt-4 pb-5
+        ${getLegendFrameClass(config)}
         ${position ? '' : (positionClasses[config.position] || positionClasses['above'])}
         ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}
         select-none

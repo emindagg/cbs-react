@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { LegendConfiguration, ColorScaleType, ClassificationMethod } from '@/types/visualization'
 
 import { BarContent } from './BarContent'
+import { getLegendFrameClass } from '../utils/legendFrame'
 
 interface LegendProps {
   config: LegendConfiguration;
@@ -120,15 +121,14 @@ export default function ColorLegend({
       onMouseDown={handleMouseDown}
       className={`
         fixed z-[1000]
+        ${getLegendFrameClass(config)}
         ${position ? '' : (positionClasses[config.position] || positionClasses['above'])}
         ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}
         select-none
       `}
       style={{
         width: config.orientation === 'horizontal' ? `${config.size}px` : 'auto',
-        padding: '12px',
-        borderRadius: '8px',
-        backgroundColor: 'transparent',
+        padding: '16px 20px 20px',
         ...(position ? {
           left: `${position.x}px`,
           top: `${position.y}px`,
