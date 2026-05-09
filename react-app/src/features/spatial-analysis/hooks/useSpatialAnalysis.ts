@@ -1,3 +1,4 @@
+import * as turf from '@turf/turf'
 import { useEffect, useRef, useCallback, useMemo } from 'react'
 
 import { useDataManagementStore } from '@/stores/useDataManagementStore'
@@ -55,6 +56,51 @@ function extractPointsFromItems(
   return { type: 'FeatureCollection', features }
 }
 
+function extractBoundaryPointsFromItems(
+  items: { geometry: GeoJSON.Geometry; properties: Record<string, unknown>; visible: boolean }[],
+): GeoJSON.FeatureCollection<GeoJSON.Point> {
+  const features: GeoJSON.Feature<GeoJSON.Point>[] = []
+
+  for (const item of items) {
+    if (!item.visible) continue
+    const geom = item.geometry
+
+    if (geom.type === 'Point') {
+      features.push({
+        type: 'Feature',
+        geometry: geom,
+        properties: { ...item.properties },
+      })
+      continue
+    }
+
+    if (
+      geom.type !== 'LineString'
+      && geom.type !== 'MultiLineString'
+      && geom.type !== 'Polygon'
+      && geom.type !== 'MultiPolygon'
+    ) {
+      continue
+    }
+
+    const exploded = turf.explode({
+      type: 'Feature',
+      geometry: geom,
+      properties: {},
+    })
+
+    for (const pt of exploded.features) {
+      features.push({
+        type: 'Feature',
+        geometry: pt.geometry,
+        properties: { ...item.properties },
+      })
+    }
+  }
+
+  return { type: 'FeatureCollection', features }
+}
+
 export function useSpatialAnalysis() {
   const map = useMapStore((s) => s.mapInstance)
   const items = useDataManagementStore((s) => s.items)
@@ -62,6 +108,14 @@ export function useSpatialAnalysis() {
   const allItems = useMemo(
     () => items.filter((i) => i.visible),
     [items],
+  )
+  const representativePoints = useMemo(
+    () => extractPointsFromItems(allItems),
+    [allItems],
+  )
+  const boundaryPoints = useMemo(
+    () => extractBoundaryPointsFromItems(allItems),
+    [allItems],
   )
 
   const {
@@ -110,25 +164,23 @@ export function useSpatialAnalysis() {
     const nearest = getNearestRenderer()
     if (!convex || !voronoi || !nearest) return
 
-    const points = extractPointsFromItems(allItems)
-
     convex.remove()
     voronoi.remove()
     nearest.remove()
 
-    if (activeAnalysis === 'convex-hull' && points.features.length >= 3) {
-      convex.render(points, convexHullStyle)
+    if (activeAnalysis === 'convex-hull' && boundaryPoints.features.length >= 3) {
+      convex.render(boundaryPoints, convexHullStyle)
       setNearestStats(null)
-    } else if (activeAnalysis === 'voronoi' && points.features.length >= 2) {
-      voronoi.render(points, voronoiStyle)
+    } else if (activeAnalysis === 'voronoi' && representativePoints.features.length >= 2) {
+      voronoi.render(representativePoints, voronoiStyle)
       setNearestStats(null)
-    } else if (activeAnalysis === 'nearest-points' && points.features.length >= 2) {
-      const stats = nearest.render(points, nearestPointsStyle, nearestPointsConfig)
+    } else if (activeAnalysis === 'nearest-points' && representativePoints.features.length >= 2) {
+      const stats = nearest.render(representativePoints, nearestPointsStyle, nearestPointsConfig)
       setNearestStats(stats)
     } else {
       setNearestStats(null)
     }
-  }, [activeAnalysis, allItems, convexHullStyle, voronoiStyle, nearestPointsStyle, nearestPointsConfig, getConvexRenderer, getVoronoiRenderer, getNearestRenderer, setNearestStats])
+  }, [activeAnalysis, boundaryPoints, representativePoints, convexHullStyle, voronoiStyle, nearestPointsStyle, nearestPointsConfig, getConvexRenderer, getVoronoiRenderer, getNearestRenderer, setNearestStats])
 
   useEffect(() => {
     return () => {
@@ -146,8 +198,9 @@ export function useSpatialAnalysis() {
   }, [toggle])
 
   const pointCount = useMemo(() => {
-    return extractPointsFromItems(allItems).features.length
-  }, [allItems])
+    if (activeAnalysis === 'convex-hull') return boundaryPoints.features.length
+    return representativePoints.features.length
+  }, [activeAnalysis, boundaryPoints, representativePoints])
 
   return {
     activeAnalysis,
