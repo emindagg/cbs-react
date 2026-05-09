@@ -66,7 +66,7 @@ export default function SpatialAnalysisPanel({
   const title = isConvexHull
     ? 'Dış Sınır'
     : isNearest
-      ? 'En Yakın Nokta Analizi'
+      ? 'En Yakın Geometri Analizi'
       : 'En Yakın Alanlar'
   const icon = isConvexHull ? 'fa-vector-square' : isNearest ? 'fa-arrows-to-dot' : 'fa-border-all'
   const iconColor = isConvexHull ? 'bg-orange-500' : isNearest ? 'bg-violet-500' : 'bg-teal-500'
@@ -88,7 +88,7 @@ export default function SpatialAnalysisPanel({
           <div>
             <h3 className="text-[11px] font-bold text-zinc-800">{title}</h3>
             <p className="text-[8px] text-zinc-500">
-              {hasData ? `${pointCount} nokta` : 'Veri yok'}
+              {hasData ? `${pointCount} ${isNearest ? 'öğe' : 'nokta'}` : 'Veri yok'}
             </p>
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function SpatialAnalysisPanel({
           <p className="text-[10px] text-zinc-500 leading-relaxed">
             {!hasData
               ? <>Analiz için veri içe aktarın<br />veya noktalar ekleyin.</>
-              : <>En az {minPoints} nokta gerekli.<br />Şu an {pointCount} nokta var.</>
+              : <>En az {minPoints} {isNearest ? 'öğe' : 'nokta'} gerekli.<br />Şu an {pointCount} {isNearest ? 'öğe' : 'nokta'} var.</>
             }
           </p>
         </div>
@@ -245,7 +245,7 @@ export default function SpatialAnalysisPanel({
             {isConvexHull
               ? 'Tüm noktaları kapsayan en küçük dışbükey çokgen.'
               : isNearest
-                ? 'Her noktanın en yakın komşusunu bulur. Kırmızı çizgi en kısa mesafeyi gösterir.'
+                ? 'Öğeler arasında gerçek geometri mesafesini ölçer. Kırmızı çizgi en kısa kanıt çizgisini gösterir.'
                 : 'Her noktanın kendisine en yakın alanını gösteren bölgeleme.'}
           </div>
 

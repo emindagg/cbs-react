@@ -1,7 +1,13 @@
 import * as turf from '@turf/turf'
+import type { Geometry } from 'geojson'
 import type { Map, GeoJSONSource } from 'maplibre-gl'
 
 import type { NearestPointsConfig, SpatialLayerStyle } from '../types'
+import {
+  bboxGapDistanceKm,
+  computeNearestGeometryConnection,
+  prepareNearestGeometries,
+} from './nearestGeometry'
 
 const LINE_SOURCE_ID = 'nearest-points-line-source'
 const LINE_LAYER_ID = 'nearest-points-line'
@@ -24,13 +30,13 @@ export class NearestPointsRenderer {
   }
 
   render(
-    points: GeoJSON.FeatureCollection<GeoJSON.Point>,
+    geometries: GeoJSON.FeatureCollection<Geometry>,
     style: SpatialLayerStyle,
     config: NearestPointsConfig,
   ): NearestPairResult | null {
-    if (points.features.length < 2) return null
+    if (geometries.features.length < 2) return null
 
-    const { lines, shortest, labels, stats } = this.computeNearestPairs(points)
+    const { lines, shortest, labels, stats } = this.computeNearestPairs(geometries)
 
     if (config.showAllLines) {
       this.addOrUpdateSource(LINE_SOURCE_ID, lines)
@@ -87,8 +93,8 @@ export class NearestPointsRenderer {
     return Boolean(this.map.getLayer(LINE_LAYER_ID))
   }
 
-  private computeNearestPairs(points: GeoJSON.FeatureCollection<GeoJSON.Point>) {
-    const features = points.features
+  private computeNearestPairs(geometries: GeoJSON.FeatureCollection<Geometry>) {
+    const features = prepareNearestGeometries(geometries)
     const lineFeatures: GeoJSON.Feature<GeoJSON.LineString>[] = []
     const labelFeatures: GeoJSON.Feature<GeoJSON.Point>[] = []
     const visited = new Set<string>()
@@ -99,19 +105,30 @@ export class NearestPointsRenderer {
     let pairCount = 0
 
     for (let i = 0; i < features.length; i++) {
-      const pt = features[i]
-      const others = turf.featureCollection(
-        features.filter((_, j) => j !== i),
-      )
+      const base = features[i]
+      let nearestResult: { targetId: string; distance: number; from: GeoJSON.Position; to: GeoJSON.Position } | null = null
 
-      const nearest = turf.nearestPoint(pt, others)
-      const dist = turf.distance(pt, nearest, { units: 'kilometers' })
+      for (let j = 0; j < features.length; j++) {
+        if (i === j) continue
+        const candidate = features[j]
+        const bboxGap = bboxGapDistanceKm(base.bbox, candidate.bbox)
+        if (nearestResult && bboxGap >= nearestResult.distance) continue
 
-      const pairKey = [
-        pt.geometry.coordinates.join(','),
-        nearest.geometry.coordinates.join(','),
-      ].sort().join('|')
+        const connection = computeNearestGeometryConnection(base, candidate)
+        if (!connection) continue
+        if (!nearestResult || connection.distanceKm < nearestResult.distance) {
+          nearestResult = {
+            targetId: candidate.id,
+            distance: connection.distanceKm,
+            from: connection.from,
+            to: connection.to,
+          }
+        }
+      }
 
+      if (!nearestResult) continue
+
+      const pairKey = [base.id, nearestResult.targetId].sort().join('|')
       if (!visited.has(pairKey)) {
         visited.add(pairKey)
 
@@ -119,28 +136,31 @@ export class NearestPointsRenderer {
           type: 'Feature',
           geometry: {
             type: 'LineString',
-            coordinates: [pt.geometry.coordinates, nearest.geometry.coordinates],
+            coordinates: [nearestResult.from, nearestResult.to],
           },
-          properties: { distance: dist },
+          properties: { distance: nearestResult.distance },
         }
         lineFeatures.push(line)
 
-        const midCoords = turf.midpoint(pt, nearest).geometry.coordinates
-        const distLabel = dist < 1
-          ? `${Math.round(dist * 1000)} m`
-          : `${dist.toFixed(1)} km`
+        const midCoords = turf.midpoint(
+          turf.point(nearestResult.from),
+          turf.point(nearestResult.to),
+        ).geometry.coordinates
+        const distLabel = nearestResult.distance < 1
+          ? `${Math.round(nearestResult.distance * 1000)} m`
+          : `${nearestResult.distance.toFixed(1)} km`
 
         labelFeatures.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: midCoords },
-          properties: { label: distLabel, distance: dist },
+          properties: { label: distLabel, distance: nearestResult.distance },
         })
 
-        totalDist += dist
+        totalDist += nearestResult.distance
         pairCount++
 
-        if (dist < shortestDist) {
-          shortestDist = dist
+        if (nearestResult.distance < shortestDist) {
+          shortestDist = nearestResult.distance
           shortestLine = line
         }
       }

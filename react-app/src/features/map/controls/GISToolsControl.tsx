@@ -94,7 +94,7 @@ const TOOLS: ToolDef[] = [
   { id: 'clustering', icon: ClusterNetworkIcon, label: 'Nokta Kümeleri', activeColor: 'text-blue-600', activeBg: 'bg-blue-50', activeBorder: 'border-blue-200', group: 'analysis', noHoverPreview: true },
   { id: 'convex-hull', icon: SquareDashed, label: 'Dış Sınır', activeColor: 'text-amber-600', activeBg: 'bg-amber-50', activeBorder: 'border-amber-200', group: 'analysis' },
   { id: 'voronoi', icon: LayoutGrid, label: 'En Yakın Alanlar', activeColor: 'text-emerald-600', activeBg: 'bg-emerald-50', activeBorder: 'border-emerald-200', group: 'analysis' },
-  { id: 'nearest-points', icon: Crosshair, label: 'En Yakın Nokta', activeColor: 'text-violet-600', activeBg: 'bg-violet-50', activeBorder: 'border-violet-200', group: 'analysis' },
+  { id: 'nearest-points', icon: Crosshair, label: 'En Yakın Geometri', activeColor: 'text-violet-600', activeBg: 'bg-violet-50', activeBorder: 'border-violet-200', group: 'analysis' },
   { id: 'interpolation', icon: Waves, label: 'Enterpolasyon', activeColor: 'text-indigo-600', activeBg: 'bg-indigo-50', activeBorder: 'border-indigo-200', group: 'analysis' },
   { id: 'aspect-analysis', icon: Compass, label: 'Bakı ve Eğim Analizi', activeColor: 'text-teal-600', activeBg: 'bg-teal-50', activeBorder: 'border-teal-200', group: 'analysis' },
   { id: 'heatmap', icon: Flame, label: 'Isı Haritası', activeColor: 'text-red-600', activeBg: 'bg-red-50', activeBorder: 'border-red-200', group: 'analysis' },
