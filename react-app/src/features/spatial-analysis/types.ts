@@ -3,6 +3,7 @@ export type SpatialAnalysisType = 'convex-hull' | 'voronoi' | 'nearest-points'
 export interface SpatialLayerStyle {
   fillColor: string
   fillOpacity: number
+  lineOpacity: number
   strokeColor: string
   strokeWidth: number
 }

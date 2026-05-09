@@ -5,6 +5,7 @@ import type { NearestPointsConfig, SpatialAnalysisState, SpatialLayerStyle } fro
 const defaultConvexHullStyle: SpatialLayerStyle = {
   fillColor: '#f97316',
   fillOpacity: 0.15,
+  lineOpacity: 1,
   strokeColor: '#ea580c',
   strokeWidth: 2.5,
 }
@@ -12,13 +13,15 @@ const defaultConvexHullStyle: SpatialLayerStyle = {
 const defaultVoronoiStyle: SpatialLayerStyle = {
   fillColor: '#06b6d4',
   fillOpacity: 0.08,
+  lineOpacity: 1,
   strokeColor: '#0891b2',
   strokeWidth: 1.5,
 }
 
 const defaultNearestPointsStyle: SpatialLayerStyle = {
   fillColor: '#8b5cf6',
-  fillOpacity: 0,
+  fillOpacity: 0.6,
+  lineOpacity: 0.6,
   strokeColor: '#7c3aed',
   strokeWidth: 1.5,
 }

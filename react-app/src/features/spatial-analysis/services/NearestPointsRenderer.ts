@@ -40,7 +40,7 @@ export class NearestPointsRenderer {
 
     if (config.showAllLines) {
       this.addOrUpdateSource(LINE_SOURCE_ID, lines)
-      this.ensureLineLayer(LINE_LAYER_ID, LINE_SOURCE_ID, style.strokeColor, style.strokeWidth, 0.6)
+      this.ensureLineLayer(LINE_LAYER_ID, LINE_SOURCE_ID, style.strokeColor, style.strokeWidth, style.lineOpacity)
     } else {
       if (this.map.getLayer(LINE_LAYER_ID)) this.map.removeLayer(LINE_LAYER_ID)
       if (this.map.getSource(LINE_SOURCE_ID)) this.map.removeSource(LINE_SOURCE_ID)
@@ -48,7 +48,7 @@ export class NearestPointsRenderer {
 
     if (config.showShortestOnly || config.showAllLines) {
       this.addOrUpdateSource(SHORTEST_SOURCE_ID, shortest)
-      this.ensureLineLayer(SHORTEST_LAYER_ID, SHORTEST_SOURCE_ID, '#ef4444', style.strokeWidth + 1.5, 1)
+      this.ensureLineLayer(SHORTEST_LAYER_ID, SHORTEST_SOURCE_ID, '#ef4444', style.strokeWidth + 1.5, style.lineOpacity)
     } else {
       if (this.map.getLayer(SHORTEST_LAYER_ID)) this.map.removeLayer(SHORTEST_LAYER_ID)
       if (this.map.getSource(SHORTEST_SOURCE_ID)) this.map.removeSource(SHORTEST_SOURCE_ID)
@@ -77,6 +77,11 @@ export class NearestPointsRenderer {
     if (this.map.getLayer(LINE_LAYER_ID)) {
       this.map.setPaintProperty(LINE_LAYER_ID, 'line-color', style.strokeColor)
       this.map.setPaintProperty(LINE_LAYER_ID, 'line-width', style.strokeWidth)
+      this.map.setPaintProperty(LINE_LAYER_ID, 'line-opacity', style.lineOpacity)
+    }
+    if (this.map.getLayer(SHORTEST_LAYER_ID)) {
+      this.map.setPaintProperty(SHORTEST_LAYER_ID, 'line-width', style.strokeWidth + 1.5)
+      this.map.setPaintProperty(SHORTEST_LAYER_ID, 'line-opacity', style.lineOpacity)
     }
   }
 

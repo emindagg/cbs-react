@@ -228,6 +228,13 @@ export function useSpatialAnalysis() {
     return representativePoints.features.length
   }, [activeAnalysis, boundaryPoints, representativePoints, geometryFeatures])
 
+  const convexHullAreaKm2 = useMemo(() => {
+    if (boundaryPoints.features.length < 3) return null
+    const hull = turf.convex(boundaryPoints)
+    if (!hull) return null
+    return turf.area(hull) / 1_000_000
+  }, [boundaryPoints])
+
   return {
     activeAnalysis,
     isPanelOpen,
@@ -244,6 +251,7 @@ export function useSpatialAnalysis() {
     setNearestPointsStyle,
     setNearestPointsConfig,
     pointCount,
+    convexHullAreaKm2,
     hasData: allItems.length > 0,
   }
 }

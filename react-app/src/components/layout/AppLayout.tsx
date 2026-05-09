@@ -20,12 +20,12 @@ import { SpatialAnalysisPanel, useSpatialAnalysis } from '@/features/spatial-ana
 import { StorymapModal } from '@/features/storymap-modal'
 import { TerrainAnalysisPanel, TerrainAspectLegend, TerrainSlopeLegend, useTerrainAnalysis } from '@/features/terrain-analysis'
 import { VideoModal } from '@/features/video-modal'
-import { useVideoModalStore } from '@/stores/useVideoModalStore'
 import { useVisualizationLayerPersistence } from '@/features/visualization'
 import { MapTitle } from '@/features/viz-wizard'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useDataManagementStore } from '@/stores/useDataManagementStore'
 import { useMapStore } from '@/stores/useMapStore'
+import { useVideoModalStore } from '@/stores/useVideoModalStore'
 import { useVisualizationStore } from '@/stores/useVisualizationStore'
 
 
@@ -219,6 +219,7 @@ export default function AppLayout() {
         nearestPointsConfig={spatial.nearestPointsConfig}
         nearestStats={spatial.nearestStats}
         pointCount={spatial.pointCount}
+        convexHullAreaKm2={spatial.convexHullAreaKm2}
         hasData={spatial.hasData}
         onConvexHullStyleChange={spatial.setConvexHullStyle}
         onVoronoiStyleChange={spatial.setVoronoiStyle}

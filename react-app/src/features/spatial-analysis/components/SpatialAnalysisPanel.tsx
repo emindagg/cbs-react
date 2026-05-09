@@ -11,6 +11,7 @@ interface SpatialAnalysisPanelProps {
   nearestPointsConfig: NearestPointsConfig
   nearestStats: NearestPointsStats | null
   pointCount: number
+  convexHullAreaKm2: number | null
   hasData: boolean
   onConvexHullStyleChange: (style: Partial<SpatialLayerStyle>) => void
   onVoronoiStyleChange: (style: Partial<SpatialLayerStyle>) => void
@@ -40,6 +41,7 @@ export default function SpatialAnalysisPanel({
   nearestPointsConfig,
   nearestStats,
   pointCount,
+  convexHullAreaKm2,
   hasData,
   onConvexHullStyleChange,
   onVoronoiStyleChange,
@@ -54,8 +56,9 @@ export default function SpatialAnalysisPanel({
   const onStyleChange = isConvexHull ? onConvexHullStyleChange : isNearest ? onNearestPointsStyleChange : onVoronoiStyleChange
 
   const handleFillOpacity = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    onStyleChange({ fillOpacity: Number(e.target.value) })
-  }, [onStyleChange])
+    const value = Number(e.target.value)
+    onStyleChange(isNearest ? { lineOpacity: value } : { fillOpacity: value })
+  }, [isNearest, onStyleChange])
 
   const handleStrokeWidth = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     onStyleChange({ strokeWidth: Number(e.target.value) })
@@ -76,6 +79,9 @@ export default function SpatialAnalysisPanel({
       ? 'ring-violet-400 border-violet-400'
       : 'ring-teal-400 border-teal-400'
   const minPoints = isConvexHull ? 3 : 2
+  const formattedHullArea = convexHullAreaKm2 === null
+    ? null
+    : convexHullAreaKm2.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   return (
     <div className="fixed top-14 right-14 z-1500 w-64 bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-zinc-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
@@ -115,15 +121,15 @@ export default function SpatialAnalysisPanel({
           {/* Fill Color */}
           <div>
             <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
-              Dolgu Rengi
+              {isNearest ? 'Çizgi Rengi' : 'Dolgu Rengi'}
             </label>
             <div className="flex gap-1.5 flex-wrap">
               {FILL_COLORS.map(({ color, label }) => (
                 <button
                   key={color}
-                  onClick={() => onStyleChange({ fillColor: color, strokeColor: color })}
+                  onClick={() => onStyleChange(isNearest ? { strokeColor: color, fillColor: color } : { fillColor: color, strokeColor: color })}
                   className={`w-6 h-6 rounded-md border-2 transition-all ${
-                    style.fillColor === color
+                    (isNearest ? style.strokeColor : style.fillColor) === color
                       ? `${accentColor} scale-110 shadow-sm`
                       : 'border-zinc-200 hover:border-zinc-300 hover:scale-105'
                   }`}
@@ -138,18 +144,18 @@ export default function SpatialAnalysisPanel({
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                Dolgu Opaklık
+                {isNearest ? 'Çizgi Saydamlığı' : 'Dolgu Saydamlığı'}
               </label>
               <span className="text-[9px] text-zinc-600 font-mono bg-zinc-50 px-1.5 py-0.5 rounded">
-                {Math.round(style.fillOpacity * 100)}%
+                {Math.round((isNearest ? style.lineOpacity : style.fillOpacity) * 100)}%
               </span>
             </div>
             <input
               type="range"
               min={0}
-              max={0.5}
+              max={isNearest ? 1 : 0.5}
               step={0.01}
-              value={style.fillOpacity}
+              value={isNearest ? style.lineOpacity : style.fillOpacity}
               onChange={handleFillOpacity}
               className={`w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer ${isConvexHull ? 'accent-orange-500' : isNearest ? 'accent-violet-500' : 'accent-teal-500'}`}
             />
@@ -243,7 +249,7 @@ export default function SpatialAnalysisPanel({
           <div className={`text-[9px] ${isConvexHull ? 'bg-orange-50 text-orange-700' : isNearest ? 'bg-violet-50 text-violet-700' : 'bg-teal-50 text-teal-700'} px-2.5 py-2 rounded-md leading-relaxed`}>
             <i className="fa-solid fa-circle-info mr-1"></i>
             {isConvexHull
-              ? 'Tüm noktaları kapsayan en küçük dışbükey çokgen.'
+              ? `Tüm noktaları kapsayan en küçük dışbükey çokgen.${formattedHullArea ? ` Toplam Alan: ${formattedHullArea} km².` : ''}`
               : isNearest
                 ? 'Öğeler arasında gerçek geometri mesafesini ölçer. Kırmızı çizgi en kısa kanıt çizgisini gösterir.'
                 : 'Her noktanın kendisine en yakın alanını gösteren bölgeleme.'}
