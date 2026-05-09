@@ -10,6 +10,9 @@ import type { LegendConfiguration, ColorScaleType, ClassificationMethod } from '
 import { BarContent } from './BarContent'
 import { getLegendFrameClass } from '../utils/legendFrame'
 
+const VERTICAL_TITLE_MAX_WIDTH = 220
+const WRAPPED_TITLE_LINE_HEIGHT = 1.15
+
 interface LegendProps {
   config: LegendConfiguration;
   breaks: number[];
@@ -137,7 +140,7 @@ export default function ColorLegend({
       }}
     >
       {config.title?.show && (
-        <div className="legend-title mb-2">
+        <div className="legend-title mb-2 text-center">
           {isEditingTitle ? (
             <input
               ref={titleInputRef}
@@ -155,7 +158,14 @@ export default function ColorLegend({
             <div
               onClick={handleTitleClick}
               className={`font-bold text-[#333333] ${onTitleChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}
-              style={{ fontSize: `${config.title.fontSize ?? 16}px` }}
+              style={{
+                fontSize: `${config.title.fontSize ?? 16}px`,
+                maxWidth: config.orientation === 'horizontal' ? `${config.size}px` : VERTICAL_TITLE_MAX_WIDTH,
+                textAlign: 'center',
+                whiteSpace: config.title.wrap ? 'pre-line' : 'pre',
+                overflowWrap: config.title.wrap ? 'anywhere' : 'normal',
+                lineHeight: config.title.wrap ? WRAPPED_TITLE_LINE_HEIGHT : undefined,
+              }}
             >
               {config.title.text || 'Lejant ismi giriniz'}
             </div>

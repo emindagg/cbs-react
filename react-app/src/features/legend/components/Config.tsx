@@ -46,7 +46,7 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
           >
             <div className={`${TOGGLE_TRACK_CLASS} ${config.visible ? 'bg-zinc-900' : 'bg-zinc-300 group-hover/neur:bg-zinc-400'}`} />
             <div className={`${TOGGLE_KNOB_CLASS} ${config.visible ? 'translate-x-3 bg-zinc-900 border-zinc-900 rotate-45 scale-110 shadow-md' : '-translate-x-3 bg-white border-zinc-400 rotate-0 scale-100 shadow-sm group-hover/neur:border-zinc-500 group-hover/neur:shadow'
-              }`} />
+            }`} />
           </button>
         </div>
 
@@ -68,9 +68,9 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
                       type="button"
                       onClick={() => onChange({ orientation: value })}
                       className={`flex-1 px-3 py-1.5 text-[10px] font-medium transition-colors ${config.orientation === value
-                          ? 'bg-zinc-800 text-white'
-                          : 'bg-white text-zinc-600 hover:bg-zinc-50'
-                        }`}
+                        ? 'bg-zinc-800 text-white'
+                        : 'bg-white text-zinc-600 hover:bg-zinc-50'
+                      }`}
                     >
                       {label}
                     </button>
@@ -144,7 +144,7 @@ export default function LegendConfig({ config, onChange, classCount }: LegendCon
           >
             <div className={`${TOGGLE_TRACK_CLASS} ${northArrowVisible ? 'bg-zinc-900' : 'bg-zinc-300 group-hover/neur:bg-zinc-400'}`} />
             <div className={`${TOGGLE_KNOB_CLASS} ${northArrowVisible ? 'translate-x-3 bg-zinc-900 border-zinc-900 rotate-45 scale-110 shadow-md' : '-translate-x-3 bg-white border-zinc-400 rotate-0 scale-100 shadow-sm group-hover/neur:border-zinc-500 group-hover/neur:shadow'
-              }`} />
+            }`} />
           </button>
         </div>
 

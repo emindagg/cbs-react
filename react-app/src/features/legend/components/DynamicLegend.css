@@ -24,16 +24,25 @@
 /* ---- Header / Title ---- */
 .dynamic-legend__header {
   margin-bottom: 6px;
+  text-align: center;
 }
 
 .dynamic-legend__title {
   font-size: var(--title-font-size);
   font-weight: 700;
   color: #333333;
-  white-space: nowrap;
+  text-align: center;
+  white-space: pre;
   cursor: default;
   display: block;
   /* Title takes its natural width, not constrained by legend width */
+}
+
+.dynamic-legend__title--wrap {
+  max-width: var(--legend-width);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
 }
 
 .dynamic-legend__title--editable {

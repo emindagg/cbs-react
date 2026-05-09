@@ -256,6 +256,7 @@ export interface LegendConfiguration {
     show: boolean;
     text: string;
     fontSize?: number; // pixels
+    wrap?: boolean;
   };
   reverseOrder: boolean;
   /** Lejantı beyaz arka planlı, ince siyah çerçeveli kutu içinde gösterir */

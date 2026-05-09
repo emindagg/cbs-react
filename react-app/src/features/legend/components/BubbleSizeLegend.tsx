@@ -174,7 +174,7 @@ export default function BubbleSizeLegend({
           ) : (
             <div
               onDoubleClick={handleTitleDoubleClick}
-              className={`dynamic-legend__title ${onTitleChange ? 'dynamic-legend__title--editable' : ''}`}
+              className={`dynamic-legend__title ${config.title.wrap ? 'dynamic-legend__title--wrap' : ''} ${onTitleChange ? 'dynamic-legend__title--editable' : ''}`}
             >
               {config.title.text || 'Boyut'}
             </div>
