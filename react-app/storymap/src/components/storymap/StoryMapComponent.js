@@ -384,7 +384,7 @@ export class StoryMapComponent {
     setupPlaybackControls() {
         this.playbackTimer = null;
         this.playbackIndex = 0;
-        this.playbackSpeed = 3000; // Varsayılan 3 saniye (1.0x)
+        this.playbackSpeed = 9000; // Varsayılan 9 saniye (1.0x)
 
         const playbackToggle = document.getElementById('storymap-playback-toggle');
         const speedButtons = document.querySelectorAll('.storymap-playback__speed-btn');
@@ -416,8 +416,8 @@ export class StoryMapComponent {
                     speedButtons.forEach(b => b.classList.remove('storymap-playback__speed-btn--active'));
                     btn.classList.add('storymap-playback__speed-btn--active');
 
-                    // Hız değiştir (0.5x = 6000ms, 1.0x = 3000ms, 3.0x = 1000ms)
-                    this.playbackSpeed = 3000 / speed;
+                    // Hız değiştir (0.5x = 18000ms, 1.0x = 9000ms, 3.0x = 3000ms)
+                    this.playbackSpeed = 9000 / speed;
 
                     // Eğer oynatma aktifse, yeniden başlat
                     const isPlaying = playbackToggle && playbackToggle.getAttribute('data-playing') === 'true';
