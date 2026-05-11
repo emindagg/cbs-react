@@ -636,6 +636,48 @@ async function inspectStorage() {
 
 ---
 
+## Paylaşım Kodu URL Hatası (build:mebi)
+
+### Belirti
+
+`Harita Görüntüle` formuna paylaşım kodu girildiğinde yanlış URL üretiliyor:
+
+```
+❌ https://ogmmateryal.eba.gov.tr./storymap/view.html?code=XXX
+✅ https://ogmmateryal.eba.gov.tr/cbs/storymap/view.html?code=XXX
+```
+
+### Kök Neden
+
+`build:mebi` komutu `--base=./` ile derlenir. Bu durumda `import.meta.env.BASE_URL` değeri `./` olur. `StorymapModal.tsx` içindeki `resolveStorymapUrl` fonksiyonu string concatenation kullandığı için:
+
+```
+window.location.origin + BASE_URL + url
+= "https://ogmmateryal.eba.gov.tr" + "./" + "storymap/view.html"
+= "https://ogmmateryal.eba.gov.tr./storymap/view.html"   ❌
+```
+
+### Çözüm
+
+`resolveStorymapUrl` fonksiyonu `new URL()` ile BASE_URL'yi önce mutlak adrese çevirecek şekilde güncellendi (`src/features/storymap-modal/StorymapModal.tsx`):
+
+```typescript
+function resolveStorymapUrl(url: string): string {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  const absoluteBase = new URL(import.meta.env.BASE_URL, window.location.href).href
+  const base = absoluteBase.endsWith('/') ? absoluteBase : absoluteBase + '/'
+  return new URL(url.replace(/^\//, ''), base).href
+}
+```
+
+`new URL('./', 'https://ogmmateryal.eba.gov.tr/cbs/')` → `https://ogmmateryal.eba.gov.tr/cbs/` ✓
+
+Bu yöntem hem `--base=./` hem de `--base=/cbs/` durumunda doğru çalışır.
+
+**Düzeltme tarihi:** 11 Mayıs 2026
+
+---
+
 ## Destek
 
 ### Log Toplama

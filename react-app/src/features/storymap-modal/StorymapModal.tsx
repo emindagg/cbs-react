@@ -9,7 +9,10 @@ const Z_INDEX = 20000
 
 function resolveStorymapUrl(url: string): string {
   if (url.startsWith('http://') || url.startsWith('https://')) return url
-  return `${window.location.origin}${import.meta.env.BASE_URL}${url.replace(/^\//, '')}`
+  // BASE_URL relative olabilir (örn: './'), new URL ile mutlak yola çevir
+  const absoluteBase = new URL(import.meta.env.BASE_URL, window.location.href).href
+  const base = absoluteBase.endsWith('/') ? absoluteBase : absoluteBase + '/'
+  return new URL(url.replace(/^\//, ''), base).href
 }
 
 export function StorymapModal() {
