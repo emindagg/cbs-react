@@ -932,7 +932,44 @@ Harici kaynaklar:
 
 ### MEBİ Build
 
-Alt klasör yayını için `npm run build:mebi` kullanılmalıdır. Bu komut Vite base değerini `./` yapar. Standart `npm run build` çıktısı `/cbs-react/` base varsayar.
+Alt klasör yayını için `pnpm run build:mebi` kullanılmalıdır. Bu komut Vite base değerini `./` yapar. Standart `npm run build` çıktısı `/cbs-react/` base varsayar.
+
+`prebuild:mebi` script'i otomatik olarak `version-from-git.cjs` çalıştırır; ayrıca elle çalıştırmaya gerek yoktur.
+
+### IIS Derin Link (SPA Fallback)
+
+`https://ogmmateryal.eba.gov.tr/cbs/arazi-2018` gibi doğrudan açılan kısa URL'ler IIS varsayılan davranışıyla 404 döner; çünkü IIS `arazi-2018` adında bir dosya/klasör arar.
+
+**Çözüm:** `public/web.config` dosyası `pnpm build:mebi` ile `dist/web.config` olarak kopyalanır. Bu dosya, fiziksel olarak var olmayan her yolu `index.html`'e rewrite eder; React yüklendikten sonra `pathname` kontrolü ile ilgili katman preset'i otomatik açılır.
+
+```xml
+<!-- dist/web.config -->
+<rule name="CBS React SPA" stopProcessing="true">
+  <match url=".*" />
+  <conditions logicalGrouping="MatchAll">
+    <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
+    <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
+  </conditions>
+  <action type="Rewrite" url="index.html" />
+</rule>
+```
+
+**Gereksinim:** Sunucuda **IIS URL Rewrite** modülü kurulu olmalıdır.
+
+**Deploy adımları:**
+
+1. `pnpm run build:mebi` çalıştır.
+2. `dist/` klasörünün tamamını (özellikle `web.config` ve `index.html`) sunucudaki `/cbs` fiziksel dizinine kopyala.
+3. `https://ogmmateryal.eba.gov.tr/cbs/arazi-2018` adresini doğrudan aç — uygulama yüklenip arazi örtüsü katmanı otomatik açılmalıdır.
+
+Desteklenen kısa URL'ler (`useOverlayLayers.ts`):
+
+| URL | Davranış |
+|-----|----------|
+| `/cbs/lc2018` | Arazi örtüsü katmanını açar |
+| `/cbs/arazi-2018` | Arazi örtüsü katmanını açar |
+| `/cbs/arazi-ortusu-2018` | Arazi örtüsü katmanını açar |
+| `/cbs/corine` | CORINE arazi örtüsü katmanını açar |
 
 ---
 
