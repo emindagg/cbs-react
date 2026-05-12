@@ -224,19 +224,24 @@ export function useSpatialAnalysis() {
     return nearestRef.current
   }, [map])
 
-  const filterByLayer = useCallback(
-    (layerId: string | null): GeoJSON.FeatureCollection<GeoJSON.Geometry> => {
-      if (!layerId) return geometryFeatures
+  const buildLayerCollection = useCallback(
+    (layerIds: string[]): GeoJSON.FeatureCollection<GeoJSON.Geometry> => {
+      const wanted = new Set(layerIds)
       const features = allItems
-        .filter((item) => layerIdOf(item) === layerId)
+        .filter((item) => wanted.has(layerIdOf(item)))
         .map<GeoJSON.Feature<GeoJSON.Geometry>>((item) => ({
           type: 'Feature',
           geometry: item.geometry,
-          properties: { ...item.properties, itemId: item.id, itemName: item.name },
+          properties: {
+            ...item.properties,
+            itemId: item.id,
+            itemName: item.name,
+            __sourceLayerId: layerIdOf(item),
+          },
         }))
       return { type: 'FeatureCollection', features }
     },
-    [allItems, geometryFeatures],
+    [allItems],
   )
 
   useEffect(() => {
@@ -256,11 +261,10 @@ export function useSpatialAnalysis() {
       voronoi.render(representativePoints, voronoiStyle)
       setNearestStats(null)
     } else if (activeAnalysis === 'nearest-points') {
-      const { inputLayer, targetLayer } = nearestPointsConfig
-      const hasLayerSelection = Boolean(inputLayer)
-      const inputFC = hasLayerSelection ? filterByLayer(inputLayer) : geometryFeatures
-      const isCrossLayer = hasLayerSelection && targetLayer !== null && targetLayer !== inputLayer
-      const targetFC = isCrossLayer ? filterByLayer(targetLayer) : null
+      const { inputLayer, targetLayers } = nearestPointsConfig
+      const inputFC = inputLayer ? buildLayerCollection([inputLayer]) : geometryFeatures
+      const effectiveTargets = targetLayers.filter((id) => id !== inputLayer)
+      const targetFC = effectiveTargets.length > 0 ? buildLayerCollection(effectiveTargets) : null
 
       const minNeeded = targetFC ? 1 : 2
       const ready = inputFC.features.length >= minNeeded && (!targetFC || targetFC.features.length >= 1)
@@ -274,7 +278,7 @@ export function useSpatialAnalysis() {
     } else {
       setNearestStats(null)
     }
-  }, [activeAnalysis, boundaryPoints, representativePoints, geometryFeatures, convexHullStyle, voronoiStyle, nearestPointsStyle, nearestPointsConfig, getConvexRenderer, getVoronoiRenderer, getNearestRenderer, setNearestStats, filterByLayer])
+  }, [activeAnalysis, boundaryPoints, representativePoints, geometryFeatures, convexHullStyle, voronoiStyle, nearestPointsStyle, nearestPointsConfig, getConvexRenderer, getVoronoiRenderer, getNearestRenderer, setNearestStats, buildLayerCollection])
 
   useEffect(() => {
     return () => {
@@ -295,11 +299,11 @@ export function useSpatialAnalysis() {
     if (activeAnalysis === 'convex-hull') return boundaryPoints.features.length
     if (activeAnalysis === 'nearest-points') {
       const { inputLayer } = nearestPointsConfig
-      if (inputLayer) return filterByLayer(inputLayer).features.length
+      if (inputLayer) return buildLayerCollection([inputLayer]).features.length
       return geometryFeatures.features.length
     }
     return representativePoints.features.length
-  }, [activeAnalysis, boundaryPoints, representativePoints, geometryFeatures, nearestPointsConfig, filterByLayer])
+  }, [activeAnalysis, boundaryPoints, representativePoints, geometryFeatures, nearestPointsConfig, buildLayerCollection])
 
   const convexHullAreaKm2 = useMemo(() => {
     if (boundaryPoints.features.length < 3) return null

@@ -31,7 +31,7 @@ const defaultNearestPointsConfig: NearestPointsConfig = {
   showShortestOnly: true,
   showLabels: true,
   inputLayer: null,
-  targetLayer: null,
+  targetLayers: [],
   searchRadiusKm: null,
   closestCount: 1,
 }

@@ -1,4 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
+
+const METERS_PER_KM = 1000
+type RadiusUnit = 'km' | 'm'
 
 import type {
   NearestPointsConfig,
@@ -79,10 +82,21 @@ export default function SpatialAnalysisPanel({
     onNearestPointsConfigChange({ inputLayer: value === '' ? null : value })
   }, [onNearestPointsConfigChange])
 
-  const handleTargetLayerChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value
-    onNearestPointsConfigChange({ targetLayer: value === '' ? null : value })
-  }, [onNearestPointsConfigChange])
+  const handleTargetLayerToggle = useCallback((layerId: string, checked: boolean) => {
+    const current = nearestPointsConfig.targetLayers
+    const next = checked
+      ? Array.from(new Set([...current, layerId]))
+      : current.filter((id) => id !== layerId)
+    onNearestPointsConfigChange({ targetLayers: next })
+  }, [nearestPointsConfig.targetLayers, onNearestPointsConfigChange])
+
+  const [radiusUnit, setRadiusUnit] = useState<RadiusUnit>('km')
+
+  const radiusDisplayValue = nearestPointsConfig.searchRadiusKm === null
+    ? ''
+    : radiusUnit === 'km'
+      ? String(nearestPointsConfig.searchRadiusKm)
+      : String(Math.round(nearestPointsConfig.searchRadiusKm * METERS_PER_KM))
 
   const handleRadiusChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.trim()
@@ -91,10 +105,17 @@ export default function SpatialAnalysisPanel({
       return
     }
     const num = Number(raw)
-    onNearestPointsConfigChange({
-      searchRadiusKm: Number.isFinite(num) && num > 0 ? num : null,
-    })
-  }, [onNearestPointsConfigChange])
+    if (!Number.isFinite(num) || num <= 0) {
+      onNearestPointsConfigChange({ searchRadiusKm: null })
+      return
+    }
+    const km = radiusUnit === 'km' ? num : num / METERS_PER_KM
+    onNearestPointsConfigChange({ searchRadiusKm: km })
+  }, [onNearestPointsConfigChange, radiusUnit])
+
+  const toggleRadiusUnit = useCallback(() => {
+    setRadiusUnit((prev) => (prev === 'km' ? 'm' : 'km'))
+  }, [])
 
   const handleClosestCountChange = useCallback((count: number) => {
     onNearestPointsConfigChange({ closestCount: count })
@@ -242,22 +263,41 @@ export default function SpatialAnalysisPanel({
               </div>
 
               <div>
-                <label className="block text-[10px] font-medium text-zinc-600 mb-1">Hedef katmanı</label>
-                <select
-                  value={nearestPointsConfig.targetLayer ?? ''}
-                  onChange={handleTargetLayerChange}
-                  disabled={!nearestPointsConfig.inputLayer}
-                  className="w-full text-[10px] px-2 py-1 border border-zinc-200 rounded-md bg-white text-zinc-700 focus:border-violet-400 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400"
-                >
-                  <option value="">(Aynı katman içi)</option>
-                  {availableLayers
-                    .filter((layer) => layer.id !== nearestPointsConfig.inputLayer)
-                    .map((layer) => (
-                      <option key={layer.id} value={layer.id}>
-                        {layer.label} ({layer.count})
-                      </option>
-                    ))}
-                </select>
+                <div className="flex items-baseline justify-between mb-1">
+                  <label className="text-[10px] font-medium text-zinc-600">Hedef katman(lar)</label>
+                  <span className="text-[8px] text-zinc-400">boş = kendi içi</span>
+                </div>
+                {availableLayers.filter((layer) => layer.id !== nearestPointsConfig.inputLayer).length === 0 ? (
+                  <p className="text-[9px] text-zinc-400 italic px-1">
+                    Diğer bir katman yüklenmedi.
+                  </p>
+                ) : (
+                  <div className="max-h-24 overflow-y-auto border border-zinc-200 rounded-md divide-y divide-zinc-100">
+                    {availableLayers
+                      .filter((layer) => layer.id !== nearestPointsConfig.inputLayer)
+                      .map((layer) => {
+                        const checked = nearestPointsConfig.targetLayers.includes(layer.id)
+                        return (
+                          <label
+                            key={layer.id}
+                            className="flex items-center gap-1.5 px-2 py-1 cursor-pointer hover:bg-violet-50"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              disabled={!nearestPointsConfig.inputLayer}
+                              onChange={(e) => handleTargetLayerToggle(layer.id, e.target.checked)}
+                              className="w-3 h-3 accent-violet-500 disabled:opacity-40"
+                            />
+                            <span className="text-[10px] text-zinc-700 flex-1 truncate" title={layer.label}>
+                              {layer.label}
+                            </span>
+                            <span className="text-[9px] text-zinc-400 font-mono">{layer.count}</span>
+                          </label>
+                        )
+                      })}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -269,13 +309,20 @@ export default function SpatialAnalysisPanel({
                   <input
                     type="number"
                     min={0}
-                    step={0.1}
-                    placeholder="örn. 5"
-                    value={nearestPointsConfig.searchRadiusKm ?? ''}
+                    step={radiusUnit === 'km' ? 0.1 : 50}
+                    placeholder={radiusUnit === 'km' ? 'örn. 5' : 'örn. 500'}
+                    value={radiusDisplayValue}
                     onChange={handleRadiusChange}
-                    className="w-full text-[10px] pl-2 pr-8 py-1 border border-zinc-200 rounded-md bg-white text-zinc-700 focus:border-violet-400 focus:outline-none"
+                    className="w-full text-[10px] pl-2 pr-12 py-1 border border-zinc-200 rounded-md bg-white text-zinc-700 focus:border-violet-400 focus:outline-none"
                   />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-zinc-400 font-medium">km</span>
+                  <button
+                    type="button"
+                    onClick={toggleRadiusUnit}
+                    title="Birim değiştir"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[9px] font-semibold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded transition-colors"
+                  >
+                    {radiusUnit}
+                  </button>
                 </div>
               </div>
 

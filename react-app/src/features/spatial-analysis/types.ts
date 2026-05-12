@@ -15,16 +15,18 @@ export interface NearestPointsStats {
 }
 
 /**
- * "Girdi" ve "Hedef" katman kimlikleri kullanıcının yüklediği dosyaların
- * sourceLabel değerleridir. Çizilen öğeler için sabit "__drawn__" id'si kullanılır.
- * Her ikisi null ise eski "tek koleksiyon, kendi içinde komşuluk" davranışı korunur.
+ * "Girdi" tek bir katmandır (sourceLabel veya "__drawn__").
+ * "Hedef" birden fazla katman olabilir (ArcGIS GenerateNearTable'ın
+ * çoklu near_features parametresi gibi); boş liste → "girdi katmanı kendi içinde
+ * komşuluk" (self-pair) davranışı.
+ * inputLayer null ise eski "tüm veri tek koleksiyon" davranışı korunur.
  */
 export interface NearestPointsConfig {
   showAllLines: boolean
   showShortestOnly: boolean
   showLabels: boolean
   inputLayer: string | null
-  targetLayer: string | null
+  targetLayers: string[]
   searchRadiusKm: number | null
   closestCount: number
 }
