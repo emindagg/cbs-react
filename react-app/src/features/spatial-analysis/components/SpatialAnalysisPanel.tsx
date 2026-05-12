@@ -1,6 +1,12 @@
 import { useCallback } from 'react'
 
-import type { NearestPointsConfig, NearestPointsStats, SpatialAnalysisType, SpatialLayerStyle } from '../types'
+import type {
+  NearestPointsConfig,
+  NearestPointsStats,
+  SpatialAnalysisType,
+  SpatialLayerOption,
+  SpatialLayerStyle,
+} from '../types'
 
 interface SpatialAnalysisPanelProps {
   isOpen: boolean
@@ -13,6 +19,7 @@ interface SpatialAnalysisPanelProps {
   pointCount: number
   convexHullAreaKm2: number | null
   hasData: boolean
+  availableLayers: SpatialLayerOption[]
   onConvexHullStyleChange: (style: Partial<SpatialLayerStyle>) => void
   onVoronoiStyleChange: (style: Partial<SpatialLayerStyle>) => void
   onNearestPointsStyleChange: (style: Partial<SpatialLayerStyle>) => void
@@ -20,6 +27,8 @@ interface SpatialAnalysisPanelProps {
   onClose: () => void
   onDeactivate: () => void
 }
+
+const TOP_N_OPTIONS = [1, 3, 5] as const
 
 const FILL_COLORS = [
   { color: '#f97316', label: 'Turuncu' },
@@ -43,6 +52,7 @@ export default function SpatialAnalysisPanel({
   pointCount,
   convexHullAreaKm2,
   hasData,
+  availableLayers,
   onConvexHullStyleChange,
   onVoronoiStyleChange,
   onNearestPointsStyleChange,
@@ -64,6 +74,32 @@ export default function SpatialAnalysisPanel({
     onStyleChange({ strokeWidth: Number(e.target.value) })
   }, [onStyleChange])
 
+  const handleInputLayerChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    onNearestPointsConfigChange({ inputLayer: value === '' ? null : value })
+  }, [onNearestPointsConfigChange])
+
+  const handleTargetLayerChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value
+    onNearestPointsConfigChange({ targetLayer: value === '' ? null : value })
+  }, [onNearestPointsConfigChange])
+
+  const handleRadiusChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.trim()
+    if (raw === '') {
+      onNearestPointsConfigChange({ searchRadiusKm: null })
+      return
+    }
+    const num = Number(raw)
+    onNearestPointsConfigChange({
+      searchRadiusKm: Number.isFinite(num) && num > 0 ? num : null,
+    })
+  }, [onNearestPointsConfigChange])
+
+  const handleClosestCountChange = useCallback((count: number) => {
+    onNearestPointsConfigChange({ closestCount: count })
+  }, [onNearestPointsConfigChange])
+
   if (!isOpen || !activeAnalysis) return null
 
   const title = isConvexHull
@@ -84,9 +120,9 @@ export default function SpatialAnalysisPanel({
     : convexHullAreaKm2.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   return (
-    <div className="fixed top-14 right-14 z-1500 w-64 bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-zinc-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+    <div className="fixed top-14 right-14 z-1500 w-64 max-h-[calc(100vh-5rem)] flex flex-col bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-zinc-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
       {/* Header */}
-      <div className={`px-3.5 py-2.5 ${isConvexHull ? 'bg-gradient-to-r from-orange-50 to-amber-50' : isNearest ? 'bg-gradient-to-r from-violet-50 to-purple-50' : 'bg-gradient-to-r from-teal-50 to-cyan-50'} border-b border-zinc-100 flex items-center justify-between`}>
+      <div className={`shrink-0 px-3.5 py-2.5 ${isConvexHull ? 'bg-gradient-to-r from-orange-50 to-amber-50' : isNearest ? 'bg-gradient-to-r from-violet-50 to-purple-50' : 'bg-gradient-to-r from-teal-50 to-cyan-50'} border-b border-zinc-100 flex items-center justify-between`}>
         <div className="flex items-center gap-2">
           <div className={`w-6 h-6 rounded-lg ${iconColor} flex items-center justify-center`}>
             <i className={`fa-solid ${icon} text-white text-[10px]`}></i>
@@ -117,7 +153,7 @@ export default function SpatialAnalysisPanel({
           </p>
         </div>
       ) : (
-        <div className="px-3.5 py-3 space-y-3">
+        <div className="px-3.5 py-3 space-y-3 overflow-y-auto flex-1">
           {/* Fill Color */}
           <div>
             <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
@@ -181,6 +217,89 @@ export default function SpatialAnalysisPanel({
               className={`w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer ${isConvexHull ? 'accent-orange-500' : isNearest ? 'accent-violet-500' : 'accent-teal-500'}`}
             />
           </div>
+
+          {/* Nearest Points – Katman & Filtre */}
+          {isNearest && (
+            <div className="space-y-2 pt-1 border-t border-zinc-100">
+              <label className="block text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                Katmanlar
+              </label>
+
+              <div>
+                <label className="block text-[10px] font-medium text-zinc-600 mb-1">Girdi katmanı</label>
+                <select
+                  value={nearestPointsConfig.inputLayer ?? ''}
+                  onChange={handleInputLayerChange}
+                  className="w-full text-[10px] px-2 py-1 border border-zinc-200 rounded-md bg-white text-zinc-700 focus:border-violet-400 focus:outline-none"
+                >
+                  <option value="">Tüm veri</option>
+                  {availableLayers.map((layer) => (
+                    <option key={layer.id} value={layer.id}>
+                      {layer.label} ({layer.count})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-medium text-zinc-600 mb-1">Hedef katmanı</label>
+                <select
+                  value={nearestPointsConfig.targetLayer ?? ''}
+                  onChange={handleTargetLayerChange}
+                  disabled={!nearestPointsConfig.inputLayer}
+                  className="w-full text-[10px] px-2 py-1 border border-zinc-200 rounded-md bg-white text-zinc-700 focus:border-violet-400 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-400"
+                >
+                  <option value="">(Aynı katman içi)</option>
+                  {availableLayers
+                    .filter((layer) => layer.id !== nearestPointsConfig.inputLayer)
+                    .map((layer) => (
+                      <option key={layer.id} value={layer.id}>
+                        {layer.label} ({layer.count})
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <div className="flex items-baseline justify-between mb-1">
+                  <label className="text-[10px] font-medium text-zinc-600">Arama yarıçapı</label>
+                  <span className="text-[8px] text-zinc-400">boş = sınırsız</span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.1}
+                    placeholder="örn. 5"
+                    value={nearestPointsConfig.searchRadiusKm ?? ''}
+                    onChange={handleRadiusChange}
+                    className="w-full text-[10px] pl-2 pr-8 py-1 border border-zinc-200 rounded-md bg-white text-zinc-700 focus:border-violet-400 focus:outline-none"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-zinc-400 font-medium">km</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-medium text-zinc-600 mb-1">En yakın kaç hedef?</label>
+                <div className="flex gap-1">
+                  {TOP_N_OPTIONS.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => handleClosestCountChange(n)}
+                      className={`flex-1 text-[10px] py-1 rounded-md border transition-colors ${
+                        nearestPointsConfig.closestCount === n
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-zinc-600 border-zinc-200 hover:border-violet-300'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Nearest Points Toggle Options */}
           {isNearest && (

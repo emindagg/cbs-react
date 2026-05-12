@@ -221,6 +221,7 @@ export default function AppLayout() {
         pointCount={spatial.pointCount}
         convexHullAreaKm2={spatial.convexHullAreaKm2}
         hasData={spatial.hasData}
+        availableLayers={spatial.availableLayers}
         onConvexHullStyleChange={spatial.setConvexHullStyle}
         onVoronoiStyleChange={spatial.setVoronoiStyle}
         onNearestPointsStyleChange={spatial.setNearestPointsStyle}

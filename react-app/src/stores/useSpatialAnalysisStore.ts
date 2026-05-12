@@ -30,6 +30,10 @@ const defaultNearestPointsConfig: NearestPointsConfig = {
   showAllLines: false,
   showShortestOnly: true,
   showLabels: true,
+  inputLayer: null,
+  targetLayer: null,
+  searchRadiusKm: null,
+  closestCount: 1,
 }
 
 export const useSpatialAnalysisStore = create<SpatialAnalysisState>((set) => ({

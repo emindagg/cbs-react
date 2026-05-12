@@ -14,10 +14,25 @@ export interface NearestPointsStats {
   averageDistance: number
 }
 
+/**
+ * "Girdi" ve "Hedef" katman kimlikleri kullanıcının yüklediği dosyaların
+ * sourceLabel değerleridir. Çizilen öğeler için sabit "__drawn__" id'si kullanılır.
+ * Her ikisi null ise eski "tek koleksiyon, kendi içinde komşuluk" davranışı korunur.
+ */
 export interface NearestPointsConfig {
   showAllLines: boolean
   showShortestOnly: boolean
   showLabels: boolean
+  inputLayer: string | null
+  targetLayer: string | null
+  searchRadiusKm: number | null
+  closestCount: number
+}
+
+export interface SpatialLayerOption {
+  id: string
+  label: string
+  count: number
 }
 
 export interface SpatialAnalysisState {

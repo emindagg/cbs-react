@@ -1,3 +1,36 @@
+# Görev: En Yakın Geometri – İki Katmanlı (Girdi / Hedef) Analiz
+Tarih: 2026-05-12
+
+## Bağlam
+ArcGIS Pro "Generate Near Table" aracının lise CBS dersine uygun bir alt kümesini eklemek istiyoruz. Mevcut "En Yakın Geometri" analizi tek `FeatureCollection` üzerinde çalışıyor; öğrenci "okul → en yakın hastane" gibi cross-layer sorgular yapamıyor. Bu görevde kullanıcı iki ayrı katman (örn. `okullar.geojson` ve `hastaneler.geojson`) içe aktardıktan sonra "Girdi katmanı" + "Hedef katmanı" seçip arama yarıçapı (km) ve top-N (1/3/5) belirleyerek analiz yapacak.
+
+## Plan
+- [x] Adım 1: `NearestPointsConfig` tiplerine `inputLayer`, `targetLayer`, `searchRadiusKm`, `closestCount` ekle (opsiyonel, geriye uyumlu).
+- [x] Adım 2: `useSpatialAnalysisStore` defaultlarını ve setter'ı güncelle.
+- [x] Adım 3: `NearestPointsRenderer.render` imzasını `inputs + targets?` olarak genişlet; topN ve radius filtresi uygula. Targets `null` ise eski self-pair davranışı korunsun.
+- [x] Adım 4: `useSpatialAnalysis` hook'unda `sourceLabel` bazlı `availableLayers` listesi türet; config'e göre iki ayrı koleksiyon hazırla.
+- [x] Adım 5: `SpatialAnalysisPanel` içine "Girdi/Hedef" dropdown'ları, "Arama yarıçapı (km)" input ve "En yakın N" seçici ekle.
+- [x] Adım 6: `pnpm build` çalıştırıldı (temiz). Değişen alanlarda `eslint` çalıştırıldı (temiz). Mevcut diğer pre-existing lint hataları kapsam dışı.
+
+## Doğrulama kriterleri
+- [x] Panelde "Girdi" ve "Hedef" dropdown'larında `sourceLabel` bazlı katman listesi var; çizilen öğeler "Çizilenler" altında gruplanır.
+- [x] "Girdi=X, Hedef=Y, Radius=5 km, N=1" akışı: her girdi için yarıçap içinde en yakın 1 hedef hesaplanır; radius dışı çiftler `searchRadiusKm` filtresiyle elenir.
+- [x] Girdi seçilmemiş (Tüm veri) iken eski self-pair davranışı korunur (`targets === null` modu).
+- [x] `closestCount` 1/3/5 seçeneklerinde topN sıralanmış olarak çizilir.
+- [x] `pnpm build` temiz biter, kendi değişikliklerimde lint hatası yok.
+- [x] Türkçe etiketler (Girdi katmanı, Hedef katmanı, Arama yarıçapı, En yakın kaç hedef?, Çizilenler, Aynı katman içi) UI'da bozulmadan görünür.
+
+## Sonuç
+ArcGIS Generate Near Table'ın lise seviyesine uygun alt kümesi eklendi:
+
+- **Tipler/Store:** `NearestPointsConfig` artık `inputLayer`, `targetLayer`, `searchRadiusKm`, `closestCount` taşıyor. Default: tüm alanlar `null` / `1`, böylece eski davranış bozulmuyor.
+- **Renderer:** `render(inputs, targets | null, style, config)` — iki koleksiyon modu (cross-layer) ve tek koleksiyon modu (self-pair). bbox prune + topN sıralama + radius filtresi. Çizgi/etiket feature'larında `rank`, `inputId`, `targetId` property'leri.
+- **Hook:** `availableLayers` türetildi (`sourceLabel` bazlı + `__drawn__` özel grubu). `filterByLayer` ile iki ayrı `FeatureCollection` üretiliyor; targetLayer boş/aynı ise self-pair'e düşer.
+- **UI:** Panele "Katmanlar" bölümü: Girdi/Hedef dropdown, sınırsız bırakılabilen yarıçap input ve 1/3/5 pill butonları.
+- Build temiz, ilgili dosyalarda lint hatası yok.
+
+---
+
 # Görev: AWS Terrarium ile bakı analizi ekle
 Tarih: 2026-04-25
 

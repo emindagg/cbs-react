@@ -29,14 +29,23 @@ export class NearestPointsRenderer {
     this.map = map
   }
 
+  /**
+   * `targets === null` → tek koleksiyon, kendi içinde komşuluk (eski davranış).
+   * `targets` verildiğinde her input için targets içinde topN komşu hesaplanır;
+   * kendi kendine eşleşme (self-pair) bu modda yapılmaz.
+   */
   render(
-    geometries: GeoJSON.FeatureCollection<Geometry>,
+    inputs: GeoJSON.FeatureCollection<Geometry>,
+    targets: GeoJSON.FeatureCollection<Geometry> | null,
     style: SpatialLayerStyle,
     config: NearestPointsConfig,
   ): NearestPairResult | null {
-    if (geometries.features.length < 2) return null
+    const inputCount = inputs.features.length
+    const targetCount = targets ? targets.features.length : inputCount
+    if (inputCount < 1 || targetCount < 1) return null
+    if (!targets && inputCount < 2) return null
 
-    const { lines, shortest, labels, stats } = this.computeNearestPairs(geometries)
+    const { lines, shortest, labels, stats } = this.computeNearestPairs(inputs, targets, config)
 
     if (config.showAllLines) {
       this.addOrUpdateSource(LINE_SOURCE_ID, lines)
@@ -98,77 +107,90 @@ export class NearestPointsRenderer {
     return Boolean(this.map.getLayer(LINE_LAYER_ID))
   }
 
-  private computeNearestPairs(geometries: GeoJSON.FeatureCollection<Geometry>) {
-    const features = prepareNearestGeometries(geometries)
+  private computeNearestPairs(
+    inputs: GeoJSON.FeatureCollection<Geometry>,
+    targets: GeoJSON.FeatureCollection<Geometry> | null,
+    config: NearestPointsConfig,
+  ) {
+    const inputFeatures = prepareNearestGeometries(inputs)
+    const targetFeatures = targets ? prepareNearestGeometries(targets) : inputFeatures
+    const isSelfPair = targets === null
+    const radiusKm = config.searchRadiusKm
+    const topN = Math.max(1, Math.floor(config.closestCount || 1))
+
     const lineFeatures: GeoJSON.Feature<GeoJSON.LineString>[] = []
     const labelFeatures: GeoJSON.Feature<GeoJSON.Point>[] = []
-    const visited = new Set<string>()
+    const visitedSelfPair = new Set<string>()
 
     let shortestDist = Infinity
     let shortestLine: GeoJSON.Feature<GeoJSON.LineString> | null = null
     let totalDist = 0
     let pairCount = 0
 
-    for (let i = 0; i < features.length; i++) {
-      const base = features[i]
-      let nearestResult: { targetId: string; distance: number; from: GeoJSON.Position; to: GeoJSON.Position } | null = null
+    for (const base of inputFeatures) {
+      const candidates: { targetId: string; distance: number; from: GeoJSON.Position; to: GeoJSON.Position }[] = []
 
-      for (let j = 0; j < features.length; j++) {
-        if (i === j) continue
-        const candidate = features[j]
+      for (const candidate of targetFeatures) {
+        if (isSelfPair && base.id === candidate.id) continue
+
         const bboxGap = bboxGapDistanceKm(base.bbox, candidate.bbox)
-        if (nearestResult && bboxGap >= nearestResult.distance) continue
+        if (radiusKm !== null && bboxGap > radiusKm) continue
 
         const connection = computeNearestGeometryConnection(base, candidate)
         if (!connection) continue
-        if (!nearestResult || connection.distanceKm < nearestResult.distance) {
-          nearestResult = {
-            targetId: candidate.id,
-            distance: connection.distanceKm,
-            from: connection.from,
-            to: connection.to,
-          }
-        }
+        if (radiusKm !== null && connection.distanceKm > radiusKm) continue
+
+        candidates.push({
+          targetId: candidate.id,
+          distance: connection.distanceKm,
+          from: connection.from,
+          to: connection.to,
+        })
       }
 
-      if (!nearestResult) continue
+      if (candidates.length === 0) continue
 
-      const pairKey = [base.id, nearestResult.targetId].sort().join('|')
-      if (!visited.has(pairKey)) {
-        visited.add(pairKey)
+      candidates.sort((a, b) => a.distance - b.distance)
+      const top = candidates.slice(0, topN)
+
+      top.forEach((result, idx) => {
+        const rank = idx + 1
+
+        if (isSelfPair) {
+          const pairKey = [base.id, result.targetId].sort().join('|')
+          if (visitedSelfPair.has(pairKey)) return
+          visitedSelfPair.add(pairKey)
+        }
 
         const line: GeoJSON.Feature<GeoJSON.LineString> = {
           type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: [nearestResult.from, nearestResult.to],
-          },
-          properties: { distance: nearestResult.distance },
+          geometry: { type: 'LineString', coordinates: [result.from, result.to] },
+          properties: { distance: result.distance, rank, inputId: base.id, targetId: result.targetId },
         }
         lineFeatures.push(line)
 
         const midCoords = turf.midpoint(
-          turf.point(nearestResult.from),
-          turf.point(nearestResult.to),
+          turf.point(result.from),
+          turf.point(result.to),
         ).geometry.coordinates
-        const distLabel = nearestResult.distance < 1
-          ? `${Math.round(nearestResult.distance * 1000)} m`
-          : `${nearestResult.distance.toFixed(1)} km`
+        const distLabel = result.distance < 1
+          ? `${Math.round(result.distance * 1000)} m`
+          : `${result.distance.toFixed(1)} km`
 
         labelFeatures.push({
           type: 'Feature',
           geometry: { type: 'Point', coordinates: midCoords },
-          properties: { label: distLabel, distance: nearestResult.distance },
+          properties: { label: distLabel, distance: result.distance, rank },
         })
 
-        totalDist += nearestResult.distance
+        totalDist += result.distance
         pairCount++
 
-        if (nearestResult.distance < shortestDist) {
-          shortestDist = nearestResult.distance
+        if (result.distance < shortestDist) {
+          shortestDist = result.distance
           shortestLine = line
         }
-      }
+      })
     }
 
     const shortestFC: GeoJSON.FeatureCollection = {

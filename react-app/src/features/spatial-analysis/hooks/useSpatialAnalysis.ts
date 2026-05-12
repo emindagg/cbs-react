@@ -8,7 +8,29 @@ import { ConvexHullRenderer } from '../services/ConvexHullRenderer'
 import { NearestPointsRenderer } from '../services/NearestPointsRenderer'
 import { VoronoiRenderer } from '../services/VoronoiRenderer'
 import { useSpatialAnalysisStore } from '../stores/useSpatialAnalysisStore'
-import type { SpatialAnalysisType } from '../types'
+import type { SpatialAnalysisType, SpatialLayerOption } from '../types'
+
+const DRAWN_LAYER_ID = '__drawn__'
+const DRAWN_LAYER_LABEL = 'Çizilenler'
+
+type SpatialItem = {
+  id?: string
+  name?: string
+  geometry: GeoJSON.Geometry
+  properties: Record<string, unknown>
+  visible: boolean
+  source?: 'drawn' | 'imported'
+  sourceLabel?: string
+}
+
+function layerIdOf(item: SpatialItem): string {
+  if (item.source === 'imported' && item.sourceLabel) return item.sourceLabel
+  return DRAWN_LAYER_ID
+}
+
+function layerLabelOf(id: string): string {
+  return id === DRAWN_LAYER_ID ? DRAWN_LAYER_LABEL : id
+}
 
 function extractPointsFromItems(
   items: { geometry: GeoJSON.Geometry; properties: Record<string, unknown>; visible: boolean }[],
@@ -102,7 +124,7 @@ function extractBoundaryPointsFromItems(
 }
 
 function extractGeometryFeaturesFromItems(
-  items: { id?: string; name?: string; geometry: GeoJSON.Geometry; properties: Record<string, unknown>; visible: boolean }[],
+  items: SpatialItem[],
 ): GeoJSON.FeatureCollection<GeoJSON.Geometry> {
   const features: GeoJSON.Feature<GeoJSON.Geometry>[] = []
 
@@ -120,6 +142,21 @@ function extractGeometryFeaturesFromItems(
   }
 
   return { type: 'FeatureCollection', features }
+}
+
+function buildLayerOptions(items: SpatialItem[]): SpatialLayerOption[] {
+  const counts = new Map<string, number>()
+  for (const item of items) {
+    if (!item.visible) continue
+    const id = layerIdOf(item)
+    counts.set(id, (counts.get(id) ?? 0) + 1)
+  }
+
+  return Array.from(counts.entries()).map(([id, count]) => ({
+    id,
+    label: layerLabelOf(id),
+    count,
+  }))
 }
 
 export function useSpatialAnalysis() {
@@ -140,6 +177,10 @@ export function useSpatialAnalysis() {
   )
   const geometryFeatures = useMemo(
     () => extractGeometryFeaturesFromItems(allItems),
+    [allItems],
+  )
+  const availableLayers = useMemo<SpatialLayerOption[]>(
+    () => buildLayerOptions(allItems),
     [allItems],
   )
 
@@ -183,6 +224,21 @@ export function useSpatialAnalysis() {
     return nearestRef.current
   }, [map])
 
+  const filterByLayer = useCallback(
+    (layerId: string | null): GeoJSON.FeatureCollection<GeoJSON.Geometry> => {
+      if (!layerId) return geometryFeatures
+      const features = allItems
+        .filter((item) => layerIdOf(item) === layerId)
+        .map<GeoJSON.Feature<GeoJSON.Geometry>>((item) => ({
+          type: 'Feature',
+          geometry: item.geometry,
+          properties: { ...item.properties, itemId: item.id, itemName: item.name },
+        }))
+      return { type: 'FeatureCollection', features }
+    },
+    [allItems, geometryFeatures],
+  )
+
   useEffect(() => {
     const convex = getConvexRenderer()
     const voronoi = getVoronoiRenderer()
@@ -199,13 +255,26 @@ export function useSpatialAnalysis() {
     } else if (activeAnalysis === 'voronoi' && representativePoints.features.length >= 2) {
       voronoi.render(representativePoints, voronoiStyle)
       setNearestStats(null)
-    } else if (activeAnalysis === 'nearest-points' && geometryFeatures.features.length >= 2) {
-      const stats = nearest.render(geometryFeatures, nearestPointsStyle, nearestPointsConfig)
-      setNearestStats(stats)
+    } else if (activeAnalysis === 'nearest-points') {
+      const { inputLayer, targetLayer } = nearestPointsConfig
+      const hasLayerSelection = Boolean(inputLayer)
+      const inputFC = hasLayerSelection ? filterByLayer(inputLayer) : geometryFeatures
+      const isCrossLayer = hasLayerSelection && targetLayer !== null && targetLayer !== inputLayer
+      const targetFC = isCrossLayer ? filterByLayer(targetLayer) : null
+
+      const minNeeded = targetFC ? 1 : 2
+      const ready = inputFC.features.length >= minNeeded && (!targetFC || targetFC.features.length >= 1)
+
+      if (ready) {
+        const stats = nearest.render(inputFC, targetFC, nearestPointsStyle, nearestPointsConfig)
+        setNearestStats(stats)
+      } else {
+        setNearestStats(null)
+      }
     } else {
       setNearestStats(null)
     }
-  }, [activeAnalysis, boundaryPoints, representativePoints, geometryFeatures, convexHullStyle, voronoiStyle, nearestPointsStyle, nearestPointsConfig, getConvexRenderer, getVoronoiRenderer, getNearestRenderer, setNearestStats])
+  }, [activeAnalysis, boundaryPoints, representativePoints, geometryFeatures, convexHullStyle, voronoiStyle, nearestPointsStyle, nearestPointsConfig, getConvexRenderer, getVoronoiRenderer, getNearestRenderer, setNearestStats, filterByLayer])
 
   useEffect(() => {
     return () => {
@@ -224,9 +293,13 @@ export function useSpatialAnalysis() {
 
   const pointCount = useMemo(() => {
     if (activeAnalysis === 'convex-hull') return boundaryPoints.features.length
-    if (activeAnalysis === 'nearest-points') return geometryFeatures.features.length
+    if (activeAnalysis === 'nearest-points') {
+      const { inputLayer } = nearestPointsConfig
+      if (inputLayer) return filterByLayer(inputLayer).features.length
+      return geometryFeatures.features.length
+    }
     return representativePoints.features.length
-  }, [activeAnalysis, boundaryPoints, representativePoints, geometryFeatures])
+  }, [activeAnalysis, boundaryPoints, representativePoints, geometryFeatures, nearestPointsConfig, filterByLayer])
 
   const convexHullAreaKm2 = useMemo(() => {
     if (boundaryPoints.features.length < 3) return null
@@ -253,5 +326,6 @@ export function useSpatialAnalysis() {
     pointCount,
     convexHullAreaKm2,
     hasData: allItems.length > 0,
+    availableLayers,
   }
 }
