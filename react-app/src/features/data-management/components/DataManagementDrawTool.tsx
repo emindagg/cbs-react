@@ -90,14 +90,18 @@ export function DataManagementDrawTool() {
     }
   }, [isDrawing, drawMode, drawPoints, map, setDrawPoints, setIsDrawing, setDrawGhostPoint])
 
-  const handleMouseUp = useCallback(() => {
+  const endVertexDrag = useCallback(() => {
     if (!isDraggingRef.current) return
     isDraggingRef.current = false
     draggingIndexRef.current = null
     setDraggingIndex(null)
-    map?.dragPan.enable()
+    map?.dragPan?.enable()
     if (map) map.getCanvas().style.cursor = CUSTOM_CURSOR
   }, [map])
+
+  const handleMouseUp = useCallback(() => {
+    endVertexDrag()
+  }, [endVertexDrag])
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     const isUndoShortcut = (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z'
@@ -118,18 +122,13 @@ export function DataManagementDrawTool() {
     }
 
     if (e.key === 'Escape') {
-      if (isDraggingRef.current) {
-        isDraggingRef.current = false
-        draggingIndexRef.current = null
-        setDraggingIndex(null)
-        map?.dragPan.enable()
-        if (map) map.getCanvas().style.cursor = CUSTOM_CURSOR
-      } else {
+      if (isDraggingRef.current) endVertexDrag()
+      else {
         resetDraw()
         if (map) map.getCanvas().style.cursor = ''
       }
     }
-  }, [resetDraw, map, undoDraw, redoDraw])
+  }, [resetDraw, map, undoDraw, redoDraw, endVertexDrag])
 
   useEffect(() => {
     if (!map || drawMode === 'none') return
@@ -149,46 +148,99 @@ export function DataManagementDrawTool() {
     }
   }, [map, drawMode, isDrawing, handleMouseMove, handleClick, handleDblClick, handleMouseUp, handleKeyDown])
 
-  // Vertex düzenleme — sadece edit modunda
+  // Vertex düzenleme — sadece edit modunda (fare + dokunma)
   useEffect(() => {
     if (!map || drawMode === 'none' || isDrawing) return
-    const onEnter = () => { if (!isDraggingRef.current) map.getCanvas().style.cursor = DRAG_CURSOR }
-    const onLeave = () => { if (!isDraggingRef.current) map.getCanvas().style.cursor = CUSTOM_CURSOR }
-    const onDown = (e: maplibregl.MapLayerMouseEvent) => {
-      if (!e.features?.length) return
-      const properties = e.features[0].properties
-      const insertIndex = properties?.insertIndex
-      const vertexIndex = properties?.vertexIndex
+    const canvas = map.getCanvas()
+
+    const beginVertexInteraction = (
+      lngLat: { lng: number; lat: number },
+      properties: GeoJSON.GeoJsonProperties | null | undefined,
+    ): boolean => {
+      const insertIndex = properties && typeof properties === 'object' && 'insertIndex' in properties
+        ? (properties as { insertIndex?: unknown }).insertIndex
+        : undefined
+      const vertexIndex = properties && typeof properties === 'object' && 'vertexIndex' in properties
+        ? (properties as { vertexIndex?: unknown }).vertexIndex
+        : undefined
       let nextDragIndex: number | null = null
 
       if (insertIndex !== undefined && insertIndex !== null) {
         nextDragIndex = Number(insertIndex)
         const nextPoints = [...drawPointsRef.current]
-        nextPoints.splice(nextDragIndex, 0, [e.lngLat.lng, e.lngLat.lat])
+        nextPoints.splice(nextDragIndex, 0, [lngLat.lng, lngLat.lat])
         drawPointsRef.current = nextPoints
         setDrawPoints(nextPoints)
       } else if (vertexIndex !== undefined && vertexIndex !== null) {
         nextDragIndex = Number(vertexIndex)
       }
 
-      if (nextDragIndex === null) return
+      if (nextDragIndex === null) return false
       draggingIndexRef.current = nextDragIndex
       isDraggingRef.current = true
       setDraggingIndex(nextDragIndex)
-      map.dragPan.disable()
-      map.getCanvas().style.cursor = CUSTOM_CURSOR
+      map.dragPan?.disable()
+      canvas.style.cursor = CUSTOM_CURSOR
+      return true
+    }
+
+    const onEnter = () => { if (!isDraggingRef.current) canvas.style.cursor = DRAG_CURSOR }
+    const onLeave = () => { if (!isDraggingRef.current) canvas.style.cursor = CUSTOM_CURSOR }
+    const onDown = (e: maplibregl.MapLayerMouseEvent) => {
+      if (!e.features?.length) return
+      if (!beginVertexInteraction(e.lngLat, e.features[0].properties)) return
       e.preventDefault()
     }
+
+    const touchOpts = { passive: false } as const
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return
+      const t = e.touches[0]
+      const rect = canvas.getBoundingClientRect()
+      const x = t.clientX - rect.left
+      const y = t.clientY - rect.top
+      const features = map.queryRenderedFeatures([x, y], { layers: ['draw-point'] })
+      if (!features.length) return
+      const projected = map.unproject([x, y])
+      if (!beginVertexInteraction({ lng: projected.lng, lat: projected.lat }, features[0].properties)) return
+      e.preventDefault()
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isDraggingRef.current || draggingIndexRef.current === null) return
+      if (e.touches.length !== 1) return
+      e.preventDefault()
+      const t = e.touches[0]
+      const rect = canvas.getBoundingClientRect()
+      const ll = map.unproject([t.clientX - rect.left, t.clientY - rect.top])
+      updateDrawPoint(draggingIndexRef.current, [ll.lng, ll.lat])
+      setCursorPos({ x: t.clientX - rect.left, y: t.clientY - rect.top })
+    }
+    const onTouchEnd = () => { endVertexDrag() }
+
     map.on('mouseenter', 'draw-point', onEnter)
     map.on('mouseleave', 'draw-point', onLeave)
     map.on('mousedown', 'draw-point', onDown)
+    canvas.addEventListener('touchstart', onTouchStart, touchOpts)
+    canvas.addEventListener('touchmove', onTouchMove, touchOpts)
+    canvas.addEventListener('touchend', onTouchEnd)
+    canvas.addEventListener('touchcancel', onTouchEnd)
+
     return () => {
       map.off('mouseenter', 'draw-point', onEnter)
       map.off('mouseleave', 'draw-point', onLeave)
       map.off('mousedown', 'draw-point', onDown)
-      if (isDraggingRef.current) { map.dragPan.enable(); isDraggingRef.current = false; draggingIndexRef.current = null }
+      canvas.removeEventListener('touchstart', onTouchStart, touchOpts)
+      canvas.removeEventListener('touchmove', onTouchMove, touchOpts)
+      canvas.removeEventListener('touchend', onTouchEnd)
+      canvas.removeEventListener('touchcancel', onTouchEnd)
+      if (isDraggingRef.current) {
+        map.dragPan?.enable()
+        isDraggingRef.current = false
+        draggingIndexRef.current = null
+        setDraggingIndex(null)
+      }
     }
-  }, [map, drawMode, isDrawing, setDrawPoints])
+  }, [map, drawMode, isDrawing, setDrawPoints, updateDrawPoint, setCursorPos, endVertexDrag])
 
   // ── GeoJSON — basit yaklaşım, DataLayer ile aynı renk referansı ─────────────
 
