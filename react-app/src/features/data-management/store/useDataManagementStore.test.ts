@@ -73,6 +73,43 @@ describe('useDataManagementStore clearBufferAnalysisItems', () => {
     expect(state.importedLayerName).toBe('Imported Layer')
   })
 
+  it('updateImportedSourceFillColor sets fill on all items matching source row key', () => {
+    const a = createItem({
+      id: 'a',
+      name: 'P1',
+      source: 'imported',
+      sourceLabel: 'okul.geojson',
+    })
+    const b = createItem({
+      id: 'b',
+      name: 'P2',
+      source: 'imported',
+      sourceLabel: 'okul.geojson',
+    })
+    const c = createItem({
+      id: 'c',
+      name: 'P3',
+      source: 'imported',
+      sourceLabel: 'hastane.geojson',
+    })
+
+    useDataManagementStore.setState({
+      items: [a, b, c],
+      hasImportedData: true,
+      importedLayerName: 'okul.geojson',
+    })
+
+    useDataManagementStore.getState().updateImportedSourceFillColor('okul.geojson', '#ff0000')
+
+    const state = useDataManagementStore.getState()
+    const styleA = state.items.find(i => i.id === 'a')?.properties.style as { fillColor?: string }
+    const styleB = state.items.find(i => i.id === 'b')?.properties.style as { fillColor?: string }
+    const styleC = state.items.find(i => i.id === 'c')?.properties.style as { fillColor?: string }
+    expect(styleA?.fillColor).toBe('#ff0000')
+    expect(styleB?.fillColor).toBe('#ff0000')
+    expect(styleC?.fillColor).toBeUndefined()
+  })
+
   it('keeps active selection when selected item is not buffer and updates imported flags', () => {
     const bufferItem = createItem({
       id: 'buffer-2',

@@ -6,6 +6,11 @@ import { useClusteringStore } from '@/stores/useClusteringStore'
 export type { DataItem }
 
 
+/** ImportedDataManagerFab — Yüklü Veriler satır anahtarı ile uyumlu */
+function importedSourceRowKey(item: DataItem) {
+  return item.sourceLabel || item.name || 'Import edilen veri'
+}
+
 const defaultLayerStyles: LayerStyles = {
   clusterEnabled: false,
   opacity: 0.3,
@@ -124,12 +129,14 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
       ),
     }
   }),
-  toggleImportedSourceVisibility: (sourceLabel) => set((state) => {
-    const sourceItems = state.items.filter(item => item.source === 'imported' && item.sourceLabel === sourceLabel)
+  toggleImportedSourceVisibility: (sourceKey) => set((state) => {
+    const sourceItems = state.items.filter(
+      item => item.source === 'imported' && importedSourceRowKey(item) === sourceKey,
+    )
     const nextVisible = sourceItems.some(item => !item.visible)
     return {
       items: state.items.map(item =>
-        item.source === 'imported' && item.sourceLabel === sourceLabel
+        item.source === 'imported' && importedSourceRowKey(item) === sourceKey
           ? { ...item, visible: nextVisible }
           : item,
       ),
@@ -171,6 +178,24 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
         }
         : item,
     ),
+  })),
+
+  updateImportedSourceFillColor: (sourceKey, fillColor) => set((state) => ({
+    items: state.items.map((item) => {
+      if (item.source !== 'imported' || importedSourceRowKey(item) !== sourceKey) {
+        return item
+      }
+      return {
+        ...item,
+        properties: {
+          ...item.properties,
+          style: {
+            ...(item.properties.style && typeof item.properties.style === 'object' ? item.properties.style : {}),
+            fillColor,
+          },
+        },
+      }
+    }),
   })),
   updateItem: (id, updates) => set((state) => ({
     items: state.items.map(item =>

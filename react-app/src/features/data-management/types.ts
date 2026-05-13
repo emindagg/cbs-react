@@ -87,6 +87,8 @@ export interface DataManagementStore {
   setActiveItem: (id: string | null) => void
   updateLayerStyle: (styles: Partial<LayerStyles>) => void
   updateItemFillColor: (id: string, fillColor: string) => void
+  /** Aynı dosya/kaynak (source satırı) altındaki tüm içe aktarılan öğelere dolgu rengi uygular */
+  updateImportedSourceFillColor: (sourceKey: string, fillColor: string) => void
   updateItem: (id: string, updates: Partial<Pick<DataItem, 'name' | 'date' | 'geometry'>>) => void
   updateItemGeometry: (id: string, geometry: Geometry) => void
   updateItemProperties: (id: string, properties: Record<string, unknown>) => void

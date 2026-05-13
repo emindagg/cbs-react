@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 
+import { isStyleProperties } from '@/types/style'
+
 import { ImportedDataTableModal } from './ImportedDataTableModal'
 import { useDataManagementStore } from '../store/useDataManagementStore'
 
@@ -44,6 +46,39 @@ function getImportedLayerVisibility(items: ReturnType<typeof useDataManagementSt
   return imported.some(item => item.visible)
 }
 
+const IMPORTED_SOURCE_FALLBACK = 'Import edilen veri'
+
+function importedSourceRowKey(item: { sourceLabel?: string; name: string }) {
+  return item.sourceLabel || item.name || IMPORTED_SOURCE_FALLBACK
+}
+
+function normalizeHexForColorInput(color: string | undefined, fallback: string): string {
+  if (color && /^#[0-9A-Fa-f]{6}$/i.test(color)) {
+    return color.toLowerCase()
+  }
+  if (color && /^#[0-9A-Fa-f]{3}$/i.test(color)) {
+    const r = color[1]
+    const g = color[2]
+    const b = color[3]
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase()
+  }
+  if (fallback && /^#[0-9A-Fa-f]{6}$/i.test(fallback)) {
+    return fallback.toLowerCase()
+  }
+  return '#18181b'
+}
+
+function getImportedSourcePreviewFill(
+  items: Array<{ sourceLabel?: string; name: string; properties: Record<string, unknown> }>,
+  sourceRowName: string,
+  themeFill: string,
+) {
+  const first = items.find(i => importedSourceRowKey(i) === sourceRowName)
+  const raw = first?.properties.style
+  const style = isStyleProperties(raw) ? raw : {}
+  return normalizeHexForColorInput(style.fillColor, themeFill)
+}
+
 export function ImportedDataManagerFab() {
   const {
     items,
@@ -53,6 +88,7 @@ export function ImportedDataManagerFab() {
     fabPosition,
     setFabPosition,
     updateLayerStyle,
+    updateImportedSourceFillColor,
     toggleImportedLayerVisibility,
     toggleImportedSourceVisibility,
     removeImportedLayer,
@@ -88,7 +124,7 @@ export function ImportedDataManagerFab() {
   const importedSources = useMemo(() => {
     const grouped = new Map<string, { count: number; visible: boolean }>()
     importedItems.forEach((item) => {
-      const key = item.sourceLabel || item.name || 'Import edilen veri'
+      const key = importedSourceRowKey(item)
       const current = grouped.get(key)
       if (!current) {
         grouped.set(key, { count: 1, visible: item.visible })
@@ -280,16 +316,40 @@ export function ImportedDataManagerFab() {
                 </div>
                 <div className="space-y-1.5 max-h-28 overflow-y-auto">
                   {importedSources.map((source) => (
-                    <div key={source.name} className="h-7 px-2.5 rounded-lg bg-white border border-slate-200/60 text-[11px] text-slate-700 flex items-center justify-between gap-2 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-150">
-                      <span className="truncate font-medium">{source.name}</span>
-                      <button
-                        type="button"
-                        onClick={() => toggleImportedSourceVisibility(source.name)}
-                        className="w-6 h-6 rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700 inline-flex items-center justify-center shrink-0 transition-all duration-150 active:scale-95"
-                        title={source.visible ? 'Bu dosyayı gizle' : 'Bu dosyayı göster'}
-                      >
-                        {source.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                      </button>
+                    <div key={source.name} className="min-h-8 px-2 py-0.5 rounded-lg bg-white border border-slate-200/60 text-[11px] text-slate-700 flex items-center justify-between gap-1.5 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-150">
+                      <span className="truncate font-medium flex-1 min-w-0">{source.name}</span>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <label
+                          className="relative w-6 h-6 rounded-md border border-slate-200 overflow-hidden cursor-pointer inline-flex items-center justify-center bg-white hover:border-slate-400 transition-colors"
+                          title="Bu dosyadaki tüm nesneler için dolgu rengi"
+                          onClick={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="color"
+                            aria-label={`${source.name} dosyası dolgu rengi`}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            value={getImportedSourcePreviewFill(importedItems, source.name, layerStyles.fillColor)}
+                            onChange={(e) => {
+                              startTransition(() => updateImportedSourceFillColor(source.name, e.target.value))
+                            }}
+                          />
+                          <span
+                            className="pointer-events-none absolute inset-0.5 rounded-sm border border-slate-100"
+                            style={{
+                              backgroundColor: getImportedSourcePreviewFill(importedItems, source.name, layerStyles.fillColor),
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => toggleImportedSourceVisibility(source.name)}
+                          className="w-6 h-6 rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700 inline-flex items-center justify-center transition-all duration-150 active:scale-95"
+                          title={source.visible ? 'Bu dosyayı gizle' : 'Bu dosyayı göster'}
+                        >
+                          {source.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -424,7 +484,7 @@ export function ImportedDataManagerFab() {
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label htmlFor="dm-width" className="text-xs font-semibold text-slate-800">Sembol Genişliği</label>
+                        <label htmlFor="dm-width" className="text-xs font-semibold text-slate-800">Nokta Büyüklüğü</label>
                         <input
                           type="number"
                           min={0}
