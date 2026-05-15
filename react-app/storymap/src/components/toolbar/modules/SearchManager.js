@@ -9,7 +9,7 @@ export class SearchManager {
         this.searchMarker = null;
         this.searchResultsContainer = null;
         this.searchDebounceTimer = null;
-        
+
         this.setupUI();
     }
 
@@ -22,11 +22,11 @@ export class SearchManager {
         if (!searchInput) return;
 
         this.createSearchResultsContainer(searchInput);
-        
+
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.trim();
             clearTimeout(this.searchDebounceTimer);
-            
+
             if (query.length >= 3) {
                 this.searchDebounceTimer = setTimeout(() => {
                     this.searchLocationWithResults(query);
@@ -35,7 +35,7 @@ export class SearchManager {
                 this.hideSearchResults();
             }
         });
-        
+
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -48,10 +48,10 @@ export class SearchManager {
                 }
             }
         });
-        
+
         searchInput.addEventListener('keydown', (e) => {
             if (!this.searchResults || this.searchResults.length === 0) return;
-            
+
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 this.selectedSearchIndex = Math.min(this.selectedSearchIndex + 1, this.searchResults.length - 1);
@@ -64,7 +64,7 @@ export class SearchManager {
                 this.hideSearchResults();
             }
         });
-        
+
         document.addEventListener('click', (e) => {
             if (!searchInput.contains(e.target) && !this.searchResultsContainer?.contains(e.target)) {
                 this.hideSearchResults();
@@ -89,7 +89,7 @@ export class SearchManager {
             z-index: 1001;
             margin-top: 4px;
         `;
-        
+
         const searchWrapper = searchInput.parentElement;
         searchWrapper.style.position = 'relative';
         searchWrapper.appendChild(this.searchResultsContainer);
@@ -139,7 +139,7 @@ export class SearchManager {
 
         try {
             const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=tr`;
-            
+
             const response = await fetch(url, {
                 headers: { 'User-Agent': 'StoryMap/1.0' }
             });
@@ -158,7 +158,7 @@ export class SearchManager {
 
     displaySearchResults() {
         if (!this.searchResultsContainer) return;
-        
+
         if (this.searchResults.length === 0) {
             this.searchResultsContainer.innerHTML = `
                 <div style="padding: 12px 15px; text-align: center; color: #666; font-size: 13px;">
@@ -170,7 +170,7 @@ export class SearchManager {
         }
 
         this.searchResultsContainer.innerHTML = '';
-        
+
         this.searchResults.forEach((result, index) => {
             const item = document.createElement('div');
             item.className = 'toolbar__search-result-item';
@@ -180,10 +180,10 @@ export class SearchManager {
                 border-bottom: 1px solid #eee;
                 transition: background 0.2s;
             `;
-            
+
             const displayName = result.display_name;
             const shortName = displayName.split(',')[0];
-            
+
             item.innerHTML = `
                 <div style="font-weight: 500; color: #333; font-size: 13px; margin-bottom: 2px;">
                     ${shortName}
@@ -192,25 +192,25 @@ export class SearchManager {
                     ${displayName}
                 </div>
             `;
-            
+
             item.addEventListener('mouseenter', () => {
                 this.selectedSearchIndex = index;
                 this.highlightSearchResult();
             });
-            
+
             item.addEventListener('click', () => {
                 this.selectSearchResult(result);
             });
-            
+
             this.searchResultsContainer.appendChild(item);
         });
-        
+
         this.searchResultsContainer.style.display = 'block';
     }
 
     highlightSearchResult() {
         if (!this.searchResultsContainer) return;
-        
+
         const items = this.searchResultsContainer.querySelectorAll('.toolbar__search-result-item');
         items.forEach((item, index) => {
             item.style.background = index === this.selectedSearchIndex ? '#f5f5f5' : 'white';
@@ -221,18 +221,18 @@ export class SearchManager {
         const lon = parseFloat(result.lon);
         const lat = parseFloat(result.lat);
         const displayName = result.display_name.split(',')[0];
-        
+
         if (this.mapComponent && this.mapComponent.map) {
             this.mapComponent.map.flyTo({
                 center: [lon, lat],
                 zoom: 13,
                 duration: 1500
             });
-            
+
             if (this.searchMarker) {
                 this.searchMarker.remove();
             }
-            
+
             const el = document.createElement('div');
             el.className = 'search-pin-marker';
             el.innerHTML = '<i class="fa-solid fa-location-dot"></i>';
@@ -243,13 +243,13 @@ export class SearchManager {
                 filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
                 transform: translateY(-50%);
             `;
-            
+
             this.searchMarker = new maplibregl.Marker({
                 element: el,
                 anchor: 'bottom'
             })
-            .setLngLat([lon, lat])
-            .setPopup(new maplibregl.Popup({ offset: 25, closeButton: false }).setHTML(`
+                .setLngLat([lon, lat])
+                .setPopup(new maplibregl.Popup({ offset: 25, closeButton: false }).setHTML(`
                 <div style="position: relative; padding: 12px 30px 12px 12px; font-family: 'Roboto', sans-serif; min-width: 180px;">
                     <button class="search-popup-close" style="
                         position: absolute;
@@ -276,28 +276,28 @@ export class SearchManager {
                     </div>
                 </div>
             `))
-            .addTo(this.mapComponent.map);
-            
+                .addTo(this.mapComponent.map);
+
             this.searchMarker.togglePopup();
-            
+
             setTimeout(() => {
                 const closeBtn = document.querySelector('.search-popup-close');
                 if (closeBtn) {
                     closeBtn.addEventListener('click', () => {
                         this.removeSearchMarker();
                     });
-                    closeBtn.addEventListener('mouseover', function() {
-                        this.style.background='#e74c3c'; 
-                        this.style.color='white';
+                    closeBtn.addEventListener('mouseover', function () {
+                        this.style.background = '#e74c3c';
+                        this.style.color = 'white';
                     });
-                    closeBtn.addEventListener('mouseout', function() {
-                        this.style.background='#f0f0f0'; 
-                        this.style.color='#666';
+                    closeBtn.addEventListener('mouseout', function () {
+                        this.style.background = '#f0f0f0';
+                        this.style.color = '#666';
                     });
                 }
             }, 100);
         }
-        
+
         const searchInput = this.toolbar.querySelector('#toolbar-search');
         if (searchInput) {
             searchInput.value = '';
