@@ -8,6 +8,7 @@ import { useStorymapModalStore } from '@/stores/useStorymapModalStore'
 import { SearchResults } from './SearchResults'
 import { useGeocoder } from '../hooks/useGeocoder'
 import { GeocoderManager, type GeocoderResponse, type GeocoderResult } from '../services/geocoderService'
+import { isValidCoordinateRange, parseSearchCoordinates } from '@/utils/parseSearchCoordinates'
 
 interface SearchContainerProps {
   leftPosition: string;
@@ -59,23 +60,18 @@ export function SearchContainer({
       return
     }
 
-    // Koordinat parsing (lat, lng format)
-    const coordMatch = trimmedQuery.match(/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/)
-    if (coordMatch) {
-      const lat = parseFloat(coordMatch[1])
-      const lng = parseFloat(coordMatch[2])
-
-      // Validate coordinate ranges
-      if (lat < -90 || lat > 90) {
-        setError('Enlem -90 ile 90 arasında olmalıdır')
-        return
-      }
-      if (lng < -180 || lng > 180) {
-        setError('Boylam -180 ile 180 arasında olmalıdır')
+    const parsedCoords = parseSearchCoordinates(trimmedQuery)
+    if (parsedCoords) {
+      const { lat, lng } = parsedCoords
+      if (!isValidCoordinateRange(lat, lng)) {
+        if (lat < -90 || lat > 90) {
+          setError('Enlem -90 ile 90 arasında olmalıdır')
+        } else {
+          setError('Boylam -180 ile 180 arasında olmalıdır')
+        }
         return
       }
 
-      // Focus on coordinates
       geocoderManagerRef.current.focusOnCoordinates(lat, lng)
       setResults(null)
       setError(null)

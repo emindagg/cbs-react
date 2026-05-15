@@ -1,3 +1,5 @@
+import { isValidCoordinateRange, parseSearchCoordinates } from '../../../utils/parseSearchCoordinates.js';
+
 export class SearchManager {
     constructor(toolbarElement) {
         this.toolbar = toolbarElement;
@@ -37,6 +39,10 @@ export class SearchManager {
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
+                const query = e.target.value.trim();
+                if (this.tryFocusOnParsedCoordinates(query)) {
+                    return;
+                }
                 if (this.searchResults && this.searchResults.length > 0) {
                     this.selectSearchResult(this.searchResults[this.selectedSearchIndex >= 0 ? this.selectedSearchIndex : 0]);
                 }
@@ -89,7 +95,48 @@ export class SearchManager {
         searchWrapper.appendChild(this.searchResultsContainer);
     }
 
+    tryFocusOnParsedCoordinates(query) {
+        const parsed = parseSearchCoordinates(query);
+        if (!parsed) {
+            return false;
+        }
+
+        if (!isValidCoordinateRange(parsed.lat, parsed.lng)) {
+            this.showSearchMessage('Geçersiz koordinat aralığı');
+            return true;
+        }
+
+        const label = `${parsed.lat.toFixed(6)}, ${parsed.lng.toFixed(6)}`;
+        this.focusOnCoordinates(parsed.lat, parsed.lng, label);
+        return true;
+    }
+
+    focusOnCoordinates(lat, lng, label) {
+        this.selectSearchResult({
+            lat: String(lat),
+            lon: String(lng),
+            display_name: label,
+        });
+    }
+
+    showSearchMessage(message) {
+        if (!this.searchResultsContainer) return;
+
+        this.searchResultsContainer.innerHTML = `
+            <div style="padding: 12px 15px; text-align: center; color: #666; font-size: 13px;">
+                ${message}
+            </div>
+        `;
+        this.searchResultsContainer.style.display = 'block';
+        this.searchResults = [];
+        this.selectedSearchIndex = -1;
+    }
+
     async searchLocationWithResults(query) {
+        if (this.tryFocusOnParsedCoordinates(query)) {
+            return;
+        }
+
         try {
             const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=tr`;
             
