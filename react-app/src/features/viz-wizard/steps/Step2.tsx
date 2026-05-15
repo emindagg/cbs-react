@@ -12,6 +12,18 @@ import { useVisualizationStore } from '@/stores/useVisualizationStore'
 import { normalizeTurkishText } from '@/utils/turkishNormalizer'
 
 import { useMatching } from '../hooks/useMatching'
+import type { NumberLocale } from '@/utils/numberFormatter'
+
+function formatDetectedLocaleLabel(locale: NumberLocale): string {
+  switch (locale) {
+    case 'tr':
+      return 'TR'
+    case 'en':
+      return 'EN'
+    case 'ambiguous':
+      return 'Otomatik'
+  }
+}
 
 interface VizWizardStep2Props {
   onBack: () => void
@@ -183,7 +195,7 @@ export default function VizWizardStep2({
             {detectedNumericLocale && (
               <div className="text-[10px] text-zinc-600 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 <span>
-                  Algılanan: <span className="font-semibold uppercase">{detectedNumericLocale.locale}</span>
+                  Algılanan: <span className="font-semibold">{formatDetectedLocaleLabel(detectedNumericLocale.locale)}</span>
                 </span>
                 <span>Örnek: {detectedNumericLocale.samples}</span>
                 {detectedNumericLocale.inconsistency >= 0.2 && (

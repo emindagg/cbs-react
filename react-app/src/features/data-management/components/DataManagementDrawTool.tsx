@@ -192,9 +192,9 @@ export function DataManagementDrawTool() {
       e.preventDefault()
     }
 
-    const touchOpts = { passive: false } as const
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return
+    const touchOpts: AddEventListenerOptions = { passive: false }
+    const onTouchStart: EventListener = (e) => {
+      if (!(e instanceof TouchEvent) || e.touches.length !== 1) return
       const t = e.touches[0]
       const rect = canvas.getBoundingClientRect()
       const x = t.clientX - rect.left
@@ -205,9 +205,9 @@ export function DataManagementDrawTool() {
       if (!beginVertexInteraction({ lng: projected.lng, lat: projected.lat }, features[0].properties)) return
       e.preventDefault()
     }
-    const onTouchMove = (e: TouchEvent) => {
+    const onTouchMove: EventListener = (e) => {
+      if (!(e instanceof TouchEvent) || e.touches.length !== 1) return
       if (!isDraggingRef.current || draggingIndexRef.current === null) return
-      if (e.touches.length !== 1) return
       e.preventDefault()
       const t = e.touches[0]
       const rect = canvas.getBoundingClientRect()
