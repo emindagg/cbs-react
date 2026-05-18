@@ -109,16 +109,14 @@ export function DataCatalogSection() {
           Veri Kataloğu
         </h3>
 
-        {drawnItems.length > 0 && (
-          <button
-            onClick={() => setIsTableModalOpen(true)}
-            className="text-[10px] flex items-center gap-1 text-slate-600 hover:text-emerald-600 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors"
-            title="Çizim Verileri Öznitelik Tablosunu Aç"
-          >
-            <i className="fa-solid fa-table"></i>
-            Tablo
-          </button>
-        )}
+        <button
+          onClick={() => setIsTableModalOpen(true)}
+          className="text-[10px] flex items-center gap-1 text-slate-600 hover:text-emerald-600 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors"
+          title="Öznitelik Tablosunu Aç"
+        >
+          <i className="fa-solid fa-table"></i>
+          Tablo
+        </button>
       </div>
 
       {hiddenSources.length > 0 && (
@@ -195,10 +193,10 @@ export function DataCatalogSection() {
                 >
                   <i
                     className={`text-[10px] ${item.type === 'point'
-                        ? 'fa-solid fa-location-dot'
-                        : item.type === 'line'
-                          ? 'fa-solid fa-route'
-                          : 'fa-solid fa-draw-polygon' // polygon ve circle (artık desteklenmiyor) için
+                      ? 'fa-solid fa-location-dot'
+                      : item.type === 'line'
+                        ? 'fa-solid fa-route'
+                        : 'fa-solid fa-draw-polygon' // polygon ve circle (artık desteklenmiyor) için
                       }`}
                     style={{ color: iconColor }}
                     title={`Renk: ${currentFillColor || 'Varsayılan'}`}
@@ -311,7 +309,7 @@ export function DataCatalogSection() {
         isOpen={isTableModalOpen}
         onClose={() => setIsTableModalOpen(false)}
         items={items}
-        sourceFilter="drawn"
+
       />
     </section>
   )

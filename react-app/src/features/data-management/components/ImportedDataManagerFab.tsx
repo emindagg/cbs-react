@@ -174,7 +174,7 @@ export function ImportedDataManagerFab() {
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
     if (!fabPosition) return
-    ;(event.currentTarget as HTMLButtonElement).setPointerCapture(event.pointerId)
+      ; (event.currentTarget as HTMLButtonElement).setPointerCapture(event.pointerId)
     dragStartRef.current = {
       pointerX: event.clientX,
       pointerY: event.clientY,
@@ -190,7 +190,7 @@ export function ImportedDataManagerFab() {
 
     const deltaX = event.clientX - start.pointerX
     const deltaY = event.clientY - start.pointerY
-    
+
     if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
       hasMovedRef.current = true
     }
@@ -214,9 +214,9 @@ export function ImportedDataManagerFab() {
       cancelAnimationFrame(rafRef.current)
       rafRef.current = null
     }
-    
+
     dragStartRef.current = null
-    
+
     if (!hasMovedRef.current) {
       setIsOpen(prev => !prev)
     }
@@ -631,6 +631,7 @@ export function ImportedDataManagerFab() {
         isOpen={hasImportedData && showTable}
         onClose={() => setShowTable(false)}
         items={items}
+        sourceFilter="imported"
       />
     </>
   )
