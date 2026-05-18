@@ -120,7 +120,14 @@ class ViewModeApp {
                 type: p.drawingType,
                 coords: p.coords,
                 color: p.color || '#3b82f6',
-                title: p.title
+                title: p.title,
+                text: p.text,
+                textStyle: p.textStyle,
+                textPlacement: p.textPlacement,
+                leaderLine: p.leaderLine,
+                leaderLineStyle: p.leaderLineStyle,
+                labelOffsetX: p.labelOffsetX,
+                labelOffsetY: p.labelOffsetY
             }));
     }
 

@@ -8,6 +8,7 @@ const maplibregl = window.maplibregl;
 import { StoryMapRenderer } from './StoryMapRenderer.js';
 import { StoryMapScroller } from './StoryMapScroller.js';
 import { Toggle3DControl } from '../map/modules/Toggle3DControl.js';
+import { MapMarkers } from '../map/modules/MapMarkers.js';
 import { HGM_TILE_URLS } from '../../config/hgm.js';
 
 export class StoryMapComponent {
@@ -119,6 +120,7 @@ export class StoryMapComponent {
 
         // Add markers and drawings when map loads
         this.map.on('load', () => {
+            this.mapMarkers = new MapMarkers(this.map);
             this.addMarkers();
             this.addDrawings();
         });
@@ -326,6 +328,20 @@ export class StoryMapComponent {
                         'line-opacity': 0.8
                     }
                 });
+            } else if (drawing.type === 'text') {
+                const text = drawing.text || drawing.title || 'Metin';
+                if (this.mapMarkers) {
+                    this.mapMarkers.addTextMarker(drawing.coords, text, {
+                        textStyle: drawing.textStyle || 'boxed',
+                        textPlacement: drawing.textPlacement || 'left',
+                        leaderLine: drawing.leaderLine !== false,
+                        leaderLineStyle: drawing.leaderLineStyle || 'gradient',
+                        anchorColor: drawing.color || '#334155',
+                        leaderColor: drawing.color || '#334155',
+                        labelOffsetX: drawing.labelOffsetX !== undefined ? drawing.labelOffsetX : null,
+                        labelOffsetY: drawing.labelOffsetY !== undefined ? drawing.labelOffsetY : null
+                    });
+                }
             }
         });
     }
@@ -532,6 +548,16 @@ export class StoryMapComponent {
         } catch (e) {
             console.error('[StoryMapComponent] map remove error:', e);
             this.map = null;
+        }
+
+        try {
+            if (this.mapMarkers) {
+                this.mapMarkers.clearMarkers();
+                this.mapMarkers = null;
+            }
+        } catch (e) {
+            console.error('[StoryMapComponent] mapMarkers clear error:', e);
+            this.mapMarkers = null;
         }
 
         try {
