@@ -80,10 +80,12 @@ export function useIsochrone() {
   const modeRef = useRef(mode)
   const selectedTimesRef = useRef(selectedTimes)
   const originRef = useRef(origin)
+  const routeDataRef = useRef(routeData)
 
   useEffect(() => { modeRef.current = mode }, [mode])
   useEffect(() => { selectedTimesRef.current = selectedTimes }, [selectedTimes])
   useEffect(() => { originRef.current = origin }, [origin])
+  useEffect(() => { routeDataRef.current = routeData }, [routeData])
   useEffect(() => { isAwaitingRef.current = isAwaitingDestination }, [isAwaitingDestination])
 
   const getIsoRenderer = useCallback((): IsochroneRenderer | null => {
@@ -127,6 +129,31 @@ export function useIsochrone() {
     }
   }, [setLoading, setError, setIsochroneData, getIsoRenderer])
 
+  const loadRoute = useCallback(async (from: [number, number], to: [number, number]) => {
+    routeAbortRef.current?.abort()
+    const controller = new AbortController()
+    routeAbortRef.current = controller
+
+    setRouteLoading(true)
+    setError(null)
+
+    try {
+      const feat = await fetchRoute(modeRef.current, from, to, controller.signal)
+      const summary = (feat.properties as Record<string, unknown>)?.summary as
+        { distance?: number; duration?: number } | undefined
+      if (summary) {
+        setRouteStats({ distance: summary.distance ?? 0, duration: summary.duration ?? 0 })
+      }
+      setRouteData(feat)
+      getRouteRenderer()?.render(feat)
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
+      setError(err instanceof Error ? err.message : 'Rota hesaplanamadı')
+    } finally {
+      setRouteLoading(false)
+    }
+  }, [setRouteLoading, setError, setRouteStats, setRouteData, getRouteRenderer])
+
   const startNewAnalysis = useCallback(async (coords: [number, number]) => {
     setOrigin(coords)
     setRouteData(null)
@@ -141,6 +168,13 @@ export function useIsochrone() {
     const coords = originRef.current
     if (!isActive || !coords || selectedTimes.length === 0) return
     loadIsochrones(coords)
+
+    const currentRoute = routeDataRef.current
+    if (currentRoute?.geometry?.type === 'LineString') {
+      const coordsArr = currentRoute.geometry.coordinates
+      const dest = coordsArr[coordsArr.length - 1] as [number, number]
+      loadRoute(coords, dest)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, selectedTimes])
 
@@ -161,28 +195,7 @@ export function useIsochrone() {
         removePopup()
         setAwaitingDestination(false)
 
-        routeAbortRef.current?.abort()
-        const controller = new AbortController()
-        routeAbortRef.current = controller
-
-        setRouteLoading(true)
-        setError(null)
-
-        try {
-          const feat = await fetchRoute(modeRef.current, from, coords, controller.signal)
-          const summary = (feat.properties as Record<string, unknown>)?.summary as
-            { distance?: number; duration?: number } | undefined
-          if (summary) {
-            setRouteStats({ distance: summary.distance ?? 0, duration: summary.duration ?? 0 })
-          }
-          setRouteData(feat)
-          getRouteRenderer()?.render(feat)
-        } catch (err) {
-          if (err instanceof Error && err.name === 'AbortError') return
-          setError(err instanceof Error ? err.message : 'Rota hesaplanamadı')
-        } finally {
-          setRouteLoading(false)
-        }
+        loadRoute(from, coords)
         return
       }
 
@@ -217,29 +230,7 @@ export function useIsochrone() {
             removePopup()
             const from = originRef.current
             if (!from) return
-
-            routeAbortRef.current?.abort()
-            const controller = new AbortController()
-            routeAbortRef.current = controller
-
-            setRouteLoading(true)
-            setError(null)
-
-            try {
-              const feat = await fetchRoute(modeRef.current, from, coords, controller.signal)
-              const summary = (feat.properties as Record<string, unknown>)?.summary as
-                { distance?: number; duration?: number } | undefined
-              if (summary) {
-                setRouteStats({ distance: summary.distance ?? 0, duration: summary.duration ?? 0 })
-              }
-              setRouteData(feat)
-              getRouteRenderer()?.render(feat)
-            } catch (err) {
-              if (err instanceof Error && err.name === 'AbortError') return
-              setError(err instanceof Error ? err.message : 'Rota hesaplanamadı')
-            } finally {
-              setRouteLoading(false)
-            }
+            loadRoute(from, coords)
           })
 
           el.querySelector('#iso-popup-new')?.addEventListener('click', () => {
@@ -262,7 +253,7 @@ export function useIsochrone() {
   }, [
     map, isActive, loadIsochrones, startNewAnalysis, removePopup,
     setRouteData, setRouteStats, setRouteLoading, setError,
-    setAwaitingDestination, getRouteRenderer,
+    setAwaitingDestination, getRouteRenderer, loadRoute
   ])
 
   // Cleanup on deactivate
