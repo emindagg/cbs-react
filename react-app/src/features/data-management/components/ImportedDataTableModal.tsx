@@ -6,7 +6,7 @@ import type {
 } from 'ag-grid-community'
 import { themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
-import { AlertTriangle, Check, Loader2, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Check, Loader2, Plus, Trash2, X } from 'lucide-react'
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -124,11 +124,10 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
         <div className="px-5 pt-5 pb-4">
           <div className="flex items-start gap-3">
             <div
-              className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
-                isDanger
+              className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${isDanger
                   ? 'bg-[#FFF1F0] text-[#FF3B30] border-[#FFC9C5]'
                   : 'bg-slate-100 text-slate-700 border-slate-200'
-              }`}
+                }`}
             >
               <AlertTriangle className="h-5 w-5" strokeWidth={2.1} aria-hidden="true" />
             </div>
@@ -158,11 +157,10 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
             onClick={handleConfirm}
             autoFocus
             disabled={isSubmitting}
-            className={`inline-flex h-9 min-w-[92px] items-center justify-center gap-1.5 rounded-lg px-3.5 text-[13px] font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-75 ${
-              isDanger
+            className={`inline-flex h-9 min-w-[92px] items-center justify-center gap-1.5 rounded-lg px-3.5 text-[13px] font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-75 ${isDanger
                 ? 'bg-red-600 hover:bg-red-700'
                 : 'bg-slate-900 hover:bg-slate-800'
-            }`}
+              }`}
           >
             {confirmIcon}
             {isSubmitting ? 'İşleniyor...' : state.confirmLabel}
@@ -193,12 +191,15 @@ function buildRowData(items: DataItem[]) {
 
 export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataTableModalProps) {
   const updateItemProperties = useDataManagementStore(s => s.updateItemProperties)
+  const addImportedPropertyColumn = useDataManagementStore(s => s.addImportedPropertyColumn)
   const removeItem = useDataManagementStore(s => s.removeItem)
   const gridRef = useRef<AgGridReact>(null)
   const pendingEdits = useRef<Map<string, Record<string, unknown>>>(new Map())
   const [pendingCount, setPendingCount] = useState(0)
   const [selectedCount, setSelectedCount] = useState(0)
   const [confirm, setConfirm] = useState<ConfirmState | null>(null)
+  const [isAddingColumn, setIsAddingColumn] = useState(false)
+  const [newColumnName, setNewColumnName] = useState('')
 
   const dropPendingEdits = useCallback((ids: string[]) => {
     let changed = false
@@ -319,6 +320,20 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
     onClose()
   }, [onClose, setPendingCount])
 
+  const handleAddColumn = useCallback(() => {
+    const colName = newColumnName.trim()
+    if (!colName) return
+
+    if (propertyKeys.includes(colName)) {
+      alert('Bu sütun zaten var.')
+      return
+    }
+
+    addImportedPropertyColumn(colName)
+    setIsAddingColumn(false)
+    setNewColumnName('')
+  }, [newColumnName, propertyKeys, addImportedPropertyColumn])
+
   if (!isOpen) return null
 
   return createPortal(
@@ -331,6 +346,49 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
               <p className="text-xs text-slate-500">{rowData.length} satır — hücreye çift tıklayarak düzenleyin</p>
             </div>
             <div className="flex items-center gap-2">
+              {isAddingColumn ? (
+                <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg pr-1 pl-1">
+                  <input
+                    autoFocus
+                    type="text"
+                    value={newColumnName}
+                    onChange={e => setNewColumnName(e.target.value)}
+                    placeholder="Sütun Adı"
+                    className="h-8 text-[13px] bg-transparent border-none outline-none focus:ring-0 px-2 w-32"
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleAddColumn()
+                      if (e.key === 'Escape') {
+                        setIsAddingColumn(false)
+                        setNewColumnName('')
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddColumn}
+                    disabled={!newColumnName.trim()}
+                    className="w-6 h-6 flex items-center justify-center text-emerald-600 hover:bg-emerald-50 rounded disabled:opacity-50"
+                  >
+                    <Check className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setIsAddingColumn(false); setNewColumnName('') }}
+                    className="w-6 h-6 flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsAddingColumn(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium border border-slate-200 rounded-lg text-slate-700 bg-white hover:bg-slate-50 shadow-sm transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Sütun Ekle
+                </button>
+              )}
               {selectedCount > 0 && (
                 <button
                   type="button"

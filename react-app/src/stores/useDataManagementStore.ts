@@ -197,6 +197,22 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
       }
     }),
   })),
+
+  addImportedPropertyColumn: (columnName, defaultValue = '') => set((state) => ({
+    items: state.items.map((item) => {
+      if (item.source !== 'imported') return item
+      if (Object.hasOwn(item.properties, columnName)) return item
+
+      return {
+        ...item,
+        properties: {
+          ...item.properties,
+          [columnName]: defaultValue,
+        },
+      }
+    }),
+  })),
+
   updateItem: (id, updates) => set((state) => ({
     items: state.items.map(item =>
       item.id === id
