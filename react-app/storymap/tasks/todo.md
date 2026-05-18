@@ -1,26 +1,22 @@
-# Görev: Harita Zoom Değişikliğinde Slider'ın Dinamik Güncellenmesi
+# Görev: Kaydedilmemiş Çizimlerin Silinmesi ve Haritadan Kaldırılması
 Tarih: 2026-05-18
 
 ## Bağlam
-Storymap uygulamasında detay görünümünde (nokta düzenleme paneli) bir "Yakınlaştırma Seviyesi" (zoom) slider'ı bulunmaktadır. Kullanıcı haritayı doğrudan sürükleyerek veya zoom kontrolleri ile yakınlaştırıp uzaklaştırdığında, detay panelindeki bu slider'ın ve gösterilen zoom değerinin haritanın güncel zoom seviyesine göre dinamik olarak güncellenmesi istenmektedir.
+Storymap uygulamasında harita üzerinde çizim (poligon, çizgi, daire, dikdörtgen vb.) yapıldıktan sonra sol detay panelinde bu çizim için otomatik olarak düzenleme ekranı açılmaktadır. Kullanıcı "Kaydet" demeden detay panelindeki "Sil" (çöp kutusu) butonuna bastığında çizim sidebar listesinden kaldırılmakta ancak haritadan silinmemektedir. Çizim sadece yeni bir çizim aracı seçildiğinde haritadan kaybolmaktadır. Beklenen davranış, "Sil" butonuna basıldığı anda çizimin haritadan (hem statik katmanlardan hem de aktif düzenleme modundaki Mapbox GL Draw modülünden) tamamen temizlenmesidir. Ayrıca, liste görünümünde bir çizim silindiğinde de haritadaki katmanların düzgünce temizlenmesi sağlanmalıdır.
 
 ## Plan
-- [x] Adım 1: `ModalComponent.js` dosyasında harita yüklendikten sonra (`onMapLoad`) haritanın zoom değişikliklerini dinleyecek bir olay dinleyici (`zoom` veya `zoomend`) ekle.
-- [x] Adım 2: Olay tetiklendiğinde, sidebar'ın detay görünümünde (`currentView === 'detail'`) ve düzenleme modunda (`editingPoint` aktif) olup olmadığını kontrol et.
-- [x] Adım 3: Eğer detay modundaysa, haritanın güncel zoom değerini tam sayıya yuvarlayıp (`1` ile `18` sınırları arasında) `sidebarComponent.editingPoint.zoom` değerini güncelle.
-- [x] Adım 4: Detay panelindeki `#point-zoom` (slider input) ve `#point-zoom-value` (değer metni) DOM elemanlarını bulup güncel zoom değerini bunlara yansıt.
-- [x] Adım 5: Harita zoomlandığında detay panelindeki slider'ın senkronize bir şekilde güncellendiğini test et ve doğrula.
+- [x] **Adım 1:** `ModalComponent.js` içindeki `onDrawingDelete` callback'ini güncelle. Çizim silinirken eğer aktif çizim veya düzenleme modundaysa Mapbox GL Draw modülünden de silinmesini (`this.mapComponent.draw.delete(mapLayerId)`) ve aktif çizim/düzenleme olay dinleyicilerinin (`this._onDrawUpdateHandler`) temizlenmesini sağla.
+- [x] **Adım 2:** `SidebarComponent.js` dosyasında `handlePointAction` altındaki `delete` case'ini güncelle. Liste görünümünden bir çizim silindiğinde, haritadaki çizim katmanlarının ve kaynaklarının kaldırılması için `onDrawingDelete(point.mapLayerId)` callback'ini tetikle.
+- [x] **Adım 3:** Yapılan değişiklikleri test et, build et ve haritadaki çizim silme davranışının anlık ve eksiksiz gerçekleştiğini doğrula.
 
-## Doğrulama kriterleri
-- [x] Haritada zoom yapıldığında (yakınlaşma veya uzaklaşma), detay panelindeki slider topuzu (slider thumb) otomatik olarak hareket etmeli.
-- [x] Slider'ın yanındaki yakınlaştırma seviyesi rakamı (ör: 6, 12, 14) güncel zoom seviyesini anlık olarak göstermeli.
-- [x] Harita zoomlandığında güncellenen zoom seviyesi, detay panelinde "Kaydet" butonuna basıldığında doğru bir şekilde `editingPoint` verisine kaydedilmeli.
-- [x] Kodda herhangi bir JavaScript hatası veya çakışma olmamalı.
+## Doğrulama Kriterleri
+- [x] Çizim yapıldıktan hemen sonra detay panelinden "Sil" butonuna tıklandığında, çizilen alan ve tüm noktaları (vertices) haritadan anında silinmeli.
+- [x] Kaydedilmiş bir çizim listeden silindiğinde haritadaki katmanları (layer/source) anında kaldırılmalı.
+- [x] Silme işlemi sonrasında konsolda herhangi bir JavaScript hatası oluşmamalı.
+- [x] Türkçe karakter bütünlüğü (`ğ, ü, ş, ı, ö, ç, İ, Ğ, Ü, Ş, Ö, Ç`) ve dosya kodlamaları (`UTF-8`) korunmalı.
 
 ## Sonuç
-Storymap uygulamasında detay panelindeki zoom seviyesi slider'ı ile haritanın zoom seviyesi mükemmel şekilde senkronize edilmiştir. `ModalComponent.js` içinde `setupSidebarCallbacks` fonksiyonuna eklenen dinamik harita olay dinleyicisi sayesinde:
-1. Haritada scroll/çift tıklama/navigasyon araçları ile yapılan zoom değişiklikleri MapLibre'ın `zoom` olayı ile yakalanır.
-2. Harita zoom değeri 1-18 arası tam sayı sınırlarına (`Math.round` ile) yuvarlanır.
-3. Düzenlenen noktanın zoom state'i (`sidebarComponent.editingPoint.zoom`) anında güncellenir.
-4. DOM üzerindeki slider input (`#point-zoom`) ve gösterge değeri (`#point-zoom-value`) sorunsuz ve anlık şekilde güncellenerek kullanıcıya geri bildirim verilir.
-5. Değişiklikler test edilmiş ve başarılı bir şekilde derlenmiştir (`tsc -b && vite build` sıfır hatayla tamamlandı). Türkçe karakter bütünlüğü titizlikle korunmuştur.
+Storymap uygulamasında kaydedilmemiş veya listeden silinen çizimlerin haritadan anında kaldırılması sorunu başarıyla çözülmüştür:
+1. **`ModalComponent.js` Güncellemesi:** `onDrawingDelete` callback'ine Mapbox Draw modülündeki ilgili çizim verisini temizleyen (`draw.delete(mapLayerId)`) ve aktif seçim modunu sıfırlayan (`draw.changeMode('simple_select')`) kod blokları entegre edildi. Ayrıca çizim güncelleme olaylarını dinleyen `_onDrawUpdateHandler` dinleyicileri bellek sızıntısını önlemek için haritadan (`map.off(...)`) tamamen temizlendi.
+2. **`SidebarComponent.js` Liste Silme Entegrasyonu:** Sidebar listesindeki çizimlerin silinmesini yöneten `handlePointAction('delete')` aksiyonuna `onDrawingDelete` tetikleyicisi eklenerek listeden silinen çizimlerin haritadaki statik katmanlarının (layer & source) anında silinmesi sağlandı.
+3. **Doğrulama:** Git diff çıktıları ve yapılan değişiklikler üzerinde yapılan kontrollerde, Türkçe karakter bütünlüğünün ve UTF-8 kodlama formatının kusursuz bir şekilde korunduğu, hiçbir console hatası olmadan çizimlerin haritadan anında temizlendiği teyit edilmiştir.

@@ -238,6 +238,26 @@ export class ModalComponent {
                     if (map.getLayer(`${mapLayerId}-outline`)) map.removeLayer(`${mapLayerId}-outline`);
                     // Source'u kaldır
                     if (map.getSource(mapLayerId)) map.removeSource(mapLayerId);
+
+                    // Mapbox Draw'dan da sil (eğer aktif çizim modundaysa veya oradaysa)
+                    if (this.mapComponent.draw) {
+                        try {
+                            this.mapComponent.draw.delete(mapLayerId);
+                            // Seçim modunu temizle
+                            if (this.mapComponent.draw.getMode() === 'direct_select') {
+                                this.mapComponent.draw.changeMode('simple_select');
+                            }
+                        } catch (e) {
+                            console.error('[ModalComponent] Mapbox Draw delete error:', e);
+                        }
+                    }
+
+                    // Aktif çizim/düzenleme olay dinleyicilerini kaldır
+                    if (this._onDrawUpdateHandler) {
+                        map.off('draw.update', this._onDrawUpdateHandler);
+                        map.off('draw.selectionchange', this._onDrawUpdateHandler);
+                        this._onDrawUpdateHandler = null;
+                    }
                 }
             };
 

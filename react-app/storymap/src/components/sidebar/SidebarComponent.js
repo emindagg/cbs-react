@@ -589,6 +589,12 @@ export class SidebarComponent {
                     if (point && point.marker) {
                         point.marker.remove();
                     }
+                    
+                    // Haritadan çizimi kaldır (line, polygon, circle, text vb.)
+                    if (point && point.mapLayerId && this.onDrawingDelete) {
+                        this.onDrawingDelete(point.mapLayerId);
+                    }
+                    
                     this.removePoint(pointId);
                 }
                 break;
