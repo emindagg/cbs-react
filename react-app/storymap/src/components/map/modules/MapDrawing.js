@@ -121,12 +121,20 @@ export class MapDrawing {
             if (this.currentContextMenuHandler) {
                 this.map.off('contextmenu', this.currentContextMenuHandler);
             }
+            if (this.currentDblClickHandler) {
+                this.map.off('dblclick', this.currentDblClickHandler);
+            }
             this.map.getCanvas().style.cursor = '';
+            
+            if (this.map.doubleClickZoom) {
+                this.map.doubleClickZoom.enable();
+            }
         }
         this.drawMode = null;
         this.currentClickHandler = null;
         this.currentMoveHandler = null;
         this.currentContextMenuHandler = null;
+        this.currentDblClickHandler = null;
         
         // Çizim noktalarını temizle
         this.clearDrawingVertices();
@@ -142,27 +150,25 @@ export class MapDrawing {
         
         if (!this.map) return;
 
+        if (this.map.doubleClickZoom) {
+            this.map.doubleClickZoom.disable();
+        }
+
         const points = [];
         const polygonId = `polygon-${Date.now()}`;
         let lastClickTime = 0;
-        let clickTimeout = null;
         this.drawingVertices = [];
 
         const clickHandler = (e) => {
             const now = Date.now();
             const timeSinceLastClick = now - lastClickTime;
 
-            // Çift tıklama kontrolü (300ms içinde)
-            if (timeSinceLastClick < 300 && points.length >= 3) {
-                clearTimeout(clickTimeout);
-                this.clearPreviewPolygon(polygonId);
-                this.clearDrawingVertices();
-                this.finishPolygon(polygonId, points, callback, onFinish);
+            // Çift tıklama durumunda ikinci tıklamayı yoksay (dblclick ile sonlandıracağız)
+            if (timeSinceLastClick < 300) {
                 return;
             }
 
             lastClickTime = now;
-            if (clickTimeout) clearTimeout(clickTimeout);
 
             const coords = [e.lngLat.lng, e.lngLat.lat];
             points.push(coords);
@@ -189,8 +195,23 @@ export class MapDrawing {
 
         const contextMenuHandler = (e) => {
             e.preventDefault();
+            const coords = [e.lngLat.lng, e.lngLat.lat];
+            const lastPoint = points[points.length - 1];
+            if (!lastPoint || lastPoint[0] !== coords[0] || lastPoint[1] !== coords[1]) {
+                points.push(coords);
+            }
+
             if (points.length >= 3) {
-                clearTimeout(clickTimeout);
+                this.clearPreviewPolygon(polygonId);
+                this.clearPreviewLine(polygonId);
+                this.clearDrawingVertices();
+                this.finishPolygon(polygonId, points, callback, onFinish);
+            }
+        };
+
+        const dblClickHandler = (e) => {
+            e.preventDefault();
+            if (points.length >= 3) {
                 this.clearPreviewPolygon(polygonId);
                 this.clearPreviewLine(polygonId);
                 this.clearDrawingVertices();
@@ -201,10 +222,12 @@ export class MapDrawing {
         this.map.on('click', clickHandler);
         this.map.on('mousemove', moveHandler);
         this.map.on('contextmenu', contextMenuHandler);
+        this.map.on('dblclick', dblClickHandler);
         this.map.getCanvas().style.cursor = 'crosshair';
         this.currentClickHandler = clickHandler;
         this.currentMoveHandler = moveHandler;
         this.currentContextMenuHandler = contextMenuHandler;
+        this.currentDblClickHandler = dblClickHandler;
     }
 
     drawPolygon(coords, id) {
@@ -272,23 +295,23 @@ export class MapDrawing {
         
         if (!this.map) return;
 
+        if (this.map.doubleClickZoom) {
+            this.map.doubleClickZoom.disable();
+        }
+
         const points = [];
         const routeId = `route-${Date.now()}`;
         let lastClickTime = 0;
-        let clickTimeout = null;
 
         const clickHandler = (e) => {
             const now = Date.now();
             const timeSinceLastClick = now - lastClickTime;
 
-            if (timeSinceLastClick < 300 && points.length >= 2) {
-                clearTimeout(clickTimeout);
-                this.finishRoute(routeId, points, callback, onFinish);
+            if (timeSinceLastClick < 300) {
                 return;
             }
 
             lastClickTime = now;
-            if (clickTimeout) clearTimeout(clickTimeout);
 
             const coords = [e.lngLat.lng, e.lngLat.lat];
             points.push(coords);
@@ -308,17 +331,38 @@ export class MapDrawing {
 
         const contextMenuHandler = (e) => {
             e.preventDefault();
+            const coords = [e.lngLat.lng, e.lngLat.lat];
+            const lastPoint = points[points.length - 1];
+            if (!lastPoint || lastPoint[0] !== coords[0] || lastPoint[1] !== coords[1]) {
+                points.push(coords);
+                // Rota için marker ekleme
+                if (this.mapMarkers) {
+                    this.mapMarkers.addMarker(coords, {
+                        color: '#f59e0b',
+                        popup: `Durak ${points.length}`
+                      });
+                }
+            }
+
             if (points.length >= 2) {
-                clearTimeout(clickTimeout);
+                this.finishRoute(routeId, points, callback, onFinish);
+            }
+        };
+
+        const dblClickHandler = (e) => {
+            e.preventDefault();
+            if (points.length >= 2) {
                 this.finishRoute(routeId, points, callback, onFinish);
             }
         };
 
         this.map.on('click', clickHandler);
         this.map.on('contextmenu', contextMenuHandler);
+        this.map.on('dblclick', dblClickHandler);
         this.map.getCanvas().style.cursor = 'crosshair';
         this.currentClickHandler = clickHandler;
         this.currentContextMenuHandler = contextMenuHandler;
+        this.currentDblClickHandler = dblClickHandler;
     }
 
     drawRoute(coords, id) {
@@ -376,6 +420,10 @@ export class MapDrawing {
         
         if (!this.map) return;
 
+        if (this.map.doubleClickZoom) {
+            this.map.doubleClickZoom.disable();
+        }
+
         const points = [];
         const lineId = `line-${Date.now()}`;
         let lastClickTime = 0;
@@ -385,11 +433,6 @@ export class MapDrawing {
             const now = Date.now();
             
             if (now - lastClickTime < 300) {
-                if (points.length >= 2) {
-                    this.clearPreviewLine(lineId);
-                    this.clearDrawingVertices();
-                    this.finishLine(lineId, points, callback, onFinish);
-                }
                 return;
             }
             lastClickTime = now;
@@ -414,6 +457,21 @@ export class MapDrawing {
 
         const contextMenuHandler = (e) => {
             e.preventDefault();
+            const coords = [e.lngLat.lng, e.lngLat.lat];
+            const lastPoint = points[points.length - 1];
+            if (!lastPoint || lastPoint[0] !== coords[0] || lastPoint[1] !== coords[1]) {
+                points.push(coords);
+            }
+
+            if (points.length >= 2) {
+                this.clearPreviewLine(lineId);
+                this.clearDrawingVertices();
+                this.finishLine(lineId, points, callback, onFinish);
+            }
+        };
+
+        const dblClickHandler = (e) => {
+            e.preventDefault();
             if (points.length >= 2) {
                 this.clearPreviewLine(lineId);
                 this.clearDrawingVertices();
@@ -424,10 +482,12 @@ export class MapDrawing {
         this.map.on('click', clickHandler);
         this.map.on('mousemove', moveHandler);
         this.map.on('contextmenu', contextMenuHandler);
+        this.map.on('dblclick', dblClickHandler);
         this.map.getCanvas().style.cursor = 'crosshair';
         this.currentClickHandler = clickHandler;
         this.currentMoveHandler = moveHandler;
         this.currentContextMenuHandler = contextMenuHandler;
+        this.currentDblClickHandler = dblClickHandler;
     }
 
     drawLine(coords, id) {
@@ -479,6 +539,10 @@ export class MapDrawing {
         this.drawMode = 'rectangle';
         
         if (!this.map) return;
+
+        if (this.map.doubleClickZoom) {
+            this.map.doubleClickZoom.disable();
+        }
 
         const corners = [];
         const rectId = `rect-${Date.now()}`;
@@ -544,6 +608,10 @@ export class MapDrawing {
         this.drawMode = 'circle';
         
         if (!this.map) return;
+
+        if (this.map.doubleClickZoom) {
+            this.map.doubleClickZoom.disable();
+        }
 
         let center = null;
         const circleId = `circle-${Date.now()}`;
