@@ -112,6 +112,7 @@ export class MapMarkers {
         const textValue      = (text || options.text  || '').trim() || 'Metin';
         const leaderColor    = options.leaderColor    || '#0f766e';
         const anchorColor    = options.anchorColor    || '#0f766e';
+        const useAdaptiveZoom = options.adaptiveZoom !== false;
 
         const styleMap = {
             plain: { background: 'transparent', borderColor: 'transparent', textColor: '#111827', shadow: 'none' },
@@ -213,7 +214,7 @@ export class MapMarkers {
         label.style.cssText = `
             position: absolute;
             width: max-content;
-            max-width: 200px;
+            max-width: min(200px, 24vw);
             padding: 10px 14px;
             box-sizing: border-box;
             border-radius: 4px;
@@ -225,7 +226,8 @@ export class MapMarkers {
             line-height: 1.45;
             font-weight: 600;
             white-space: pre-wrap;
-            word-break: break-word;
+            overflow-wrap: anywhere;
+            word-break: normal;
             text-align: center;
             backdrop-filter: ${styleId === 'glass' ? 'blur(12px)' : 'none'};
             -webkit-backdrop-filter: ${styleId === 'glass' ? 'blur(12px)' : 'none'};
@@ -233,6 +235,8 @@ export class MapMarkers {
             pointer-events: auto;
             z-index: 3;
             transform: translate(-50%, -50%);
+            transform-origin: center center;
+            transition: opacity 0.18s ease, transform 0.18s ease;
             ${styleId === 'halo' ? `
                 -webkit-text-stroke: 3px #000000;
                 paint-order: stroke fill;
@@ -260,6 +264,14 @@ export class MapMarkers {
         label.style.left = `${lx}px`;
         label.style.top  = `${ly}px`;
         el.appendChild(label);
+
+        let labelScale = 1;
+        let storySceneVisible = options.storySceneVisible !== false;
+        let storySceneScale = options.storySceneActive === false ? 0.7 : 1;
+
+        const applyLabelTransform = () => {
+            label.style.transform = `translate(-50%, -50%) scale(${labelScale * storySceneScale})`;
+        };
 
         // SVG line'ı güncelle
         function updateSvgLine() {
@@ -310,6 +322,52 @@ export class MapMarkers {
         }
 
         requestAnimationFrame(updateSvgLine);
+
+        const updateAdaptiveLabel = () => {
+            if (!useAdaptiveZoom || !this.map || typeof this.map.getZoom !== 'function') {
+                return;
+            }
+
+            const zoom = this.map.getZoom();
+
+            if (zoom < 3.5) {
+                labelScale = 0.58;
+            } else if (zoom < 5) {
+                labelScale = 0.66;
+            } else if (zoom < 7) {
+                labelScale = 0.76;
+            } else if (zoom < 9) {
+                labelScale = 0.86;
+            } else if (zoom < 11) {
+                labelScale = 0.95;
+            } else {
+                labelScale = 1;
+            }
+
+            const isVisible = storySceneVisible;
+            label.style.opacity = isVisible ? '1' : '0';
+            label.style.pointerEvents = isVisible ? 'auto' : 'none';
+            if (svgEl) svgEl.style.opacity = isVisible ? '1' : '0';
+            if (anchorDot) anchorDot.style.display = showLeaderLine && isVisible ? 'block' : 'none';
+            applyLabelTransform();
+            requestAnimationFrame(updateSvgLine);
+        };
+
+        const setStorySceneVisible = (isVisible) => {
+            storySceneVisible = isVisible;
+            updateAdaptiveLabel();
+        };
+
+        const setStorySceneActive = (isActive) => {
+            storySceneScale = isActive ? 1 : 0.7;
+            updateAdaptiveLabel();
+        };
+
+        if (useAdaptiveZoom && this.map) {
+            this.map.on('zoom', updateAdaptiveLabel);
+            this.map.on('moveend', updateAdaptiveLabel);
+            requestAnimationFrame(updateAdaptiveLabel);
+        }
 
         // --- Sürükleme ---
         if (showLeaderLine) {
@@ -382,7 +440,16 @@ export class MapMarkers {
             ...options,
             text: textValue, textStyle: styleId, textPlacement: placement,
             leaderLine: showLeaderLine, leaderLineStyle,
-            labelOffsetX: lx, labelOffsetY: ly
+            labelOffsetX: lx, labelOffsetY: ly,
+            updateAdaptiveLabel,
+            setStorySceneVisible,
+            setStorySceneActive,
+            cleanupTextMarker: () => {
+                if (this.map && useAdaptiveZoom) {
+                    this.map.off('zoom', updateAdaptiveLabel);
+                    this.map.off('moveend', updateAdaptiveLabel);
+                }
+            }
         };
         this.markers.push(marker);
         return marker;
@@ -430,13 +497,21 @@ export class MapMarkers {
 
     // Tüm markerları temizle
     clearMarkers() {
-        this.markers.forEach(m => m.remove());
+        this.markers.forEach(m => {
+            if (m._options && typeof m._options.cleanupTextMarker === 'function') {
+                m._options.cleanupTextMarker();
+            }
+            m.remove();
+        });
         this.markers = [];
     }
 
     // Belirli bir markerı sil
     removeMarker(marker) {
         if (!marker) return;
+        if (marker._options && typeof marker._options.cleanupTextMarker === 'function') {
+            marker._options.cleanupTextMarker();
+        }
         marker.remove();
         this.markers = this.markers.filter(m => m !== marker);
     }

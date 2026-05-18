@@ -22,6 +22,8 @@ export class StoryMapComponent {
         this.scenes = {};
         /** @type {{ sceneId: string, element: HTMLElement }[]} */
         this.markerElements = [];
+        /** @type {{ sceneId: string, marker: maplibregl.Marker }[]} */
+        this.textMarkerElements = [];
     }
 
     /**
@@ -76,23 +78,23 @@ export class StoryMapComponent {
             return;
         }
 
-        // Create map with HGM Temel raster tiles
+        // Create map with CartoDB Voyager raster tiles
         this.map = new maplibregl.Map({
             container: 'storymap-map-view',
             style: {
                 version: 8,
                 sources: {
-                    'hgm-temel': {
+                    'basemap': {
                         type: 'raster',
-                        tiles: [HGM_TILE_URLS.temel],
+                        tiles: ['https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'],
                         tileSize: 256
                     }
                 },
                 layers: [
                     {
-                        id: 'hgm-temel-layer',
+                        id: 'basemap-layer',
                         type: 'raster',
-                        source: 'hgm-temel',
+                        source: 'basemap',
                         minzoom: 0,
                         maxzoom: 19
                     }
@@ -233,11 +235,25 @@ export class StoryMapComponent {
      * @param {string|null} activeSceneId - scene-{id} veya null
      */
     setActiveMarkerBorder(activeSceneId) {
-        if (!this.markerElements || this.markerElements.length === 0) return;
-        this.markerElements.forEach(({ sceneId, element }) => {
-            element.style.border = (activeSceneId && sceneId === activeSceneId)
-                ? '2px solid #18181B'
-                : '2px solid #fff';
+        if (this.markerElements && this.markerElements.length > 0) {
+            this.markerElements.forEach(({ sceneId, element }) => {
+                element.style.border = (activeSceneId && sceneId === activeSceneId)
+                    ? '2px solid #18181B'
+                    : '2px solid #fff';
+            });
+        }
+        this.setActiveTextMarkers(activeSceneId);
+    }
+
+    setActiveTextMarkers(activeSceneId) {
+        if (!this.textMarkerElements || this.textMarkerElements.length === 0) return;
+        this.textMarkerElements.forEach(({ sceneId, marker }) => {
+            if (marker._options && typeof marker._options.setStorySceneVisible === 'function') {
+                marker._options.setStorySceneVisible(true);
+            }
+            if (marker._options && typeof marker._options.setStorySceneActive === 'function') {
+                marker._options.setStorySceneActive(!activeSceneId || sceneId === activeSceneId);
+            }
         });
     }
 
@@ -362,7 +378,8 @@ export class StoryMapComponent {
             } else if (drawing.type === 'text') {
                 const text = drawing.text || drawing.title || 'Metin';
                 if (this.mapMarkers) {
-                    this.mapMarkers.addTextMarker(drawing.coords, text, {
+                    const sceneId = `scene-${drawing.id}`;
+                    const marker = this.mapMarkers.addTextMarker(drawing.coords, text, {
                         textStyle: drawing.textStyle || 'boxed',
                         textPlacement: drawing.textPlacement || 'left',
                         leaderLine: drawing.leaderLine !== false,
@@ -370,11 +387,17 @@ export class StoryMapComponent {
                         anchorColor: drawing.color || '#334155',
                         leaderColor: drawing.color || '#334155',
                         labelOffsetX: drawing.labelOffsetX !== undefined ? drawing.labelOffsetX : null,
-                        labelOffsetY: drawing.labelOffsetY !== undefined ? drawing.labelOffsetY : null
+                        labelOffsetY: drawing.labelOffsetY !== undefined ? drawing.labelOffsetY : null,
+                        storySceneVisible: true,
+                        storySceneActive: false
                     });
+                    if (marker) {
+                        this.textMarkerElements.push({ sceneId, marker });
+                    }
                 }
             }
         });
+        this.setActiveTextMarkers(this.scroller?.currentScene || null);
     }
 
     /**
@@ -555,6 +578,7 @@ export class StoryMapComponent {
             this._sceneChangeHandler = null;
         }
         this.markerElements = [];
+        this.textMarkerElements = [];
         try {
             this.stopPlayback();
         } catch (e) {
