@@ -197,8 +197,15 @@ export class MapDrawing {
             e.preventDefault();
             const coords = [e.lngLat.lng, e.lngLat.lat];
             const lastPoint = points[points.length - 1];
-            if (!lastPoint || lastPoint[0] !== coords[0] || lastPoint[1] !== coords[1]) {
+            if (!lastPoint) {
                 points.push(coords);
+            } else {
+                const distance = MapHelpers.calculateDistance(lastPoint, coords) * 1000;
+                if (distance > 1) {
+                    points.push(coords);
+                } else {
+                    points[points.length - 1] = coords;
+                }
             }
 
             if (points.length >= 3) {
@@ -211,6 +218,19 @@ export class MapDrawing {
 
         const dblClickHandler = (e) => {
             e.preventDefault();
+            const coords = [e.lngLat.lng, e.lngLat.lat];
+            const lastPoint = points[points.length - 1];
+            if (!lastPoint) {
+                points.push(coords);
+            } else {
+                const distance = MapHelpers.calculateDistance(lastPoint, coords) * 1000;
+                if (distance > 1) {
+                    points.push(coords);
+                } else {
+                    points[points.length - 1] = coords;
+                }
+            }
+
             if (points.length >= 3) {
                 this.clearPreviewPolygon(polygonId);
                 this.clearPreviewLine(polygonId);
@@ -333,14 +353,26 @@ export class MapDrawing {
             e.preventDefault();
             const coords = [e.lngLat.lng, e.lngLat.lat];
             const lastPoint = points[points.length - 1];
-            if (!lastPoint || lastPoint[0] !== coords[0] || lastPoint[1] !== coords[1]) {
+            if (!lastPoint) {
                 points.push(coords);
-                // Rota için marker ekleme
                 if (this.mapMarkers) {
                     this.mapMarkers.addMarker(coords, {
                         color: '#f59e0b',
                         popup: `Durak ${points.length}`
-                      });
+                    });
+                }
+            } else {
+                const distance = MapHelpers.calculateDistance(lastPoint, coords) * 1000;
+                if (distance > 1) {
+                    points.push(coords);
+                    if (this.mapMarkers) {
+                        this.mapMarkers.addMarker(coords, {
+                            color: '#f59e0b',
+                            popup: `Durak ${points.length}`
+                        });
+                    }
+                } else {
+                    points[points.length - 1] = coords;
                 }
             }
 
@@ -351,6 +383,31 @@ export class MapDrawing {
 
         const dblClickHandler = (e) => {
             e.preventDefault();
+            const coords = [e.lngLat.lng, e.lngLat.lat];
+            const lastPoint = points[points.length - 1];
+            if (!lastPoint) {
+                points.push(coords);
+                if (this.mapMarkers) {
+                    this.mapMarkers.addMarker(coords, {
+                        color: '#f59e0b',
+                        popup: `Durak ${points.length}`
+                    });
+                }
+            } else {
+                const distance = MapHelpers.calculateDistance(lastPoint, coords) * 1000;
+                if (distance > 1) {
+                    points.push(coords);
+                    if (this.mapMarkers) {
+                        this.mapMarkers.addMarker(coords, {
+                            color: '#f59e0b',
+                            popup: `Durak ${points.length}`
+                        });
+                    }
+                } else {
+                    points[points.length - 1] = coords;
+                }
+            }
+
             if (points.length >= 2) {
                 this.finishRoute(routeId, points, callback, onFinish);
             }
@@ -459,8 +516,15 @@ export class MapDrawing {
             e.preventDefault();
             const coords = [e.lngLat.lng, e.lngLat.lat];
             const lastPoint = points[points.length - 1];
-            if (!lastPoint || lastPoint[0] !== coords[0] || lastPoint[1] !== coords[1]) {
+            if (!lastPoint) {
                 points.push(coords);
+            } else {
+                const distance = MapHelpers.calculateDistance(lastPoint, coords) * 1000;
+                if (distance > 1) {
+                    points.push(coords);
+                } else {
+                    points[points.length - 1] = coords;
+                }
             }
 
             if (points.length >= 2) {
@@ -472,6 +536,19 @@ export class MapDrawing {
 
         const dblClickHandler = (e) => {
             e.preventDefault();
+            const coords = [e.lngLat.lng, e.lngLat.lat];
+            const lastPoint = points[points.length - 1];
+            if (!lastPoint) {
+                points.push(coords);
+            } else {
+                const distance = MapHelpers.calculateDistance(lastPoint, coords) * 1000;
+                if (distance > 1) {
+                    points.push(coords);
+                } else {
+                    points[points.length - 1] = coords;
+                }
+            }
+
             if (points.length >= 2) {
                 this.clearPreviewLine(lineId);
                 this.clearDrawingVertices();
