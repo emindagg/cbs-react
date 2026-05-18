@@ -161,25 +161,7 @@ export class StoryMapComponent {
 
         markerSteps.forEach((step, index) => {
             const sceneId = `scene-${step.id}`;
-            // Create marker element
-            const el = document.createElement('div');
-            el.className = 'storymap-marker';
-            el.style.cssText = `
-                width: 30px;
-                height: 30px;
-                background-color: #667eea;
-                border: 2px solid white;
-                border-radius: 50%;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-                font-weight: bold;
-                font-size: 12px;
-                cursor: pointer;
-            `;
-            el.textContent = index + 1;
+            const el = this.createMarkerElement(step, index);
 
             this.markerElements.push({ sceneId, element: el });
 
@@ -195,6 +177,55 @@ export class StoryMapComponent {
                 .setLngLat(step.coords)
                 .addTo(this.map);
         });
+    }
+
+    createMarkerElement(step, index) {
+        const el = document.createElement('div');
+        const isNumber = step.isNumber === true || step.style === 'number';
+        const shape = step.shape || 'circle';
+        const color = step.color || (isNumber ? '#3b82f6' : '#ef4444');
+
+        el.className = 'storymap-marker';
+        el.style.cssText = `
+            width: ${shape === 'teardrop' ? '30px' : '30px'};
+            height: ${shape === 'teardrop' ? '38px' : '30px'};
+            background-color: ${color};
+            border: 2px solid white;
+            border-radius: ${shape === 'teardrop' ? '50% 50% 50% 0' : '50%'};
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            transform: ${shape === 'teardrop' ? 'rotate(-45deg)' : 'none'};
+        `;
+
+        if (isNumber) {
+            const numberSpan = document.createElement('span');
+            numberSpan.textContent = step.number || index + 1;
+            numberSpan.style.cssText = `
+                color: white;
+                font-size: 12px;
+                font-weight: bold;
+                font-family: Arial, sans-serif;
+                transform: ${shape === 'teardrop' ? 'rotate(45deg)' : 'none'};
+            `;
+            el.appendChild(numberSpan);
+        } else {
+            const icon = document.createElement('i');
+            icon.className = `fa-solid ${step.icon || 'fa-map-marker-alt'}`;
+            icon.style.cssText = `
+                color: white;
+                font-size: 11px;
+                transform: ${shape === 'teardrop' ? 'rotate(45deg)' : 'none'};
+            `;
+            el.appendChild(icon);
+        }
+
+        return el;
     }
 
     /**

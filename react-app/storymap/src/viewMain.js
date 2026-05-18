@@ -176,7 +176,13 @@ class PublicViewer {
                 media: point.media || [],
                 facts: point.facts || [],
                 tags: point.tags || [],
-                isDrawing: point.isDrawing || false
+                isDrawing: point.isDrawing || false,
+                color: point.color,
+                icon: point.icon,
+                style: point.style,
+                shape: point.shape,
+                isNumber: point.isNumber,
+                number: point.number
             };
         });
 
