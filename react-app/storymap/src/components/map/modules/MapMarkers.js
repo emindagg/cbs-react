@@ -141,7 +141,7 @@ export class MapMarkers {
         const AX = 0, AY = 0; // anchor SVG koordinatları
 
         // --- SVG Leader Line ---
-        let svgEl = null, svgLine = null;
+        let svgEl = null, svgLine = null, linearGrad = null;
         if (showLeaderLine) {
             svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svgEl.style.cssText = `
@@ -153,9 +153,37 @@ export class MapMarkers {
                 z-index: 1;
             `;
             svgLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            svgLine.setAttribute('stroke', leaderColor);
-            svgLine.setAttribute('stroke-width', '2');
+            svgLine.setAttribute('stroke-width', '1.5');
             svgLine.setAttribute('stroke-linecap', 'round');
+            svgLine.style.filter = 'drop-shadow(0 1px 1.5px rgba(15, 23, 42, 0.18))';
+
+            if (leaderLineStyle === 'gradient') {
+                const gradId = `grad-${Math.random().toString(36).substr(2, 9)}`;
+                const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                linearGrad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+                linearGrad.setAttribute('id', gradId);
+                linearGrad.setAttribute('gradientUnits', 'userSpaceOnUse');
+
+                const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stop1.setAttribute('offset', '0%');
+                stop1.setAttribute('stop-color', leaderColor);
+                stop1.setAttribute('stop-opacity', '1');
+
+                const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stop2.setAttribute('offset', '100%');
+                stop2.setAttribute('stop-color', leaderColor);
+                stop2.setAttribute('stop-opacity', '0.15');
+
+                linearGrad.appendChild(stop1);
+                linearGrad.appendChild(stop2);
+                defs.appendChild(linearGrad);
+                svgEl.appendChild(defs);
+
+                svgLine.setAttribute('stroke', `url(#${gradId})`);
+            } else {
+                svgLine.setAttribute('stroke', leaderColor);
+            }
+
             if (svgDash !== 'none') svgLine.setAttribute('stroke-dasharray', svgDash);
             svgEl.appendChild(svgLine);
             el.appendChild(svgEl);
@@ -271,6 +299,14 @@ export class MapMarkers {
             svgLine.setAttribute('y1', AY);
             svgLine.setAttribute('x2', x2);
             svgLine.setAttribute('y2', y2);
+
+            // Eğer gradient kullanılıyorsa gradient doğrultusunu çizgiye göre güncelle
+            if (linearGrad) {
+                linearGrad.setAttribute('x1', '0');
+                linearGrad.setAttribute('y1', '0');
+                linearGrad.setAttribute('x2', x2.toString());
+                linearGrad.setAttribute('y2', y2.toString());
+            }
         }
 
         requestAnimationFrame(updateSvgLine);

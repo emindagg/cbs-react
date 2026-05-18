@@ -430,6 +430,12 @@
     border-top-width: 3px;
 }
 
+.sidebar__leader-line-preview--gradient {
+    border-top: none !important;
+    height: 2px;
+    background: linear-gradient(90deg, #334155 0%, rgba(51, 65, 85, 0.15) 100%);
+}
+
 .sidebar__text-style-preview {
     width: 30px;
     height: 30px;

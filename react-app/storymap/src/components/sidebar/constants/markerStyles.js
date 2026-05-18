@@ -73,7 +73,8 @@ export const TEXT_PLACEMENTS = [
 export const LEADER_LINE_STYLES = [
     { id: 'solid', name: 'Düz', borderStyle: 'solid' },
     { id: 'dashed', name: 'Kesik', borderStyle: 'dashed' },
-    { id: 'dotted', name: 'Noktalı', borderStyle: 'dotted' }
+    { id: 'dotted', name: 'Noktalı', borderStyle: 'dotted' },
+    { id: 'gradient', name: 'Degrade', borderStyle: 'solid' }
 ];
 
 export const DRAWING_TYPE_NAMES = {
