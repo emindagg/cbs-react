@@ -15,6 +15,11 @@ export function renderDetailView(context) {
     const point = editingPoint;
     const isRouteTemplate = data?.templateName === 'Rota Bazlı';
     const isTimelineTemplate = data?.templateName === 'Timeline Bazlı';
+    const isStoryMapTemplate = data?.templateName === 'Hikâye Haritası';
+    const defaultZoom = (isTimelineTemplate || isStoryMapTemplate) ? 12 : 14;
+    const pointZoom = Number.isFinite(Number(point.zoom))
+        ? Math.max(4, Math.min(18, Number(point.zoom)))
+        : defaultZoom;
 
     // Detail panel her zaman "Kaydet" gösterir (her nokta bağımsız)
     const saveButtonText = 'Kaydet';
@@ -85,6 +90,23 @@ export function renderDetailView(context) {
                               rows="4"
                               ${inputDisabled}>${point.description || ''}</textarea>
                 </div>
+
+                ${!viewMode ? `
+                <!-- Yakınlaştırma Seviyesi -->
+                <div class="sidebar__detail-field">
+                    <label class="sidebar__detail-label" for="point-zoom">
+                        Yakınlaştırma Seviyesi
+                        <span class="sidebar__zoom-value" id="point-zoom-value">${pointZoom}</span>
+                    </label>
+                    <input type="range"
+                           class="sidebar__zoom-slider"
+                           id="point-zoom"
+                           min="4"
+                           max="18"
+                           step="1"
+                           value="${pointZoom}">
+                </div>
+                ` : ''}
 
                 ${isRouteTemplate ? `
                 <!-- Rota Bilgileri -->

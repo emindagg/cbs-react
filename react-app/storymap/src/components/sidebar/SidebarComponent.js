@@ -197,6 +197,7 @@ export class SidebarComponent {
             shape: point.shape,
             isNumber: point.isNumber,
             number: point.number,
+            zoom: point.zoom,
             media: point.media ? point.media.map(m => ({ ...m })) : [],
             // Rota alanları
             visitDay: point.visitDay,
@@ -423,6 +424,7 @@ export class SidebarComponent {
                 shape: this.editingPoint.shape,
                 isNumber: this.editingPoint.isNumber,
                 number: this.editingPoint.number,
+                zoom: this.editingPoint.zoom,
                 isDrawing: originalPoint.isDrawing,
                 drawingType: originalPoint.drawingType,
                 mapLayerId: originalPoint.mapLayerId,

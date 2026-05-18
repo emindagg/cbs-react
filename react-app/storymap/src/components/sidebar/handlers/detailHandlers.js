@@ -271,6 +271,8 @@ function setupInputListeners(sidebar) {
 
     const titleInput = container.querySelector('#point-title');
     const descInput = container.querySelector('#point-description');
+    const zoomInput = container.querySelector('#point-zoom');
+    const zoomValue = container.querySelector('#point-zoom-value');
 
     if (titleInput) {
         titleInput.addEventListener('input', (e) => {
@@ -281,6 +283,17 @@ function setupInputListeners(sidebar) {
     if (descInput) {
         descInput.addEventListener('input', (e) => {
             sidebar.editingPoint.description = e.target.value;
+        });
+    }
+
+    if (zoomInput) {
+        zoomInput.addEventListener('input', (e) => {
+            const zoom = Math.max(4, Math.min(18, parseInt(e.target.value, 10) || 12));
+            sidebar.editingPoint.zoom = zoom;
+            if (zoomValue) zoomValue.textContent = zoom;
+            if (sidebar.onPointZoomPreview) {
+                sidebar.onPointZoomPreview(sidebar.editingPoint, zoom);
+            }
         });
     }
 

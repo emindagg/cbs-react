@@ -252,7 +252,7 @@ export class ModalComponent {
 
                             if (point && point.coords) {
                                 // Timeline paneli 400px, marker'ın görünür alanda kalması için padding ekliyoruz
-                                this.mapComponent.flyTo(point.coords, 12, { 
+                                this.mapComponent.flyTo(point.coords, this.getPointZoom(point, 12), {
                                     duration: 1000,
                                         offsetY: 0.025
                                 });
@@ -310,6 +310,12 @@ export class ModalComponent {
         }
     }
 
+    getPointZoom(point, fallbackZoom) {
+        const zoom = Number(point?.zoom);
+        if (!Number.isFinite(zoom)) return fallbackZoom;
+        return Math.max(4, Math.min(18, zoom));
+    }
+
     setupSidebarCallbacks() {
         if (!this.sidebarComponent || !this.mapComponent) return;
 
@@ -317,6 +323,16 @@ export class ModalComponent {
         const isRouteTemplate = this.sidebarComponent.data.templateName === 'Rota Bazlı';
         const isTimelineTemplate = this.sidebarComponent.data.templateName === 'Timeline Bazlı';
         const isStoryMapTemplate = this.sidebarComponent.data.templateName === 'Hikâye Haritası';
+        const defaultPointZoom = (isTimelineTemplate || isStoryMapTemplate) ? 12 : 14;
+
+        this.sidebarComponent.onPointZoomPreview = (point, zoom) => {
+            if (!point || !point.coords || this.viewMode) return;
+            const isMobile = window.innerWidth <= 768;
+            this.mapComponent.flyTo(point.coords, this.getPointZoom({ zoom }, defaultPointZoom), {
+                duration: 300,
+                offsetY: isMobile ? 0.02 : 0.025
+            });
+        };
 
         // Rota şablonu için özel callback'ler
         if (isRouteTemplate) {
@@ -394,7 +410,7 @@ export class ModalComponent {
             this.sidebarComponent.onPointFocus = (point) => {
                 if (point && point.coords) {
                     const isMobile = window.innerWidth <= 768;
-                    this.mapComponent.flyTo(point.coords, 14, isMobile ? { offsetY: 0.02 } : {});
+                    this.mapComponent.flyTo(point.coords, this.getPointZoom(point, 14), isMobile ? { offsetY: 0.02 } : {});
 
                     // Tüm popup'ları kapat
                     this.sidebarComponent.points.forEach(p => {
@@ -576,7 +592,7 @@ export class ModalComponent {
                     const point = this.sidebarComponent.points.find(p => p.id === event.id);
                     if (point) {
                         // Haritada zoom yap
-                        this.mapComponent.flyTo(point.coords, 12, {
+                        this.mapComponent.flyTo(point.coords, this.getPointZoom(point, 12), {
                                     duration: 1000,
                                     offsetY: 0.025
                                 });
@@ -613,7 +629,7 @@ export class ModalComponent {
                 this.mapComponent.nextTimelineEvent((event, index) => {
                     const point = this.sidebarComponent.points.find(p => p.id === event.id);
                     if (point) {
-                        this.mapComponent.flyTo(point.coords, 12, { 
+                        this.mapComponent.flyTo(point.coords, this.getPointZoom(point, 12), {
                                     duration: 1000,
                                     offsetY: 0.025
                                 });
@@ -639,7 +655,7 @@ export class ModalComponent {
                 const event = this.mapComponent.previousTimelineEvent((event, index) => {
                     const point = this.sidebarComponent.points.find(p => p.id === event.id);
                     if (point) {
-                        this.mapComponent.flyTo(point.coords, 12, { 
+                        this.mapComponent.flyTo(point.coords, this.getPointZoom(point, 12), {
                                     duration: 1000,
                                     offsetY: 0.025
                                 });
@@ -672,7 +688,7 @@ export class ModalComponent {
             this.sidebarComponent.onPointFocus = (point) => {
                 if (point && point.coords) {
                     const isMobile = window.innerWidth <= 768;
-                    this.mapComponent.flyTo(point.coords, 12, {
+                    this.mapComponent.flyTo(point.coords, this.getPointZoom(point, 12), {
                         duration: 1000,
                         offsetY: isMobile ? 0.02 : 0.025
                     });
@@ -751,7 +767,7 @@ export class ModalComponent {
             this.sidebarComponent.onPointFocus = (point) => {
                 if (point && point.coords) {
                     const isMobile = window.innerWidth <= 768;
-                    this.mapComponent.flyTo(point.coords, 14, isMobile ? { offsetY: 0.02 } : {});
+                    this.mapComponent.flyTo(point.coords, this.getPointZoom(point, 14), isMobile ? { offsetY: 0.02 } : {});
 
                     // Tüm popup'ları kapat
                     this.sidebarComponent.points.forEach(p => {
@@ -809,7 +825,7 @@ export class ModalComponent {
                                 targetCoords = [centerLng, centerLat];
                             }
 
-                            this.mapComponent.flyTo(targetCoords, 14, {
+                            this.mapComponent.flyTo(targetCoords, this.getPointZoom(point, 14), {
                                 duration: 1000
                             });
 
@@ -910,7 +926,7 @@ export class ModalComponent {
                                     targetCoords = [centerLng, centerLat];
                                 }
 
-                                this.mapComponent.flyTo(targetCoords, 14, {
+                                this.mapComponent.flyTo(targetCoords, this.getPointZoom(point, 14), {
                                     duration: 1000
                                 });
 
@@ -1104,7 +1120,8 @@ export class ModalComponent {
                     category: step.category || 'Other',
                     importance: step.importance || 1,
                     era: step.era || '',
-                    historicalContext: step.historicalContext || ''
+                    historicalContext: step.historicalContext || '',
+                    zoom: step.zoom
                 };
 
                 // Sidebar'a point olarak ekle
@@ -1147,6 +1164,7 @@ export class ModalComponent {
                     icon: p.icon,
                     shape: p.shape,
                     style: p.style,
+                    zoom: p.zoom,
                     media: p.media,
                     // Timeline fields
                     date: p.date,
@@ -1251,6 +1269,7 @@ export class ModalComponent {
                     icon: p.icon,
                     shape: p.shape,
                     style: p.style,
+                    zoom: p.zoom,
                     isNumber: p.isNumber,
                     number: p.number,
                     // Çizim öğesi alanları
@@ -1747,12 +1766,12 @@ export class ModalComponent {
                 const checkInterval = setInterval(() => {
                     if (this.mapComponent.map) {
                         clearInterval(checkInterval);
-                        this.mapComponent.flyTo(coords, step.zoom || 13);
+                        this.mapComponent.flyTo(coords, this.getPointZoom(step, 13));
                     }
                 }, 100);
                 setTimeout(() => clearInterval(checkInterval), 5000);
             } else {
-                this.mapComponent.flyTo(coords, step.zoom || 13);
+                this.mapComponent.flyTo(coords, this.getPointZoom(step, 13));
             }
         };
 
@@ -1811,7 +1830,7 @@ export class ModalComponent {
                         subtitle: point.subtitle || '',
                         content: point.description || '',
                         coords: coords,
-                        zoom: point.isDrawing ? 12 : 12,
+                        zoom: this.getPointZoom(point, 12),
                         media: point.media || [],
                         facts: point.facts || [],
                         tags: point.tags || [],
@@ -2483,4 +2502,3 @@ export class ModalComponent {
 
     }
 }
-

@@ -31,6 +31,7 @@ export class PointManager {
             marker: pointData.marker,
             isNumber: pointData.isNumber || false,
             number: pointData.number || null,
+            zoom: pointData.zoom,
             media: pointData.media || [],
             // Rota alanları (varsa koru)
             visitDay: pointData.visitDay,
@@ -91,6 +92,7 @@ export class PointManager {
             marker: drawingData.marker || null, // Text marker referansı
             text: drawingData.text || '',
             radius: drawingData.radius || 0,
+            zoom: drawingData.zoom,
             bounds: drawingData.bounds || null
         };
         
