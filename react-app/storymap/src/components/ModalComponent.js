@@ -338,7 +338,12 @@ export class ModalComponent {
         const renderPoint = targetPoint ? { ...targetPoint, ...point } : point;
 
         // Eski marker'dan sürükleme ofsetini kaydet (silinmeden önce)
-        if (targetPoint?.marker?._options?.labelOffsetX !== undefined) {
+        // Ancak belirtme çizgisi durumu değiştiyse (örn: açılıp kapandıysa), yeni ofsetlerin uygulanabilmesi için eski değeri koruma
+        const oldLeaderLine = targetPoint?.marker?._options?.leaderLine === true;
+        const newLeaderLine = renderPoint.leaderLine === true;
+        const leaderLineChanged = oldLeaderLine !== newLeaderLine;
+
+        if (!leaderLineChanged && targetPoint?.marker?._options?.labelOffsetX !== undefined) {
             renderPoint.labelOffsetX = targetPoint.marker._options.labelOffsetX;
             renderPoint.labelOffsetY = targetPoint.marker._options.labelOffsetY;
         }

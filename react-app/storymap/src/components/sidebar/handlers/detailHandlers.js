@@ -316,6 +316,29 @@ function setupInputListeners(sidebar) {
             const isChecked = e.target.checked;
             sidebar.editingPoint.leaderLine = isChecked;
 
+            if (isChecked) {
+                // Eğer ofset sıfır veya tanımlı değilse, kullanıcının belirtme çizgisini 
+                // hemen görebilmesi için metni sola (-110px) kaydırıyoruz (uzun kutularda da çizgi görünsün)
+                const currentX = sidebar.editingPoint.labelOffsetX;
+                const currentY = sidebar.editingPoint.labelOffsetY;
+                if (!currentX && !currentY) {
+                    sidebar.editingPoint.labelOffsetX = -110;
+                    sidebar.editingPoint.labelOffsetY = 0;
+                    if (sidebar.editingPoint.marker?._options) {
+                        sidebar.editingPoint.marker._options.labelOffsetX = -110;
+                        sidebar.editingPoint.marker._options.labelOffsetY = 0;
+                    }
+                }
+            } else {
+                // Belirtme çizgisi kapatıldığında metni tekrar merkeze (0, 0) çekiyoruz
+                sidebar.editingPoint.labelOffsetX = 0;
+                sidebar.editingPoint.labelOffsetY = 0;
+                if (sidebar.editingPoint.marker?._options) {
+                    sidebar.editingPoint.marker._options.labelOffsetX = 0;
+                    sidebar.editingPoint.marker._options.labelOffsetY = 0;
+                }
+            }
+
             const styleField = container.querySelector('#leader-line-style-field');
             if (styleField) {
                 styleField.style.display = isChecked ? 'block' : 'none';
