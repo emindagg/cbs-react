@@ -23,7 +23,7 @@ export class Toggle3DControl {
         this.button.className = 'maplibregl-ctrl-3d';
         this.button.title = 'Küre Görünümü';
         this.button.setAttribute('aria-label', 'Küre Görünümü');
-        this.button.textContent = '2D';
+        this.button.textContent = '2B';
         
         this.button.addEventListener('click', () => this.toggleGlobe());
         
@@ -45,13 +45,13 @@ export class Toggle3DControl {
             this.map.setProjection({ type: 'globe' });
             this.button.classList.add('maplibregl-ctrl-3d--active');
             this.button.title = 'Düz Harita';
-            this.button.textContent = '3D';
+            this.button.textContent = '3B';
         } else {
             // Düz harita görünümüne geç
             this.map.setProjection({ type: 'mercator' });
             this.button.classList.remove('maplibregl-ctrl-3d--active');
             this.button.title = 'Küre Görünümü';
-            this.button.textContent = '2D';
+            this.button.textContent = '2B';
         }
     }
 }

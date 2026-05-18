@@ -399,6 +399,34 @@ export class ModalComponent {
             });
         };
 
+        // Harita zoom değişimini dinle ve detay panelindeki slider'ı güncelle
+        if (this.mapComponent.map) {
+            this.mapComponent.map.on('zoom', () => {
+                if (
+                    this.sidebarComponent &&
+                    this.sidebarComponent.currentView === 'detail' &&
+                    this.sidebarComponent.editingPoint
+                ) {
+                    const mapZoom = Math.round(this.mapComponent.map.getZoom());
+                    const zoom = Math.max(1, Math.min(18, mapZoom));
+
+                    if (this.sidebarComponent.editingPoint.zoom !== zoom) {
+                        this.sidebarComponent.editingPoint.zoom = zoom;
+
+                        const zoomInput = document.getElementById('point-zoom');
+                        if (zoomInput) {
+                            zoomInput.value = zoom;
+                        }
+
+                        const zoomValueText = document.getElementById('point-zoom-value');
+                        if (zoomValueText) {
+                            zoomValueText.textContent = zoom;
+                        }
+                    }
+                }
+            });
+        }
+
         // ----------------------------------------
         // Noktaları/Çizimleri Düzenleme Başlangıcı
         // ----------------------------------------

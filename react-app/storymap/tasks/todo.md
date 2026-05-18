@@ -1,36 +1,26 @@
-# Görev: Harita Çizimleri ve Noktaları İçin Vertex Düzenleme Özelliği
+# Görev: Harita Zoom Değişikliğinde Slider'ın Dinamik Güncellenmesi
 Tarih: 2026-05-18
 
 ## Bağlam
-Kullanıcının storymap üzerinde çizdiği alan (polygon), çizgi (line), daire (circle), dikdörtgen (rectangle) gibi geometrilerin düzenleme moduna girildiğinde vertex (köşe) noktalarının harita üzerinde ArcGIS/QGIS standartlarında düzenlenebilmesi ve normal/metin marker konumlarının sürüklenebilmesi istenmektedir. Bunun için Mapbox GL Draw kütüphanesi entegre edilecek ve marker sürükleme mekanizması kurulacaktır.
+Storymap uygulamasında detay görünümünde (nokta düzenleme paneli) bir "Yakınlaştırma Seviyesi" (zoom) slider'ı bulunmaktadır. Kullanıcı haritayı doğrudan sürükleyerek veya zoom kontrolleri ile yakınlaştırıp uzaklaştırdığında, detay panelindeki bu slider'ın ve gösterilen zoom değerinin haritanın güncel zoom seviyesine göre dinamik olarak güncellenmesi istenmektedir.
 
 ## Plan
-- [x] Adım 1: `storymap/app.html` dosyasına Mapbox GL Draw CSS ve JS CDN bağlantılarını ekle.
-- [x] Adım 2: `storymap/src/components/map/modules/MapDrawing.js` modülünde Mapbox GL Draw kontrolünü (`MapboxDraw`) arka planda başlat ve haritaya ekle.
-- [x] Adım 3: `storymap/src/components/sidebar/SidebarComponent.js` modülünde:
-    - [x] `showPointDetail` fonksiyonunun sonunda `onPointEditStart(point)` callback'ini çağır.
-    - [x] `showListView` fonksiyonunun başında `onPointEditEnd(originalPoint)` callback'ini çağır.
-    - [x] `savePointDetail` fonksiyonunda koordinatları kaydederken `coords: this.editingPoint.coords || originalPoint.coords` şeklinde güncel koordinatları kullanmasını sağla.
-- [x] Adım 4: `storymap/src/components/ModalComponent.js` içindeki `setupSidebarCallbacks()` fonksiyonunda:
-    - [x] `sidebarComponent.onPointEditStart(point)` tanımla: Çizim ise read-only katmanı gizle, Mapbox GL Draw'a ekle ve `direct_select` moduna geçip vertexleri düzenlenebilir yap; Marker ise `marker.setDraggable(true)` yap ve sürükleme sonunu dinle.
-    - [x] `sidebarComponent.onPointEditEnd(point)` tanımla: Çizim ise draw'dan silip, haritadaki read-only katmanı güncelleyerek görünür yap; Marker ise `marker.setDraggable(false)` yap ve sürüklemeyi kapat (iptal edilmişse koordinatlarını eski haline çek).
-- [x] Adım 5: Harita üzerinde hem çizimlerin (polygon, line) hem de markerların sürüklenip düzenlenmesini ve "Kaydet" veya "İptal" butonlarıyla entegrasyonu test et.
+- [x] Adım 1: `ModalComponent.js` dosyasında harita yüklendikten sonra (`onMapLoad`) haritanın zoom değişikliklerini dinleyecek bir olay dinleyici (`zoom` veya `zoomend`) ekle.
+- [x] Adım 2: Olay tetiklendiğinde, sidebar'ın detay görünümünde (`currentView === 'detail'`) ve düzenleme modunda (`editingPoint` aktif) olup olmadığını kontrol et.
+- [x] Adım 3: Eğer detay modundaysa, haritanın güncel zoom değerini tam sayıya yuvarlayıp (`1` ile `18` sınırları arasında) `sidebarComponent.editingPoint.zoom` değerini güncelle.
+- [x] Adım 4: Detay panelindeki `#point-zoom` (slider input) ve `#point-zoom-value` (değer metni) DOM elemanlarını bulup güncel zoom değerini bunlara yansıt.
+- [x] Adım 5: Harita zoomlandığında detay panelindeki slider'ın senkronize bir şekilde güncellendiğini test et ve doğrula.
 
-## Doğrulama Kriterleri
-- [x] Çizilen alan veya çizgi düzenle moduna girildiğinde köşe noktalarında vertex yuvarlakları çıkmalı ve bunlar haritada sürüklenebilmeli.
-- [x] Düzenleme esnasında koordinatlar dinamik olarak güncellenmeli.
-- [x] Düzenle modundan "Kaydet" denildiğinde güncel koordinatlarla kaydedilmeli ve kalıcı olmalı.
-- [x] "İptal" denildiğinde yapılan değişiklikler geri alınmalı ve eski koordinatlarına dönmeli.
-- [x] Normal markerlar ve metin markerları düzenle modunda sürüklenebilmeli, linter/build hataları olmamalı.
+## Doğrulama kriterleri
+- [x] Haritada zoom yapıldığında (yakınlaşma veya uzaklaşma), detay panelindeki slider topuzu (slider thumb) otomatik olarak hareket etmeli.
+- [x] Slider'ın yanındaki yakınlaştırma seviyesi rakamı (ör: 6, 12, 14) güncel zoom seviyesini anlık olarak göstermeli.
+- [x] Harita zoomlandığında güncellenen zoom seviyesi, detay panelinde "Kaydet" butonuna basıldığında doğru bir şekilde `editingPoint` verisine kaydedilmeli.
+- [x] Kodda herhangi bir JavaScript hatası veya çakışma olmamalı.
 
-
-Harita üzerindeki çizimlerin (alan, çizgi, daire, dikdörtgen) vertex (köşe) noktalarının ArcGIS/QGIS standartlarında düzenlenebilmesi için `@mapbox/mapbox-gl-draw` kütüphanesi entegre edilmiş, normal markerlar ve metin markerları için `setDraggable` sürükleme sistemi kurulmuştur. "Kaydet" ve "İptal" butonları ile tam entegrasyon sağlanarak, iptal durumunda koordinatların eski haline dönmesi, kaydetme durumunda ise güncel koordinatların kalıcı olarak veri tabanına/hafızaya yazılması garantilenmiştir. Test sırasında tespit edilen `setLayerVisibility` tanımsız metot hatası, doğrudan MapLibre GL API'si kullanılarak (`map.setLayoutProperty`) güvenli bir şekilde çözülmüş ve tüm doğrulama adımları başarıyla tamamlanmıştır.
-
-**GÜNCELLEME (2026-05-18 - Vertex Boyut İyileştirmesi)**:
-Düzenleme modunda vertex ve midpoint noktalarının büyüklükleri kullanıcı geri bildirimi doğrultusunda dengeli (balanced) bir seviyeye getirilmiştir:
-- **Aktif/İnaktif Vertex Dış Daire**: 7px/5px'den **9px/7px** yarıçapa getirilerek ergonomi ile estetik arasındaki mükemmel denge kurulmuştur.
-- **Aktif/İnaktif Vertex İç Daire**: 3px/5px'den **6px/4px** yarıçapa ayarlanmıştır.
-- **Midpoint (Orta Noktalar)**: 3px'den **4px** yarıçapa yükseltilerek kenarlar arasından yeni vertex üretme işlemi kolaylaştırılmıştır.
-- Renkler premium sarı-turuncu (`#fbb03b`) kontrastıyla korunmuş, her türlü harita altlığı üzerinde maksimum estetik ve görünürlük sunulmuştur.
-
-
+## Sonuç
+Storymap uygulamasında detay panelindeki zoom seviyesi slider'ı ile haritanın zoom seviyesi mükemmel şekilde senkronize edilmiştir. `ModalComponent.js` içinde `setupSidebarCallbacks` fonksiyonuna eklenen dinamik harita olay dinleyicisi sayesinde:
+1. Haritada scroll/çift tıklama/navigasyon araçları ile yapılan zoom değişiklikleri MapLibre'ın `zoom` olayı ile yakalanır.
+2. Harita zoom değeri 1-18 arası tam sayı sınırlarına (`Math.round` ile) yuvarlanır.
+3. Düzenlenen noktanın zoom state'i (`sidebarComponent.editingPoint.zoom`) anında güncellenir.
+4. DOM üzerindeki slider input (`#point-zoom`) ve gösterge değeri (`#point-zoom-value`) sorunsuz ve anlık şekilde güncellenerek kullanıcıya geri bildirim verilir.
+5. Değişiklikler test edilmiş ve başarılı bir şekilde derlenmiştir (`tsc -b && vite build` sıfır hatayla tamamlandı). Türkçe karakter bütünlüğü titizlikle korunmuştur.
