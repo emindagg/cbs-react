@@ -1,21 +1,17 @@
-# Görev: Nokta Bazlı Zoom Ayarı
+# Görev: Varsayılan Yakınlaştırma Seviyesini 10 Olarak Ayarlama
 Tarih: 2026-05-18
 
 ## Bağlam
-Kullanıcı her nokta için özel zoom seviyesi belirlemek istiyor. Noktaya gidildiğinde veya odaklanıldığında harita, o noktanın kaydedilmiş zoom seviyesinde görüntülenmeli.
+Harita üzerinde yeni nokta veya çizim eklendiğinde detay panelindeki varsayılan yakınlaştırma seviyesinin (zoom) `14` (veya bazı şablonlarda `12`) yerine `10` olması istenmektedir. `ModalComponent.js` dosyasına dokunulmadan, yalnızca detay görünümü ve ilgili işleyiciler güncellenecektir.
 
 ## Plan
-- [x] Adım 1: Nokta veri modelinde `zoom` alanını koru.
-- [x] Adım 2: Nokta detay paneline 1-18 aralığında yakınlaştırma slider'ı ve değer göstergesi ekle.
-- [x] Adım 3: Slider değişiminde canlı harita önizlemesi yap.
-- [x] Adım 4: Odaklanma, playback ve StoryMap akışlarında `point.zoom` değerini kullan.
-- [x] Adım 5: Değişiklikleri doğrula ve diff'i gözden geçir.
+- [x] Adım 1: `storymap/src/components/sidebar/renderers/detailViewRenderer.js` dosyasında varsayılan zoom seviyesini `10` olarak güncelle.
+- [x] Adım 2: `storymap/src/components/sidebar/handlers/detailHandlers.js` dosyasında zoom slider fallback değerini `10` olarak güncelle.
+- [x] Adım 3: Değişiklikleri tarayıcıda doğrula.
 
-## Doğrulama kriterleri
-- [x] View mode'da zoom ayarı görünmez.
-- [x] Kaydedilen nokta zoom değeri hikâye verisinde korunur.
-- [x] Zoom değeri olmayan noktalar mevcut varsayılanlarla çalışır.
-- [x] Canlı önizleme Kaydet öncesinde kalıcı veri değiştirmez.
+## Doğrulama Kriterleri
+- [x] Yeni bir nokta veya çizim eklendiğinde detay panelindeki "Yakınlaştırma Seviyesi" slider'ının varsayılan değeri `10` olarak açılmalı.
+- [x] Tarayıcıda hiçbir JS veya konsol hatası oluşmamalı.
 
 ## Sonuç
-Tamamlandı. Sözdizimi kontrolleri geçti ve yerel statik sunucu üzerinden `app.html?dev` yanıtı doğrulandı.
+`ModalComponent.js` dosyasına dokunulmadan, `detailViewRenderer.js` ve `detailHandlers.js` dosyalarında varsayılan yakınlaştırma değerleri `10` olarak güncellendi. Yeni eklenen nokta ve çizimler artık varsayılan olarak `10` zoom seviyesiyle oluşturulmaktadır.

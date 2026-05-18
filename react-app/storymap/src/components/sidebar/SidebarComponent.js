@@ -245,7 +245,7 @@ export class SidebarComponent {
             if (!this.editingPoint.text) this.editingPoint.text = '';
         }
         
-        console.log('[SidebarComponent] showPointDetail: Editing point', {
+        if (false) console.log('[SidebarComponent] showPointDetail: Editing point', {
             originalId: this.editingPoint.originalId,
             id: point.id,
             title: this.editingPoint.title
@@ -254,11 +254,21 @@ export class SidebarComponent {
         this.currentView = 'detail';
         this.currentTab = 'layers';
         this.onDetailCloseCallback = onCloseCallback;
+        if (this.onPointEditStart) {
+            this.onPointEditStart(point);
+        }
         this.render();
     }
 
     showListView() {
         const closingPoint = this.editingPoint;
+
+        if (this.onPointEditEnd && closingPoint && closingPoint.originalId) {
+            const originalPoint = this.pointManager.findPoint(closingPoint.originalId);
+            if (originalPoint) {
+                this.onPointEditEnd(originalPoint);
+            }
+        }
 
         if (this.onPointTextPreviewReset && closingPoint?.drawingType === 'text' && closingPoint.originalId) {
             this.onPointTextPreviewReset(closingPoint.originalId);
@@ -424,7 +434,7 @@ export class SidebarComponent {
         }
 
         const pointIndex = this.pointManager.findPointIndex(this.editingPoint.originalId);
-        console.log('[SidebarComponent] savePointDetail:', {
+        if (false) console.log('[SidebarComponent] savePointDetail:', {
             originalId: this.editingPoint.originalId,
             foundIndex: pointIndex,
             title: this.editingPoint.title
@@ -447,7 +457,7 @@ export class SidebarComponent {
                 isDrawing: originalPoint.isDrawing,
                 drawingType: originalPoint.drawingType,
                 mapLayerId: originalPoint.mapLayerId,
-                coords: originalPoint.coords, // Koordinatları koru
+                coords: this.editingPoint.coords || originalPoint.coords,
                 // Rota bilgileri
                 visitDay: this.editingPoint.visitDay,
                 duration: this.editingPoint.duration,
@@ -476,7 +486,7 @@ export class SidebarComponent {
 
             this.points[pointIndex] = updatedPoint;
 
-            console.log('[SidebarComponent] Point updated:', {
+            if (false) console.log('[SidebarComponent] Point updated:', {
                 id: updatedPoint.id,
                 title: updatedPoint.title,
                 index: pointIndex

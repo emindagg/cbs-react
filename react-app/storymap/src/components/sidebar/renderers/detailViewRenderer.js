@@ -22,7 +22,7 @@ export function renderDetailView(context) {
     const isTimelineTemplate = data?.templateName === 'Timeline Bazlı';
     const isStoryMapTemplate = data?.templateName === 'Hikâye Haritası';
     const isTextDrawing = point?.drawingType === 'text';
-    const defaultZoom = (isTimelineTemplate || isStoryMapTemplate) ? 12 : 14;
+    const defaultZoom = 10;
     const pointZoom = Number.isFinite(Number(point.zoom))
         ? Math.max(1, Math.min(18, Number(point.zoom)))
         : defaultZoom;

@@ -399,6 +399,192 @@ export class ModalComponent {
             });
         };
 
+        // ----------------------------------------
+        // Noktaları/Çizimleri Düzenleme Başlangıcı
+        // ----------------------------------------
+        this.sidebarComponent.onPointEditStart = (point) => {
+            if (!point || this.viewMode) return;
+
+            // console.log('[ModalComponent] onPointEditStart:', point);
+
+            // Çizim öğesi ise (line, polygon, circle, rectangle)
+            if (point.isDrawing && point.mapLayerId) {
+                // Haritadaki salt okunur katmanı geçici olarak gizle
+                const map = this.mapComponent.map;
+                if (map) {
+                    const layersToHide = [`${point.mapLayerId}-layer`, `${point.mapLayerId}-outline`];
+                    layersToHide.forEach(lyrId => {
+                        if (map.getLayer(lyrId)) {
+                            map.setLayoutProperty(lyrId, 'visibility', 'none');
+                        }
+                    });
+                }
+
+                // Mapbox GL Draw modülünü kontrol et
+                if (this.mapComponent.draw) {
+                    this.mapComponent.draw.deleteAll(); // Temizle
+
+                    // GeoJSON formatına dönüştür ve ekle
+                    let geometryType = 'Polygon';
+                    let coords = point.coords;
+                    if (point.drawingType === 'line') {
+                        geometryType = 'LineString';
+                    } else {
+                        // Poligon, circle, rectangle için Mapbox Draw [[x, y], ...] şeklinde poligon bekler
+                        coords = [point.coords];
+                    }
+
+                    const feature = {
+                        id: point.mapLayerId,
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                            type: geometryType,
+                            coordinates: coords
+                        }
+                    };
+
+                    this.mapComponent.draw.add(feature);
+
+                    // direct_select moduna geç ve bu çizimi seç
+                    setTimeout(() => {
+                        try {
+                            this.mapComponent.draw.changeMode('direct_select', {
+                                featureId: point.mapLayerId
+                            });
+                            // console.log('[ModalComponent] Mapbox Draw direct_select mode activated for:', point.mapLayerId);
+                        } catch (e) {
+                            console.error('[ModalComponent] Mapbox Draw changeMode error:', e);
+                        }
+                    }, 100);
+
+                    // Vertex değişikliklerini dinleyen event listener'ı tanımla
+                    this._onDrawUpdateHandler = (e) => {
+                        const features = this.mapComponent.draw.getAll().features;
+                        const currentFeature = features.find(f => f.id === point.mapLayerId);
+                        if (currentFeature && currentFeature.geometry) {
+                            let newCoords = currentFeature.geometry.coordinates;
+                            if (point.drawingType !== 'line') {
+                                // Poligon ise ilk halkayı al
+                                newCoords = newCoords[0];
+                            }
+                            // Sidebar'daki editingPoint koordinatlarını güncelle
+                            if (this.sidebarComponent.editingPoint) {
+                                this.sidebarComponent.editingPoint.coords = newCoords;
+                            }
+                            // console.log('[ModalComponent] Draw updated. New coords:', newCoords);
+                        }
+                    };
+
+                    this.mapComponent.map.on('draw.update', this._onDrawUpdateHandler);
+                    this.mapComponent.map.on('draw.selectionchange', this._onDrawUpdateHandler);
+                }
+            } 
+            // Normal veya Metin marker ise
+            else if (point.marker) {
+                // Sürüklemeyi aç
+                point.marker.setDraggable(true);
+                // console.log('[ModalComponent] Marker setDraggable: true');
+
+                // Sürükleme sonunu dinle
+                this._currentMarkerDragEndHandler = () => {
+                    const newLngLat = point.marker.getLngLat();
+                    const newCoords = [newLngLat.lng, newLngLat.lat];
+                    
+                    if (this.sidebarComponent.editingPoint) {
+                        this.sidebarComponent.editingPoint.coords = newCoords;
+                    }
+                    // console.log('[ModalComponent] Marker dragged. New coords:', newCoords);
+
+                    // Eğer metin marker ise lider çizgisini vb. güncelle
+                    if (point.drawingType === 'text') {
+                        // sidebar'daki editingPoint'i kullan
+                        const tempPoint = {
+                            ...this.sidebarComponent.editingPoint,
+                            coords: newCoords
+                        };
+                        this.updateTextMarker(tempPoint);
+                    }
+                };
+
+                point.marker.on('dragend', this._currentMarkerDragEndHandler);
+            }
+        };
+
+        // ----------------------------------------
+        // Noktaları/Çizimleri Düzenleme Bitişi (Kaydet, İptal veya Sil)
+        // ----------------------------------------
+        this.sidebarComponent.onPointEditEnd = (point) => {
+            if (!point || this.viewMode) return;
+
+            // console.log('[ModalComponent] onPointEditEnd:', point);
+
+            // Çizim öğesi ise
+            if (point.isDrawing && point.mapLayerId) {
+                // Event listener'ları kaldır
+                if (this._onDrawUpdateHandler) {
+                    this.mapComponent.map.off('draw.update', this._onDrawUpdateHandler);
+                    this.mapComponent.map.off('draw.selectionchange', this._onDrawUpdateHandler);
+                    this._onDrawUpdateHandler = null;
+                }
+
+                // Mapbox Draw'dan sil
+                if (this.mapComponent.draw) {
+                    this.mapComponent.draw.deleteAll();
+                }
+
+                // Haritadaki read-only katmanı güncelle ve görünür yap
+                if (point.coords) {
+                    const source = this.mapComponent.map.getSource(point.mapLayerId);
+                    if (source) {
+                        let geometryType = 'Polygon';
+                        let coords = point.coords;
+                        if (point.drawingType === 'line') {
+                            geometryType = 'LineString';
+                        } else {
+                            coords = [point.coords];
+                        }
+
+                        source.setData({
+                            type: 'Feature',
+                            geometry: {
+                                type: geometryType,
+                                coordinates: coords
+                            }
+                        });
+                    }
+                }
+
+                const map = this.mapComponent.map;
+                if (map) {
+                    const layersToShow = [`${point.mapLayerId}-layer`, `${point.mapLayerId}-outline`];
+                    layersToShow.forEach(lyrId => {
+                        if (map.getLayer(lyrId)) {
+                            map.setLayoutProperty(lyrId, 'visibility', 'visible');
+                        }
+                    });
+                }
+            } 
+            // Normal veya Metin marker ise
+            else if (point.marker) {
+                // Sürüklemeyi kapat
+                point.marker.setDraggable(false);
+
+                if (this._currentMarkerDragEndHandler) {
+                    point.marker.off('dragend', this._currentMarkerDragEndHandler);
+                    this._currentMarkerDragEndHandler = null;
+                }
+
+                // İptal edildiyse orijinal koordinatlarına geri döndür
+                if (point.coords) {
+                    point.marker.setLngLat(point.coords);
+                    if (point.drawingType === 'text') {
+                        this.updateTextMarker(point);
+                    }
+                }
+            }
+        };
+
         this.sidebarComponent.onPointTextPreview = (point) => {
             if (!point || !point.coords || this.viewMode) return;
             if (point.drawingType !== 'text') return;

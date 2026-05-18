@@ -14,6 +14,97 @@ export class MapDrawing {
         this.currentMoveHandler = null;
         this.currentContextMenuHandler = null;
         this.drawMode = null;
+
+        // Mapbox GL Draw kontrolünü arka planda başlat
+        this.draw = null;
+        if (typeof MapboxDraw !== 'undefined') {
+            this.draw = new MapboxDraw({
+                displayControlsDefault: false,
+                controls: {
+                    polygon: false,
+                    trash: false
+                },
+                styles: [
+                    // POLYS
+                    {
+                        'id': 'gl-draw-polygon-fill',
+                        'type': 'fill',
+                        'filter': ['all', ['==', '$type', 'Polygon']],
+                        'paint': {
+                            'fill-color': ['case', ['==', ['get', 'active'], 'true'], '#fbb03b', '#3bb2d0'],
+                            'fill-opacity': 0.1
+                        }
+                    },
+                    // LINES
+                    {
+                        'id': 'gl-draw-lines',
+                        'type': 'line',
+                        'filter': ['any', ['==', '$type', 'LineString'], ['==', '$type', 'Polygon']],
+                        'layout': {
+                            'line-cap': 'round',
+                            'line-join': 'round'
+                        },
+                        'paint': {
+                            'line-color': ['case', ['==', ['get', 'active'], 'true'], '#fbb03b', '#3bb2d0'],
+                            'line-dasharray': ['case', ['==', ['get', 'active'], 'true'], [0.2, 2], [2, 0]],
+                            'line-width': 2
+                        }
+                    },
+                    // POINTS OUTER
+                    {
+                        'id': 'gl-draw-point-outer',
+                        'type': 'circle',
+                        'filter': ['all', ['==', '$type', 'Point'], ['==', 'meta', 'feature']],
+                        'paint': {
+                            'circle-radius': ['case', ['==', ['get', 'active'], 'true'], 9, 7],
+                            'circle-color': '#fff'
+                        }
+                    },
+                    // POINTS INNER
+                    {
+                        'id': 'gl-draw-point-inner',
+                        'type': 'circle',
+                        'filter': ['all', ['==', '$type', 'Point'], ['==', 'meta', 'feature']],
+                        'paint': {
+                            'circle-radius': ['case', ['==', ['get', 'active'], 'true'], 6, 4],
+                            'circle-color': ['case', ['==', ['get', 'active'], 'true'], '#fbb03b', '#3bb2d0']
+                        }
+                    },
+                    // ACTIVE VERTEX OUTER (Larger radius for touch targets and visibility!)
+                    {
+                        'id': 'gl-draw-vertex-outer',
+                        'type': 'circle',
+                        'filter': ['all', ['==', '$type', 'Point'], ['==', 'meta', 'vertex'], ['!=', 'mode', 'simple_select']],
+                        'paint': {
+                            'circle-radius': ['case', ['==', ['get', 'active'], 'true'], 9, 7],
+                            'circle-color': '#fff'
+                        }
+                    },
+                    // ACTIVE VERTEX INNER
+                    {
+                        'id': 'gl-draw-vertex-inner',
+                        'type': 'circle',
+                        'filter': ['all', ['==', '$type', 'Point'], ['==', 'meta', 'vertex'], ['!=', 'mode', 'simple_select']],
+                        'paint': {
+                            'circle-radius': ['case', ['==', ['get', 'active'], 'true'], 6, 4],
+                            'circle-color': '#fbb03b'
+                        }
+                    },
+                    // MIDPOINT
+                    {
+                        'id': 'gl-draw-midpoint',
+                        'type': 'circle',
+                        'filter': ['all', ['==', 'meta', 'midpoint']],
+                        'paint': {
+                            'circle-radius': 4,
+                            'circle-color': '#fbb03b'
+                        }
+                    }
+                ]
+            });
+            this.map.addControl(this.draw);
+            console.log('[MapDrawing] MapboxDraw control successfully added to the map.');
+        }
     }
 
     // ========================================

@@ -49,6 +49,10 @@ export class MapComponent {
         this.init();
     }
 
+    get draw() {
+        return this.drawing ? this.drawing.draw : null;
+    }
+
     // Rota yöneticisini başlat (dışarıdan çağrılabilir)
     initRouteManager() {
         if (!this.routeManager && this.map) {
