@@ -6,7 +6,7 @@ Kullanıcı her nokta için özel zoom seviyesi belirlemek istiyor. Noktaya gidi
 
 ## Plan
 - [x] Adım 1: Nokta veri modelinde `zoom` alanını koru.
-- [x] Adım 2: Nokta detay paneline 4-18 aralığında zoom slider'ı ve değer göstergesi ekle.
+- [x] Adım 2: Nokta detay paneline 1-18 aralığında yakınlaştırma slider'ı ve değer göstergesi ekle.
 - [x] Adım 3: Slider değişiminde canlı harita önizlemesi yap.
 - [x] Adım 4: Odaklanma, playback ve StoryMap akışlarında `point.zoom` değerini kullan.
 - [x] Adım 5: Değişiklikleri doğrula ve diff'i gözden geçir.

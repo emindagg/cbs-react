@@ -18,7 +18,7 @@ export function renderDetailView(context) {
     const isStoryMapTemplate = data?.templateName === 'Hikâye Haritası';
     const defaultZoom = (isTimelineTemplate || isStoryMapTemplate) ? 12 : 14;
     const pointZoom = Number.isFinite(Number(point.zoom))
-        ? Math.max(4, Math.min(18, Number(point.zoom)))
+        ? Math.max(1, Math.min(18, Number(point.zoom)))
         : defaultZoom;
 
     // Detail panel her zaman "Kaydet" gösterir (her nokta bağımsız)
@@ -101,7 +101,7 @@ export function renderDetailView(context) {
                     <input type="range"
                            class="sidebar__zoom-slider"
                            id="point-zoom"
-                           min="4"
+                           min="1"
                            max="18"
                            step="1"
                            value="${pointZoom}">

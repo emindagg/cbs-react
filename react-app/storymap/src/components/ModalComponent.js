@@ -313,7 +313,7 @@ export class ModalComponent {
     getPointZoom(point, fallbackZoom) {
         const zoom = Number(point?.zoom);
         if (!Number.isFinite(zoom)) return fallbackZoom;
-        return Math.max(4, Math.min(18, zoom));
+        return Math.max(1, Math.min(18, zoom));
     }
 
     setupSidebarCallbacks() {

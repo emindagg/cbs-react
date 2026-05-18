@@ -288,7 +288,7 @@ function setupInputListeners(sidebar) {
 
     if (zoomInput) {
         zoomInput.addEventListener('input', (e) => {
-            const zoom = Math.max(4, Math.min(18, parseInt(e.target.value, 10) || 12));
+            const zoom = Math.max(1, Math.min(18, parseInt(e.target.value, 10) || 12));
             sidebar.editingPoint.zoom = zoom;
             if (zoomValue) zoomValue.textContent = zoom;
             if (sidebar.onPointZoomPreview) {

@@ -79,7 +79,7 @@ class ViewModeApp {
                 subtitle: point.subtitle || '',
                 content: point.description || '',
                 coords: point.coords,
-                zoom: Number.isFinite(Number(point.zoom)) ? Math.max(4, Math.min(18, Number(point.zoom))) : 12,
+                zoom: Number.isFinite(Number(point.zoom)) ? Math.max(1, Math.min(18, Number(point.zoom))) : 12,
                 media: point.media || [],
                 facts: point.facts || [],
                 tags: point.tags || [],
