@@ -1,19 +1,18 @@
-# Görev: Storymap Yeni Proje Oluştururken Eski Projenin Görünmesi Sorununun Giderilmesi
+# Görev: Kaydedilmiş StoryMap Projelerinde Vertex Düzenlemenin Çalışmaması Sorununun Giderilmesi
 Tarih: 2026-05-18
 
 ## Bağlam
-Storymap'te bir proje oluşturulup kaydedildikten sonra, ana sayfaya dönülüp "Yeni Harita Oluştur" seçeneğiyle yeni bir proje oluşturulmaya çalışıldığında, bir önceki projeye ait verilerin (noktalar, çizimler, başlık vb.) yeni projede görünmesi sorunu bulunmaktadır. Bu durumun nedeni `ModalComponent` imha edilirken (destroy) başlangıç modalı elementleri üzerindeki event listener'ların kaldırılmamasıdır. Bu sebeple eski `ModalComponent` örnekleri hafızada kalmakta ve "Devam Et" butonuna tıklandığında eski listener tetiklenerek eski projeyi yüklemektedir.
+Storymap projesi ilk kez oluşturulduğunda vertex düzenleme sorunsuz çalışırken, kaydedilip sayfadan çıkıldıktan ve tekrar girildikten sonra vertex düzenleme çalışmamaktadır. Bunun nedeni, kaydedilmiş veriler yüklenirken haritada oluşturulan GeoJSON kaynak (source) ve katman (layer) ID'lerinin (`drawing-source-${point.id}` / `drawing-layer-${point.id}`) ile `onPointEditStart` / `onPointEditEnd` içindeki düzenleme fonksiyonlarının beklediği katman/kaynak ID'leri (`point.mapLayerId`, yani `polygon-171...` veya `line-171...`) arasında uyuşmazlık olmasıdır. Yükleme esnasında katmanlar uyuşmadığı için eski katman gizlenememekte ve düzenleme sonrası katman güncellenememektedir.
 
 ## Plan
-- [x] **Adım 1:** `ModalComponent.js` dosyasında başlangıç modalı event listener'larını isimlendirilmiş/referanslı fonksiyonlar haline getirmek.
-- [x] **Adım 2:** `setupListeners` fonksiyonunu bu yeni referanslı listener'ları kullanacak şekilde güncellemek.
-- [x] **Adım 3:** `destroy` fonksiyonunda bu listener'ları `removeEventListener` ile tamamen kaldırmak ve `storyMapExitHandler` event'ini temizlemek.
-- [x] **Adım 4:** `destroy` fonksiyonunda `this.storyData` ve `this.currentStoryId` alanlarını sıfırlamak.
+- [x] **Adım 1:** `ModalComponent.js` dosyasındaki `addDrawingToMapForViewMode` fonksiyonunda oluşturulan harita kaynak ve katman ID'lerinin, `point.mapLayerId` değeri varsa onu kullanacak şekilde, yoksa mevcut `drawing-source-${point.id}` / `drawing-layer-${point.id}` yapısına düşecek şekilde güncellenmesi.
+- [x] **Adım 2:** Çizgi (`line`/`arrow`) çizimlerinin katman yapısının `MapDrawing.js` ile (`${mapLayerId}-layer`) tam uyumlu hale getirilmesi.
+- [x] **Adım 3:** Düzenleme başlatıldığında ve bitirildiğinde harita katmanlarının doğru şekilde gizlenmesi ve güncellenmesinin doğrulanması.
 
 ## Doğrulama kriterleri
-- [x] `ModalComponent` imha edildiğinde tüm input ve buton event listener'ları temizlenmeli.
-- [x] Bir önceki projeden çıkıp yeni proje oluşturulduğunda eski projenin noktaları ve çizimleri haritada veya sidebar'da görünmemeli.
-- [x] Yeni harita oluşturulurken başlık ve açıklama alanları beklendiği gibi temiz ve yeni girilen verilerle başlamalı.
+- [x] Kaydedilmiş bir projeye tekrar giriş yapıldığında, çizilmiş alan/çizgilerin vertex düzenleme modu sorunsuz açılmalı (noktalar sürüklenmeli).
+- [x] Vertex düzenleme işlemi tamamlandığında, harita üzerindeki çizimin şekli yeni koordinatlara göre başarıyla güncellenmeli ve eski şekil ortadan kalkmalı.
+- [x] Kaydetme işlemi sonrasında koordinatlar doğru şekilde veritabanına/dosyaya yazılabilmeli (state güncellenmeli).
 
 ## Sonuç
-`ModalComponent` sızıntısı giderildi. Olay dinleyicileri (event listeners) artık `destroy` sırasında tamamen temizleniyor ve state sıfırlanıyor. Yeni proje oluşturulduğunda eski projenin kalıntıları tamamen engellendi ve temiz bir başlangıç sağlandı.
+Sorun başarıyla giderildi. `ModalComponent.js` içindeki `addDrawingToMapForViewMode` fonksiyonu, veriler yüklenirken eğer çizim öğesine ait `point.mapLayerId` değeri mevcutsa harita üzerindeki kaynak (source) ve katman (layer) ID'lerinin bu değeri kullanmasını sağlayacak şekilde güncellendi. Böylece, edit modunda `onPointEditStart` ve `onPointEditEnd` tarafından tetiklenen gizleme, güncelleme ve gösterme işlemleri haritadaki katmanlarla tam olarak uyuştu. Yapılan değişiklikler sonrasında proje başarıyla derlendi (build başarılı) ve sistem kararlı şekilde çalışmaya hazır hale getirildi.

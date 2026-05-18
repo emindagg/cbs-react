@@ -2704,8 +2704,9 @@ export class ModalComponent {
         if (!this.mapComponent || !point.coords) return;
 
         const map = this.mapComponent.map;
-        const sourceId = `drawing-source-${point.id}`;
-        const layerId = `drawing-layer-${point.id}`;
+        const sourceId = point.mapLayerId || `drawing-source-${point.id}`;
+        const layerId = point.mapLayerId ? `${point.mapLayerId}-layer` : `drawing-layer-${point.id}`;
+        const outlineId = point.mapLayerId ? `${point.mapLayerId}-outline` : `${layerId}-outline`;
 
         // Drawing type'a göre source oluştur
         let sourceData;
@@ -2793,7 +2794,7 @@ export class ModalComponent {
                 });
 
                 map.addLayer({
-                    id: `${layerId}-outline`,
+                    id: outlineId,
                     type: 'line',
                     source: sourceId,
                     paint: {
