@@ -192,6 +192,13 @@ export class ModalComponent {
                 viewMode: this.viewMode
             });
 
+            this.sidebarComponent.onGetCurrentZoom = () => {
+                if (this.mapComponent && this.mapComponent.map) {
+                    return Math.round(this.mapComponent.map.getZoom());
+                }
+                return 14;
+            };
+
             // Eğer mevcut harita açılıyorsa, hasSaved flag'ini true yap
             // (ilk render'da buton "Güncelle" olarak gösterilecek)
             if (storyData || this.storyData) {

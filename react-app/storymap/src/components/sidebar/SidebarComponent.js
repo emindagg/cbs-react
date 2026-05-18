@@ -60,6 +60,7 @@ export class SidebarComponent {
         
         // Callback referansları
         this.onDetailCloseCallback = null;
+        this.onGetCurrentZoom = null;
         
         this.init();
     }
@@ -197,7 +198,9 @@ export class SidebarComponent {
             shape: point.shape,
             isNumber: point.isNumber,
             number: point.number,
-            zoom: point.zoom,
+            zoom: (point.zoom !== undefined && point.zoom !== null)
+                ? point.zoom
+                : (typeof this.onGetCurrentZoom === 'function' ? this.onGetCurrentZoom() : null),
             media: point.media ? point.media.map(m => ({ ...m })) : [],
             // Rota alanları
             visitDay: point.visitDay,
