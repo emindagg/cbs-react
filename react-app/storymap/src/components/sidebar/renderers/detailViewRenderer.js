@@ -2,7 +2,12 @@
  * Detay görünümü renderer
  */
 
-import { MARKER_STYLES, COLOR_PALETTE } from '../constants/index.js';
+import {
+    MARKER_STYLES,
+    COLOR_PALETTE,
+    TEXT_ANNOTATION_STYLES,
+    LEADER_LINE_STYLES
+} from '../constants/index.js';
 import { renderMediaItems } from './mediaRenderer.js';
 
 /**
@@ -16,6 +21,7 @@ export function renderDetailView(context) {
     const isRouteTemplate = data?.templateName === 'Rota Bazlı';
     const isTimelineTemplate = data?.templateName === 'Timeline Bazlı';
     const isStoryMapTemplate = data?.templateName === 'Hikâye Haritası';
+    const isTextDrawing = point?.drawingType === 'text';
     const defaultZoom = (isTimelineTemplate || isStoryMapTemplate) ? 12 : 14;
     const pointZoom = Number.isFinite(Number(point.zoom))
         ? Math.max(1, Math.min(18, Number(point.zoom)))
@@ -90,6 +96,62 @@ export function renderDetailView(context) {
                               rows="4"
                               ${inputDisabled}>${point.description || ''}</textarea>
                 </div>
+
+                ${!viewMode && isTextDrawing ? `
+                <!-- Ek Açıklama Stili -->
+                <div class="sidebar__text-annotation-section">
+                    <div class="sidebar__text-annotation-title">
+                        <i class="fa-solid fa-comment-dots"></i>
+                        <span>Ek Açıklama Stili</span>
+                    </div>
+
+                    <div class="sidebar__detail-field">
+                        <label class="sidebar__detail-label" for="point-text-content">İçerik</label>
+                        <textarea class="sidebar__detail-textarea sidebar__text-content"
+                                  id="point-text-content"
+                                  placeholder="Metin içeriğini yazın"
+                                  rows="4">${point.text || ''}</textarea>
+                    </div>
+
+                    <div class="sidebar__detail-field">
+                        <label class="sidebar__detail-label">Stil</label>
+                        <div class="sidebar__text-style-grid">
+                            ${TEXT_ANNOTATION_STYLES.map(style => `
+                                <button class="sidebar__text-style-option ${style.id === (point.textStyle || 'boxed') ? 'sidebar__text-style-option--active' : ''}"
+                                        data-text-style="${style.id}"
+                                        title="${style.name}">
+                                    <span class="sidebar__text-style-preview sidebar__text-style-preview--${style.id}">${style.preview}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="sidebar__detail-field">
+                        <div class="sidebar__detail-label sidebar__text-toggle-label">
+                            <span>Belirtme çizgisi</span>
+                            <label class="sidebar__switch">
+                                <input type="checkbox"
+                                       id="point-leader-line"
+                                       ${point.leaderLine !== false ? 'checked' : ''}>
+                                <span class="sidebar__switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="sidebar__detail-field" id="leader-line-style-field" style="display: ${point.leaderLine !== false ? 'block' : 'none'};">
+                        <label class="sidebar__detail-label">Çizgi türü</label>
+                        <div class="sidebar__leader-line-grid">
+                            ${LEADER_LINE_STYLES.map(lineStyle => `
+                                <button class="sidebar__leader-line-option ${lineStyle.id === (point.leaderLineStyle || 'solid') ? 'sidebar__leader-line-option--active' : ''}"
+                                        data-leader-line-style="${lineStyle.id}"
+                                        title="${lineStyle.name}">
+                                    <span class="sidebar__leader-line-preview sidebar__leader-line-preview--${lineStyle.id}"></span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
 
                 ${!viewMode ? `
                 <!-- Yakınlaştırma Seviyesi -->
@@ -183,7 +245,7 @@ export function renderDetailView(context) {
                 </div>
                 ` : ''}
 
-                ${!viewMode && !isRouteTemplate && !isTimelineTemplate ? `
+                ${!viewMode && !isRouteTemplate && !isTimelineTemplate && !isTextDrawing ? `
                 <!-- Style Selector -->
                 <div class="sidebar__detail-field">
                     <label class="sidebar__detail-label">Stil</label>
@@ -215,7 +277,7 @@ export function renderDetailView(context) {
                 </div>
                 ` : ''}
 
-                ${!isTimelineTemplate ? `
+                ${!isTimelineTemplate && !isTextDrawing ? `
                 <!-- Renk Seçici -->
                 <div class="sidebar__field">
                     <label class="sidebar__label">Renk</label>

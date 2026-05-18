@@ -102,31 +102,252 @@ export class MapMarkers {
     }
 
     // Metin marker ekle
-    addTextMarker(coords, text) {
+    addTextMarker(coords, text, options = {}) {
+        if (!this.map) return null;
+
+        const styleId        = options.textStyle      || 'boxed';
+        const placement      = options.textPlacement  || 'right';
+        const leaderLineStyle= options.leaderLineStyle|| 'solid';
+        const showLeaderLine = options.leaderLine === true;
+        const textValue      = (text || options.text  || '').trim() || 'Metin';
+        const leaderColor    = options.leaderColor    || '#0f766e';
+        const anchorColor    = options.anchorColor    || '#0f766e';
+
+        const styleMap = {
+            plain: { background: 'transparent', borderColor: 'transparent', textColor: '#111827', shadow: 'none' },
+            boxed: { background: '#ffffff',      borderColor: '#d1d5db',     textColor: '#111827', shadow: '0 4px 12px rgba(17,24,39,.12)' },
+            dark:  { background: '#0f172a',      borderColor: '#0f172a',     textColor: '#f8fafc', shadow: '0 4px 12px rgba(15,23,42,.25)' },
+            halo:  { background: 'transparent', borderColor: 'transparent', textColor: '#ffffff', shadow: 'none' },
+            glass: { background: 'rgba(255, 255, 255, 0.45)', borderColor: 'rgba(255, 255, 255, 0.65)', textColor: '#1e293b', shadow: '0 8px 32px rgba(15, 23, 42, 0.08)' }
+        };
+        const style = styleMap[styleId] || styleMap.boxed;
+
+        const dashMap = { solid: 'none', dashed: '8,5', dotted: '2,5' };
+        const svgDash = dashMap[leaderLineStyle] || 'none';
+
+        // --- Kapsayıcı ---
         const el = document.createElement('div');
-        el.className = 'map-text-marker';
-        
-        // Sadece ikon göster
-        el.innerHTML = '<i class="fa-solid fa-font"></i>';
+        el.className = `map-text-marker map-text-marker--${styleId}`;
         el.style.cssText = `
-            background: #3b82f6;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 9px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-            cursor: pointer;
-            pointer-events: auto;
+            position: relative;
+            width: 0;
+            height: 0;
+            overflow: visible;
+            pointer-events: none;
+            user-select: none;
         `;
 
-        const marker = new maplibregl.Marker({ element: el })
+        // Sabit koordinat referansı (container'ın 0,0 noktası = harita koordinatı)
+        const AX = 0, AY = 0; // anchor SVG koordinatları
+
+        // --- SVG Leader Line ---
+        let svgEl = null, svgLine = null;
+        if (showLeaderLine) {
+            svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svgEl.style.cssText = `
+                position: absolute;
+                top: 0; left: 0;
+                width: 1px; height: 1px;
+                overflow: visible;
+                pointer-events: none;
+                z-index: 1;
+            `;
+            svgLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            svgLine.setAttribute('stroke', leaderColor);
+            svgLine.setAttribute('stroke-width', '2');
+            svgLine.setAttribute('stroke-linecap', 'round');
+            if (svgDash !== 'none') svgLine.setAttribute('stroke-dasharray', svgDash);
+            svgEl.appendChild(svgLine);
+            el.appendChild(svgEl);
+        }
+
+        // --- Anchor Dot ---
+        const anchorDot = document.createElement('div');
+        anchorDot.style.cssText = `
+            position: absolute;
+            left: 0; top: 0;
+            width: 12px; height: 12px;
+            transform: translate(-50%,-50%);
+            border-radius: 50%;
+            background: ${anchorColor};
+            border: 2px solid #ffffff;
+            box-shadow: 0 1px 4px rgba(15,23,42,.35);
+            z-index: 2;
+            pointer-events: none;
+            display: ${showLeaderLine ? 'block' : 'none'};
+        `;
+        el.appendChild(anchorDot);
+
+        // --- Label ---
+        const label = document.createElement('div');
+        label.className = 'map-text-marker__label';
+        label.textContent = textValue;
+        label.style.cssText = `
+            position: absolute;
+            width: max-content;
+            max-width: 200px;
+            padding: 10px 14px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            background: ${style.background};
+            border: 1px solid ${style.borderColor};
+            color: ${style.textColor};
+            box-shadow: ${style.shadow};
+            font-size: 12px;
+            line-height: 1.45;
+            font-weight: 600;
+            white-space: pre-wrap;
+            word-break: break-word;
+            text-align: center;
+            backdrop-filter: ${styleId === 'glass' ? 'blur(12px)' : 'none'};
+            -webkit-backdrop-filter: ${styleId === 'glass' ? 'blur(12px)' : 'none'};
+            cursor: ${showLeaderLine ? 'grab' : 'default'};
+            pointer-events: auto;
+            z-index: 3;
+            transform: translate(-50%, -50%);
+            ${styleId === 'halo' ? `
+                -webkit-text-stroke: 3px #000000;
+                paint-order: stroke fill;
+                color: #ffffff;
+                font-weight: 500;
+            ` : ''}
+        `;
+
+        // Label başlangıç ofseti (kayıtlıysa restore, değilse placement'tan hesapla)
+        let lx = options.labelOffsetX !== undefined ? options.labelOffsetX : null;
+        let ly = options.labelOffsetY !== undefined ? options.labelOffsetY : null;
+
+        if (lx === null || ly === null) {
+            if (!showLeaderLine) {
+                lx = 0; ly = 0;
+            } else {
+                const dist = 90;
+                if      (placement === 'right')  { lx = dist;  ly = 0;    }
+                else if (placement === 'left')   { lx = -dist; ly = 0;    }
+                else if (placement === 'top')    { lx = 0;     ly = -dist;}
+                else                             { lx = 0;     ly = dist; }
+            }
+        }
+
+        label.style.left = `${lx}px`;
+        label.style.top  = `${ly}px`;
+        el.appendChild(label);
+
+        // SVG line'ı güncelle
+        function updateSvgLine() {
+            if (!svgLine) return;
+            const lRect  = label.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            // label merkezi, el origin'e göre
+            const cx = (lRect.left + lRect.width  / 2) - elRect.left;
+            const cy = (lRect.top  + lRect.height / 2) - elRect.top;
+
+            let x2 = cx;
+            let y2 = cy;
+
+            // Çizgiyi kutunun dış sınırında kesme (özellikle Düz/transparan etiketlerde okunurluk için)
+            const margin = -8;
+            const w = lRect.width + (margin * 2);
+            const h = lRect.height + (margin * 2);
+            const absCx = Math.abs(cx);
+            const absCy = Math.abs(cy);
+
+            if (absCx > 0.01 || absCy > 0.01) {
+                const tx = absCx > 0 ? (w / 2) / absCx : Infinity;
+                const ty = absCy > 0 ? (h / 2) / absCy : Infinity;
+                const t = Math.min(tx, ty);
+
+                if (t < 1) {
+                    x2 = cx - t * cx;
+                    y2 = cy - t * cy;
+                } else {
+                    // Eğer anchor nokta kutunun içindeyse çizgi görünmesin (0 uzunlukta çiz)
+                    x2 = AX;
+                    y2 = AY;
+                }
+            }
+
+            svgLine.setAttribute('x1', AX);
+            svgLine.setAttribute('y1', AY);
+            svgLine.setAttribute('x2', x2);
+            svgLine.setAttribute('y2', y2);
+        }
+
+        requestAnimationFrame(updateSvgLine);
+
+        // --- Sürükleme ---
+        if (showLeaderLine) {
+            let dragging = false;
+            let startPx, startPy, startLx, startLy;
+
+            label.addEventListener('pointerdown', (e) => {
+                dragging = true;
+                startPx  = e.clientX;
+                startPy  = e.clientY;
+                startLx  = lx;
+                startLy  = ly;
+                label.style.cursor = 'grabbing';
+                label.setPointerCapture(e.pointerId);
+                e.stopPropagation();
+                // MapLibre mouse eventleri kullandığından dragPan kapatılmalı
+                if (this.map) {
+                    this.map.dragPan.disable();
+                    this.map.scrollZoom.disable();
+                }
+            });
+
+            label.addEventListener('pointermove', (e) => {
+                if (!dragging) return;
+                lx = startLx + (e.clientX - startPx);
+                ly = startLy + (e.clientY - startPy);
+                label.style.left = `${lx}px`;
+                label.style.top  = `${ly}px`;
+                updateSvgLine();
+                e.stopPropagation();
+            });
+
+            const onPointerUp = (e) => {
+                if (!dragging) return;
+                dragging = false;
+                label.style.cursor = 'grab';
+
+                // Harita kontrollerini geri aç
+                if (this.map) {
+                    this.map.dragPan.enable();
+                    this.map.scrollZoom.enable();
+                }
+
+                // Ofseti marker._options'a kaydet (updateTextMarker restore edebilsin)
+                if (marker) {
+                    marker._options.labelOffsetX = lx;
+                    marker._options.labelOffsetY = ly;
+                }
+                e.stopPropagation();
+
+                // pointerup'tan sonra browser bir click olayı tetikler.
+                // Bu click, label üzerindeki showPointDetail listener'ını çalıştırıp
+                // metni sıfırlar. Bir kereliğine capture phase'de yakalayıp yutuyoruz.
+                const absorbClick = (ev) => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    label.removeEventListener('click', absorbClick, true);
+                };
+                label.addEventListener('click', absorbClick, true);
+            };
+            label.addEventListener('pointerup',     onPointerUp);
+            label.addEventListener('pointercancel', onPointerUp);
+        }
+
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
             .setLngLat(coords)
             .addTo(this.map);
 
+        marker._options = {
+            ...options,
+            text: textValue, textStyle: styleId, textPlacement: placement,
+            leaderLine: showLeaderLine, leaderLineStyle,
+            labelOffsetX: lx, labelOffsetY: ly
+        };
         this.markers.push(marker);
         return marker;
     }

@@ -303,8 +303,8 @@ export class MapComponent {
         return this.markers ? this.markers.addMarker(coords, options) : null;
     }
 
-    addTextMarker(coords, text) {
-        return this.markers ? this.markers.addTextMarker(coords, text) : null;
+    addTextMarker(coords, text, options = {}) {
+        return this.markers ? this.markers.addTextMarker(coords, text, options) : null;
     }
 
     enableMarkerMode(callback) {

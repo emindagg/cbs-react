@@ -273,6 +273,8 @@ function setupInputListeners(sidebar) {
     const descInput = container.querySelector('#point-description');
     const zoomInput = container.querySelector('#point-zoom');
     const zoomValue = container.querySelector('#point-zoom-value');
+    const textContentInput = container.querySelector('#point-text-content');
+    const leaderLineInput = container.querySelector('#point-leader-line');
 
     if (titleInput) {
         titleInput.addEventListener('input', (e) => {
@@ -293,6 +295,34 @@ function setupInputListeners(sidebar) {
             if (zoomValue) zoomValue.textContent = zoom;
             if (sidebar.onPointZoomPreview) {
                 sidebar.onPointZoomPreview(sidebar.editingPoint, zoom);
+            }
+        });
+    }
+
+    if (textContentInput) {
+        textContentInput.addEventListener('input', (e) => {
+            sidebar.editingPoint.text = e.target.value;
+            if (sidebar.editingPoint.drawingType === 'text' && !sidebar.editingPoint.title) {
+                sidebar.editingPoint.title = e.target.value.substring(0, 20) || 'Metin';
+            }
+            if (sidebar.onPointTextPreview) {
+                sidebar.onPointTextPreview(sidebar.editingPoint);
+            }
+        });
+    }
+
+    if (leaderLineInput) {
+        leaderLineInput.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            sidebar.editingPoint.leaderLine = isChecked;
+
+            const styleField = container.querySelector('#leader-line-style-field');
+            if (styleField) {
+                styleField.style.display = isChecked ? 'block' : 'none';
+            }
+
+            if (sidebar.onPointTextPreview) {
+                sidebar.onPointTextPreview(sidebar.editingPoint);
             }
         });
     }
@@ -331,6 +361,33 @@ function setupInputListeners(sidebar) {
             console.log('[Input] category changed to:', sidebar.editingPoint.category);
         });
     }
+
+    const textStyleButtons = container.querySelectorAll('[data-text-style]');
+    textStyleButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const styleId = button.dataset.textStyle;
+            sidebar.editingPoint.textStyle = styleId;
+            textStyleButtons.forEach(btn => btn.classList.remove('sidebar__text-style-option--active'));
+            button.classList.add('sidebar__text-style-option--active');
+            if (sidebar.onPointTextPreview) {
+                sidebar.onPointTextPreview(sidebar.editingPoint);
+            }
+        });
+    });
+
+
+    const leaderStyleButtons = container.querySelectorAll('[data-leader-line-style]');
+    leaderStyleButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const styleId = button.dataset.leaderLineStyle;
+            sidebar.editingPoint.leaderLineStyle = styleId;
+            leaderStyleButtons.forEach(btn => btn.classList.remove('sidebar__leader-line-option--active'));
+            button.classList.add('sidebar__leader-line-option--active');
+            if (sidebar.onPointTextPreview) {
+                sidebar.onPointTextPreview(sidebar.editingPoint);
+            }
+        });
+    });
 }
 
 /**

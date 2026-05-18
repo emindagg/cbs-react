@@ -215,7 +215,13 @@ export class SidebarComponent {
             drawingType: point.drawingType,
             mapLayerId: point.mapLayerId,
             radius: point.radius,
-            text: point.text
+            text: point.text,
+            textStyle: point.textStyle,
+            textPlacement: point.textPlacement,
+            leaderLine: point.leaderLine,
+            leaderLineStyle: point.leaderLineStyle,
+            labelOffsetX: point.labelOffsetX,
+            labelOffsetY: point.labelOffsetY
         };
         
         this.editingPoint = pointCopy;
@@ -231,6 +237,13 @@ export class SidebarComponent {
         // Timeline varsayılan değerleri
         if (!this.editingPoint.category) this.editingPoint.category = 'Other';
         if (!this.editingPoint.importance) this.editingPoint.importance = 1;
+        if (this.editingPoint.drawingType === 'text') {
+            if (!this.editingPoint.textStyle) this.editingPoint.textStyle = 'boxed';
+            if (!this.editingPoint.textPlacement) this.editingPoint.textPlacement = 'right';
+            if (this.editingPoint.leaderLine === undefined) this.editingPoint.leaderLine = false;
+            if (!this.editingPoint.leaderLineStyle) this.editingPoint.leaderLineStyle = 'solid';
+            if (!this.editingPoint.text) this.editingPoint.text = '';
+        }
         
         console.log('[SidebarComponent] showPointDetail: Editing point', {
             originalId: this.editingPoint.originalId,
@@ -245,6 +258,12 @@ export class SidebarComponent {
     }
 
     showListView() {
+        const closingPoint = this.editingPoint;
+
+        if (this.onPointTextPreviewReset && closingPoint?.drawingType === 'text' && closingPoint.originalId) {
+            this.onPointTextPreviewReset(closingPoint.originalId);
+        }
+
         this.currentView = 'list';
         this.currentTab = 'layers';
         this.editingPoint = null;
@@ -439,7 +458,20 @@ export class SidebarComponent {
                 category: this.editingPoint.category,
                 importance: this.editingPoint.importance,
                 era: this.editingPoint.era,
-                historicalContext: this.editingPoint.historicalContext
+                historicalContext: this.editingPoint.historicalContext,
+                // Text annotation alanları
+                text: this.editingPoint.text,
+                textStyle: this.editingPoint.textStyle,
+                textPlacement: this.editingPoint.textPlacement,
+                leaderLine: this.editingPoint.leaderLine,
+                leaderLineStyle: this.editingPoint.leaderLineStyle,
+                // Sürükleme sonrası label ofseti — marker'dan en güncel değeri al
+                labelOffsetX: (this.editingPoint.marker?._options?.labelOffsetX !== undefined)
+                    ? this.editingPoint.marker._options.labelOffsetX
+                    : this.editingPoint.labelOffsetX,
+                labelOffsetY: (this.editingPoint.marker?._options?.labelOffsetY !== undefined)
+                    ? this.editingPoint.marker._options.labelOffsetY
+                    : this.editingPoint.labelOffsetY
             };
 
             this.points[pointIndex] = updatedPoint;

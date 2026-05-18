@@ -49,7 +49,13 @@ export class PointManager {
             drawingType: pointData.drawingType,
             mapLayerId: pointData.mapLayerId,
             radius: pointData.radius,
-            text: pointData.text
+            text: pointData.text,
+            textStyle: pointData.textStyle || 'boxed',
+            textPlacement: pointData.textPlacement || 'right',
+            leaderLine: pointData.leaderLine !== undefined ? pointData.leaderLine : false,
+            leaderLineStyle: pointData.leaderLineStyle || 'solid',
+            labelOffsetX: pointData.labelOffsetX !== undefined ? pointData.labelOffsetX : null,
+            labelOffsetY: pointData.labelOffsetY !== undefined ? pointData.labelOffsetY : null
         };
         
         console.log('[PointManager] addPoint:', {
@@ -91,6 +97,12 @@ export class PointManager {
             mapLayerId: drawingData.data?.id || null,
             marker: drawingData.marker || null, // Text marker referansı
             text: drawingData.text || '',
+            textStyle: drawingData.textStyle || 'boxed',
+            textPlacement: drawingData.textPlacement || 'right',
+            leaderLine: drawingData.leaderLine !== undefined ? drawingData.leaderLine : false,
+            leaderLineStyle: drawingData.leaderLineStyle || 'solid',
+            labelOffsetX: drawingData.labelOffsetX !== undefined ? drawingData.labelOffsetX : null,
+            labelOffsetY: drawingData.labelOffsetY !== undefined ? drawingData.labelOffsetY : null,
             radius: drawingData.radius || 0,
             zoom: drawingData.zoom,
             bounds: drawingData.bounds || null

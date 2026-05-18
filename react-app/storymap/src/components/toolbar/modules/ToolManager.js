@@ -1,5 +1,3 @@
-import { customPrompt } from '../../../utils/customPrompt.js';
-
 export class ToolManager {
     constructor(toolbarElement) {
         this.toolbar = toolbarElement;
@@ -436,31 +434,34 @@ export class ToolManager {
         this.lockToolbar();
         this.showModeIndicator('Metin eklemek için haritaya tıklayın.', 'info');
 
-        this.mapComponent.enableTextMode(async (data) => {
+        this.mapComponent.enableTextMode((data) => {
             this.hideModeIndicator();
 
-            const text = await customPrompt('Metni girin:');
-            if (text) {
-                const textMarker = this.mapComponent.addTextMarker(data.coords, text);
+            const textMarker = this.mapComponent.addTextMarker(data.coords, 'Metin', {
+                textStyle: 'boxed',
+                textPlacement: 'right',
+                leaderLine: false,
+                leaderLineStyle: 'solid'
+            });
 
-                this.handleDrawingComplete(() => {
-                    const newDrawing = this.sidebarComponent.addDrawing({
-                        type: 'text',
-                        title: text.substring(0, 20) + (text.length > 20 ? '...' : ''),
-                        text: text,
-                        coords: data.coords,
-                        marker: textMarker // Text marker referansını kaydet
-                    });
-
-                    this.sidebarComponent.showPointDetail(newDrawing.id, () => {
-                        this.unlockToolbar();
-                        this.selectToolWithoutLock('select');
-                    });
+            this.handleDrawingComplete(() => {
+                const newDrawing = this.sidebarComponent.addDrawing({
+                    type: 'text',
+                    title: 'Metin',
+                    text: '',
+                    textStyle: 'boxed',
+                    textPlacement: 'right',
+                    leaderLine: false,
+                    leaderLineStyle: 'solid',
+                    coords: data.coords,
+                    marker: textMarker // Text marker referansını kaydet
                 });
-            } else {
-                this.unlockToolbar();
-                this.selectToolWithoutLock('select');
-            }
+
+                this.sidebarComponent.showPointDetail(newDrawing.id, () => {
+                    this.unlockToolbar();
+                    this.selectToolWithoutLock('select');
+                });
+            });
         });
     }
 

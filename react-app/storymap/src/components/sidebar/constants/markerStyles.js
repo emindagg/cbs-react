@@ -20,6 +20,62 @@ export const COLOR_PALETTE = [
     '#22c55e', '#f97316', '#78716c', '#1e293b'
 ];
 
+export const TEXT_ANNOTATION_STYLES = [
+    {
+        id: 'boxed',
+        name: 'Kutu',
+        preview: 'A',
+        background: '#ffffff',
+        borderColor: '#d1d5db',
+        textColor: '#111827',
+        shadow: '0 4px 12px rgba(17, 24, 39, 0.12)',
+        opacity: 1
+    },
+    {
+        id: 'dark',
+        name: 'Koyu',
+        preview: 'A',
+        background: '#0f172a',
+        borderColor: '#0f172a',
+        textColor: '#f8fafc',
+        shadow: '0 4px 12px rgba(15, 23, 42, 0.25)',
+        opacity: 1
+    },
+    {
+        id: 'plain',
+        name: 'Düz',
+        preview: 'A',
+        background: 'transparent',
+        borderColor: 'transparent',
+        textColor: '#111827',
+        shadow: 'none',
+        opacity: 1
+    },
+    {
+        id: 'halo',
+        name: 'Hale',
+        preview: 'A',
+        background: 'transparent',
+        borderColor: 'transparent',
+        textColor: '#ffffff',
+        shadow: 'none',
+        opacity: 1
+    }
+];
+
+export const TEXT_PLACEMENTS = [
+    { id: 'right', name: 'Sağ' },
+    { id: 'left', name: 'Sol' },
+    { id: 'top', name: 'Üst' },
+    { id: 'bottom', name: 'Alt' }
+];
+
+export const LEADER_LINE_STYLES = [
+    { id: 'solid', name: 'Düz', borderStyle: 'solid' },
+    { id: 'dashed', name: 'Kesik', borderStyle: 'dashed' },
+    { id: 'dotted', name: 'Noktalı', borderStyle: 'dotted' }
+];
+
 export const DRAWING_TYPE_NAMES = {
     'line': 'Çizgi',
     'rectangle': 'Dörtgen',

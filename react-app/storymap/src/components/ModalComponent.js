@@ -316,6 +316,66 @@ export class ModalComponent {
         return Math.max(1, Math.min(18, zoom));
     }
 
+    getTextMarkerOptions(point) {
+        return {
+            textStyle: point?.textStyle || 'boxed',
+            textPlacement: point?.textPlacement || 'right',
+            leaderLine: point?.leaderLine === true,
+            leaderLineStyle: point?.leaderLineStyle || 'solid',
+            anchorColor: point?.color || '#0f766e',
+            leaderColor: point?.color || '#0f766e',
+            labelOffsetX: point?.labelOffsetX !== undefined ? point.labelOffsetX : null,
+            labelOffsetY: point?.labelOffsetY !== undefined ? point.labelOffsetY : null
+        };
+    }
+
+    updateTextMarker(point) {
+        if (!point || !point.coords || !this.mapComponent) return null;
+
+        const targetPoint = point.originalId
+            ? this.sidebarComponent?.pointManager?.findPoint(point.originalId)
+            : point;
+        const renderPoint = targetPoint ? { ...targetPoint, ...point } : point;
+
+        // Eski marker'dan sürükleme ofsetini kaydet (silinmeden önce)
+        if (targetPoint?.marker?._options?.labelOffsetX !== undefined) {
+            renderPoint.labelOffsetX = targetPoint.marker._options.labelOffsetX;
+            renderPoint.labelOffsetY = targetPoint.marker._options.labelOffsetY;
+        }
+
+        if (targetPoint?.marker) {
+            if (this.mapComponent.markers?.removeMarker) {
+                this.mapComponent.markers.removeMarker(targetPoint.marker);
+            } else {
+                targetPoint.marker.remove();
+            }
+            targetPoint.marker = null;
+        }
+
+        const text = renderPoint.text || renderPoint.title || 'Metin';
+        const marker = this.mapComponent.addTextMarker(renderPoint.coords, text, this.getTextMarkerOptions(renderPoint));
+        
+        if (marker && marker.getElement()) {
+            marker.getElement().addEventListener('click', (e) => {
+                if (this.sidebarComponent && !this.sidebarComponent.viewMode) {
+                    const idToEdit = targetPoint?.id || point?.id;
+                    if (idToEdit) {
+                        this.sidebarComponent.showPointDetail(idToEdit);
+                        e.stopPropagation(); // Try to prevent other map clicks
+                    }
+                }
+            });
+        }
+
+        if (targetPoint) {
+            targetPoint.marker = marker;
+        }
+        if (point !== targetPoint) {
+            point.marker = marker;
+        }
+        return marker;
+    }
+
     setupSidebarCallbacks() {
         if (!this.sidebarComponent || !this.mapComponent) return;
 
@@ -332,6 +392,21 @@ export class ModalComponent {
                 duration: 300,
                 offsetY: isMobile ? 0.02 : 0.025
             });
+        };
+
+        this.sidebarComponent.onPointTextPreview = (point) => {
+            if (!point || !point.coords || this.viewMode) return;
+            if (point.drawingType !== 'text') return;
+
+            this.updateTextMarker(point);
+        };
+
+        this.sidebarComponent.onPointTextPreviewReset = (pointId) => {
+            if (!pointId || this.viewMode) return;
+            const originalPoint = this.sidebarComponent.pointManager.findPoint(pointId);
+            if (originalPoint && originalPoint.drawingType === 'text') {
+                this.updateTextMarker(originalPoint);
+            }
         };
 
         // Rota şablonu için özel callback'ler
@@ -983,6 +1058,10 @@ export class ModalComponent {
                     point.drawingType
                 );
             }
+            // Metin açıklaması yeniden çiz
+            else if (point.isDrawing && point.drawingType === 'text' && point.coords) {
+                this.updateTextMarker(point);
+            }
             // Timeline şablonu için özel marker güncelleme
             else if (isTimelineTemplate && point && point.marker) {
                 const templateConfig = this.sidebarComponent.data.template || {};
@@ -1185,7 +1264,11 @@ export class ModalComponent {
                     mapLayerId: p.mapLayerId,
                     isNumber: p.isNumber,
                     number: p.number,
-                    text: p.text
+                    text: p.text,
+                    textStyle: p.textStyle,
+                    textPlacement: p.textPlacement,
+                    leaderLine: p.leaderLine,
+                    leaderLineStyle: p.leaderLineStyle
                 }))
             };
 
@@ -1277,6 +1360,11 @@ export class ModalComponent {
                     drawingType: p.drawingType,
                     mapLayerId: p.mapLayerId,
                     radius: p.radius,
+                    text: p.text,
+                    textStyle: p.textStyle,
+                    textPlacement: p.textPlacement,
+                    leaderLine: p.leaderLine,
+                    leaderLineStyle: p.leaderLineStyle,
                     // Rota alanları
                     visitDay: p.visitDay,
                     duration: p.duration,
@@ -1543,16 +1631,31 @@ export class ModalComponent {
                                                 // Text marker için addTextMarker kullan
                                                 const textContent = point.text || point.title || point.description;
 
-                                                if (textContent) {
-                                                    let textCoords = point.coords;
-                                                    if (Array.isArray(textCoords[0])) {
-                                                        textCoords = textCoords[0];
-                                                    }
-                                                    const marker = this.mapComponent.addTextMarker(textCoords, textContent);
+                        if (textContent) {
+                            let textCoords = point.coords;
+                            if (Array.isArray(textCoords[0])) {
+                                textCoords = textCoords[0];
+                            }
+                            const marker = this.mapComponent.addTextMarker(textCoords, textContent, {
+                                textStyle: point.textStyle || 'boxed',
+                                textPlacement: point.textPlacement || 'right',
+                                leaderLine: point.leaderLine !== false,
+                                leaderLineStyle: point.leaderLineStyle || 'solid',
+                                anchorColor: point.color || '#0f766e',
+                                leaderColor: point.color || '#0f766e'
+                            });
                                                     if (marker) {
                                                         const idx = this.sidebarComponent.points.findIndex(pt => pt.id === point.id);
                                                         if (idx >= 0) {
                                                             this.sidebarComponent.points[idx].marker = marker;
+                                                        }
+                                                        if (marker.getElement()) {
+                                                            marker.getElement().addEventListener('click', (e) => {
+                                                                if (this.sidebarComponent && !this.sidebarComponent.viewMode && point.id) {
+                                                                    this.sidebarComponent.showPointDetail(point.id);
+                                                                    e.stopPropagation();
+                                                                }
+                                                            });
                                                         }
                                                     } else {
                                                         console.warn('[Import] Text marker creation failed');
@@ -2399,6 +2502,29 @@ export class ModalComponent {
                     coordinates: [point.coords]
                 }
             };
+        } else if (point.drawingType === 'text') {
+            const textContent = point.text || point.title || 'Metin';
+            const textCoords = Array.isArray(point.coords[0]) ? point.coords[0] : point.coords;
+            const marker = this.mapComponent.addTextMarker(textCoords, textContent, {
+                textStyle: point.textStyle || 'boxed',
+                textPlacement: point.textPlacement || 'right',
+                leaderLine: point.leaderLine !== false,
+                leaderLineStyle: point.leaderLineStyle || 'solid',
+                anchorColor: point.color || '#0f766e',
+                leaderColor: point.color || '#0f766e'
+            });
+            if (marker) {
+                point.marker = marker;
+                if (marker.getElement()) {
+                    marker.getElement().addEventListener('click', (e) => {
+                        if (this.sidebarComponent && !this.sidebarComponent.viewMode && point.id) {
+                            this.sidebarComponent.showPointDetail(point.id);
+                            e.stopPropagation();
+                        }
+                    });
+                }
+            }
+            return;
         }
 
         if (!sourceData) return;
