@@ -493,17 +493,25 @@ export class ModalComponent {
 
                     this.mapComponent.draw.add(feature);
 
-                    // direct_select moduna geç ve bu çizimi seç
-                    setTimeout(() => {
-                        try {
-                            this.mapComponent.draw.changeMode('direct_select', {
-                                featureId: point.mapLayerId
-                            });
-                            // console.log('[ModalComponent] Mapbox Draw direct_select mode activated for:', point.mapLayerId);
-                        } catch (e) {
-                            console.error('[ModalComponent] Mapbox Draw changeMode error:', e);
+                    // Kullanıcı harita üzerinde objeye tıkladığında vertex düzenleme modunu başlatmak için draw.selectionchange dinle
+                    this._onDrawSelectionChangeHandler = (e) => {
+                        if (e.features && e.features.length > 0) {
+                            const selectedFeature = e.features[0];
+                            if (selectedFeature.id === point.mapLayerId) {
+                                const currentMode = this.mapComponent.draw.getMode();
+                                if (currentMode !== 'direct_select') {
+                                    try {
+                                        this.mapComponent.draw.changeMode('direct_select', {
+                                            featureId: point.mapLayerId
+                                        });
+                                    } catch (err) {
+                                        console.error('[ModalComponent] changeMode direct_select error:', err);
+                                    }
+                                }
+                            }
                         }
-                    }, 100);
+                    };
+                    this.mapComponent.map.on('draw.selectionchange', this._onDrawSelectionChangeHandler);
 
                     // Vertex değişikliklerini dinleyen event listener'ı tanımla
                     this._onDrawUpdateHandler = (e) => {
@@ -573,6 +581,11 @@ export class ModalComponent {
                     this.mapComponent.map.off('draw.update', this._onDrawUpdateHandler);
                     this.mapComponent.map.off('draw.selectionchange', this._onDrawUpdateHandler);
                     this._onDrawUpdateHandler = null;
+                }
+
+                if (this._onDrawSelectionChangeHandler) {
+                    this.mapComponent.map.off('draw.selectionchange', this._onDrawSelectionChangeHandler);
+                    this._onDrawSelectionChangeHandler = null;
                 }
 
                 // Mapbox Draw'dan sil
