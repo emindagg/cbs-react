@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { isStyleProperties } from '@/types/style'
 import type { StyleProperties } from '@/types/style'
 
+import { ImportedDataTableModal } from './ImportedDataTableModal'
 import { useDataManagementStore } from '../store/useDataManagementStore'
 
 const CATALOG_IMPORT_RENDER_LIMIT = 200
@@ -18,6 +19,7 @@ export function DataCatalogSection() {
   const startEditingItem = useDataManagementStore(state => state.startEditingItem)
   const [colorPickerItemId, setColorPickerItemId] = useState<string | null>(null)
   const [colorPickerPosition, setColorPickerPosition] = useState<{ top: number; left: number } | null>(null)
+  const [isTableModalOpen, setIsTableModalOpen] = useState(false)
   const colorPickerRef = useRef<HTMLDivElement>(null)
   const itemRefsRef = useRef<Record<string, HTMLDivElement>>({})
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -101,10 +103,23 @@ export function DataCatalogSection() {
 
   return (
     <section className="hover:bg-zinc-50 rounded-lg px-2.5 py-1.5 transition-colors group">
-      <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#18181B] mb-2 group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
-        <i className="fa-solid fa-database text-[#18181B] text-[10px]"></i>
-        Veri Kataloğu
-      </h3>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#18181B] group-hover:text-emerald-700 transition-colors flex items-center gap-1.5">
+          <i className="fa-solid fa-database text-[#18181B] text-[10px]"></i>
+          Veri Kataloğu
+        </h3>
+
+        {drawnItems.length > 0 && (
+          <button
+            onClick={() => setIsTableModalOpen(true)}
+            className="text-[10px] flex items-center gap-1 text-slate-600 hover:text-emerald-600 font-medium px-2 py-1 rounded hover:bg-slate-100 transition-colors"
+            title="Çizim Verileri Öznitelik Tablosunu Aç"
+          >
+            <i className="fa-solid fa-table"></i>
+            Tablo
+          </button>
+        )}
+      </div>
 
       {hiddenSources.length > 0 && (
         <div className="mb-2 px-2 py-1.5 rounded-md border border-amber-200 bg-amber-50 text-[10px] text-amber-800">
@@ -179,13 +194,12 @@ export function DataCatalogSection() {
                   title="Çift tıklayarak renk değiştir"
                 >
                   <i
-                    className={`text-[10px] ${
-                      item.type === 'point'
+                    className={`text-[10px] ${item.type === 'point'
                         ? 'fa-solid fa-location-dot'
                         : item.type === 'line'
                           ? 'fa-solid fa-route'
                           : 'fa-solid fa-draw-polygon' // polygon ve circle (artık desteklenmiyor) için
-                    }`}
+                      }`}
                     style={{ color: iconColor }}
                     title={`Renk: ${currentFillColor || 'Varsayılan'}`}
                   ></i>
@@ -292,6 +306,13 @@ export function DataCatalogSection() {
           document.body,
         )
       })()}
+
+      <ImportedDataTableModal
+        isOpen={isTableModalOpen}
+        onClose={() => setIsTableModalOpen(false)}
+        items={items}
+        sourceFilter="drawn"
+      />
     </section>
   )
 }

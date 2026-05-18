@@ -46,6 +46,7 @@ interface ImportedDataTableModalProps {
   isOpen: boolean
   onClose: () => void
   items: DataItem[]
+  sourceFilter?: 'drawn' | 'imported'
 }
 
 type ConfirmVariant = 'danger' | 'default'
@@ -125,8 +126,8 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
           <div className="flex items-start gap-3">
             <div
               className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${isDanger
-                  ? 'bg-[#FFF1F0] text-[#FF3B30] border-[#FFC9C5]'
-                  : 'bg-slate-100 text-slate-700 border-slate-200'
+                ? 'bg-[#FFF1F0] text-[#FF3B30] border-[#FFC9C5]'
+                : 'bg-slate-100 text-slate-700 border-slate-200'
                 }`}
             >
               <AlertTriangle className="h-5 w-5" strokeWidth={2.1} aria-hidden="true" />
@@ -158,8 +159,8 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
             autoFocus
             disabled={isSubmitting}
             className={`inline-flex h-9 min-w-[92px] items-center justify-center gap-1.5 rounded-lg px-3.5 text-[13px] font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-75 ${isDanger
-                ? 'bg-red-600 hover:bg-red-700'
-                : 'bg-slate-900 hover:bg-slate-800'
+              ? 'bg-red-600 hover:bg-red-700'
+              : 'bg-slate-900 hover:bg-slate-800'
               }`}
           >
             {confirmIcon}
@@ -172,9 +173,9 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
   )
 }
 
-function buildRowData(items: DataItem[]) {
+function buildRowData(items: DataItem[], sourceFilter?: 'drawn' | 'imported') {
   return items
-    .filter(item => item.source === 'imported')
+    .filter(item => !sourceFilter || item.source === sourceFilter)
     .map(item => {
       const measurements = getGeometryMeasurements(item.geometry)
 
@@ -189,9 +190,9 @@ function buildRowData(items: DataItem[]) {
     })
 }
 
-export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataTableModalProps) {
+export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }: ImportedDataTableModalProps) {
   const updateItemProperties = useDataManagementStore(s => s.updateItemProperties)
-  const addImportedPropertyColumn = useDataManagementStore(s => s.addImportedPropertyColumn)
+  const addPropertyColumn = useDataManagementStore(s => s.addPropertyColumn)
   const removeItem = useDataManagementStore(s => s.removeItem)
   const gridRef = useRef<AgGridReact>(null)
   const pendingEdits = useRef<Map<string, Record<string, unknown>>>(new Map())
@@ -234,20 +235,22 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
     setSelectedCount(event.api.getSelectedRows().length)
   }, [])
 
-  const importedItems = useMemo(
-    () => items.filter(item => item.source === 'imported'),
-    [items],
+  const filteredItems = useMemo(
+    () => items.filter(item => !sourceFilter || item.source === sourceFilter),
+    [items, sourceFilter],
   )
 
   const propertyKeys = useMemo(() => {
     const keySet = new Set<string>()
-    importedItems.forEach((item) => {
+    filteredItems.forEach((item) => {
       Object.keys(item.properties).forEach(key => keySet.add(key))
     })
+    // Çizim işlemi sırasında createdAt ekleniyor olabilir, bunu saklamak veya göstermek isteyebiliriz.
     return Array.from(keySet)
-  }, [importedItems])
+  }, [filteredItems])
 
-  const rowData = useMemo(() => buildRowData(items), [items])
+  const rowData = useMemo(() => buildRowData(items, sourceFilter), [items, sourceFilter])
+
 
   const columnDefs = useMemo<ColDef[]>(() => [
     { field: '__name', headerName: 'Ad', minWidth: 180, pinned: 'left', editable: false },
@@ -296,8 +299,8 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
     pendingEdits.current.clear()
     setPendingCount(0)
     // Grid'in in-memory satırlarını store'daki orijinal veriye döndür
-    gridRef.current?.api.setGridOption('rowData', buildRowData(items))
-  }, [items, setPendingCount])
+    gridRef.current?.api.setGridOption('rowData', buildRowData(items, sourceFilter))
+  }, [items, sourceFilter, setPendingCount])
 
   const handleClose = useCallback(() => {
     if (pendingEdits.current.size > 0) {
@@ -329,10 +332,10 @@ export function ImportedDataTableModal({ isOpen, onClose, items }: ImportedDataT
       return
     }
 
-    addImportedPropertyColumn(colName)
+    addPropertyColumn(colName, '', sourceFilter)
     setIsAddingColumn(false)
     setNewColumnName('')
-  }, [newColumnName, propertyKeys, addImportedPropertyColumn])
+  }, [newColumnName, propertyKeys, addPropertyColumn, sourceFilter])
 
   if (!isOpen) return null
 
