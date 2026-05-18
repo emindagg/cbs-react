@@ -51,9 +51,9 @@ export class PointManager {
             radius: pointData.radius,
             text: pointData.text,
             textStyle: pointData.textStyle || 'boxed',
-            textPlacement: pointData.textPlacement || 'right',
-            leaderLine: pointData.leaderLine !== undefined ? pointData.leaderLine : false,
-            leaderLineStyle: pointData.leaderLineStyle || 'solid',
+            textPlacement: pointData.textPlacement || 'left',
+            leaderLine: pointData.leaderLine !== undefined ? pointData.leaderLine : (pointData.drawingType === 'text'),
+            leaderLineStyle: pointData.leaderLineStyle || 'gradient',
             labelOffsetX: pointData.labelOffsetX !== undefined ? pointData.labelOffsetX : null,
             labelOffsetY: pointData.labelOffsetY !== undefined ? pointData.labelOffsetY : null
         };
@@ -98,9 +98,9 @@ export class PointManager {
             marker: drawingData.marker || null, // Text marker referansı
             text: drawingData.text || '',
             textStyle: drawingData.textStyle || 'boxed',
-            textPlacement: drawingData.textPlacement || 'right',
-            leaderLine: drawingData.leaderLine !== undefined ? drawingData.leaderLine : false,
-            leaderLineStyle: drawingData.leaderLineStyle || 'solid',
+            textPlacement: drawingData.textPlacement || 'left',
+            leaderLine: drawingData.leaderLine !== undefined ? drawingData.leaderLine : (drawingData.type === 'text'),
+            leaderLineStyle: drawingData.leaderLineStyle || 'gradient',
             labelOffsetX: drawingData.labelOffsetX !== undefined ? drawingData.labelOffsetX : null,
             labelOffsetY: drawingData.labelOffsetY !== undefined ? drawingData.labelOffsetY : null,
             radius: drawingData.radius || 0,

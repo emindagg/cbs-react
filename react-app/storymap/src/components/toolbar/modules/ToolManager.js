@@ -439,9 +439,11 @@ export class ToolManager {
 
             const textMarker = this.mapComponent.addTextMarker(data.coords, 'Metin', {
                 textStyle: 'boxed',
-                textPlacement: 'right',
-                leaderLine: false,
-                leaderLineStyle: 'solid'
+                textPlacement: 'left',
+                leaderLine: true,
+                leaderLineStyle: 'gradient',
+                anchorColor: '#334155',
+                leaderColor: '#334155'
             });
 
             this.handleDrawingComplete(() => {
@@ -450,9 +452,10 @@ export class ToolManager {
                     title: 'Metin',
                     text: '',
                     textStyle: 'boxed',
-                    textPlacement: 'right',
-                    leaderLine: false,
-                    leaderLineStyle: 'solid',
+                    textPlacement: 'left',
+                    leaderLine: true,
+                    leaderLineStyle: 'gradient',
+                    color: '#334155',
                     coords: data.coords,
                     marker: textMarker // Text marker referansını kaydet
                 });

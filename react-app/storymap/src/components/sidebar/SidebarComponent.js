@@ -239,9 +239,9 @@ export class SidebarComponent {
         if (!this.editingPoint.importance) this.editingPoint.importance = 1;
         if (this.editingPoint.drawingType === 'text') {
             if (!this.editingPoint.textStyle) this.editingPoint.textStyle = 'boxed';
-            if (!this.editingPoint.textPlacement) this.editingPoint.textPlacement = 'right';
-            if (this.editingPoint.leaderLine === undefined) this.editingPoint.leaderLine = false;
-            if (!this.editingPoint.leaderLineStyle) this.editingPoint.leaderLineStyle = 'solid';
+            if (!this.editingPoint.textPlacement) this.editingPoint.textPlacement = 'left';
+            if (this.editingPoint.leaderLine === undefined) this.editingPoint.leaderLine = true;
+            if (!this.editingPoint.leaderLineStyle) this.editingPoint.leaderLineStyle = 'gradient';
             if (!this.editingPoint.text) this.editingPoint.text = '';
         }
         

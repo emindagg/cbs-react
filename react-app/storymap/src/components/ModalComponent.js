@@ -319,11 +319,11 @@ export class ModalComponent {
     getTextMarkerOptions(point) {
         return {
             textStyle: point?.textStyle || 'boxed',
-            textPlacement: point?.textPlacement || 'right',
-            leaderLine: point?.leaderLine === true,
-            leaderLineStyle: point?.leaderLineStyle || 'solid',
-            anchorColor: point?.color || '#0f766e',
-            leaderColor: point?.color || '#0f766e',
+            textPlacement: point?.textPlacement || 'left',
+            leaderLine: point?.leaderLine !== false,
+            leaderLineStyle: point?.leaderLineStyle || 'gradient',
+            anchorColor: point?.color || '#334155',
+            leaderColor: point?.color || '#334155',
             labelOffsetX: point?.labelOffsetX !== undefined ? point.labelOffsetX : null,
             labelOffsetY: point?.labelOffsetY !== undefined ? point.labelOffsetY : null
         };
@@ -1643,11 +1643,11 @@ export class ModalComponent {
                             }
                             const marker = this.mapComponent.addTextMarker(textCoords, textContent, {
                                 textStyle: point.textStyle || 'boxed',
-                                textPlacement: point.textPlacement || 'right',
+                                textPlacement: point.textPlacement || 'left',
                                 leaderLine: point.leaderLine !== false,
-                                leaderLineStyle: point.leaderLineStyle || 'solid',
-                                anchorColor: point.color || '#0f766e',
-                                leaderColor: point.color || '#0f766e'
+                                leaderLineStyle: point.leaderLineStyle || 'gradient',
+                                anchorColor: point.color || '#334155',
+                                leaderColor: point.color || '#334155'
                             });
                                                     if (marker) {
                                                         const idx = this.sidebarComponent.points.findIndex(pt => pt.id === point.id);
@@ -2512,11 +2512,11 @@ export class ModalComponent {
             const textCoords = Array.isArray(point.coords[0]) ? point.coords[0] : point.coords;
             const marker = this.mapComponent.addTextMarker(textCoords, textContent, {
                 textStyle: point.textStyle || 'boxed',
-                textPlacement: point.textPlacement || 'right',
+                textPlacement: point.textPlacement || 'left',
                 leaderLine: point.leaderLine !== false,
-                leaderLineStyle: point.leaderLineStyle || 'solid',
-                anchorColor: point.color || '#0f766e',
-                leaderColor: point.color || '#0f766e'
+                leaderLineStyle: point.leaderLineStyle || 'gradient',
+                anchorColor: point.color || '#334155',
+                leaderColor: point.color || '#334155'
             });
             if (marker) {
                 point.marker = marker;
