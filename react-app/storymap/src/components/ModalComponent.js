@@ -473,6 +473,7 @@ export class ModalComponent {
             if (!point || this.viewMode) return;
 
             // console.log('[ModalComponent] onPointEditStart:', point);
+            this.mapComponent.setActivePulseForPoint(point);
 
             // Çizim öğesi ise (line, polygon, circle, rectangle)
             if (point.isDrawing && point.mapLayerId) {
@@ -585,6 +586,7 @@ export class ModalComponent {
             if (!point || this.viewMode) return;
 
             // console.log('[ModalComponent] onPointEditEnd:', point);
+            this.mapComponent.clearActivePulse();
 
             // Çizim öğesi ise
             if (point.isDrawing && point.mapLayerId) {
@@ -2275,6 +2277,13 @@ export class ModalComponent {
      */
     _setActiveMarkerBorder(activePoint) {
         if (!this.sidebarComponent || !this.sidebarComponent.points) return;
+        if (this.mapComponent) {
+            if (activePoint) {
+                this.mapComponent.setActivePulseForPoint(activePoint);
+            } else {
+                this.mapComponent.clearActivePulse();
+            }
+        }
         const activeId = activePoint != null && activePoint.id != null ? String(activePoint.id) : null;
         this.sidebarComponent.points.forEach(p => {
             if (p.isDrawing || !p.marker) return;

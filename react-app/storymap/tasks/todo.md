@@ -1,19 +1,21 @@
-# Görev: Hikâye Geçişlerinde Aktif Öğeyi Belirginleştirme
+# Görev: Rota ve Timeline Şablonlarında Pulse Denetimi
 Tarih: 2026-05-18
 
 ## Bağlam
-Hikâye Haritası ön izlemede bir noktadan diğerine geçerken aktif olan nokta, metin veya alan harita üzerinde yeterince belirgin değildir. Birden fazla öğe yakın olduğunda kullanıcı hangi öğenin aktif sahneye ait olduğunu karıştırabilir.
+Nokta Bazlı şablona eklenen aktif pulse göstergesinin Rota Bazlı ve Timeline Bazlı şablonlarda da çalışıp çalışmadığı kontrol edilmelidir. Bu şablonların odak, oynatma ve detay navigasyonu akışları farklı callback'lerden geçmektedir.
 
 ## Plan
-- [x] Adım 1: StoryMap sahne değişiminde aktif sahnenin koordinatına taşınan pulse marker ekle.
-- [x] Adım 2: Pulse marker için yanıp sönen görsel animasyon CSS'i ekle.
-- [x] Adım 3: Söz dizimi, diff ve Türkçe karakter/encoding kontrollerini çalıştır.
+- [x] Adım 1: Rota Bazlı şablonda nokta odaklama ve oynatma akışlarını denetle.
+- [x] Adım 2: Timeline Bazlı şablonda event odaklama, playback, ileri/geri ve detay navigasyonu akışlarını denetle.
+- [x] Adım 3: Eksik bağlantı varsa pulse çağrılarını ekle.
+- [x] Adım 4: Söz dizimi ve Türkçe karakter/encoding kontrollerini çalıştır.
 
 ## Doğrulama kriterleri
-- [x] Sahne değiştiğinde aktif öğenin konumunda yanıp sönen odak göstergesi görünmeli.
-- [x] Nokta, metin ve alan gibi çizim öğelerinde aynı gösterge çalışmalı.
+- [x] Rota odaklama ve oynatma akışları `_setActiveMarkerBorder(point)` üzerinden pulse'ı tetiklemeli.
+- [x] Timeline playback, ileri/geri event ve detay navigasyonu `_setActiveMarkerBorder(point)` üzerinden pulse'ı tetiklemeli.
+- [x] Durdurma/temizleme akışları `_setActiveMarkerBorder(null)` ile pulse'ı kapatmalı.
 - [x] JavaScript söz dizimi hatası olmamalı.
 - [x] UTF-8 ve Türkçe karakter bütünlüğü korunmalı.
 
 ## Sonuç
-StoryMap sahne değişiminde aktif sahnenin koordinatına taşınan bağımsız bir pulse marker eklendi. Gösterge nokta, metin ve alan gibi tüm sahne tiplerinde aynı koordinat sistemi üzerinden çalışır; CSS tarafında yanıp sönen halka ve merkez nokta animasyonu tanımlandı.
+Rota ve Timeline şablonları denetlendi. Rota odaklama ve ortak oynatma akışları ile Timeline playback, ileri/geri, detay navigasyonu ve odaklama akışları zaten `_setActiveMarkerBorder(point)` üzerinden geçiyor. Pulse yönetimi bu metoda bağlı olduğu için ek kod gerekmedi; durdurma akışlarında `_setActiveMarkerBorder(null)` pulse'ı kapatıyor.

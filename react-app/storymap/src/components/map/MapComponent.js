@@ -42,6 +42,7 @@ export class MapComponent {
         this.distanceMeasurement = null;
         this.areaMeasurement = null;
         this.measurementTool = null;
+        this.activePulseMarker = null;
 
         // Callback'ler
         this.onRouteDistanceUpdate = null; // Rota mesafesi güncellendiğinde çağrılacak
@@ -309,6 +310,79 @@ export class MapComponent {
 
     addTextMarker(coords, text, options = {}) {
         return this.markers ? this.markers.addTextMarker(coords, text, options) : null;
+    }
+
+    getPointCenter(point) {
+        if (!point) return null;
+        if (Array.isArray(point.center) && point.center.length === 2) return point.center;
+        const coords = point.coords;
+        if (!Array.isArray(coords) || coords.length === 0) return null;
+
+        if (coords.length === 2 && typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+            return coords;
+        }
+
+        if (Array.isArray(coords[0])) {
+            const validCoords = coords.filter(coord =>
+                Array.isArray(coord)
+                && coord.length >= 2
+                && Number.isFinite(Number(coord[0]))
+                && Number.isFinite(Number(coord[1]))
+            );
+            if (validCoords.length === 0) return null;
+
+            const lngs = validCoords.map(coord => Number(coord[0]));
+            const lats = validCoords.map(coord => Number(coord[1]));
+            return [
+                (Math.min(...lngs) + Math.max(...lngs)) / 2,
+                (Math.min(...lats) + Math.max(...lats)) / 2
+            ];
+        }
+
+        return null;
+    }
+
+    createActivePulseMarker() {
+        if (!this.map || this.activePulseMarker) return;
+
+        const el = document.createElement('div');
+        el.className = 'storymap-active-pulse';
+        el.innerHTML = '<span class="storymap-active-pulse__ring"></span>';
+        el.style.display = 'none';
+
+        this.activePulseMarker = new maplibregl.Marker({
+            element: el,
+            anchor: 'center'
+        })
+            .setLngLat([0, 0])
+            .addTo(this.map);
+    }
+
+    setActivePulseForPoint(point) {
+        if (!this.map) return;
+
+        const center = this.getPointCenter(point);
+        if (!center) {
+            this.clearActivePulse();
+            return;
+        }
+
+        if (!this.activePulseMarker) {
+            this.createActivePulseMarker();
+        }
+
+        const el = this.activePulseMarker?.getElement();
+        if (!el) return;
+
+        this.activePulseMarker.setLngLat(center);
+        el.style.display = 'block';
+    }
+
+    clearActivePulse() {
+        const el = this.activePulseMarker?.getElement();
+        if (el) {
+            el.style.display = 'none';
+        }
     }
 
     enableMarkerMode(callback) {
@@ -675,6 +749,10 @@ export class MapComponent {
     }
 
     destroy() {
+        if (this.activePulseMarker) {
+            this.activePulseMarker.remove();
+            this.activePulseMarker = null;
+        }
         if (this.routeManager) {
             this.routeManager.destroy();
         }
