@@ -29,8 +29,6 @@ class PublicViewer {
             return;
         }
 
-        console.log('[PublicViewer] Loading storymap with public key:', this.publicKey);
-
         try {
             // Backend'den story'yi çek
             await this.loadStorymap();
@@ -44,8 +42,6 @@ class PublicViewer {
         try {
             // Backend API'den public key ile story'yi al
             const backendData = await apiService.getStorymapByPublicKey(this.publicKey);
-
-            console.log('[PublicViewer] Storymap loaded from backend:', backendData);
 
             // Backend formatını internal formata çevir
             this.storyData = this.transformBackendData(backendData);
@@ -116,7 +112,6 @@ class PublicViewer {
         try {
             // Public story'leri cache'lemek için storageManager'a method eklenecek
             await storageManager.cachePublicStory(this.publicKey, storyData);
-            console.log('[PublicViewer] Cached to IndexedDB for offline viewing');
         } catch (error) {
             console.warn('[PublicViewer] Failed to cache story:', error);
             // Cache başarısız olsa da devam et
@@ -133,8 +128,6 @@ class PublicViewer {
         // Template bilgisini belirle
         const templateKey = this.storyData.templateName || this.storyData.mapData?.template || 'point';
         const isStoryMap = templateKey === 'storymap' || templateKey === 'Storymap Bazlı';
-
-        console.log('[PublicViewer] Rendering with template:', templateKey, 'isStoryMap:', isStoryMap);
 
         // StoryMap özel durumu
         if (isStoryMap) {
@@ -153,18 +146,39 @@ class PublicViewer {
         storymapContainer.style.display = 'block';
 
         // Points'i steps formatına çevir
-        const steps = (this.storyData.points || []).map((point, index) => ({
-            id: point.id || index + 1,
-            title: point.title,
-            subtitle: point.subtitle || '',
-            content: point.description || '',
-            coords: point.coords,
-            zoom: Number.isFinite(Number(point.zoom)) ? Math.max(1, Math.min(18, Number(point.zoom))) : 12,
-            media: point.media || [],
-            facts: point.facts || [],
-            tags: point.tags || [],
-            isDrawing: point.isDrawing || false
-        }));
+        const steps = (this.storyData.points || []).map((point, index) => {
+            // Coords formatını kontrol et, string ise parse etmeye çalış veya valid bir dizi olduğundan emin ol
+            let validCoords = [35.0, 39.0]; // Default Türkiye
+            if (point.coords) {
+                if (Array.isArray(point.coords) && point.coords.length === 2) {
+                    validCoords = point.coords.map(Number);
+                } else if (typeof point.coords === 'string') {
+                    try {
+                        const parsed = JSON.parse(point.coords);
+                        if (Array.isArray(parsed) && parsed.length === 2) {
+                            validCoords = parsed.map(Number);
+                        }
+                    } catch (e) {
+                        console.warn('[PublicViewer] Invalid coords format:', point.coords);
+                    }
+                } else if (point.coords.lng !== undefined && point.coords.lat !== undefined) {
+                    validCoords = [Number(point.coords.lng), Number(point.coords.lat)];
+                }
+            }
+
+            return {
+                id: point.id || index + 1,
+                title: point.title,
+                subtitle: point.subtitle || '',
+                content: point.description || '',
+                coords: validCoords,
+                zoom: Number.isFinite(Number(point.zoom)) ? Math.max(1, Math.min(18, Number(point.zoom))) : 12,
+                media: point.media || [],
+                facts: point.facts || [],
+                tags: point.tags || [],
+                isDrawing: point.isDrawing || false
+            };
+        });
 
         // StoryMapComponent başlat
         const template = templates['storymap'];

@@ -97,7 +97,7 @@ export class StoryMapComponent {
                     }
                 ]
             },
-            center: this.data.steps && this.data.steps.length > 0
+            center: this.data.steps && this.data.steps.length > 0 && Array.isArray(this.data.steps[0].coords)
                 ? this.data.steps[0].coords
                 : (this.template?.defaultCenter || [35.0, 39.0]), // Türkiye
             zoom: this.data.steps && this.data.steps.length > 0
@@ -247,8 +247,8 @@ export class StoryMapComponent {
                 // Alan veya dikdörtgen
                 const coords = drawing.coords;
                 // Polygon'u kapat (ilk ve son nokta aynı olmalı)
-                const closedCoords = coords[0] === coords[coords.length - 1] 
-                    ? coords 
+                const closedCoords = coords[0] === coords[coords.length - 1]
+                    ? coords
                     : [...coords, coords[0]];
 
                 this.map.addSource(sourceId, {
@@ -288,9 +288,9 @@ export class StoryMapComponent {
                 // Daire - koordinatlar zaten polygon olarak geliyor
                 const coords = drawing.coords;
                 // Polygon'u kapat (ilk ve son nokta aynı olmalı)
-                const closedCoords = coords[coords.length - 1][0] === coords[0][0] && 
-                                     coords[coords.length - 1][1] === coords[0][1]
-                    ? coords 
+                const closedCoords = coords[coords.length - 1][0] === coords[0][0] &&
+                    coords[coords.length - 1][1] === coords[0][1]
+                    ? coords
                     : [...coords, coords[0]];
 
                 this.map.addSource(sourceId, {
@@ -341,8 +341,8 @@ export class StoryMapComponent {
         const deltaLng = (coord2[0] - coord1[0]) * Math.PI / 180;
 
         const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-                  Math.cos(lat1) * Math.cos(lat2) *
-                  Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+            Math.cos(lat1) * Math.cos(lat2) *
+            Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return R * c;
