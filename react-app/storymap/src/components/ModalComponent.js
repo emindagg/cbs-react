@@ -35,38 +35,50 @@ export class ModalComponent {
     }
 
     setupListeners() {
-        // Canlı Önizleme - Başlık
-        this.inputs.title.addEventListener('input', (e) => {
+        // Olay dinleyicileri referanslarını sakla (destroy sırasında temizleyebilmek için)
+        this.onTitleInput = (e) => {
             this.updateMockupTitle(e.target.value || 'Yeni Hikâye');
             // Yazı yazılınca hata mesajını gizle
             if (e.target.value.trim()) {
                 this.hideTitleError();
             }
-        });
+        };
 
-        // Canlı Önizleme - Açıklama
-        this.inputs.desc.addEventListener('input', (e) => {
+        this.onDescInput = (e) => {
             this.updateMockupDesc(e.target.value || 'Açıklama burada görünecek...');
-        });
+        };
 
-        // Şablon değiştiğinde mockup'ı değiştir
-        this.inputs.template.addEventListener('change', (e) => {
+        this.onTemplateChange = (e) => {
             this.updateMockup(e.target.value);
-        });
+        };
 
-        // İlk yüklemede mockup'ı göster
-        this.updateMockup(this.inputs.template.value);
+        this.onBtnClick = () => this.startGame();
 
-        // Başlat Butonu
-        this.inputs.btn.addEventListener('click', () => this.startGame());
-
-        // Enter tuşu ile form gönderme
-        this.inputs.title.addEventListener('keydown', (e) => {
+        this.onTitleKeydown = (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 this.startGame();
             }
-        });
+        };
+
+        if (this.inputs.title) {
+            this.inputs.title.addEventListener('input', this.onTitleInput);
+            this.inputs.title.addEventListener('keydown', this.onTitleKeydown);
+        }
+        if (this.inputs.desc) {
+            this.inputs.desc.addEventListener('input', this.onDescInput);
+        }
+        if (this.inputs.template) {
+            this.inputs.template.addEventListener('change', this.onTemplateChange);
+        }
+        if (this.inputs.btn) {
+            this.inputs.btn.addEventListener('click', this.onBtnClick);
+        }
+
+        // İlk yüklemede mockup'ı göster
+        if (this.inputs.template) {
+            this.updateMockup(this.inputs.template.value);
+        }
     }
 
     /**
@@ -2798,6 +2810,30 @@ export class ModalComponent {
      * Destroy metodu - Tüm component'leri ve state'i temizler
      */
     destroy() {
+        console.log('[ModalComponent] destroy calling...');
+
+        // Olay dinleyicilerini kaldır (sızıntıları önlemek için)
+        if (this.inputs) {
+            if (this.inputs.title) {
+                if (this.onTitleInput) this.inputs.title.removeEventListener('input', this.onTitleInput);
+                if (this.onTitleKeydown) this.inputs.title.removeEventListener('keydown', this.onTitleKeydown);
+            }
+            if (this.inputs.desc && this.onDescInput) {
+                this.inputs.desc.removeEventListener('input', this.onDescInput);
+            }
+            if (this.inputs.template && this.onTemplateChange) {
+                this.inputs.template.removeEventListener('change', this.onTemplateChange);
+            }
+            if (this.inputs.btn && this.onBtnClick) {
+                this.inputs.btn.removeEventListener('click', this.onBtnClick);
+            }
+        }
+
+        // Çıkış event listener'ını temizle
+        if (this.storyMapExitHandler) {
+            document.removeEventListener('storymap:exit', this.storyMapExitHandler);
+            this.storyMapExitHandler = null;
+        }
 
         // MapComponent'i temizle
         if (this.mapComponent) {
@@ -2834,6 +2870,10 @@ export class ModalComponent {
             this.timelineJSWrapper = null;
         }
 
+        // State'i sıfırla
+        this.storyData = null;
+        this.currentStoryId = null;
+
         // Data state'i sıfırla
         this.data = {
             title: '',
@@ -2844,6 +2884,5 @@ export class ModalComponent {
             points: [],
             drawings: []
         };
-
     }
 }
