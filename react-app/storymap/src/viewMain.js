@@ -203,16 +203,11 @@ class PublicViewer {
     loadNormalViewer() {
         // Normal şablonlar için viewer (point, route, timeline)
         try {
-            console.log('[PublicViewer] Creating ModalComponent...');
             this.modal = new ModalComponent('app-container', {
                 viewMode: true,
                 storyData: this.storyData
             });
-            console.log('[PublicViewer] ModalComponent created successfully');
-
-            console.log('[PublicViewer] Calling startGame...');
             this.modal.startGame(this.storyData);
-            console.log('[PublicViewer] startGame called successfully');
         } catch (error) {
             console.error('[PublicViewer] Error in loadNormalViewer:', error);
             this.showError('Görüntüleme Hatası', 'Harita içeriği işlenirken bir sorun oluştu. Sayfayı yenileyerek tekrar deneyin.');

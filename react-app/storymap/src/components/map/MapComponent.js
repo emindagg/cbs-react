@@ -129,12 +129,10 @@ export class MapComponent {
             // 3D görünüm kontrolünü ekle (hem edit hem view mode'da)
             this.toggle3DControl = new Toggle3DControl();
             this.map.addControl(this.toggle3DControl, 'top-right');
-            console.log('[MapComponent] 3D toggle control added');
 
             // Zoom kontrolleri (hem edit hem view mode'da)
             this.navigationControl = new maplibregl.NavigationControl({ showCompass: false });
             this.map.addControl(this.navigationControl, 'top-right');
-            console.log('[MapComponent] Navigation controls added');
 
             // Konum (Geolocate) kontrolü (hem edit hem view mode'da)
             this.geolocateControl = new maplibregl.GeolocateControl({
@@ -145,7 +143,6 @@ export class MapComponent {
             this.map.addControl(this.geolocateControl, 'top-right');
             const geolocateBtn = this.map.getContainer().querySelector('.maplibregl-ctrl-geolocate');
             if (geolocateBtn) geolocateBtn.setAttribute('title', 'Konumumu Bul');
-            console.log('[MapComponent] Geolocate control added');
             
             // Custom location marker
             this.userLocationMarker = null;
@@ -723,8 +720,6 @@ export class MapComponent {
     disableInteractions() {
         if (!this.map || !this.viewMode) return;
 
-        console.log('[MapComponent] View mode: Editing devre dışı, navigation aktif');
-
         // Drawing modülünü devre dışı bırak
         if (this.drawing) {
             this.drawing.enabled = false;
@@ -744,8 +739,6 @@ export class MapComponent {
 
         // Toolbar'dan gelen çizim komutlarını ignore et
         this.viewModeActive = true;
-
-        console.log('[MapComponent] View mode navigation: zoom, pan, keyboard aktif');
     }
 
     destroy() {

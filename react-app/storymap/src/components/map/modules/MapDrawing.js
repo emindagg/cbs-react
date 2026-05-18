@@ -102,7 +102,6 @@ export class MapDrawing {
                 ]
             });
             this.map.addControl(this.draw);
-            console.log('[MapDrawing] MapboxDraw control successfully added to the map.');
         }
     }
 
