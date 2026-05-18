@@ -471,6 +471,46 @@
     border-color: #059669;
 }
 
+/* Active scene focus indicator */
+.storymap-active-pulse {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.storymap-active-pulse__ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border-radius: 999px;
+    transform: translate(-50%, -50%);
+}
+
+.storymap-active-pulse__ring {
+    width: 42px;
+    height: 42px;
+    border: 3px solid #087f9b;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.72);
+    animation: storymapActivePulse 1.15s ease-out infinite;
+}
+
+@keyframes storymapActivePulse {
+    0% {
+        opacity: 0.95;
+        transform: translate(-50%, -50%) scale(0.62);
+    }
+    70% {
+        opacity: 0.18;
+        transform: translate(-50%, -50%) scale(1.12);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.22);
+    }
+}
+
 /* ========================================
    RESPONSIVE - MOBILE SPLIT VIEW
    Üst: Harita | Alt: Kaydırılabilir İçerik

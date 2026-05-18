@@ -1,20 +1,19 @@
-# Görev: Metin Kutularının Zoom Out Sırasında Haritayı Kapatmasını Önleme
+# Görev: Hikâye Geçişlerinde Aktif Öğeyi Belirginleştirme
 Tarih: 2026-05-18
 
 ## Bağlam
-Haritaya eklenen metin kutuları DOM marker olarak sabit piksel boyutunda çiziliyor. Harita zoom out olduğunda coğrafi ölçek küçülürken metin kutusu ekranda aynı boyutta kaldığı için haritayı kapatıyor; Hikâye Haritası geçişlerinde aktif olmayan metinler de görüntüyü kalabalıklaştırıyor.
+Hikâye Haritası ön izlemede bir noktadan diğerine geçerken aktif olan nokta, metin veya alan harita üzerinde yeterince belirgin değildir. Birden fazla öğe yakın olduğunda kullanıcı hangi öğenin aktif sahneye ait olduğunu karıştırabilir.
 
 ## Plan
-- [x] Adım 1: Metin marker render davranışını zoom seviyesine göre küçült/gizle ve uzun metin kırılımını iyileştir.
-- [x] Adım 2: Hikâye Haritası ön izlemede metin kutularını aktif sahneye göre göster/gizle.
+- [x] Adım 1: StoryMap sahne değişiminde aktif sahnenin koordinatına taşınan pulse marker ekle.
+- [x] Adım 2: Pulse marker için yanıp sönen görsel animasyon CSS'i ekle.
 - [x] Adım 3: Söz dizimi, diff ve Türkçe karakter/encoding kontrollerini çalıştır.
 
 ## Doğrulama kriterleri
-- [x] Zoom out olduğunda metin kutusu haritayı kapatmamalı.
-- [x] Aktif Hikâye Haritası sahnesindeki metin görünmeli, aktif olmayan sahne metinleri gizlenmeli.
-- [x] Uzun metinler kutudan taşmamalı.
+- [x] Sahne değiştiğinde aktif öğenin konumunda yanıp sönen odak göstergesi görünmeli.
+- [x] Nokta, metin ve alan gibi çizim öğelerinde aynı gösterge çalışmalı.
 - [x] JavaScript söz dizimi hatası olmamalı.
 - [x] UTF-8 ve Türkçe karakter bütünlüğü korunmalı.
 
 ## Sonuç
-Metin marker'larına zoom seviyesine göre otomatik ölçekleme ve düşük zoom'da gizleme eklendi. Uzun metinler artık `overflow-wrap: anywhere` ile kutu içinde kırılıyor. Hikâye Haritası ön izlemede metin çizimleri sahne id'siyle takip ediliyor; yalnızca aktif sahneye ait metin kutusu görünür kalıyor, diğer metinler geçiş sırasında haritayı kapatmıyor.
+StoryMap sahne değişiminde aktif sahnenin koordinatına taşınan bağımsız bir pulse marker eklendi. Gösterge nokta, metin ve alan gibi tüm sahne tiplerinde aynı koordinat sistemi üzerinden çalışır; CSS tarafında yanıp sönen halka ve merkez nokta animasyonu tanımlandı.

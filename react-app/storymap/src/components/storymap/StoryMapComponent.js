@@ -24,6 +24,7 @@ export class StoryMapComponent {
         this.markerElements = [];
         /** @type {{ sceneId: string, marker: maplibregl.Marker }[]} */
         this.textMarkerElements = [];
+        this.activePulseMarker = null;
     }
 
     /**
@@ -125,6 +126,7 @@ export class StoryMapComponent {
             this.mapMarkers = new MapMarkers(this.map);
             this.addMarkers();
             this.addDrawings();
+            this.createActivePulseMarker();
         });
     }
 
@@ -243,6 +245,7 @@ export class StoryMapComponent {
             });
         }
         this.setActiveTextMarkers(activeSceneId);
+        this.setActivePulse(activeSceneId);
     }
 
     setActiveTextMarkers(activeSceneId) {
@@ -255,6 +258,42 @@ export class StoryMapComponent {
                 marker._options.setStorySceneActive(!activeSceneId || sceneId === activeSceneId);
             }
         });
+    }
+
+    createActivePulseMarker() {
+        if (!this.map || this.activePulseMarker) return;
+
+        const el = document.createElement('div');
+        el.className = 'storymap-active-pulse';
+        el.innerHTML = `
+            <span class="storymap-active-pulse__ring"></span>
+        `;
+        el.style.display = 'none';
+
+        this.activePulseMarker = new maplibregl.Marker({
+            element: el,
+            anchor: 'center'
+        })
+            .setLngLat([0, 0])
+            .addTo(this.map);
+    }
+
+    setActivePulse(activeSceneId) {
+        if (!this.map || !activeSceneId) return;
+        if (!this.activePulseMarker) {
+            this.createActivePulseMarker();
+        }
+
+        const scene = this.scenes[activeSceneId];
+        const el = this.activePulseMarker?.getElement();
+
+        if (!scene || !Array.isArray(scene.coords) || !el) {
+            if (el) el.style.display = 'none';
+            return;
+        }
+
+        this.activePulseMarker.setLngLat(scene.coords);
+        el.style.display = 'block';
     }
 
     /**
@@ -579,6 +618,15 @@ export class StoryMapComponent {
         }
         this.markerElements = [];
         this.textMarkerElements = [];
+        try {
+            if (this.activePulseMarker) {
+                this.activePulseMarker.remove();
+                this.activePulseMarker = null;
+            }
+        } catch (e) {
+            console.error('[StoryMapComponent] active pulse remove error:', e);
+            this.activePulseMarker = null;
+        }
         try {
             this.stopPlayback();
         } catch (e) {
