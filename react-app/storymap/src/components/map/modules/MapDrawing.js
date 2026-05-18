@@ -46,7 +46,6 @@ export class MapDrawing {
                         },
                         'paint': {
                             'line-color': ['case', ['==', ['get', 'active'], 'true'], '#fbb03b', '#3bb2d0'],
-                            'line-dasharray': ['case', ['==', ['get', 'active'], 'true'], [0.2, 2], [2, 0]],
                             'line-width': 2
                         }
                     },
