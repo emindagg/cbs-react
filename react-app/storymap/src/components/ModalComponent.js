@@ -2207,7 +2207,14 @@ export class ModalComponent {
                         type: point.drawingType,
                         coords: point.coords,
                         color: point.color || '#3b82f6',
-                        title: point.title
+                        title: point.title,
+                        text: point.text,
+                        textStyle: point.textStyle,
+                        textPlacement: point.textPlacement,
+                        leaderLine: point.leaderLine,
+                        leaderLineStyle: point.leaderLineStyle,
+                        labelOffsetX: point.labelOffsetX,
+                        labelOffsetY: point.labelOffsetY
                     }));
 
                 // Normal editör container'ları gizle
