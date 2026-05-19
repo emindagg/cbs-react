@@ -283,7 +283,19 @@ export class DetailPanel {
         const editBtn = document.getElementById('detail-edit');
         if (editBtn) {
             editBtn.addEventListener('click', () => {
-                this.sidebar.showPointDetail(this.point.id);
+                const pointId = this.point?.id;
+                if (!pointId) return;
+
+                const isMobile = window.matchMedia('(max-width: 768px)').matches;
+                if (isMobile) {
+                    this.close();
+                    setTimeout(() => {
+                        this.sidebar.showPointDetail(pointId);
+                    }, 320);
+                    return;
+                }
+
+                this.sidebar.showPointDetail(pointId);
             });
         }
         
