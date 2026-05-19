@@ -20,6 +20,12 @@ export class MapMarkers {
         return Date.now() < this.suppressMarkerClickUntil || this.map?._storymapDrawingToolActive === true;
     }
 
+    suppressInteractions(durationMs = 600) {
+        const until = Date.now() + durationMs;
+        this.suppressClickUntil = until;
+        this.suppressMarkerClickUntil = until;
+    }
+
     bindMarkerClickGuard(el) {
         if (!el) return;
         el.addEventListener('click', (e) => {

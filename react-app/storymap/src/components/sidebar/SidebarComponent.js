@@ -185,6 +185,14 @@ export class SidebarComponent {
             console.error('[SidebarComponent] showPointDetail: Point not found:', pointId);
             return;
         }
+
+        // Zaten aynı nokta düzenleniyorsa ve yeni callback null ise, mevcut callback'in ezilmesini engelle (mobil ghost click koruması)
+        const isSamePoint = this.editingPoint && String(this.editingPoint.originalId) === String(point.id);
+        if (isSamePoint && !onCloseCallback) {
+            // Callback'i koru
+        } else {
+            this.onDetailCloseCallback = onCloseCallback;
+        }
         
         // Deep copy yap - marker referansını hariç tut (circular reference önleme)
         const pointCopy = {
@@ -256,15 +264,29 @@ export class SidebarComponent {
         
         this.currentView = 'detail';
         this.currentTab = 'layers';
-        this.onDetailCloseCallback = onCloseCallback;
         if (this.onPointEditStart) {
             this.onPointEditStart(point);
         }
         this.render();
+
+        if (this.mapComponent?.map) {
+            setTimeout(() => {
+                try {
+                    this.mapComponent.map.resize();
+                } catch (err) {
+                    console.error('[SidebarComponent] Map resize error in showPointDetail:', err);
+                }
+            }, 320);
+        }
     }
 
     showListView() {
         const closingPoint = this.editingPoint;
+
+        // Mobil cihazlarda Kaydet/Geri butonlarından haritaya sızabilecek ghost click'leri engelle
+        if (this.mapComponent && this.mapComponent.markers && typeof this.mapComponent.markers.suppressInteractions === 'function') {
+            this.mapComponent.markers.suppressInteractions(1200);
+        }
 
         if (this.onPointEditEnd && closingPoint && closingPoint.originalId) {
             const originalPoint = this.pointManager.findPoint(closingPoint.originalId);
@@ -287,6 +309,16 @@ export class SidebarComponent {
         }
         
         this.render();
+
+        if (this.mapComponent?.map) {
+            setTimeout(() => {
+                try {
+                    this.mapComponent.map.resize();
+                } catch (err) {
+                    console.error('[SidebarComponent] Map resize error in showListView:', err);
+                }
+            }, 320);
+        }
     }
 
     toggle() {
@@ -333,6 +365,16 @@ export class SidebarComponent {
                 }
                 if (timelinePreview) timelinePreview.style.left = '0';
             }
+        }
+
+        if (this.mapComponent?.map) {
+            setTimeout(() => {
+                try {
+                    this.mapComponent.map.resize();
+                } catch (err) {
+                    console.error('[SidebarComponent] Map resize error in toggle:', err);
+                }
+            }, 320);
         }
     }
 

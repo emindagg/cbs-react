@@ -10,7 +10,7 @@ Her yeni görev veya oturumda sırasıyla:
 
 1. **Proje keşfi**: Kök dizini tara. `package.json`, `requirements.txt`, `pyproject.toml`, `Makefile`, `tsconfig.json`, `.env.example` gibi dosyaları oku. Stack'i, bağımlılıkları ve build sistemi tahmin etme — oku ve anla.
 2. **Mevcut yapıyı öğren**: `src/`, `app/`, `pages/`, `components/` gibi dizin yapısını incele. Proje konvansiyonlarını (isimlendirme, klasör yapısı, import stili) mevcut koddan çıkar.
-
+3. Her zaman türkçe cevap ver bana
 
 > Kural: Proje hakkında varsayımda bulunma. Önce oku, sonra hareket et.
 

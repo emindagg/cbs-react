@@ -192,6 +192,8 @@ export class ModalComponent {
                 viewMode: this.viewMode
             });
 
+            this.sidebarComponent.mapComponent = this.mapComponent;
+
             this.sidebarComponent.onGetCurrentZoom = () => {
                 if (this.mapComponent && this.mapComponent.map) {
                     return Math.round(this.mapComponent.map.getZoom());
@@ -401,6 +403,11 @@ export class ModalComponent {
         
         if (marker && marker.getElement()) {
             marker.getElement().addEventListener('click', (e) => {
+                if (this.mapComponent?.markers?.shouldSuppressMarkerClick?.()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
                 if (this.mapComponent?.wasRecentlyDragged?.()) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -711,6 +718,11 @@ export class ModalComponent {
 
                 // Marker'a click event ekle - detail panel aç
                 marker.getElement().addEventListener('click', (e) => {
+                    if (this.mapComponent?.markers?.shouldSuppressMarkerClick?.()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
                     if (this.mapComponent?.wasRecentlyDragged?.()) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -842,6 +854,23 @@ export class ModalComponent {
                 // Event'e marker referansını ekle
                 event.marker = marker;
                 event.color = color;
+
+                // Marker'a click event ekle - detail panel aç
+                marker.getElement().addEventListener('click', (e) => {
+                    if (this.mapComponent?.markers?.shouldSuppressMarkerClick?.()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    if (this.mapComponent?.wasRecentlyDragged?.()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    if (event.id) {
+                        this.sidebarComponent.showPointDetail(event.id);
+                    }
+                });
 
                 // TimelineJS'i güncelle - GEÇİCİ OLARAK DEVRE DIŞI (freeze sorunu)
                 if (this.timelineJS && false) {  // false ile devre dışı
@@ -1100,6 +1129,11 @@ export class ModalComponent {
 
                     // Marker'a click event ekle - detail panel aç
                     marker.getElement().addEventListener('click', (e) => {
+                        if (this.mapComponent?.markers?.shouldSuppressMarkerClick?.()) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return;
+                        }
                         if (this.mapComponent?.wasRecentlyDragged?.()) {
                             e.preventDefault();
                             e.stopPropagation();
@@ -1354,7 +1388,11 @@ export class ModalComponent {
                 }
 
                 const coords = point.marker.getLngLat();
-                point.marker.remove();
+                if (this.mapComponent.markers?.removeMarker) {
+                    this.mapComponent.markers.removeMarker(point.marker);
+                } else {
+                    point.marker.remove();
+                }
 
                 const newMarker = this.mapComponent.addMarker([coords.lng, coords.lat], {
                     color: color,
@@ -1362,6 +1400,22 @@ export class ModalComponent {
                     shape: 'circle',
                     popup: `<div style="font-weight: 600; color: #374151;">${point.title}</div>
                             <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">${point.date || ''}</div>`
+                });
+
+                newMarker.getElement().addEventListener('click', (e) => {
+                    if (this.mapComponent?.markers?.shouldSuppressMarkerClick?.()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    if (this.mapComponent?.wasRecentlyDragged?.()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    if (point.id) {
+                        this.sidebarComponent.showPointDetail(point.id);
+                    }
                 });
 
                 point.marker = newMarker;
@@ -1398,7 +1452,11 @@ export class ModalComponent {
             // Rota şablonu için özel marker güncelleme
             else if (isRouteTemplate && point && point.marker) {
                 const coords = point.marker.getLngLat();
-                point.marker.remove();
+                if (this.mapComponent.markers?.removeMarker) {
+                    this.mapComponent.markers.removeMarker(point.marker);
+                } else {
+                    point.marker.remove();
+                }
 
                 const newMarker = this.mapComponent.addMarker([coords.lng, coords.lat], {
                     color: point.color || '#ef4444',
@@ -1407,6 +1465,22 @@ export class ModalComponent {
                     isNumber: true,
                     number: point.number || 1,
                     popup: `<div style="font-weight: 600; color: #374151;">${point.title}</div>`
+                });
+
+                newMarker.getElement().addEventListener('click', (e) => {
+                    if (this.mapComponent?.markers?.shouldSuppressMarkerClick?.()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    if (this.mapComponent?.wasRecentlyDragged?.()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    if (point.id) {
+                        this.sidebarComponent.showPointDetail(point.id);
+                    }
                 });
 
                 point.marker = newMarker;
@@ -1447,7 +1521,11 @@ export class ModalComponent {
                 const coords = point.marker.getLngLat();
 
                 // Eski marker'ı kaldır
-                point.marker.remove();
+                if (this.mapComponent.markers?.removeMarker) {
+                    this.mapComponent.markers.removeMarker(point.marker);
+                } else {
+                    point.marker.remove();
+                }
 
                 // Yeni marker oluştur (shape ve number bilgisiyle)
                 const newMarker = this.mapComponent.addMarker([coords.lng, coords.lat], {
@@ -1459,6 +1537,11 @@ export class ModalComponent {
                 });
 
                 newMarker.getElement().addEventListener('click', (e) => {
+                    if (this.mapComponent?.markers?.shouldSuppressMarkerClick?.()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
                     if (this.mapComponent?.wasRecentlyDragged?.()) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -1940,6 +2023,16 @@ export class ModalComponent {
                                                         }
                                                         if (marker.getElement()) {
                                                             marker.getElement().addEventListener('click', (e) => {
+                                                                if (this.mapComponent?.markers?.shouldSuppressMarkerClick?.()) {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    return;
+                                                                }
+                                                                if (this.mapComponent?.wasRecentlyDragged?.()) {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    return;
+                                                                }
                                                                 if (this.sidebarComponent && !this.sidebarComponent.viewMode && point.id) {
                                                                     this.sidebarComponent.showPointDetail(point.id);
                                                                     e.stopPropagation();
@@ -2827,6 +2920,16 @@ export class ModalComponent {
                 point.marker = marker;
                 if (marker.getElement()) {
                     marker.getElement().addEventListener('click', (e) => {
+                        if (this.mapComponent?.markers?.shouldSuppressMarkerClick?.()) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return;
+                        }
+                        if (this.mapComponent?.wasRecentlyDragged?.()) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return;
+                        }
                         if (this.sidebarComponent && !this.sidebarComponent.viewMode && point.id) {
                             this.sidebarComponent.showPointDetail(point.id);
                             e.stopPropagation();
