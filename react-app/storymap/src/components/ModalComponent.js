@@ -572,6 +572,7 @@ export class ModalComponent {
                             coords: newCoords
                         };
                         this.updateTextMarker(tempPoint);
+                        this.mapComponent.setActivePulseForPoint(tempPoint);
                     }
                 };
 
@@ -659,6 +660,8 @@ export class ModalComponent {
             if (point.drawingType !== 'text') return;
 
             this.updateTextMarker(point);
+            this.mapComponent.setActivePulseForPoint(point);
+            requestAnimationFrame(() => this.mapComponent.setActivePulseForPoint(point));
         };
 
         this.sidebarComponent.onPointTextPreviewReset = (pointId) => {

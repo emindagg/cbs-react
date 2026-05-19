@@ -286,14 +286,63 @@ export class StoryMapComponent {
 
         const scene = this.scenes[activeSceneId];
         const el = this.activePulseMarker?.getElement();
+        const pulseCoords = this.getPulseCoordsForScene(activeSceneId, scene);
 
-        if (!scene || !Array.isArray(scene.coords) || !el) {
+        if (!Array.isArray(pulseCoords) || !el) {
             if (el) el.style.display = 'none';
             return;
         }
 
-        this.activePulseMarker.setLngLat(scene.coords);
+        this.activePulseMarker.setLngLat(pulseCoords);
         el.style.display = 'block';
+    }
+
+    getPulseCoordsForScene(sceneId, scene) {
+        const textMarker = this.textMarkerElements.find(item => item.sceneId === sceneId)?.marker;
+        if (!textMarker || !textMarker._options) {
+            return scene?.coords;
+        }
+
+        const lngLat = textMarker.getLngLat();
+        const baseCoords = [lngLat.lng, lngLat.lat];
+        const hasLeaderLine = textMarker._options.leaderLine === true;
+
+        if (hasLeaderLine) {
+            return baseCoords;
+        }
+
+        const domCenter = this.getTextMarkerDomCenter(textMarker);
+        if (domCenter) return domCenter;
+
+        const pixel = this.map.project(baseCoords);
+        const labelOffsetX = textMarker._options.labelOffsetX ?? 0;
+        const labelOffsetY = textMarker._options.labelOffsetY ?? 0;
+        const labelCenter = this.map.unproject([
+            pixel.x + Number(labelOffsetX || 0),
+            pixel.y + Number(labelOffsetY || 0)
+        ]);
+
+        return [labelCenter.lng, labelCenter.lat];
+    }
+
+    getTextMarkerDomCenter(marker) {
+        if (!marker || typeof marker.getElement !== 'function' || !this.map) return null;
+
+        const markerEl = marker.getElement();
+        const labelEl = markerEl?.querySelector?.('.map-text-marker__label');
+        const mapCanvas = this.map.getCanvas?.();
+        if (!labelEl || !mapCanvas) return null;
+
+        const labelRect = labelEl.getBoundingClientRect();
+        const mapRect = mapCanvas.getBoundingClientRect();
+        if (!labelRect.width || !labelRect.height) return null;
+
+        const labelCenter = this.map.unproject([
+            labelRect.left - mapRect.left + labelRect.width / 2,
+            labelRect.top - mapRect.top + labelRect.height / 2
+        ]);
+
+        return [labelCenter.lng, labelCenter.lat];
     }
 
     /**

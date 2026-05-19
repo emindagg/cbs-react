@@ -311,6 +311,9 @@ export class MapComponent {
 
     getPointCenter(point) {
         if (!point) return null;
+        if (point.drawingType === 'text') {
+            return this.getTextPointCenter(point);
+        }
         if (Array.isArray(point.center) && point.center.length === 2) return point.center;
         const coords = point.coords;
         if (!Array.isArray(coords) || coords.length === 0) return null;
@@ -337,6 +340,59 @@ export class MapComponent {
         }
 
         return null;
+    }
+
+    getTextPointCenter(point) {
+        const markerLngLat = point.marker && typeof point.marker.getLngLat === 'function'
+            ? point.marker.getLngLat()
+            : null;
+        const baseCoords = markerLngLat
+            ? [markerLngLat.lng, markerLngLat.lat]
+            : point.coords;
+
+        if (!Array.isArray(baseCoords) || baseCoords.length !== 2) return null;
+
+        const hasLeaderLine = point.leaderLine !== false;
+        if (hasLeaderLine) {
+            return baseCoords;
+        }
+
+        if (!this.map || typeof this.map.project !== 'function' || typeof this.map.unproject !== 'function') {
+            return baseCoords;
+        }
+
+        const domCenter = this.getTextMarkerDomCenter(point.marker);
+        if (domCenter) return domCenter;
+
+        const pixel = this.map.project(baseCoords);
+        const labelOffsetX = point.marker?._options?.labelOffsetX ?? point.labelOffsetX ?? 0;
+        const labelOffsetY = point.marker?._options?.labelOffsetY ?? point.labelOffsetY ?? 0;
+        const labelCenter = this.map.unproject([
+            pixel.x + Number(labelOffsetX || 0),
+            pixel.y + Number(labelOffsetY || 0)
+        ]);
+
+        return [labelCenter.lng, labelCenter.lat];
+    }
+
+    getTextMarkerDomCenter(marker) {
+        if (!marker || typeof marker.getElement !== 'function' || !this.map) return null;
+
+        const markerEl = marker.getElement();
+        const labelEl = markerEl?.querySelector?.('.map-text-marker__label');
+        const mapCanvas = this.map.getCanvas?.();
+        if (!labelEl || !mapCanvas) return null;
+
+        const labelRect = labelEl.getBoundingClientRect();
+        const mapRect = mapCanvas.getBoundingClientRect();
+        if (!labelRect.width || !labelRect.height) return null;
+
+        const labelCenter = this.map.unproject([
+            labelRect.left - mapRect.left + labelRect.width / 2,
+            labelRect.top - mapRect.top + labelRect.height / 2
+        ]);
+
+        return [labelCenter.lng, labelCenter.lat];
     }
 
     createActivePulseMarker() {
