@@ -177,11 +177,16 @@
     padding: 8px 16px;
     border-radius: 6px;
     min-width: 200px;
+    position: relative;
+    z-index: 2;
+    cursor: text;
+    touch-action: manipulation;
 }
 
 .toolbar__search svg {
     fill: var(--color-text-tertiary);
     flex-shrink: 0;
+    pointer-events: none;
 }
 
 .toolbar__search i {
@@ -196,6 +201,11 @@
     color: var(--color-text-primary);
     font-size: 14px;
     width: 100%;
+    cursor: text;
+    touch-action: manipulation;
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .toolbar__search input::placeholder {
@@ -946,6 +956,10 @@
 
     .toolbar__search input {
         font-size: 12px;
+    }
+
+    .toolbar__search {
+        touch-action: manipulation;
     }
 
     .toolbar__left {

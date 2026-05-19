@@ -20,8 +20,17 @@ export class SearchManager {
     setupUI() {
         const searchInput = this.toolbar.querySelector('#toolbar-search');
         if (!searchInput) return;
+        const searchWrapper = searchInput.parentElement;
 
         this.createSearchResultsContainer(searchInput);
+
+        if (searchWrapper) {
+            searchWrapper.addEventListener('click', (e) => {
+                if (e.target === searchInput) return;
+                if (this.searchResultsContainer?.contains(e.target)) return;
+                searchInput.focus();
+            });
+        }
 
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.trim();
@@ -91,8 +100,10 @@ export class SearchManager {
         `;
 
         const searchWrapper = searchInput.parentElement;
-        searchWrapper.style.position = 'relative';
-        searchWrapper.appendChild(this.searchResultsContainer);
+        if (searchWrapper) {
+            searchWrapper.style.position = 'relative';
+            searchWrapper.appendChild(this.searchResultsContainer);
+        }
     }
 
     tryFocusOnParsedCoordinates(query) {
