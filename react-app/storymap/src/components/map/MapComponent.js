@@ -43,6 +43,8 @@ export class MapComponent {
         this.areaMeasurement = null;
         this.measurementTool = null;
         this.activePulseMarker = null;
+        this.isDrawingToolActive = false;
+        this.lastUserMapDragAt = 0;
 
         // Callback'ler
         this.onRouteDistanceUpdate = null; // Rota mesafesi güncellendiğinde çağrılacak
@@ -171,6 +173,14 @@ export class MapComponent {
             this.areaMeasurement = new AreaMeasurement(this.map);
             this.measurementTool = new MeasurementTool(this.map);
 
+            this.map.on('dragstart', () => {
+                this.lastUserMapDragAt = Date.now();
+            });
+
+            this.map.on('dragend', () => {
+                this.lastUserMapDragAt = Date.now();
+            });
+
             this.mapLoadCallbacks.forEach(cb => cb());
             this.mapLoadCallbacks = [];
 
@@ -249,6 +259,7 @@ export class MapComponent {
 
     flyTo(coords, zoom, options = {}) {
         if (!this.map || !Array.isArray(coords)) return;
+        if (this.isDrawingToolActive && !options.allowDuringDrawing) return;
 
         let center;
         let calculatedZoom = zoom;
@@ -307,6 +318,23 @@ export class MapComponent {
 
     addTextMarker(coords, text, options = {}) {
         return this.markers ? this.markers.addTextMarker(coords, text, options) : null;
+    }
+
+    setMarkerInteractivity(enabled) {
+        if (this.markers && typeof this.markers.setInteractivityEnabled === 'function') {
+            this.markers.setInteractivityEnabled(enabled);
+        }
+    }
+
+    setDrawingToolActive(isActive) {
+        this.isDrawingToolActive = Boolean(isActive);
+        if (this.map) {
+            this.map._storymapDrawingToolActive = this.isDrawingToolActive;
+        }
+    }
+
+    wasRecentlyDragged(thresholdMs = 500) {
+        return Date.now() - this.lastUserMapDragAt < thresholdMs;
     }
 
     getPointCenter(point) {
@@ -447,9 +475,9 @@ export class MapComponent {
     // ÇİZİM
     // ========================================
 
-    enablePolygonMode(callback) {
+    enablePolygonMode(callback, options = {}) {
         this.disableAllModes();
-        if (this.drawing) this.drawing.enablePolygonMode(callback);
+        if (this.drawing) this.drawing.enablePolygonMode(callback, null, options);
     }
 
     enableRouteMode(callback) {
@@ -457,9 +485,9 @@ export class MapComponent {
         if (this.drawing) this.drawing.enableRouteMode(callback);
     }
 
-    enableLineMode(callback) {
+    enableLineMode(callback, options = {}) {
         this.disableAllModes();
-        if (this.drawing) this.drawing.enableLineMode(callback);
+        if (this.drawing) this.drawing.enableLineMode(callback, null, options);
     }
 
     enableRectangleMode(callback) {
@@ -484,6 +512,8 @@ export class MapComponent {
     disableAllModes() {
         if (this.markers) this.markers.disableMode();
         if (this.drawing) this.drawing.disableMode();
+        this.setDrawingToolActive(false);
+        this.setMarkerInteractivity(true);
     }
 
     // ========================================

@@ -296,6 +296,27 @@
     font-size: 10px;
 }
 
+.toolbar__mode-finish {
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 6px 10px;
+}
+
+.toolbar__mode-finish:hover {
+    background: #1d4ed8;
+}
+
+.toolbar__mode-finish:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
 /* ============================================
    Measurement Popup Styles
    ============================================ */
@@ -1004,5 +1025,12 @@
 
     .measurement-tool-panel__value {
         font-size: 10px;
+    }
+
+    /* Mobilde harita kontrollerini panelin altında kalmayacak şekilde sola al */
+    .maplibregl-ctrl-top-right {
+        top: 64px !important;
+        right: auto !important;
+        left: calc(8px + env(safe-area-inset-left)) !important;
     }
 }

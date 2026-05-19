@@ -401,6 +401,11 @@ export class ModalComponent {
         
         if (marker && marker.getElement()) {
             marker.getElement().addEventListener('click', (e) => {
+                if (this.mapComponent?.wasRecentlyDragged?.()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
                 if (this.sidebarComponent && !this.sidebarComponent.viewMode) {
                     const idToEdit = targetPoint?.id || point?.id;
                     if (idToEdit) {
@@ -705,7 +710,12 @@ export class ModalComponent {
                 point.color = color;
 
                 // Marker'a click event ekle - detail panel aç
-                marker.getElement().addEventListener('click', () => {
+                marker.getElement().addEventListener('click', (e) => {
+                    if (this.mapComponent?.wasRecentlyDragged?.()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
                     if (point.id) {
                         this.sidebarComponent.showPointDetail(point.id);
                     }
@@ -1089,7 +1099,12 @@ export class ModalComponent {
                     point.marker = marker;
 
                     // Marker'a click event ekle - detail panel aç
-                    marker.getElement().addEventListener('click', () => {
+                    marker.getElement().addEventListener('click', (e) => {
+                        if (this.mapComponent?.wasRecentlyDragged?.()) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return;
+                        }
                         if (point.id) {
                             this.sidebarComponent.showPointDetail(point.id);
                         }
@@ -1439,8 +1454,19 @@ export class ModalComponent {
                     color: point.color || '#ef4444',
                     icon: point.icon || 'fa-map-marker-alt',
                     shape: point.shape || 'circle',
-                    isNumber: point.isNumber || false,
+                    isNumber: point.isNumber === true || point.style === 'number' || point.icon === 'number',
                     number: point.number || 1
+                });
+
+                newMarker.getElement().addEventListener('click', (e) => {
+                    if (this.mapComponent?.wasRecentlyDragged?.()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    if (point.id) {
+                        this.sidebarComponent.showPointDetail(point.id);
+                    }
                 });
 
                 // Point'in marker referansını güncelle

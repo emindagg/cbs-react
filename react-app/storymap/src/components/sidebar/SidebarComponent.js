@@ -508,12 +508,7 @@ export class SidebarComponent {
             console.error('[SidebarComponent] savePointDetail: Point not found at index:', pointIndex);
         }
 
-        const callback = this.onDetailCloseCallback;
-        this.onDetailCloseCallback = null;
-
         this.showListView();
-
-        if (callback) callback();
     }
 
     deleteCurrentPoint() {

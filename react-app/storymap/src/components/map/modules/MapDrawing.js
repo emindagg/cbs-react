@@ -13,6 +13,12 @@ export class MapDrawing {
         this.currentClickHandler = null;
         this.currentMoveHandler = null;
         this.currentContextMenuHandler = null;
+        this.currentTouchStartHandler = null;
+        this.currentTouchMoveHandler = null;
+        this.currentTouchEndHandler = null;
+        this.touchStartPoint = null;
+        this.lastTouchTap = null;
+        this.suppressClickUntil = 0;
         this.drawMode = null;
 
         // Mapbox GL Draw kontrolünü arka planda başlat
@@ -123,6 +129,15 @@ export class MapDrawing {
             if (this.currentDblClickHandler) {
                 this.map.off('dblclick', this.currentDblClickHandler);
             }
+            if (this.currentTouchStartHandler) {
+                this.map.off('touchstart', this.currentTouchStartHandler);
+            }
+            if (this.currentTouchMoveHandler) {
+                this.map.off('touchmove', this.currentTouchMoveHandler);
+            }
+            if (this.currentTouchEndHandler) {
+                this.map.off('touchend', this.currentTouchEndHandler);
+            }
             this.map.getCanvas().style.cursor = '';
             
             if (this.map.doubleClickZoom) {
@@ -134,16 +149,166 @@ export class MapDrawing {
         this.currentMoveHandler = null;
         this.currentContextMenuHandler = null;
         this.currentDblClickHandler = null;
+        this.currentTouchStartHandler = null;
+        this.currentTouchMoveHandler = null;
+        this.currentTouchEndHandler = null;
+        this.touchStartPoint = null;
+        this.lastTouchTap = null;
         
         // Çizim noktalarını temizle
         this.clearDrawingVertices();
+    }
+
+    bindClickAndTouch(clickHandler, doubleTapHandler = null, touchMoveHandler = null) {
+        const tapMoveTolerance = 18;
+        const wrappedClickHandler = (e) => {
+            if (Date.now() < this.suppressClickUntil) return;
+            clickHandler(e);
+        };
+
+        this.map.on('click', wrappedClickHandler);
+
+        const normalizeTouchEvent = (e) => {
+            if (!e) return null;
+
+            const touch = e.originalEvent?.changedTouches?.[0] || e.originalEvent?.touches?.[0];
+            const canvas = this.map.getCanvas();
+            let point = null;
+            let lngLat = null;
+
+            if (touch && canvas) {
+                const rect = canvas.getBoundingClientRect();
+                point = {
+                    x: touch.clientX - rect.left,
+                    y: touch.clientY - rect.top
+                };
+                lngLat = this.map.unproject([point.x, point.y]);
+            }
+
+            if (!point) {
+                point = e.point || (e.points && e.points[0]) || null;
+            }
+
+            if (!lngLat && point) {
+                lngLat = this.map.unproject([point.x, point.y]);
+            }
+
+            if (!lngLat) {
+                lngLat = e.lngLat || null;
+            }
+
+            if (!point || !lngLat) return null;
+
+            return {
+                lngLat,
+                point,
+                originalEvent: e.originalEvent,
+                preventDefault: () => {
+                    if (e.originalEvent?.cancelable && e.originalEvent.preventDefault) {
+                        e.originalEvent.preventDefault();
+                    }
+                },
+                stopPropagation: () => e.originalEvent?.stopPropagation?.()
+            };
+        };
+
+        const touchStartHandler = (e) => {
+            const touchCount = e.points?.length || e.originalEvent?.touches?.length || 1;
+            const syntheticEvent = normalizeTouchEvent(e);
+            const point = syntheticEvent?.point;
+
+            if (!point || touchCount !== 1) {
+                this.touchStartPoint = null;
+                return;
+            }
+
+            this.touchStartPoint = {
+                x: point.x,
+                y: point.y,
+                time: Date.now(),
+                moved: false
+            };
+        };
+
+        const touchMoveHandlerWrapper = (e) => {
+            const syntheticEvent = normalizeTouchEvent(e);
+            const point = syntheticEvent?.point;
+            if (this.touchStartPoint && point) {
+                const dx = point.x - this.touchStartPoint.x;
+                const dy = point.y - this.touchStartPoint.y;
+                if (Math.sqrt((dx * dx) + (dy * dy)) > tapMoveTolerance) {
+                    this.touchStartPoint.moved = true;
+                }
+            }
+
+            if (touchMoveHandler) {
+                if (syntheticEvent) touchMoveHandler(syntheticEvent);
+            }
+        };
+
+        const touchEndHandler = (e) => {
+            if (!this.touchStartPoint) return;
+
+            const syntheticEvent = normalizeTouchEvent(e);
+            if (!syntheticEvent || !syntheticEvent.point) {
+                this.touchStartPoint = null;
+                return;
+            }
+
+            const dx = syntheticEvent.point.x - this.touchStartPoint.x;
+            const dy = syntheticEvent.point.y - this.touchStartPoint.y;
+            const distance = Math.sqrt((dx * dx) + (dy * dy));
+            const duration = Date.now() - this.touchStartPoint.time;
+            const didMove = this.touchStartPoint.moved;
+
+            this.touchStartPoint = null;
+
+            if (didMove || distance > tapMoveTolerance || duration > 700) {
+                this.lastTouchTap = null;
+                return;
+            }
+
+            this.suppressClickUntil = Date.now() + 700;
+            syntheticEvent.preventDefault();
+            syntheticEvent.stopPropagation();
+
+            const now = Date.now();
+            const lastTap = this.lastTouchTap;
+            const isDoubleTap = Boolean(
+                doubleTapHandler
+                && lastTap
+                && now - lastTap.time < 350
+                && Math.sqrt(
+                    Math.pow(syntheticEvent.point.x - lastTap.point.x, 2)
+                    + Math.pow(syntheticEvent.point.y - lastTap.point.y, 2)
+                ) < 28
+            );
+
+            if (isDoubleTap) {
+                this.lastTouchTap = null;
+                doubleTapHandler(syntheticEvent);
+                return;
+            }
+
+            this.lastTouchTap = { time: now, point: syntheticEvent.point };
+            clickHandler(syntheticEvent);
+        };
+
+        this.map.on('touchstart', touchStartHandler);
+        this.map.on('touchmove', touchMoveHandlerWrapper);
+        this.map.on('touchend', touchEndHandler);
+        this.currentTouchStartHandler = touchStartHandler;
+        this.currentTouchMoveHandler = touchMoveHandlerWrapper;
+        this.currentTouchEndHandler = touchEndHandler;
+
+        return wrappedClickHandler;
     }
 
     // ========================================
     // POLİGON
     // ========================================
 
-    enablePolygonMode(callback, onFinish) {
+    enablePolygonMode(callback, onFinish, options = {}) {
         this.disableMode();
         this.drawMode = 'polygon';
         
@@ -157,6 +322,25 @@ export class MapDrawing {
         const polygonId = `polygon-${Date.now()}`;
         let lastClickTime = 0;
         this.drawingVertices = [];
+
+        const finishCurrentPolygon = () => {
+            if (points.length < 3) return;
+            this.clearPreviewPolygon(polygonId);
+            this.clearPreviewLine(polygonId);
+            this.clearDrawingVertices();
+            this.finishPolygon(polygonId, points, callback, onFinish);
+        };
+
+        const notifyProgress = () => {
+            if (options.onProgress) {
+                options.onProgress({
+                    type: 'polygon',
+                    pointCount: points.length,
+                    canFinish: points.length >= 3,
+                    finish: finishCurrentPolygon
+                });
+            }
+        };
 
         const clickHandler = (e) => {
             const now = Date.now();
@@ -178,6 +362,7 @@ export class MapDrawing {
             if (points.length >= 3) {
                 this.drawPolygon([...points, points[0]], polygonId);
             }
+            notifyProgress();
         };
 
         const moveHandler = (e) => {
@@ -208,10 +393,7 @@ export class MapDrawing {
             }
 
             if (points.length >= 3) {
-                this.clearPreviewPolygon(polygonId);
-                this.clearPreviewLine(polygonId);
-                this.clearDrawingVertices();
-                this.finishPolygon(polygonId, points, callback, onFinish);
+                finishCurrentPolygon();
             }
         };
 
@@ -231,19 +413,16 @@ export class MapDrawing {
             }
 
             if (points.length >= 3) {
-                this.clearPreviewPolygon(polygonId);
-                this.clearPreviewLine(polygonId);
-                this.clearDrawingVertices();
-                this.finishPolygon(polygonId, points, callback, onFinish);
+                finishCurrentPolygon();
             }
         };
 
-        this.map.on('click', clickHandler);
+        const boundClickHandler = this.bindClickAndTouch(clickHandler, dblClickHandler, moveHandler);
         this.map.on('mousemove', moveHandler);
         this.map.on('contextmenu', contextMenuHandler);
         this.map.on('dblclick', dblClickHandler);
         this.map.getCanvas().style.cursor = 'crosshair';
-        this.currentClickHandler = clickHandler;
+        this.currentClickHandler = boundClickHandler;
         this.currentMoveHandler = moveHandler;
         this.currentContextMenuHandler = contextMenuHandler;
         this.currentDblClickHandler = dblClickHandler;
@@ -412,11 +591,11 @@ export class MapDrawing {
             }
         };
 
-        this.map.on('click', clickHandler);
+        const boundClickHandler = this.bindClickAndTouch(clickHandler, dblClickHandler);
         this.map.on('contextmenu', contextMenuHandler);
         this.map.on('dblclick', dblClickHandler);
         this.map.getCanvas().style.cursor = 'crosshair';
-        this.currentClickHandler = clickHandler;
+        this.currentClickHandler = boundClickHandler;
         this.currentContextMenuHandler = contextMenuHandler;
         this.currentDblClickHandler = dblClickHandler;
     }
@@ -470,7 +649,7 @@ export class MapDrawing {
     // ÇİZGİ
     // ========================================
 
-    enableLineMode(callback, onFinish) {
+    enableLineMode(callback, onFinish, options = {}) {
         this.disableMode();
         this.drawMode = 'line';
         
@@ -484,6 +663,24 @@ export class MapDrawing {
         const lineId = `line-${Date.now()}`;
         let lastClickTime = 0;
         this.drawingVertices = [];
+
+        const finishCurrentLine = () => {
+            if (points.length < 2) return;
+            this.clearPreviewLine(lineId);
+            this.clearDrawingVertices();
+            this.finishLine(lineId, points, callback, onFinish);
+        };
+
+        const notifyProgress = () => {
+            if (options.onProgress) {
+                options.onProgress({
+                    type: 'line',
+                    pointCount: points.length,
+                    canFinish: points.length >= 2,
+                    finish: finishCurrentLine
+                });
+            }
+        };
 
         const clickHandler = (e) => {
             const now = Date.now();
@@ -502,6 +699,7 @@ export class MapDrawing {
             if (points.length >= 2) {
                 this.drawLine(points, lineId);
             }
+            notifyProgress();
         };
 
         const moveHandler = (e) => {
@@ -527,9 +725,7 @@ export class MapDrawing {
             }
 
             if (points.length >= 2) {
-                this.clearPreviewLine(lineId);
-                this.clearDrawingVertices();
-                this.finishLine(lineId, points, callback, onFinish);
+                finishCurrentLine();
             }
         };
 
@@ -549,18 +745,16 @@ export class MapDrawing {
             }
 
             if (points.length >= 2) {
-                this.clearPreviewLine(lineId);
-                this.clearDrawingVertices();
-                this.finishLine(lineId, points, callback, onFinish);
+                finishCurrentLine();
             }
         };
 
-        this.map.on('click', clickHandler);
+        const boundClickHandler = this.bindClickAndTouch(clickHandler, dblClickHandler, moveHandler);
         this.map.on('mousemove', moveHandler);
         this.map.on('contextmenu', contextMenuHandler);
         this.map.on('dblclick', dblClickHandler);
         this.map.getCanvas().style.cursor = 'crosshair';
-        this.currentClickHandler = clickHandler;
+        this.currentClickHandler = boundClickHandler;
         this.currentMoveHandler = moveHandler;
         this.currentContextMenuHandler = contextMenuHandler;
         this.currentDblClickHandler = dblClickHandler;
@@ -668,10 +862,10 @@ export class MapDrawing {
             }
         };
 
-        this.map.on('click', clickHandler);
+        const boundClickHandler = this.bindClickAndTouch(clickHandler, null, moveHandler);
         this.map.on('mousemove', moveHandler);
         this.map.getCanvas().style.cursor = 'crosshair';
-        this.currentClickHandler = clickHandler;
+        this.currentClickHandler = boundClickHandler;
         this.currentMoveHandler = moveHandler;
     }
 
@@ -725,10 +919,10 @@ export class MapDrawing {
             }
         };
 
-        this.map.on('click', clickHandler);
+        const boundClickHandler = this.bindClickAndTouch(clickHandler, null, moveHandler);
         this.map.on('mousemove', moveHandler);
         this.map.getCanvas().style.cursor = 'crosshair';
-        this.currentClickHandler = clickHandler;
+        this.currentClickHandler = boundClickHandler;
         this.currentMoveHandler = moveHandler;
     }
 
@@ -752,9 +946,9 @@ export class MapDrawing {
             }
         };
 
-        this.map.on('click', clickHandler);
+        const boundClickHandler = this.bindClickAndTouch(clickHandler);
         this.map.getCanvas().style.cursor = 'text';
-        this.currentClickHandler = clickHandler;
+        this.currentClickHandler = boundClickHandler;
     }
 
     // ========================================

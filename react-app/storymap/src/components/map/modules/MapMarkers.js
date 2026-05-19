@@ -7,6 +7,26 @@ export class MapMarkers {
         this.map = map;
         this.markers = [];
         this.currentClickHandler = null;
+        this.currentTouchStartHandler = null;
+        this.currentTouchEndHandler = null;
+        this.touchStartPoint = null;
+        this.suppressClickUntil = 0;
+        this.suppressMarkerClickUntil = 0;
+        this.isMarkerModeActive = false;
+        this.markerModeSession = 0;
+    }
+
+    shouldSuppressMarkerClick() {
+        return Date.now() < this.suppressMarkerClickUntil || this.map?._storymapDrawingToolActive === true;
+    }
+
+    bindMarkerClickGuard(el) {
+        if (!el) return;
+        el.addEventListener('click', (e) => {
+            if (!this.shouldSuppressMarkerClick()) return;
+            if (e.cancelable) e.preventDefault();
+            e.stopPropagation();
+        }, true);
     }
 
     // Marker ekle
@@ -15,6 +35,7 @@ export class MapMarkers {
 
         const el = document.createElement('div');
         el.className = 'map-marker';
+        this.bindMarkerClickGuard(el);
         
         const isTeardrop = options.shape === 'teardrop';
         const isNumber = options.isNumber || false;
@@ -129,6 +150,7 @@ export class MapMarkers {
         // --- Kapsayıcı ---
         const el = document.createElement('div');
         el.className = `map-text-marker map-text-marker--${styleId}`;
+        this.bindMarkerClickGuard(el);
         el.style.cssText = `
             position: relative;
             width: 0;
@@ -461,7 +483,12 @@ export class MapMarkers {
         
         if (!this.map) return;
 
+        this.isMarkerModeActive = true;
+        const modeSession = ++this.markerModeSession;
+
         const clickHandler = (e) => {
+            if (!this.isMarkerModeActive || modeSession !== this.markerModeSession) return;
+
             const coords = [e.lngLat.lng, e.lngLat.lat];
             const marker = this.addMarker(coords, {
                 color: '#ef4444',
@@ -481,18 +508,105 @@ export class MapMarkers {
             }
         };
 
-        this.map.on('click', clickHandler);
+        const boundClickHandler = this.bindClickAndTouch(clickHandler);
         this.map.getCanvas().style.cursor = 'crosshair';
-        this.currentClickHandler = clickHandler;
+        this.currentClickHandler = boundClickHandler;
     }
 
     // Modu devre dışı bırak
     disableMode() {
-        if (this.map && this.currentClickHandler) {
-            this.map.off('click', this.currentClickHandler);
+        this.isMarkerModeActive = false;
+        this.markerModeSession++;
+
+        if (this.map) {
+            if (this.currentClickHandler) {
+                this.map.off('click', this.currentClickHandler);
+            }
+
+            const canvas = this.map.getCanvas();
+            if (canvas && this.currentTouchStartHandler) {
+                canvas.removeEventListener('touchstart', this.currentTouchStartHandler);
+            }
+            if (canvas && this.currentTouchEndHandler) {
+                canvas.removeEventListener('touchend', this.currentTouchEndHandler);
+            }
+
             this.map.getCanvas().style.cursor = '';
-            this.currentClickHandler = null;
         }
+
+        this.currentClickHandler = null;
+        this.currentTouchStartHandler = null;
+        this.currentTouchEndHandler = null;
+        this.touchStartPoint = null;
+    }
+
+    bindClickAndTouch(clickHandler) {
+        const wrappedClickHandler = (e) => {
+            if (Date.now() < this.suppressClickUntil) return;
+            clickHandler(e);
+        };
+
+        this.map.on('click', wrappedClickHandler);
+
+        const canvas = this.map.getCanvas();
+        if (canvas) {
+            const touchStartHandler = (e) => {
+                if (!e.touches || e.touches.length !== 1) {
+                    this.touchStartPoint = null;
+                    return;
+                }
+
+                const touch = e.touches[0];
+                this.touchStartPoint = {
+                    x: touch.clientX,
+                    y: touch.clientY,
+                    time: Date.now()
+                };
+            };
+
+            const touchEndHandler = (e) => {
+                if (!this.touchStartPoint || !e.changedTouches || e.changedTouches.length !== 1) return;
+
+                const touch = e.changedTouches[0];
+                const dx = touch.clientX - this.touchStartPoint.x;
+                const dy = touch.clientY - this.touchStartPoint.y;
+                const distance = Math.sqrt((dx * dx) + (dy * dy));
+                const duration = Date.now() - this.touchStartPoint.time;
+
+                this.touchStartPoint = null;
+
+                if (distance > 12 || duration > 700) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const point = {
+                    x: touch.clientX - rect.left,
+                    y: touch.clientY - rect.top
+                };
+                const lngLat = this.map.unproject([point.x, point.y]);
+
+                this.suppressClickUntil = Date.now() + 700;
+                this.suppressMarkerClickUntil = Date.now() + 700;
+                if (e.cancelable) e.preventDefault();
+                e.stopPropagation();
+
+                clickHandler({
+                    lngLat,
+                    point,
+                    originalEvent: e,
+                    preventDefault: () => {
+                        if (e.cancelable) e.preventDefault();
+                    },
+                    stopPropagation: () => e.stopPropagation()
+                });
+            };
+
+            canvas.addEventListener('touchstart', touchStartHandler, { passive: true });
+            canvas.addEventListener('touchend', touchEndHandler, { passive: false });
+            this.currentTouchStartHandler = touchStartHandler;
+            this.currentTouchEndHandler = touchEndHandler;
+        }
+
+        return wrappedClickHandler;
     }
 
     // Tüm markerları temizle
@@ -523,5 +637,13 @@ export class MapMarkers {
 
     getMarkers() {
         return this.markers;
+    }
+
+    setInteractivityEnabled(enabled) {
+        this.markers.forEach(marker => {
+            const el = marker?.getElement?.();
+            if (!el) return;
+            el.style.pointerEvents = enabled ? '' : 'none';
+        });
     }
 }

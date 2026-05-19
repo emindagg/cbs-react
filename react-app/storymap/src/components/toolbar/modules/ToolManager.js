@@ -22,6 +22,10 @@ export class ToolManager {
     handleDrawingComplete(callback) {
         if (this.viewMode) {
             // View mode: Sadece toolbar'ı unlock et, sidebar'a ekleme
+            if (this.mapComponent) {
+                this.mapComponent.setDrawingToolActive(false);
+                this.mapComponent.setMarkerInteractivity(true);
+            }
             this.unlockToolbar();
             this.selectToolWithoutLock('select');
             console.log('[ToolManager] Geçici çizim eklendi (view mode)');
@@ -109,6 +113,8 @@ export class ToolManager {
         
         if (this.mapComponent) {
             this.mapComponent.disableAllModes();
+            this.mapComponent.setDrawingToolActive(false);
+            this.mapComponent.setMarkerInteractivity(true);
         }
         
         this.unlockToolbar();
@@ -119,6 +125,18 @@ export class ToolManager {
         const prevActive = this.toolbar.querySelector('.toolbar__btn--active');
         if (prevActive) prevActive.classList.remove('toolbar__btn--active');
         if (selectBtn) selectBtn.classList.add('toolbar__btn--active');
+    }
+
+    completeCurrentTool() {
+        if (this.mapComponent) {
+            this.mapComponent.disableAllModes();
+            this.mapComponent.setDrawingToolActive(false);
+            this.mapComponent.setMarkerInteractivity(true);
+        }
+
+        this.unlockToolbar();
+        this.hideModeIndicator();
+        this.selectToolWithoutLock('select');
     }
 
     // Internal helper to select tool without locking check (used after completion)
@@ -139,6 +157,9 @@ export class ToolManager {
         this.modeIndicator.className = `toolbar__mode-indicator toolbar__mode-indicator--${type}`;
         this.modeIndicator.innerHTML = `
             <i class="fa-solid fa-info-circle"></i> ${message}
+            <button class="toolbar__mode-finish" type="button" title="Çizimi bitir" hidden disabled>
+                Bitti
+            </button>
             <button class="toolbar__mode-cancel" title="İptal (ESC)">
                 <i class="fa-solid fa-times"></i>
             </button>
@@ -151,6 +172,21 @@ export class ToolManager {
                 this.cancelCurrentTool();
             });
         }
+    }
+
+    setModeFinishAction(enabled, callback) {
+        if (!this.modeIndicator) return;
+
+        const finishBtn = this.modeIndicator.querySelector('.toolbar__mode-finish');
+        if (!finishBtn) return;
+
+        finishBtn.hidden = false;
+        finishBtn.disabled = !enabled;
+        finishBtn.onclick = enabled && callback ? (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            callback();
+        } : null;
     }
 
     hideModeIndicator() {
@@ -170,6 +206,7 @@ export class ToolManager {
         this.showModeIndicator('Haritaya tıklayarak nokta ekleyin', 'info');
 
         this.mapComponent.enableMarkerMode((data) => {
+            this.mapComponent.disableAllModes();
             this.hideModeIndicator();
 
             this.handleDrawingComplete(() => {
@@ -227,8 +264,7 @@ export class ToolManager {
                             this.sidebarComponent.updateRouteData(routeData);
                         }
 
-                        this.unlockToolbar();
-                        this.selectToolWithoutLock('select');
+                        this.completeCurrentTool();
                     });
                 } else {
                     // Normal nokta ekleme
@@ -245,8 +281,7 @@ export class ToolManager {
                     });
 
                     this.sidebarComponent.showPointDetail(newPoint.id, () => {
-                        this.unlockToolbar();
-                        this.selectToolWithoutLock('select');
+                        this.completeCurrentTool();
                     });
                 }
             });
@@ -259,6 +294,7 @@ export class ToolManager {
         this.showModeIndicator('Haritaya tıklayarak numaralı nokta ekleyin', 'info');
 
         this.mapComponent.enableMarkerMode(async (data) => {
+            this.mapComponent.disableAllModes();
             this.hideModeIndicator();
 
             this.handleDrawingComplete(async () => {
@@ -297,8 +333,7 @@ export class ToolManager {
                             this.sidebarComponent.updateRouteData(routeData);
                         }
 
-                        this.unlockToolbar();
-                        this.selectToolWithoutLock('select');
+                        this.completeCurrentTool();
                     });
                 } else {
                     // Normal numaralı nokta ekleme
@@ -324,8 +359,7 @@ export class ToolManager {
                     });
 
                     this.sidebarComponent.showPointDetail(newPoint.id, () => {
-                        this.unlockToolbar();
-                        this.selectToolWithoutLock('select');
+                        this.completeCurrentTool();
                     });
                 }
             });
@@ -334,7 +368,10 @@ export class ToolManager {
 
     activateLineMode() {
         this.lockToolbar();
-        this.showModeIndicator('Çizgi çizmek için noktaları tıklayın. Bitirmek için çift tıklayın veya sağ tık.', 'info');
+        this.mapComponent.setDrawingToolActive(true);
+        this.mapComponent.setMarkerInteractivity(false);
+        this.showModeIndicator('Çizgi çizmek için noktaları dokunun.', 'info');
+        this.setModeFinishAction(false, null);
 
         this.mapComponent.enableLineMode((data) => {
             this.hideModeIndicator();
@@ -348,17 +385,26 @@ export class ToolManager {
                     data: data
                 });
 
+                this.mapComponent.setMarkerInteractivity(true);
+                this.mapComponent.setDrawingToolActive(false);
                 this.sidebarComponent.showPointDetail(newDrawing.id, () => {
                     this.unlockToolbar();
                     this.selectToolWithoutLock('select');
                 });
             });
+        }, {
+            onProgress: ({ canFinish, finish }) => {
+                this.setModeFinishAction(canFinish, finish);
+            }
         });
     }
 
     activatePolygonMode() {
         this.lockToolbar();
-        this.showModeIndicator('Alan çizmek için noktaları tıklayın. Bitirmek için çift tıklayın veya sağ tık.', 'info');
+        this.mapComponent.setDrawingToolActive(true);
+        this.mapComponent.setMarkerInteractivity(false);
+        this.showModeIndicator('Alan çizmek için noktaları dokunun.', 'info');
+        this.setModeFinishAction(false, null);
 
         this.mapComponent.enablePolygonMode((data) => {
             this.hideModeIndicator();
@@ -372,16 +418,24 @@ export class ToolManager {
                     data: data
                 });
 
+                this.mapComponent.setMarkerInteractivity(true);
+                this.mapComponent.setDrawingToolActive(false);
                 this.sidebarComponent.showPointDetail(newDrawing.id, () => {
                     this.unlockToolbar();
                     this.selectToolWithoutLock('select');
                 });
             });
+        }, {
+            onProgress: ({ canFinish, finish }) => {
+                this.setModeFinishAction(canFinish, finish);
+            }
         });
     }
 
     activateRectangleMode() {
         this.lockToolbar();
+        this.mapComponent.setDrawingToolActive(true);
+        this.mapComponent.setMarkerInteractivity(false);
         this.showModeIndicator('Dikdörtgen çizmek için iki köşeyi tıklayın.', 'info');
 
         this.mapComponent.enableRectangleMode((data) => {
@@ -396,6 +450,8 @@ export class ToolManager {
                     data: data
                 });
 
+                this.mapComponent.setMarkerInteractivity(true);
+                this.mapComponent.setDrawingToolActive(false);
                 this.sidebarComponent.showPointDetail(newDrawing.id, () => {
                     this.unlockToolbar();
                     this.selectToolWithoutLock('select');
@@ -406,6 +462,8 @@ export class ToolManager {
 
     activateCircleMode() {
         this.lockToolbar();
+        this.mapComponent.setDrawingToolActive(true);
+        this.mapComponent.setMarkerInteractivity(false);
         this.showModeIndicator('Daire çizmek için merkezi tıklayın, sonra yarıçap için tekrar tıklayın.', 'info');
 
         this.mapComponent.enableCircleMode((data) => {
@@ -422,6 +480,8 @@ export class ToolManager {
                     data: data
                 });
 
+                this.mapComponent.setMarkerInteractivity(true);
+                this.mapComponent.setDrawingToolActive(false);
                 this.sidebarComponent.showPointDetail(newDrawing.id, () => {
                     this.unlockToolbar();
                     this.selectToolWithoutLock('select');
@@ -432,6 +492,8 @@ export class ToolManager {
 
     activateTextMode() {
         this.lockToolbar();
+        this.mapComponent.setDrawingToolActive(true);
+        this.mapComponent.setMarkerInteractivity(false);
         this.showModeIndicator('Metin eklemek için haritaya tıklayın.', 'info');
 
         this.mapComponent.enableTextMode((data) => {
@@ -460,6 +522,8 @@ export class ToolManager {
                     marker: textMarker // Text marker referansını kaydet
                 });
 
+                this.mapComponent.setMarkerInteractivity(true);
+                this.mapComponent.setDrawingToolActive(false);
                 this.sidebarComponent.showPointDetail(newDrawing.id, () => {
                     this.unlockToolbar();
                     this.selectToolWithoutLock('select');
