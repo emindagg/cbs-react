@@ -58,12 +58,6 @@ export class PointManager {
             labelOffsetY: pointData.labelOffsetY !== undefined ? pointData.labelOffsetY : null
         };
         
-        console.log('[PointManager] addPoint:', {
-            id: point.id,
-            title: point.title,
-            totalPoints: this.points.length + 1
-        });
-        
         this.points.push(point);
         
         // Undo için kaydet

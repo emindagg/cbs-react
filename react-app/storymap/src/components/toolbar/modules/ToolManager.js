@@ -221,12 +221,6 @@ export class ToolManager {
                     // Benzersiz ID oluştur
                     const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-                    console.log('[ToolManager] Creating new route point:', {
-                        id: uniqueId,
-                        number: nextNumber,
-                        coords: data.coords
-                    });
-
                     // Point nesnesini oluştur
                     const pointData = {
                         id: uniqueId,
@@ -245,11 +239,6 @@ export class ToolManager {
 
                     // Önce sidebar'a ekle (PointManager üzerinden)
                     const addedPoint = this.sidebarComponent.addPoint(pointData);
-
-                    console.log('[ToolManager] Point added to sidebar:', {
-                        id: addedPoint.id,
-                        title: addedPoint.title
-                    });
 
                     // Sonra harita callback'i ile marker'ı oluştur
                     if (this.sidebarComponent.onRoutePointAdd) {

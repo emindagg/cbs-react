@@ -384,8 +384,6 @@ export class RouteManager {
             return;
         }
 
-        console.log('[RouteManager] removeRouteLine called');
-
         const layers = [
             `${this.routeLineId}-arrows`,
             `${this.routeLineId}-label`,
@@ -395,24 +393,19 @@ export class RouteManager {
 
         layers.forEach(layerId => {
             if (this.map.getLayer(layerId)) {
-                console.log('[RouteManager] Removing layer:', layerId);
                 this.map.removeLayer(layerId);
             }
         });
 
         // Source'ları temizle
         if (this.map.getSource(this.routeLineId)) {
-            console.log('[RouteManager] Removing source:', this.routeLineId);
             this.map.removeSource(this.routeLineId);
         }
 
         const labelSourceId = `${this.routeLineId}-label-source`;
         if (this.map.getSource(labelSourceId)) {
-            console.log('[RouteManager] Removing label source:', labelSourceId);
             this.map.removeSource(labelSourceId);
         }
-
-        console.log('[RouteManager] removeRouteLine completed');
     }
 
     /**
