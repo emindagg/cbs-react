@@ -502,7 +502,7 @@ export class ToolManager {
             const textMarker = this.mapComponent.addTextMarker(data.coords, 'Metin', {
                 textStyle: 'boxed',
                 textPlacement: 'left',
-                leaderLine: true,
+                leaderLine: false,
                 leaderLineStyle: 'gradient',
                 anchorColor: '#334155',
                 leaderColor: '#334155'
@@ -515,7 +515,7 @@ export class ToolManager {
                     text: '',
                     textStyle: 'boxed',
                     textPlacement: 'left',
-                    leaderLine: true,
+                    leaderLine: false,
                     leaderLineStyle: 'gradient',
                     color: '#334155',
                     coords: data.coords,

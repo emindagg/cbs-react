@@ -251,7 +251,7 @@ export class SidebarComponent {
         if (this.editingPoint.drawingType === 'text') {
             if (!this.editingPoint.textStyle) this.editingPoint.textStyle = 'boxed';
             if (!this.editingPoint.textPlacement) this.editingPoint.textPlacement = 'left';
-            if (this.editingPoint.leaderLine === undefined) this.editingPoint.leaderLine = true;
+            if (this.editingPoint.leaderLine === undefined) this.editingPoint.leaderLine = false;
             if (!this.editingPoint.leaderLineStyle) this.editingPoint.leaderLineStyle = 'gradient';
             if (!this.editingPoint.text) this.editingPoint.text = '';
         }
