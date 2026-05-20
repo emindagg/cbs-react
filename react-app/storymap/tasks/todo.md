@@ -57,3 +57,27 @@ Başarıyla tamamlandı!
 1. `LoginResponse` modelindeki `Ogrencimi` ve `Adsoyad` alanları oturum yönetim sistemine (`AuthManager`) entegre edildi. LoginRedirect akışından bu alanlar esnek (büyük/küçük harf bağımsız) okunup oturuma kaydediliyor. Çıkış yapıldığında session storage üzerinden başarıyla temizleniyor.
 2. `/Dosya/video` endpoint'i `ApiService`'e eklendi. `MediaManager` üzerinden resimler `/Dosya`, videolar ise `/Dosya/video` endpoint'ine gönderilecek şekilde yönlendirildi.
 3. Frontend video yükleme boyutu sınırı, backend'in yeni sınırı olan 50 MB limitine yükseltildi. Tüm kodlar UTF-8 karakter setine uygun olarak kaydedildi ve Türkçe karakter bütünlüğü korundu.
+
+---
+
+# Görev 4: Öğretmenler İçin Video Linki Ekleme Desteği
+Tarih: 2026-05-20
+
+## Bağlam
+Öğretmenlerin dosya yükleme limitlerine takılmadan YouTube, Vimeo veya doğrudan MP4 linki gibi harici video bağlantılarını hikaye haritalarına ekleyebilmesi ve bu videoların tüm arayüzlerde (Detay, Lightbox, Storymap) oynatılabilmesi istenmektedir.
+
+## Plan
+- [ ] **Adım 1:** `src/utils/mediaType.js` dosyasına harici video ve embed (YouTube/Vimeo) linklerini ayrıştıran yardımcı metotların eklenmesi.
+- [ ] **Adım 2:** `src/components/sidebar/renderers/detailViewRenderer.js` dosyasına öğretmen yetki kontrolü (`!authManager.isStudent()`) eklenerek "Video Linki Ekle" butonu ve şık bir link giriş formunun yerleştirilmesi.
+- [ ] **Adım 3:** `src/components/sidebar/renderers/mediaRenderer.js` dosyasında harici video linkleri için uygun thumbnail (afiş) render mantığının geliştirilmesi.
+- [ ] **Adım 4:** `src/components/sidebar/handlers/detailHandlers.js` dosyasında "Video Linki Ekle" butonu ve formu için olay dinleyicilerinin kurulması, verinin doğrulanıp `editingPoint.media` dizisine eklenmesi.
+- [ ] **Adım 5:** `src/components/sidebar/modules/Lightbox.js` büyük medya görünümünde embed videoların `<iframe>` ile render edilerek oynatılmasının sağlanması.
+- [ ] **Adım 6:** `src/components/storymap/StoryMapRenderer.js` sunum akışında embed videoların `<iframe>` ile render edilerek oynatılmasının sağlanması.
+
+## Doğrulama Kriterleri
+- [ ] Öğretmen giriş yaptığında "Video Linki Ekle" butonu ve link giriş formu görüntülenecek.
+- [ ] Öğrenci giriş yaptığında bu alanlar gizli kalacak.
+- [ ] YouTube linkleri eklendiğinde detay panelinde otomatik afiş (thumbnail) görüntülenecek.
+- [ ] Lightbox ve Storymap sunum modlarında YouTube/Vimeo videoları `iframe` ile oynatılabilecek.
+- [ ] Türkçe karakterler korunacak ve dosyalar UTF-8 kodlamasında kaydedilecek.
+
