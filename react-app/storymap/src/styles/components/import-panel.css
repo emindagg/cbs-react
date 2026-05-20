@@ -1,0 +1,371 @@
+/* ==========================================================================
+   STORYMAP - CBS VERİ İÇE AKTARIM (IMPORT) PANELİ STİLLERİ (BEM)
+   ========================================================================== */
+
+/* Import Modalı */
+.import-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6); /* Slate 900 translucent */
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000; /* Sidebar ve toolbar'ın üstünde */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.import-modal--active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.import-modal__container {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transform: translateY(20px) scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+.import-modal--active .import-modal__container {
+    transform: translateY(0) scale(1);
+}
+
+/* Modal Başlık Kısmı */
+.import-modal__header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.import-modal__title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #0f172a; /* Slate 900 */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.import-modal__title i {
+    color: #3b82f6; /* CBS Tematik Mavi */
+}
+
+.import-modal__close {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0.25rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.import-modal__close:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+/* Modal Gövdesi */
+.import-modal__body {
+    padding: 1.5rem;
+}
+
+/* Sürükle-Bırak Alanı */
+.import-modal__dropzone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    background-color: #f8fafc;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.import-modal__dropzone:hover,
+.import-modal__dropzone--active {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+}
+
+.import-modal__dropzone--active {
+    transform: scale(0.99);
+}
+
+.import-modal__icon {
+    font-size: 2.5rem;
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.import-modal__dropzone:hover .import-modal__icon,
+.import-modal__dropzone--active .import-modal__icon {
+    color: #3b82f6;
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+.import-modal__text {
+    font-size: 0.95rem;
+    color: #334155;
+    font-weight: 500;
+}
+
+.import-modal__subtext {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.import-modal__file-input {
+    display: none;
+}
+
+/* Format Etiketleri */
+.import-modal__formats {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.import-modal__format-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.import-modal__format-tag--shp {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.import-modal__format-tag--geojson {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.import-modal__format-tag--kml {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* Bilgi Kutusu */
+.import-modal__info-box {
+    margin-top: 1rem;
+    background-color: #f1f5f9;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.import-modal__info-box i {
+    color: #64748b;
+    margin-top: 0.15rem;
+    font-size: 0.9rem;
+}
+
+.import-modal__info-text {
+    font-size: 0.8rem;
+    color: #475569;
+    line-height: 1.4;
+}
+
+/* Yükleme ve Sonuç Paneli */
+.import-modal__status {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.import-modal__status--active {
+    display: flex;
+}
+
+/* Animasyonlu Loader */
+.import-modal__spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.import-modal__status-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.import-modal__status-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+    max-width: 320px;
+    line-height: 1.5;
+}
+
+/* Hata ve Başarı Durum İkonları */
+.import-modal__status-icon {
+    font-size: 3rem;
+    display: none;
+}
+
+.import-modal__status--success .import-modal__status-icon--success {
+    display: block;
+    color: #10b981; /* Emerald 500 */
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.import-modal__status--error .import-modal__status-icon--error {
+    display: block;
+    color: #ef4444; /* Red 500 */
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes scaleIn {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+/* Özet Listesi */
+.import-modal__summary {
+    width: 100%;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    text-align: left;
+    display: none;
+}
+
+.import-modal__status--success .import-modal__summary {
+    display: block;
+}
+
+.import-modal__summary-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+}
+
+.import-modal__summary-item {
+    font-size: 0.85rem;
+    color: #334155;
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.import-modal__summary-item:last-child {
+    border-bottom: none;
+}
+
+.import-modal__summary-count {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+/* Modal Butonları */
+.import-modal__footer {
+    padding: 1rem 1.5rem;
+    background-color: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.import-modal__btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.import-modal__btn--cancel {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+}
+
+.import-modal__btn--cancel:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.import-modal__btn--action {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+}
+
+.import-modal__btn--action:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    box-shadow: 0 6px 12px rgba(59, 130, 246, 0.15);
+}
+
+.import-modal__btn--action:disabled {
+    background: #cbd5e1;
+    color: #94a3b8;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* İçe Aktarım Butonu İkon Düzeltmesi (Outline Görünüm) */
+#btn-import-data svg {
+    fill: none !important;
+}
+

@@ -106,6 +106,9 @@ export class ActionManager {
                     this.openAdminPanel();
                 }
                 break;
+            case 'import':
+                // Handled in other components, prevent console warning
+                break;
             default:
                 console.warn('[ActionManager] Unknown action:', action);
         }

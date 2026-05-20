@@ -2,6 +2,7 @@ import { SearchManager } from './modules/SearchManager.js';
 import { HistoryManager } from './modules/HistoryManager.js';
 import { ToolManager } from './modules/ToolManager.js';
 import { ActionManager } from './modules/ActionManager.js';
+import { ImportPanel } from './panels/ImportPanel.js';
 
 export class ToolbarComponent {
     constructor(viewMode = false) {
@@ -12,6 +13,9 @@ export class ToolbarComponent {
         this.historyManager = new HistoryManager(this.toolbar);
         this.toolManager = new ToolManager(this.toolbar);
         this.actionManager = new ActionManager(this.toolbar);
+        
+        this.importPanel = null;
+        this.onImportDataSubmit = null;
     }
 
     init(mapComponent, sidebarComponent, viewMode = false) {
@@ -20,6 +24,15 @@ export class ToolbarComponent {
         this.searchManager.setMapComponent(mapComponent);
         this.historyManager.setComponents(sidebarComponent, mapComponent);
         this.toolManager.setComponents(mapComponent, sidebarComponent, viewMode);
+
+        if (!this.viewMode) {
+            this.importPanel = new ImportPanel();
+            this.importPanel.onImportSubmit = (data) => {
+                if (this.onImportDataSubmit) {
+                    this.onImportDataSubmit(data);
+                }
+            };
+        }
 
         // View mode artık geçici çizim yapabilir, araçları devre dışı bırakma
         // if (this.viewMode) {
@@ -60,6 +73,15 @@ export class ToolbarComponent {
 
     setupEventListeners() {
         if (!this.toolbar) return;
+
+        const importBtn = this.toolbar.querySelector('#btn-import-data');
+        if (importBtn) {
+            importBtn.addEventListener('click', () => {
+                if (this.importPanel) {
+                    this.importPanel.open();
+                }
+            });
+        }
 
         const toolBtns = this.toolbar.querySelectorAll('.toolbar__btn[data-tool]');
         toolBtns.forEach(btn => {

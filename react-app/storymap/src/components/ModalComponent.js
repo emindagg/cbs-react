@@ -229,6 +229,181 @@ export class ModalComponent {
                 this.sidebarComponent.onActionAdd = (action) => {
                     this.toolbarComponent.addAction(action);
                 };
+
+                // CBS İçe Aktarım Olayı
+                this.toolbarComponent.onImportDataSubmit = async (data) => {
+                    if (!data) return;
+
+                    // 1. Noktaları ekle
+                    for (const point of data.points) {
+                        const addedPoint = this.sidebarComponent.addPoint(point);
+                        if (templateKey === 'route') {
+                            const nextNumber = this.sidebarComponent.getNextNumber();
+                            addedPoint.number = nextNumber;
+                            addedPoint.style = 'number';
+                            addedPoint.isNumber = true;
+                            await this.sidebarComponent.onRoutePointAdd(addedPoint);
+                        } else if (templateKey === 'timeline') {
+                            if (!addedPoint.date) {
+                                addedPoint.date = new Date().getFullYear().toString();
+                            }
+                            this.sidebarComponent.onTimelineEventAdd(addedPoint);
+                        } else {
+                            if (this.sidebarComponent.onPointAdd) {
+                                this.sidebarComponent.onPointAdd(addedPoint);
+                            }
+                        }
+                        
+                        // Undo/Redo için aksiyon ekle
+                        if (this.sidebarComponent.onActionAdd) {
+                            this.sidebarComponent.onActionAdd({
+                                type: 'add_point',
+                                data: { ...addedPoint }
+                            });
+                        }
+                    }
+
+                    // 2. Çizimleri (Line/Polygon) ekle
+                    for (const drawing of data.drawings) {
+                        const addedDrawing = this.sidebarComponent.addDrawing({
+                            id: drawing.id,
+                            title: drawing.title,
+                            description: drawing.description,
+                            coords: drawing.coords,
+                            isDrawing: true,
+                            type: drawing.drawingType,
+                            drawingType: drawing.drawingType,
+                            color: drawing.color || '#3b82f6',
+                            mapLayerId: drawing.mapLayerId
+                        });
+
+                        // Haritada kalıcı katman ve kaynakları oluştur
+                        if (this.mapComponent && this.mapComponent.map) {
+                            const map = this.mapComponent.map;
+                            const sourceId = drawing.mapLayerId;
+                            const layerId = `${drawing.mapLayerId}-layer`;
+                            const outlineId = `${drawing.mapLayerId}-outline`;
+
+                            let geometryType = 'Polygon';
+                            let coords = drawing.coords;
+                            if (drawing.drawingType === 'line') {
+                                geometryType = 'LineString';
+                            } else {
+                                coords = [drawing.coords];
+                            }
+
+                            const geojsonData = {
+                                type: 'Feature',
+                                geometry: {
+                                    type: geometryType,
+                                    coordinates: coords
+                                }
+                            };
+
+                            if (!map.getSource(sourceId)) {
+                                map.addSource(sourceId, {
+                                    type: 'geojson',
+                                    data: geojsonData
+                                });
+
+                                if (drawing.drawingType === 'line') {
+                                    map.addLayer({
+                                        id: layerId,
+                                        type: 'line',
+                                        source: sourceId,
+                                        paint: {
+                                            'line-color': drawing.color || '#3b82f6',
+                                            'line-width': 3
+                                        }
+                                    });
+                                } else {
+                                    map.addLayer({
+                                        id: layerId,
+                                        type: 'fill',
+                                        source: sourceId,
+                                        paint: {
+                                            'fill-color': drawing.color || '#3b82f6',
+                                            'fill-opacity': 0.2
+                                        }
+                                    });
+                                    map.addLayer({
+                                        id: outlineId,
+                                        type: 'line',
+                                        source: sourceId,
+                                        paint: {
+                                            'line-color': drawing.color || '#3b82f6',
+                                            'line-width': 2
+                                        }
+                                    });
+                                }
+                            }
+                        }
+
+                        // Undo/Redo için aksiyon ekle
+                        if (this.sidebarComponent.onActionAdd) {
+                            this.sidebarComponent.onActionAdd({
+                                type: 'add_drawing',
+                                data: { ...addedDrawing }
+                            });
+                        }
+                    }
+
+                    // 3. Şablona göre rota bağlama veya timeline yenileme
+                    if (templateKey === 'route' && this.sidebarComponent.onConnectAllPoints) {
+                        await this.sidebarComponent.onConnectAllPoints();
+                    } else if (templateKey === 'timeline') {
+                        if (this.sidebarComponent.onConnectAllTimelineEvents) {
+                            this.sidebarComponent.onConnectAllTimelineEvents();
+                        }
+                        if (this.sidebarComponent.onRefreshTimelineJS) {
+                            this.sidebarComponent.onRefreshTimelineJS();
+                        }
+                    }
+
+                    // 4. Haritayı tüm yeni elemanları kapsayacak şekilde sığdır (fitBounds)
+                    if (this.mapComponent && this.mapComponent.map) {
+                        const allCoords = [];
+                        data.points.forEach(p => {
+                            if (p.coords && p.coords.length === 2) {
+                                allCoords.push(p.coords);
+                            }
+                        });
+                        data.drawings.forEach(d => {
+                            if (d.coords && Array.isArray(d.coords)) {
+                                d.coords.forEach(c => {
+                                    if (c && c.length === 2) {
+                                        allCoords.push(c);
+                                    }
+                                });
+                            }
+                        });
+
+                        if (allCoords.length > 0) {
+                            let minLng = allCoords[0][0];
+                            let minLat = allCoords[0][1];
+                            let maxLng = allCoords[0][0];
+                            let maxLat = allCoords[0][1];
+
+                            for (const coord of allCoords) {
+                                if (coord[0] < minLng) minLng = coord[0];
+                                if (coord[0] > maxLng) maxLng = coord[0];
+                                if (coord[1] < minLat) minLat = coord[1];
+                                if (coord[1] > maxLat) maxLat = coord[1];
+                            }
+
+                            this.mapComponent.map.fitBounds([
+                                [minLng, minLat],
+                                [maxLng, maxLat]
+                            ], { padding: 50, duration: 1500 });
+                        }
+                    }
+
+                    // 5. Sidebar listesini güncelle ve kaydet
+                    this.sidebarComponent.updatePointsList();
+                    if (this.sidebarComponent.onSave) {
+                        await this.sidebarComponent.onSave();
+                    }
+                };
             }
 
             // Çizim silme callback'i (line, polygon, circle, text vb.)
@@ -620,18 +795,41 @@ export class ModalComponent {
                     const source = this.mapComponent.map.getSource(point.mapLayerId);
                     if (source) {
                         let geometryType = 'Polygon';
-                        let coords = point.coords;
+                        let formattedCoords = point.coords;
+                        
                         if (point.drawingType === 'line') {
                             geometryType = 'LineString';
+                            let depth = 0;
+                            let temp = point.coords;
+                            while (Array.isArray(temp)) {
+                                depth++;
+                                temp = temp[0];
+                            }
+                            if (depth === 3) {
+                                formattedCoords = point.coords[0];
+                            } else {
+                                formattedCoords = point.coords;
+                            }
                         } else {
-                            coords = [point.coords];
+                            geometryType = 'Polygon';
+                            let depth = 0;
+                            let temp = point.coords;
+                            while (Array.isArray(temp)) {
+                                depth++;
+                                temp = temp[0];
+                            }
+                            if (depth === 2) {
+                                formattedCoords = [point.coords];
+                            } else {
+                                formattedCoords = point.coords;
+                            }
                         }
 
                         source.setData({
                             type: 'Feature',
                             geometry: {
                                 type: geometryType,
-                                coordinates: coords
+                                coordinates: formattedCoords
                             }
                         });
                     }
@@ -646,6 +844,13 @@ export class ModalComponent {
                         }
                     });
                 }
+
+                // Çizimin nihai rengini güncelle
+                this.mapComponent.updateDrawingColor(
+                    point.mapLayerId,
+                    point.color || '#3b82f6',
+                    point.drawingType
+                );
             } 
             // Normal veya Metin marker ise
             else if (point.marker) {
@@ -1369,6 +1574,87 @@ export class ModalComponent {
                     point.color || '#3b82f6',
                     point.drawingType
                 );
+
+                // Aktif düzenleme modundaysa, Mapbox Draw'daki en güncel koordinatları alıp salt okunur katmanı güncelleyelim ve görünür kılalım!
+                const map = this.mapComponent.map;
+                if (map) {
+                    let coords = point.coords;
+                    
+                    // Mapbox Draw aktifse ve bu çizim içinde varsa en güncel koordinatları al
+                    if (this.mapComponent.draw) {
+                        try {
+                            const features = this.mapComponent.draw.getAll().features;
+                            const currentFeature = features.find(f => f.id === point.mapLayerId);
+                            if (currentFeature && currentFeature.geometry) {
+                                let newCoords = currentFeature.geometry.coordinates;
+                                if (point.drawingType !== 'line') {
+                                    newCoords = newCoords[0];
+                                }
+                                coords = newCoords;
+                                
+                                // editingPoint'i ve point'i de güncelleyelim
+                                if (this.sidebarComponent.editingPoint) {
+                                    this.sidebarComponent.editingPoint.coords = newCoords;
+                                }
+                                point.coords = newCoords;
+                            }
+                        } catch (err) {
+                            console.warn('[ModalComponent] Failed to read coords from draw in onPointStyleUpdate:', err);
+                        }
+                    }
+
+                    if (coords) {
+                        const source = map.getSource(point.mapLayerId);
+                        if (source) {
+                            let geometryType = 'Polygon';
+                            let formattedCoords = coords;
+                            
+                            if (point.drawingType === 'line') {
+                                geometryType = 'LineString';
+                                let depth = 0;
+                                let temp = coords;
+                                while (Array.isArray(temp)) {
+                                    depth++;
+                                    temp = temp[0];
+                                }
+                                if (depth === 3) {
+                                    formattedCoords = coords[0];
+                                } else {
+                                    formattedCoords = coords;
+                                }
+                            } else {
+                                geometryType = 'Polygon';
+                                let depth = 0;
+                                let temp = coords;
+                                while (Array.isArray(temp)) {
+                                    depth++;
+                                    temp = temp[0];
+                                }
+                                if (depth === 2) {
+                                    formattedCoords = [coords];
+                                } else {
+                                    formattedCoords = coords;
+                                }
+                            }
+
+                            source.setData({
+                                type: 'Feature',
+                                geometry: {
+                                    type: geometryType,
+                                    coordinates: formattedCoords
+                                }
+                            });
+                        }
+                    }
+
+                    // Katmanı hemen görünür yapalım ki renk değişimi anında yansısın
+                    const layersToShow = [`${point.mapLayerId}-layer`, `${point.mapLayerId}-outline`];
+                    layersToShow.forEach(lyrId => {
+                        if (map.getLayer(lyrId)) {
+                            map.setLayoutProperty(lyrId, 'visibility', 'visible');
+                        }
+                    });
+                }
             }
             // Metin açıklaması yeniden çiz
             else if (point.isDrawing && point.drawingType === 'text' && point.coords) {

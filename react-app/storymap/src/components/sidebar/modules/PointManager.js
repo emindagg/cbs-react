@@ -77,18 +77,20 @@ export class PointManager {
      * @returns {Object} Eklenen çizim
      */
     addDrawing(drawingData) {
+        const drawingType = drawingData.drawingType || drawingData.type;
+        const mapLayerId = drawingData.mapLayerId || drawingData.data?.id || null;
         const drawing = {
             id: drawingData.id || Date.now(),
-            type: drawingData.type,
-            title: drawingData.title || `${DRAWING_TYPE_NAMES[drawingData.type] || 'Çizim'} ${this.points.length + 1}`,
+            type: drawingType,
+            title: drawingData.title || `${DRAWING_TYPE_NAMES[drawingType] || 'Çizim'} ${this.points.length + 1}`,
             description: drawingData.description || '',
             coords: drawingData.coords,
             center: drawingData.center || null, // Daire merkezi
             color: drawingData.color || '#3b82f6',
-            icon: DRAWING_TYPE_ICONS[drawingData.type] || 'fa-shapes',
+            icon: DRAWING_TYPE_ICONS[drawingType] || 'fa-shapes',
             isDrawing: true,
-            drawingType: drawingData.type,
-            mapLayerId: drawingData.data?.id || null,
+            drawingType: drawingType,
+            mapLayerId: mapLayerId,
             marker: drawingData.marker || null, // Text marker referansı
             text: drawingData.text || '',
             textStyle: drawingData.textStyle || 'boxed',

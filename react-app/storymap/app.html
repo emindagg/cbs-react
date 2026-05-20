@@ -44,6 +44,7 @@
     <link rel="stylesheet" href="./src/styles/components/toast.css">
     <link rel="stylesheet" href="./src/styles/components/prompt-modal.css">
     <link rel="stylesheet" href="./src/styles/components/storymap-manager.css">
+    <link rel="stylesheet" href="./src/styles/components/import-panel.css">
 
     <!-- View Mode Error Page Styles -->
     <style>
@@ -283,6 +284,66 @@
         </div>
     </div>
 
+    <!-- IMPORT MODAL -->
+    <div id="import-modal" class="import-modal">
+        <div class="import-modal__container">
+            <div class="import-modal__header">
+                <h3 class="import-modal__title">
+                    <i class="fa-solid fa-file-import"></i> CBS Verisi İçe Aktar
+                </h3>
+                <button class="import-modal__close" id="btn-import-close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="import-modal__body">
+                <!-- Dropzone Alanı -->
+                <div class="import-modal__dropzone" id="import-dropzone">
+                    <div class="import-modal__icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div class="import-modal__text">Dosyayı sürükleyip bırakın veya seçin</div>
+                    <div class="import-modal__subtext">Desteklenen formatlar: .shp (zip olarak), .geojson, .kml</div>
+                    <div class="import-modal__formats">
+                        <span class="import-modal__format-tag import-modal__format-tag--shp">SHP (Zip)</span>
+                        <span class="import-modal__format-tag import-modal__format-tag--geojson">GeoJSON</span>
+                        <span class="import-modal__format-tag import-modal__format-tag--kml">KML</span>
+                    </div>
+                    <input type="file" id="import-file-input" class="import-modal__file-input" accept=".zip,.geojson,.json,.kml">
+                </div>
+
+                <!-- Durum / Loader Paneli -->
+                <div class="import-modal__status" id="import-status">
+                    <div class="import-modal__spinner" id="import-spinner"></div>
+                    <div class="import-modal__status-icon import-modal__status-icon--success" id="import-success-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="import-modal__status-icon import-modal__status-icon--error" id="import-error-icon">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </div>
+                    <div class="import-modal__status-title" id="import-status-title">Dosya Çözümleniyor...</div>
+                    <div class="import-modal__status-desc" id="import-status-desc">CBS verileri okunuyor ve harita formatına dönüştürülüyor.</div>
+                    
+                    <!-- Özet Gösterimi -->
+                    <div class="import-modal__summary" id="import-summary">
+                        <div class="import-modal__summary-title">İçe Aktarılan Veri Özeti</div>
+                        <div class="import-modal__summary-item">
+                            <span>Noktalar (Duraklar / Slaytlar)</span>
+                            <span class="import-modal__summary-count" id="import-count-points">0</span>
+                        </div>
+                        <div class="import-modal__summary-item">
+                            <span>Çizimler (Çizgi ve Alanlar)</span>
+                            <span class="import-modal__summary-count" id="import-count-drawings">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="import-modal__footer">
+                <button class="import-modal__btn import-modal__btn--cancel" id="btn-import-cancel">İptal</button>
+                <button class="import-modal__btn import-modal__btn--action" id="btn-import-submit" disabled>Haritaya Ekle</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MAP EDITOR HEADER/TOOLBAR -->
     <div id="map-toolbar" class="toolbar hidden">
         <div class="toolbar__left">
@@ -409,6 +470,13 @@
                         <line x1="12" y1="2" x2="12" y2="15"/>
                     </svg>
                 </button>
+                <button class="toolbar__btn toolbar__btn--action" data-action="import" id="btn-import-data" title="CBS Verisi İçe Aktar (SHP, GeoJSON, KML)">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="fill: none;">
+                        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+                        <polyline points="16 12 12 8 8 12"></polyline>
+                        <line x1="12" y1="8" x2="12" y2="21"></line>
+                    </svg>
+                </button>
                 <!-- Bildir butonu - backend hazır olunca aktif edilecek
                 <button class="toolbar__btn toolbar__btn--action" data-action="report" title="Bildir">
                     <svg viewBox="0 0 16 16" width="16" height="16">
@@ -473,6 +541,12 @@
 
     <!-- Turf.js for Measurement Tools -->
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+    <!-- togeojson (KML to GeoJSON parser) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
+
+    <!-- shpjs (Shapefile to GeoJSON zip parser) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shpjs/4.0.2/shp.js"></script>
 
     <!-- TimelineJS -->
     <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"></script>
