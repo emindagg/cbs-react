@@ -163,6 +163,10 @@ class App {
     async init() {
         // Global error handler
         window.addEventListener('error', (e) => {
+            // ResizeObserver döngü uyarılarını sessizce yut (zararsız tarayıcı uyarılarıdır)
+            if (e.message && e.message.includes('ResizeObserver loop')) {
+                return;
+            }
             if (e.filename) {
                 console.error('[App] Dosya yükleme hatası:', e.filename, e.message);
             }
