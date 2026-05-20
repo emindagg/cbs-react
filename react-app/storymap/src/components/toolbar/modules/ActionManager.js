@@ -121,7 +121,6 @@ export class ActionManager {
     }
 
     openSharePanel() {
-        console.log('[ActionManager] Opening share panel...');
         this.sharePanel.open();
     }
 

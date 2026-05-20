@@ -54,8 +54,6 @@ export class MediaManager {
                     filename = await apiService.uploadFile(file);
                 }
 
-                console.log('[MediaManager] File uploaded, filename:', filename);
-
                 return {
                     type: isVideo ? 'video' : 'image',
                     url: filename, // Store only filename (e.g. "abc123.webp")

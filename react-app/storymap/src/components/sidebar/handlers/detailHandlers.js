@@ -189,7 +189,6 @@ async function handleMediaUpload(sidebar, files) {
             const loader = sidebar.container.querySelector('.sidebar__media-loader');
             if (loader) loader.remove();
             updateMediaGrid(sidebar);
-            console.log('[Media] All files uploaded via MediaManager');
         });
     } else {
         // Fallback: MediaManager yoksa base64 kullan (IndexedDB mode)

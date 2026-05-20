@@ -50,7 +50,6 @@ export class SharePanel {
                 this.publicKey = story.publickey || story.Publickey;
                 this.isShared = true;
 
-                console.log('[SharePanel] Storymap shared, public key:', this.publicKey);
                 toast.success('Harita paylaşıma açıldı');
             } else {
                 // IndexedDB mode - generate local public key
