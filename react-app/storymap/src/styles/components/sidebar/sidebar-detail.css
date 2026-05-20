@@ -255,9 +255,9 @@
 }
 
 .sidebar__media-upload-content {
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 10px;
     padding: 12px;
     background: rgba(255, 255, 255, 0.9);
@@ -265,6 +265,8 @@
     color: #1a2e35;
     font-size: 14px;
     font-weight: 500;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .sidebar__media-upload-actions {
@@ -272,6 +274,7 @@
     flex-wrap: wrap;
     justify-content: center;
     gap: 8px;
+    align-self: center;
 }
 
 .sidebar__media-upload-btn {
@@ -307,7 +310,47 @@
     color: #6b7280;
     font-size: 11px;
     font-weight: 400;
+    text-align: center;
+    align-self: center;
 }
+
+/* ---- Video Bağlantısı form satırı ---- */
+.sidebar__media-link-input-container {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sidebar__media-link-input-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sidebar__media-link-input-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    background: #fff;
+    color: #1f2937;
+    box-sizing: border-box;
+}
+
+.sidebar__media-link-input-row button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+
 
 @media (max-width: 480px) {
     .sidebar__media-upload {

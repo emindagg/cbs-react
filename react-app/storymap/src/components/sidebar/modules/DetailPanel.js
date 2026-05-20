@@ -3,7 +3,7 @@
  */
 
 import { apiService } from '../../../services/apiService.js';
-import { getMediaRawUrl, isVideoMedia } from '../../../utils/mediaType.js';
+import { getMediaRawUrl, isVideoMedia, isEmbedVideo, getEmbedVideoUrl } from '../../../utils/mediaType.js';
 
 export class DetailPanel {
     constructor(sidebarComponent) {
@@ -127,7 +127,20 @@ export class DetailPanel {
         const rawUrl = getMediaRawUrl(mediaItem);
         const mediaUrl = apiService.getMediaUrl(rawUrl);
         const isVideo = isVideoMedia(mediaItem);
+        const isEmbed = isEmbedVideo(mediaItem);
         const title = point?.title || 'Medya';
+
+        if (isEmbed) {
+            const embedUrl = getEmbedVideoUrl(mediaItem);
+            return `
+                <iframe src="${embedUrl}"
+                        class="detail-panel__media-video"
+                        style="border: 0; width: 100%; aspect-ratio: 16/9;"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen></iframe>
+            `;
+        }
 
         if (isVideo) {
             return `
@@ -304,7 +317,7 @@ export class DetailPanel {
         const detailMedia = document.getElementById('detail-media');
         if (detailMedia) {
             detailMedia.addEventListener('click', (event) => {
-                if (event.target.closest('video')) return;
+                if (event.target.closest('video, iframe')) return;
 
                 if (this.sidebar.lightbox) {
                     this.sidebar.lightbox.open(this.point?.media || [], this.currentImageIndex);

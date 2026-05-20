@@ -1,4 +1,47 @@
 const VIDEO_EXTENSIONS = ['.mp4', '.webm', '.ogg', '.ogv', '.mov', '.m4v'];
+const DIRECT_MEDIA_EXTENSIONS = [
+    ...VIDEO_EXTENSIONS,
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.webp',
+    '.svg',
+    '.bmp',
+    '.jfif',
+    '.pdf'
+];
+
+const TRUSTED_MEB_EMBED_DOMAINS = [
+    'eba.gov.tr',
+    'meb.gov.tr'
+];
+
+function getMediaType(mediaItem) {
+    if (!mediaItem || typeof mediaItem !== 'object') return '';
+    return String(mediaItem.type || '').toLowerCase();
+}
+
+function getUrlHostname(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== 'string') return '';
+
+    try {
+        return new URL(rawUrl).hostname.toLowerCase();
+    } catch {
+        return '';
+    }
+}
+
+function isTrustedMebDomain(hostname) {
+    return TRUSTED_MEB_EMBED_DOMAINS.some(domain => (
+        hostname === domain || hostname.endsWith(`.${domain}`)
+    ));
+}
+
+function hasDirectMediaExtension(rawUrl) {
+    const cleanUrl = rawUrl.toLowerCase().split('?')[0].split('#')[0];
+    return DIRECT_MEDIA_EXTENSIONS.some(extension => cleanUrl.endsWith(extension));
+}
 
 /**
  * Medya öğesinden görüntülenebilir ham URL veya dosya adını alır.
@@ -20,15 +63,14 @@ export function isVideoMedia(mediaItem) {
     if (!mediaItem) return false;
 
     if (typeof mediaItem === 'object') {
-        const type = String(mediaItem.type || '').toLowerCase();
+        const type = getMediaType(mediaItem);
         if (type === 'video' || type.startsWith('video/')) return true;
     }
 
     const rawUrl = getMediaRawUrl(mediaItem).toLowerCase();
     if (rawUrl.startsWith('data:video/')) return true;
 
-    const cleanUrl = rawUrl.split('?')[0].split('#')[0];
-    return VIDEO_EXTENSIONS.some(extension => cleanUrl.endsWith(extension));
+    return VIDEO_EXTENSIONS.some(extension => rawUrl.split('?')[0].split('#')[0].endsWith(extension));
 }
 
 /**
@@ -41,4 +83,83 @@ export function isVideoFile(file) {
         type: file?.type || '',
         name: file?.name || ''
     });
+}
+
+/**
+ * Video öğesinin harici bir embed (YouTube/Vimeo vb.) videosu olup olmadığını belirler.
+ * @param {Object|string} mediaItem
+ * @returns {boolean}
+ */
+export function isEmbedVideo(mediaItem) {
+    if (!mediaItem) return false;
+    const rawUrl = getMediaRawUrl(mediaItem);
+    if (typeof rawUrl !== 'string') return false;
+
+    const type = getMediaType(mediaItem);
+    if (type.startsWith('image/') || type === 'image') return false;
+    if (hasDirectMediaExtension(rawUrl)) return false;
+
+    const hostname = getUrlHostname(rawUrl);
+    const isYt = /(?:youtube\.com|youtu\.be)/.test(rawUrl);
+    const isVimeo = /vimeo\.com/.test(rawUrl);
+    const isDailymotion = /(?:dailymotion\.com|dai\.ly)/.test(rawUrl);
+    const isTrustedMeb = isTrustedMebDomain(hostname)
+        && (type === 'video' || type === 'embed' || type === 'web' || type === 'link' || !type);
+
+    return isYt || isVimeo || isDailymotion || isTrustedMeb;
+}
+
+/**
+ * YouTube videosunun benzersiz ID'sini döndürür.
+ * @param {string} url
+ * @returns {string|null}
+ */
+export function getYouTubeId(url) {
+    if (typeof url !== 'string') return null;
+    const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/;
+    const match = url.match(ytRegex);
+    return match ? match[1] : null;
+}
+
+/**
+ * Dailymotion videosunun benzersiz ID'sini döndürür.
+ * @param {string} url
+ * @returns {string|null}
+ */
+export function getDailymotionId(url) {
+    if (typeof url !== 'string') return null;
+    const dailymotionRegex = /(?:dailymotion\.com\/video\/|dai\.ly\/)([a-zA-Z0-9]+)/;
+    const match = url.match(dailymotionRegex);
+    return match ? match[1] : null;
+}
+
+/**
+ * Harici video URL'lerini embed (iframe) formatına dönüştürür.
+ * @param {Object|string} mediaItem
+ * @returns {string}
+ */
+export function getEmbedVideoUrl(mediaItem) {
+    const rawUrl = getMediaRawUrl(mediaItem);
+    if (!rawUrl || typeof rawUrl !== 'string') return '';
+
+    // YouTube kontrolü ve dönüşümü
+    const ytId = getYouTubeId(rawUrl);
+    if (ytId) {
+        return `https://www.youtube.com/embed/${ytId}`;
+    }
+
+    // Vimeo kontrolü ve dönüşümü
+    const vimeoRegex = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/;
+    const vimeoMatch = rawUrl.match(vimeoRegex);
+    if (vimeoMatch && vimeoMatch[1]) {
+        return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    }
+
+    // Dailymotion kontrolü ve dönüşümü
+    const dailymotionId = getDailymotionId(rawUrl);
+    if (dailymotionId) {
+        return `https://www.dailymotion.com/embed/video/${dailymotionId}`;
+    }
+
+    return rawUrl;
 }

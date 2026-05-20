@@ -60,6 +60,13 @@ function setupMediaUploadListeners(sidebar) {
     const photoInput = container.querySelector('#media-photo-input');
     const videoInput = container.querySelector('#media-video-input');
     
+    // Video bağlantısı ekleme elementleri
+    const videoLinkBtn = container.querySelector('#media-video-link-btn');
+    const linkInputContainer = container.querySelector('#media-link-input-container');
+    const linkInput = container.querySelector('#media-video-link-input');
+    const linkSubmitBtn = container.querySelector('#media-video-link-submit');
+    const linkCancelBtn = container.querySelector('#media-video-link-cancel');
+    
     setupMediaItemListeners(sidebar, container);
 
     if (!mediaUploadArea || !photoInput || !videoInput) return;
@@ -75,6 +82,68 @@ function setupMediaUploadListeners(sidebar) {
         videoBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             videoInput.click();
+        });
+    }
+
+    // Video Bağlantısı Ekle butonu ve formu
+    if (videoLinkBtn && linkInputContainer) {
+        videoLinkBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = linkInputContainer.style.display === 'none';
+            linkInputContainer.style.display = isHidden ? 'block' : 'none';
+            if (isHidden && linkInput) {
+                linkInput.focus();
+            }
+        });
+    }
+
+    if (linkCancelBtn && linkInputContainer) {
+        linkCancelBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            linkInputContainer.style.display = 'none';
+            if (linkInput) linkInput.value = '';
+        });
+    }
+
+    if (linkSubmitBtn && linkInput && linkInputContainer) {
+        linkSubmitBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const link = linkInput.value.trim();
+            if (!link) {
+                alert('Lütfen bir video bağlantısı giriniz!');
+                return;
+            }
+
+            try {
+                // Basit URL kontrolü
+                new URL(link);
+                
+                if (!sidebar.editingPoint.media) {
+                    sidebar.editingPoint.media = [];
+                }
+
+                sidebar.editingPoint.media.push({
+                    type: 'video',
+                    url: link,
+                    name: 'Video Bağlantısı',
+                    caption: '',
+                    source: 'link'
+                });
+
+                linkInput.value = '';
+                linkInputContainer.style.display = 'none';
+                updateMediaGrid(sidebar);
+            } catch (err) {
+                alert('Lütfen geçerli bir internet adresi (URL) giriniz!');
+            }
+        });
+
+        // Enter tuşu ile de eklenebilsin
+        linkInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                linkSubmitBtn.click();
+            }
         });
     }
     

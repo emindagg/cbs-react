@@ -46,7 +46,7 @@
 }
 
 .image-lightbox__media {
-    max-width: 90vw;
+    width: min(90vw, 960px);
     max-height: 90vh;
     display: flex;
     flex-direction: column;
@@ -64,7 +64,7 @@
 }
 
 .image-lightbox__video {
-    width: auto;
+    width: 100%;
     max-width: min(90vw, 960px);
     max-height: 85vh;
     background: #000;

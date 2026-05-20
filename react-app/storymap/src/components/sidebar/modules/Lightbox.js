@@ -3,7 +3,7 @@
  */
 
 import { apiService } from '../../../services/apiService.js';
-import { getMediaRawUrl, isVideoMedia } from '../../../utils/mediaType.js';
+import { getMediaRawUrl, isVideoMedia, isEmbedVideo, getEmbedVideoUrl } from '../../../utils/mediaType.js';
 
 export class Lightbox {
     constructor(sidebarComponent) {
@@ -118,7 +118,21 @@ export class Lightbox {
         const rawUrl = getMediaRawUrl(mediaItem);
         const mediaUrl = apiService.getMediaUrl(rawUrl);
         const isVideo = isVideoMedia(mediaItem);
+        const isEmbed = isEmbedVideo(mediaItem);
         const caption = mediaItem?.caption || '';
+
+        if (isEmbed) {
+            const embedUrl = getEmbedVideoUrl(mediaItem);
+            return `
+                <iframe src="${embedUrl}"
+                        class="image-lightbox__video"
+                        style="border: 0; width: 100%; aspect-ratio: 16/9; max-height: 80vh;"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen></iframe>
+                ${caption ? `<div class="image-lightbox__caption">${caption}</div>` : ''}
+            `;
+        }
 
         if (isVideo) {
             return `

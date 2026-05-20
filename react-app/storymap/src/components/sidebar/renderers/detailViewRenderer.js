@@ -9,6 +9,8 @@ import {
     LEADER_LINE_STYLES
 } from '../constants/index.js';
 import { renderMediaItems } from './mediaRenderer.js';
+import { authManager } from '../../../services/authManager.js';
+
 
 /**
  * Detay görünümü HTML'ini oluşturur
@@ -80,8 +82,33 @@ export function renderDetailView(context) {
                                     <i class="fa-solid fa-video"></i>
                                     <span>Video Ekle</span>
                                 </button>
+                                ${!authManager.isStudent() ? `
+                                <button type="button" class="sidebar__media-upload-btn" id="media-video-link-btn">
+                                    <i class="fa-solid fa-link"></i>
+                                    <span>Video Bağlantısı Ekle</span>
+                                </button>
+                                ` : ''}
                             </div>
                             <small>Dosyaları buraya sürükleyip bırakabilirsiniz</small>
+                            ${!authManager.isStudent() ? `
+                            <div class="sidebar__media-link-input-container" id="media-link-input-container" style="display: none;">
+                                <div class="sidebar__media-link-input-row">
+                                    <input type="text" 
+                                           id="media-video-link-input" 
+                                           placeholder="Video bağlantısı girin...">
+                                    <button type="button" 
+                                            id="media-video-link-submit" 
+                                            style="background: #2563eb; color: #fff; border: none;">
+                                        Ekle
+                                    </button>
+                                    <button type="button" 
+                                            id="media-video-link-cancel" 
+                                            style="background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db;">
+                                        İptal
+                                    </button>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                         <input type="file" id="media-photo-input" accept="image/*" multiple hidden>
                         <input type="file" id="media-video-input" accept="video/*" multiple hidden>

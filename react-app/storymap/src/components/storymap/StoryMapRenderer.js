@@ -4,7 +4,7 @@
  */
 
 import { apiService } from '../../services/apiService.js';
-import { getMediaRawUrl, isVideoMedia } from '../../utils/mediaType.js';
+import { getMediaRawUrl, isVideoMedia, isEmbedVideo, getEmbedVideoUrl } from '../../utils/mediaType.js';
 
 export class StoryMapRenderer {
     constructor(containerId, data) {
@@ -143,7 +143,25 @@ export class StoryMapRenderer {
 
         return media.map(item => {
             const resolvedUrl = apiService.getMediaUrl(getMediaRawUrl(item));
-            if (!isVideoMedia(item)) {
+            const isVideo = isVideoMedia(item);
+            const isEmbed = isEmbedVideo(item);
+
+            if (isEmbed) {
+                const embedUrl = getEmbedVideoUrl(item);
+                return `
+                    <div class="storymap-section__media">
+                        <iframe src="${embedUrl}"
+                                class="storymap-section__video"
+                                style="border: 0; width: 100%; aspect-ratio: 16/9;"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen></iframe>
+                        ${item.caption ? `<p class="storymap-section__caption">${item.caption}</p>` : ''}
+                    </div>
+                `;
+            }
+
+            if (!isVideo) {
                 return `
                     <div class="storymap-section__media">
                         <img src="${resolvedUrl}"
@@ -153,6 +171,7 @@ export class StoryMapRenderer {
                     </div>
                 `;
             }
+
             return `
                 <div class="storymap-section__media">
                     <video src="${resolvedUrl}"
