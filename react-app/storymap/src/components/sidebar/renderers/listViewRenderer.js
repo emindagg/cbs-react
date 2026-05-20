@@ -59,7 +59,7 @@ export function renderListView(context) {
             </div>
 
             <!-- Footer -->
-            <div class="sidebar__footer">
+            <div class="sidebar__footer ${isStoryMapTemplate ? 'sidebar__footer--storymap' : ''}">
                 ${isStoryMapTemplate ? `
                 <button class="sidebar__footer-btn sidebar__footer-btn--primary" id="btn-storymap-view" style="background-color: var(--color-gray-900); background-image: none; color: white;">
                     <i class="fa-solid fa-book-open"></i>
