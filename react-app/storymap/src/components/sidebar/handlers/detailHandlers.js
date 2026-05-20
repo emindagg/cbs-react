@@ -55,15 +55,35 @@ export function setupDetailListeners(sidebar) {
 function setupMediaUploadListeners(sidebar) {
     const container = sidebar.container;
     const mediaUploadArea = container.querySelector('#media-upload-area');
-    const mediaInput = container.querySelector('#media-input');
+    const photoBtn = container.querySelector('#media-photo-btn');
+    const videoBtn = container.querySelector('#media-video-btn');
+    const photoInput = container.querySelector('#media-photo-input');
+    const videoInput = container.querySelector('#media-video-input');
     
     setupMediaItemListeners(sidebar, container);
 
-    if (!mediaUploadArea || !mediaInput) return;
+    if (!mediaUploadArea || !photoInput || !videoInput) return;
     
-    mediaUploadArea.addEventListener('click', () => mediaInput.click());
+    if (photoBtn) {
+        photoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            photoInput.click();
+        });
+    }
+
+    if (videoBtn) {
+        videoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            videoInput.click();
+        });
+    }
     
-    mediaInput.addEventListener('change', (e) => {
+    photoInput.addEventListener('change', (e) => {
+        handleMediaUpload(sidebar, e.target.files);
+        e.target.value = '';
+    });
+
+    videoInput.addEventListener('change', (e) => {
         handleMediaUpload(sidebar, e.target.files);
         e.target.value = '';
     });

@@ -71,11 +71,20 @@ export function renderDetailView(context) {
                     ${!viewMode ? `
                     <div class="sidebar__media-upload" id="media-upload-area">
                         <div class="sidebar__media-upload-content">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span>Fotoğraf veya video ekle</span>
-                            <small>Sürükleyip bırakın ya da seçmek için tıklayın</small>
+                            <div class="sidebar__media-upload-actions">
+                                <button type="button" class="sidebar__media-upload-btn" id="media-photo-btn">
+                                    <i class="fa-solid fa-image"></i>
+                                    <span>Fotoğraf Ekle</span>
+                                </button>
+                                <button type="button" class="sidebar__media-upload-btn" id="media-video-btn">
+                                    <i class="fa-solid fa-video"></i>
+                                    <span>Video Ekle</span>
+                                </button>
+                            </div>
+                            <small>Dosyaları buraya sürükleyip bırakabilirsiniz</small>
                         </div>
-                        <input type="file" id="media-input" accept="image/*,video/*" multiple hidden>
+                        <input type="file" id="media-photo-input" accept="image/*" multiple hidden>
+                        <input type="file" id="media-video-input" accept="video/*" multiple hidden>
                     </div>
                     ` : ''}
                 </div>
