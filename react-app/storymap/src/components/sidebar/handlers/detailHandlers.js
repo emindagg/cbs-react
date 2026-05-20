@@ -151,7 +151,7 @@ async function handleMediaUpload(sidebar, files) {
     const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp'];
     const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg'];
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB limit (fotoğraflar için)
-    const MAX_VIDEO_SIZE = 30 * 1024 * 1024; // 30 MB limit (videolar için)
+    const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB limit (videolar için - backend sınırı 50MB)
     const filesArray = Array.from(files);
 
     // Dosya formatı kontrolü - sadece resim ve video kabul et
@@ -168,7 +168,7 @@ async function handleMediaUpload(sidebar, files) {
         return f.size > maxSize;
     });
     if (oversizedFiles.length > 0) {
-        alert(`Bazı dosyalar çok büyük!\nResimler için maksimum: 10MB\nVideolar için maksimum: 30MB\nBüyük dosyalar: ${oversizedFiles.map(f => f.name).join(', ')}`);
+        alert(`Bazı dosyalar çok büyük!\nResimler için maksimum: 10MB\nVideolar için maksimum: 50MB\nBüyük dosyalar: ${oversizedFiles.map(f => f.name).join(', ')}`);
         return;
     }
 

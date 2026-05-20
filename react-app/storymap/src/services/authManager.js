@@ -7,17 +7,28 @@ class AuthManager {
     constructor() {
         this.storageKey = 'storymap_auth_token';
         this.userIdKey = 'storymap_user_id';
+        this.isStudentKey = 'storymap_is_student';
+        this.fullNameKey = 'storymap_full_name';
     }
 
     /**
-     * Save token and user ID to sessionStorage
+     * Save token, user ID, student status and full name to sessionStorage
      * @param {string} token - Bearer token from backend
      * @param {string} userId - User GUID from backend
+     * @param {boolean|null} isStudent - Student status from backend
+     * @param {string|null} fullName - User full name from backend
      */
-    saveAuth(token, userId) {
+    saveAuth(token, userId, isStudent = null, fullName = null) {
         try {
             sessionStorage.setItem(this.storageKey, token);
             sessionStorage.setItem(this.userIdKey, userId);
+            
+            if (isStudent !== null) {
+                sessionStorage.setItem(this.isStudentKey, isStudent.toString());
+            }
+            if (fullName !== null) {
+                sessionStorage.setItem(this.fullNameKey, fullName);
+            }
         } catch (error) {
             console.error('[AuthManager] Failed to save auth:', error);
             throw new Error('Oturum bilgileri kaydedilemedi.');
@@ -55,9 +66,28 @@ class AuthManager {
     logout() {
         sessionStorage.removeItem(this.storageKey);
         sessionStorage.removeItem(this.userIdKey);
+        sessionStorage.removeItem(this.isStudentKey);
+        sessionStorage.removeItem(this.fullNameKey);
 
         // Redirect to landing page
         window.location.href = 'index.html';
+    }
+
+    /**
+     * Check if authenticated user is a student
+     * @returns {boolean}
+     */
+    isStudent() {
+        const val = sessionStorage.getItem(this.isStudentKey);
+        return val === 'true';
+    }
+
+    /**
+     * Get authenticated user's full name
+     * @returns {string|null}
+     */
+    getFullName() {
+        return sessionStorage.getItem(this.fullNameKey);
     }
 
     /**

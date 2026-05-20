@@ -305,6 +305,41 @@ class ApiService {
     }
 
     /**
+     * POST /api/Dosya/video - Upload video (multipart/form-data)
+     * @param {File} file - Video file object from input
+     * @returns {Promise<string>} - Filename only (e.g., "d66fc060-8eec-48ff-9bb7-ec18a54e1c29.mp4")
+     */
+    async uploadVideo(file) {
+        const formData = new FormData();
+        formData.append('File', file);
+
+        const token = authManager.getToken();
+        const headers = {};
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        try {
+            const response = await fetch(`${this.baseURL}/Dosya/video`, {
+                method: 'POST',
+                headers, // Don't set Content-Type, browser will set multipart boundary
+                body: formData
+            });
+
+            if (!response.ok) {
+                await this._handleHTTPError(response);
+            }
+
+            const result = await response.json();
+            // API returns { data: "filename.mp4", errorMessage: null }
+            return result.data;
+        } catch (error) {
+            this._handleNetworkError(error);
+        }
+    }
+
+    /**
      * Get full CDN URL for uploaded file
      * @param {string} filename - Filename from uploadFile()
      * @returns {string} Full CDN URL

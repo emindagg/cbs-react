@@ -45,12 +45,19 @@ export class MediaManager {
         if (storageManager.isBackendMode()) {
             // Upload to backend CDN - store only filename
             try {
-                const filename = await apiService.uploadFile(file);
+                const isVideo = isVideoFile(file);
+                let filename;
+                
+                if (isVideo) {
+                    filename = await apiService.uploadVideo(file);
+                } else {
+                    filename = await apiService.uploadFile(file);
+                }
 
                 console.log('[MediaManager] File uploaded, filename:', filename);
 
                 return {
-                    type: isVideoFile(file) ? 'video' : 'image',
+                    type: isVideo ? 'video' : 'image',
                     url: filename, // Store only filename (e.g. "abc123.webp")
                     name: file.name,
                     caption: '',

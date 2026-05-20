@@ -23,7 +23,7 @@ async function handleLoginRedirect() {
         const response = await apiService.login(mebbisToken);
         
 
-        // Backend { data: { token, kullaniciid }, errorMessage } formatında dönüyor (küçük harf)
+        // Backend { data: { token, kullaniciid, ogrencimi, adsoyad }, errorMessage } formatında dönüyor
         const loginData = response?.data;
         
         if (!loginData || !loginData.token || !loginData.kullaniciid) {
@@ -31,8 +31,10 @@ async function handleLoginRedirect() {
         }
 
 
-        // 3. Save token and user ID
-        authManager.saveAuth(loginData.token, loginData.kullaniciid);
+        // 3. Save token, user ID, student status and full name
+        const isStudent = loginData.ogrencimi !== undefined ? loginData.ogrencimi : (loginData.Ogrencimi !== undefined ? loginData.Ogrencimi : null);
+        const fullName = loginData.adsoyad !== undefined ? loginData.adsoyad : (loginData.Adsoyad !== undefined ? loginData.Adsoyad : null);
+        authManager.saveAuth(loginData.token, loginData.kullaniciid, isStudent, fullName);
 
         // 4. Redirect to app
         window.location.href = 'app.html';
