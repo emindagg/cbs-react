@@ -3,6 +3,7 @@
  */
 
 import { apiService } from '../../../services/apiService.js';
+import { getMediaRawUrl, isVideoMedia } from '../../../utils/mediaType.js';
 
 export class DetailPanel {
     constructor(sidebarComponent) {
@@ -84,7 +85,7 @@ export class DetailPanel {
     }
 
     /**
-     * Resimler arasında gezinme
+     * Medyalar arasında gezinme
      * @param {number} direction - Yön (-1 veya 1)
      */
     navigateImage(direction) {
@@ -99,22 +100,50 @@ export class DetailPanel {
     }
 
     /**
-     * Panel resmini günceller
+     * Panel medyasını günceller
      */
     updateImage() {
         const images = this.point?.media || [];
         if (images.length === 0) return;
         
-        const imageEl = document.querySelector('.detail-panel__image img');
+        const mediaEl = document.querySelector('#detail-media');
         const counterEl = document.querySelector('.detail-panel__image-counter');
         
-        if (imageEl && images[this.currentImageIndex]) {
-            const rawUrl = images[this.currentImageIndex].url || images[this.currentImageIndex].name || images[this.currentImageIndex];
-            imageEl.src = apiService.getMediaUrl(rawUrl);
+        if (mediaEl && images[this.currentImageIndex]) {
+            mediaEl.innerHTML = this.renderDetailMedia(images[this.currentImageIndex], this.point);
         }
         if (counterEl) {
             counterEl.textContent = `${this.currentImageIndex + 1} / ${images.length}`;
         }
+    }
+
+    /**
+     * Panel içindeki medya önizlemesini oluşturur
+     * @param {Object|string} mediaItem
+     * @param {Object} point
+     * @returns {string}
+     */
+    renderDetailMedia(mediaItem, point) {
+        const rawUrl = getMediaRawUrl(mediaItem);
+        const mediaUrl = apiService.getMediaUrl(rawUrl);
+        const isVideo = isVideoMedia(mediaItem);
+        const title = point?.title || 'Medya';
+
+        if (isVideo) {
+            return `
+                <video src="${mediaUrl}"
+                       class="detail-panel__media-video"
+                       controls
+                       preload="metadata"
+                       playsinline
+                       controlsList="nodownload"></video>
+                <button class="detail-panel__media-open" type="button" title="Büyük görüntüle">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                </button>
+            `;
+        }
+
+        return `<img src="${mediaUrl}" alt="${title}" class="detail-panel__media-image">`;
     }
 
     /**
@@ -176,7 +205,7 @@ export class DetailPanel {
                     <h3 class="detail-panel__title">${point.title || `Öge ${currentIndex + 1}`}</h3>
                 </div>
 
-                <!-- Resim Galerisi -->
+                <!-- Medya Galerisi -->
                 ${images.length > 0 ? `
                     <div class="detail-panel__image">
                         ${hasMultipleImages ? `
@@ -184,7 +213,9 @@ export class DetailPanel {
                                 <i class="fa-solid fa-chevron-left"></i>
                             </button>
                         ` : ''}
-                        <img src="${apiService.getMediaUrl(images[0]?.url || images[0]?.name || images[0])}" alt="${point.title}" id="detail-image" style="cursor: pointer;">
+                        <div class="detail-panel__media" id="detail-media" style="cursor: pointer;">
+                            ${this.renderDetailMedia(images[0], point)}
+                        </div>
                         ${hasMultipleImages ? `
                             <button class="detail-panel__image-nav detail-panel__image-nav--next" id="image-next">
                                 <i class="fa-solid fa-chevron-right"></i>
@@ -269,10 +300,12 @@ export class DetailPanel {
         if (imagePrevBtn) imagePrevBtn.addEventListener('click', () => this.navigateImage(-1));
         if (imageNextBtn) imageNextBtn.addEventListener('click', () => this.navigateImage(1));
         
-        // Resme tıklayınca lightbox aç
-        const detailImage = document.getElementById('detail-image');
-        if (detailImage) {
-            detailImage.addEventListener('click', () => {
+        // Medyaya tıklayınca lightbox aç. Video kontrolleri modalı tetiklemez.
+        const detailMedia = document.getElementById('detail-media');
+        if (detailMedia) {
+            detailMedia.addEventListener('click', (event) => {
+                if (event.target.closest('video')) return;
+
                 if (this.sidebar.lightbox) {
                     this.sidebar.lightbox.open(this.point?.media || [], this.currentImageIndex);
                 }

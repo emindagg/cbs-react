@@ -1,6 +1,7 @@
 import { apiService } from '../../../services/apiService.js';
 import { storageManager } from '../../../utils/storageManager.js';
 import { toast } from '../../../utils/toast.js';
+import { isVideoFile } from '../../../utils/mediaType.js';
 
 /**
  * MediaManager - Medya yükleme ve yönetimi
@@ -49,7 +50,7 @@ export class MediaManager {
                 console.log('[MediaManager] File uploaded, filename:', filename);
 
                 return {
-                    type: file.type.startsWith('video/') ? 'video' : 'image',
+                    type: isVideoFile(file) ? 'video' : 'image',
                     url: filename, // Store only filename (e.g. "abc123.webp")
                     name: file.name,
                     caption: '',
@@ -75,7 +76,7 @@ export class MediaManager {
             const reader = new FileReader();
             reader.onload = (e) => {
                 resolve({
-                    type: file.type.startsWith('video/') ? 'video' : 'image',
+                    type: isVideoFile(file) ? 'video' : 'image',
                     url: e.target.result,
                     name: file.name,
                     caption: '',
@@ -121,17 +122,30 @@ export class MediaManager {
      * @param {Function} onDrop - Dosya bırakıldığında çağrılacak callback
      */
     setupDragDrop(dropArea, onDrop) {
+        let dragCounter = 0;
+
         dropArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropArea.classList.add('sidebar__media-upload--dragover');
         });
+
+        dropArea.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dragCounter++;
+            dropArea.classList.add('sidebar__media-upload--dragover');
+        });
         
-        dropArea.addEventListener('dragleave', () => {
-            dropArea.classList.remove('sidebar__media-upload--dragover');
+        dropArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragCounter = Math.max(0, dragCounter - 1);
+            if (dragCounter === 0) {
+                dropArea.classList.remove('sidebar__media-upload--dragover');
+            }
         });
         
         dropArea.addEventListener('drop', (e) => {
             e.preventDefault();
+            dragCounter = 0;
             dropArea.classList.remove('sidebar__media-upload--dragover');
             if (onDrop) onDrop(e.dataTransfer.files);
         });

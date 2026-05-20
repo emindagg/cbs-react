@@ -45,12 +45,43 @@
     z-index: 1;
 }
 
+.image-lightbox__media {
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
 .image-lightbox__image {
     max-width: 90vw;
     max-height: 85vh;
     object-fit: contain;
     border-radius: 4px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.image-lightbox__video {
+    width: auto;
+    max-width: min(90vw, 960px);
+    max-height: 85vh;
+    background: #000;
+    border-radius: 4px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.image-lightbox__caption {
+    max-width: min(90vw, 960px);
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 12px;
+    color: #374151;
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 /* ========================================

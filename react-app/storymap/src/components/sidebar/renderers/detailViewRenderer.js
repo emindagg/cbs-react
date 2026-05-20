@@ -71,7 +71,9 @@ export function renderDetailView(context) {
                     ${!viewMode ? `
                     <div class="sidebar__media-upload" id="media-upload-area">
                         <div class="sidebar__media-upload-content">
-                            <span>Görüntü veya video</span>
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>Fotoğraf veya video ekle</span>
+                            <small>Sürükleyip bırakın ya da seçmek için tıklayın</small>
                         </div>
                         <input type="file" id="media-input" accept="image/*,video/*" multiple hidden>
                     </div>

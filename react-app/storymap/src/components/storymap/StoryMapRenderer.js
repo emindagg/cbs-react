@@ -4,6 +4,7 @@
  */
 
 import { apiService } from '../../services/apiService.js';
+import { getMediaRawUrl, isVideoMedia } from '../../utils/mediaType.js';
 
 export class StoryMapRenderer {
     constructor(containerId, data) {
@@ -141,8 +142,8 @@ export class StoryMapRenderer {
         }
 
         return media.map(item => {
-            const resolvedUrl = apiService.getMediaUrl(item.url);
-            if (item.type === 'image') {
+            const resolvedUrl = apiService.getMediaUrl(getMediaRawUrl(item));
+            if (!isVideoMedia(item)) {
                 return `
                     <div class="storymap-section__media">
                         <img src="${resolvedUrl}"
@@ -152,7 +153,16 @@ export class StoryMapRenderer {
                     </div>
                 `;
             }
-            return '';
+            return `
+                <div class="storymap-section__media">
+                    <video src="${resolvedUrl}"
+                           class="storymap-section__video"
+                           controls
+                           playsinline
+                           preload="metadata"></video>
+                    ${item.caption ? `<p class="storymap-section__caption">${item.caption}</p>` : ''}
+                </div>
+            `;
         }).join('');
     }
 

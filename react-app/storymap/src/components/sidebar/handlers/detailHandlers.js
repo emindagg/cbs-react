@@ -3,7 +3,7 @@
  */
 
 import { renderMediaItems } from '../renderers/index.js';
-import { storageManager } from '../../../utils/storageManager.js';
+import { isVideoFile } from '../../../utils/mediaType.js';
 
 export function setupDetailListeners(sidebar) {
     const container = sidebar.container;
@@ -57,12 +57,15 @@ function setupMediaUploadListeners(sidebar) {
     const mediaUploadArea = container.querySelector('#media-upload-area');
     const mediaInput = container.querySelector('#media-input');
     
+    setupMediaItemListeners(sidebar, container);
+
     if (!mediaUploadArea || !mediaInput) return;
     
     mediaUploadArea.addEventListener('click', () => mediaInput.click());
     
     mediaInput.addEventListener('change', (e) => {
         handleMediaUpload(sidebar, e.target.files);
+        e.target.value = '';
     });
 
     // Drag & drop
@@ -72,8 +75,23 @@ function setupMediaUploadListeners(sidebar) {
         });
     }
 
-    // Medya silme
-    const mediaRemoveBtns = container.querySelectorAll('.sidebar__media-remove');
+}
+
+/**
+ * Medya kartı listener'ları
+ */
+function setupMediaItemListeners(sidebar, root) {
+    const mediaPreviewItems = root.querySelectorAll('[data-media-preview]');
+    mediaPreviewItems.forEach(preview => {
+        preview.addEventListener('click', () => {
+            const index = parseInt(preview.dataset.mediaPreview, 10);
+            if (sidebar.lightbox && sidebar.editingPoint?.media?.[index]) {
+                sidebar.lightbox.open(sidebar.editingPoint.media, index);
+            }
+        });
+    });
+
+    const mediaRemoveBtns = root.querySelectorAll('.sidebar__media-remove');
     mediaRemoveBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -82,8 +100,18 @@ function setupMediaUploadListeners(sidebar) {
         });
     });
 
+    const captionEditBtns = root.querySelectorAll('.sidebar__media-edit-caption');
+    captionEditBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.dataset.mediaIndex, 10);
+            const captionInput = root.querySelector(`.sidebar__media-caption[data-media-index="${index}"]`);
+            if (captionInput) captionInput.focus();
+        });
+    });
+
     // Medya caption inputları
-    const captionInputs = container.querySelectorAll('.sidebar__media-caption');
+    const captionInputs = root.querySelectorAll('.sidebar__media-caption');
     captionInputs.forEach(input => {
         input.addEventListener('input', (e) => {
             const index = parseInt(input.dataset.mediaIndex);
@@ -102,20 +130,20 @@ async function handleMediaUpload(sidebar, files) {
 
     const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp'];
     const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg'];
-    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB limit (resimler için)
-    const MAX_VIDEO_SIZE = 30 * 1024 * 1024; // 30MB limit (videolar için)
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB limit (fotoğraflar için)
+    const MAX_VIDEO_SIZE = 30 * 1024 * 1024; // 30 MB limit (videolar için)
     const filesArray = Array.from(files);
 
     // Dosya formatı kontrolü - sadece resim ve video kabul et
-    const invalidFiles = filesArray.filter(f => !ALLOWED_IMAGE_TYPES.includes(f.type) && !ALLOWED_VIDEO_TYPES.includes(f.type));
+    const invalidFiles = filesArray.filter(f => !ALLOWED_IMAGE_TYPES.includes(f.type) && !ALLOWED_VIDEO_TYPES.includes(f.type) && !isVideoFile(f));
     if (invalidFiles.length > 0) {
-        alert(`Desteklenmeyen dosya formatı!\n\nKabul edilen resim formatları: JPG, PNG, GIF, WebP, SVG, BMP\nKabul edilen video formatları: MP4, WebM, OGG\n\nGeçersiz dosyalar: ${invalidFiles.map(f => f.name).join(', ')}`);
+        alert(`Desteklenmeyen dosya formatı!\n\nKabul edilen fotoğraf formatları: JPG, PNG, GIF, WebP, SVG, BMP\nKabul edilen video formatları: MP4, WebM, OGG\n\nGeçersiz dosyalar: ${invalidFiles.map(f => f.name).join(', ')}`);
         return;
     }
 
     // Dosya boyutu kontrolü
     const oversizedFiles = filesArray.filter(f => {
-        const isVideo = f.type.startsWith('video/');
+        const isVideo = isVideoFile(f);
         const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
         return f.size > maxSize;
     });
@@ -151,7 +179,7 @@ async function handleMediaUpload(sidebar, files) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const mediaItem = {
-                        type: file.type.startsWith('video/') ? 'video' : 'image',
+                        type: isVideoFile(file) ? 'video' : 'image',
                         url: e.target.result,
                         name: file.name
                     };
@@ -196,27 +224,7 @@ function updateMediaGrid(sidebar) {
     if (!mediaGrid) return;
     
     mediaGrid.innerHTML = renderMediaItems(sidebar.editingPoint.media);
-    
-    // Silme butonlarına listener ekle
-    const mediaRemoveBtns = mediaGrid.querySelectorAll('.sidebar__media-remove');
-    mediaRemoveBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const index = parseInt(btn.dataset.mediaIndex);
-            removeMedia(sidebar, index);
-        });
-    });
-
-    // Caption input listener'ları ekle
-    const captionInputs = mediaGrid.querySelectorAll('.sidebar__media-caption');
-    captionInputs.forEach(input => {
-        input.addEventListener('input', (e) => {
-            const index = parseInt(input.dataset.mediaIndex);
-            if (sidebar.editingPoint.media && sidebar.editingPoint.media[index]) {
-                sidebar.editingPoint.media[index].caption = e.target.value;
-            }
-        });
-    });
+    setupMediaItemListeners(sidebar, mediaGrid);
 }
 
 /**

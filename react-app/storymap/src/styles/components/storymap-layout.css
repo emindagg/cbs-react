@@ -207,7 +207,7 @@
     white-space: pre-line;
 }
 
-/* Media - Images in sections */
+/* Media - Images and videos in sections */
 .storymap-section__media {
     margin: 1rem 0;
     width: 100%;
@@ -225,6 +225,18 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     margin-bottom: 0.5rem;
     object-fit: contain;
+}
+
+.storymap-section__video {
+    width: auto;
+    max-width: 100%;
+    max-height: 520px;
+    display: block;
+    margin: 0 auto 0.5rem;
+    border-radius: 4px;
+    background: #000;
+    object-fit: contain;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .storymap-section__caption {
