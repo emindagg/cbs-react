@@ -340,7 +340,7 @@ async function handleMediaUpload(sidebar, files) {
     if (!files || files.length === 0) return;
 
     const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp'];
-    const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg'];
+    const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-matroska', 'video/x-msvideo', 'video/webm'];
     const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB limit (fotoğraflar için)
     const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB limit (videolar için - backend sınırı 50MB)
     const filesArray = Array.from(files);
@@ -348,7 +348,7 @@ async function handleMediaUpload(sidebar, files) {
     // Dosya formatı kontrolü - sadece resim ve video kabul et
     const invalidFiles = filesArray.filter(f => !ALLOWED_IMAGE_TYPES.includes(f.type) && !ALLOWED_VIDEO_TYPES.includes(f.type) && !isVideoFile(f));
     if (invalidFiles.length > 0) {
-        alert(`Desteklenmeyen dosya formatı!\n\nKabul edilen fotoğraf formatları: JPG, PNG, GIF, WebP, SVG, BMP\nKabul edilen video formatları: MP4, WebM, OGG\n\nGeçersiz dosyalar: ${invalidFiles.map(f => f.name).join(', ')}`);
+        alert(`Desteklenmeyen dosya formatı!\n\nKabul edilen fotoğraf formatları: JPG, PNG, GIF, WebP, SVG, BMP\nKabul edilen video formatları: MP4, MOV, MKV, AVI, WEBM\n\nGeçersiz dosyalar: ${invalidFiles.map(f => f.name).join(', ')}`);
         return;
     }
 

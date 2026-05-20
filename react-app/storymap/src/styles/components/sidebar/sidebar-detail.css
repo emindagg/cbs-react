@@ -271,39 +271,42 @@
 
 .sidebar__media-upload-actions {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    align-self: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 4px;
+    align-self: stretch;
 }
 
 .sidebar__media-upload-btn {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 36px;
-    padding: 8px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background: white;
-    color: #1f2937;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 100%;
+    min-height: 34px;
+    padding: 6px 2px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #111827;
     font: inherit;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .sidebar__media-upload-btn:hover {
-    border-color: #10b981;
-    background: rgba(16, 185, 129, 0.08);
-    color: #047857;
+    background: var(--color-primary-bg);
+    color: var(--color-primary-dark);
 }
 
 .sidebar__media-upload-btn i {
-    color: #10b981;
-    font-size: 14px;
+    width: 24px;
+    color: currentColor;
+    font-size: 16px;
+    text-align: center;
 }
 
 .sidebar__media-upload-content small {
@@ -572,9 +575,9 @@
     }
 
     .sidebar__media-upload-btn {
-        flex: 1 1 130px;
+        flex: none;
         min-width: 0;
-        padding: 8px 10px;
+        padding: 6px 2px;
     }
 }
 

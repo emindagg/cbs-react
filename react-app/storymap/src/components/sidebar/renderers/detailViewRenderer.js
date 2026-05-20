@@ -76,15 +76,15 @@ export function renderDetailView(context) {
                     <div class="sidebar__media-upload" id="media-upload-area">
                         <div class="sidebar__media-upload-content">
                             <div class="sidebar__media-upload-actions">
-                                <button type="button" class="sidebar__media-upload-btn" id="media-photo-btn">
+                                <button type="button" class="sidebar__media-upload-btn sidebar__media-upload-btn--photo" id="media-photo-btn">
                                     <i class="fa-solid fa-image"></i>
                                     <span>Fotoğraf Ekle</span>
                                 </button>
-                                <button type="button" class="sidebar__media-upload-btn" id="media-video-btn">
+                                <button type="button" class="sidebar__media-upload-btn sidebar__media-upload-btn--video" id="media-video-btn">
                                     <i class="fa-solid fa-video"></i>
                                     <span>Video Ekle</span>
                                 </button>
-                                <button type="button" class="sidebar__media-upload-btn" id="media-video-link-btn">
+                                <button type="button" class="sidebar__media-upload-btn sidebar__media-upload-btn--link" id="media-video-link-btn">
                                     <i class="fa-solid fa-link"></i>
                                     <span>Video Bağlantısı Ekle</span>
                                 </button>
@@ -109,7 +109,7 @@ export function renderDetailView(context) {
                             </div>
                         </div>
                         <input type="file" id="media-photo-input" accept="image/*" multiple hidden>
-                        <input type="file" id="media-video-input" accept="video/*" multiple hidden>
+                        <input type="file" id="media-video-input" accept=".mp4,.mov,.mkv,.avi,.webm,video/mp4,video/quicktime,video/x-matroska,video/x-msvideo,video/webm" multiple hidden>
                     </div>
                     ` : ''}
                 </div>

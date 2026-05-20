@@ -1,4 +1,4 @@
-const VIDEO_EXTENSIONS = ['.mp4', '.webm', '.ogg', '.ogv', '.mov', '.m4v'];
+const VIDEO_EXTENSIONS = ['.mp4', '.mov', '.mkv', '.avi', '.webm'];
 const DIRECT_MEDIA_EXTENSIONS = [
     ...VIDEO_EXTENSIONS,
     '.jpg',
