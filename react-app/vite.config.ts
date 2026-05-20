@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react'
 
 const STORYMAP_PREFIX = '/cbs-react/storymap'
 const STORYMAP_DIR = path.resolve(__dirname, 'storymap')
+const VERSION_FILE = path.resolve(__dirname, 'version.json')
 
 const VIDEO_MODAL_PREFIX = '/cbs-react/video-modal'
 const VIDEO_MODAL_DIR = path.resolve(__dirname, 'video-modal')
@@ -68,8 +69,93 @@ function copyStorymapToDist() {
       }
       fs.rmSync(distStorymapDir, { recursive: true, force: true })
       fs.cpSync(STORYMAP_DIR, distStorymapDir, { recursive: true })
+      applyStorymapCacheBusting(distStorymapDir)
     },
   }
+}
+
+function getBuildVersion() {
+  const buildStamp = new Date().toISOString().replace(/\D/g, '').slice(0, 14)
+
+  try {
+    const versionJson = JSON.parse(fs.readFileSync(VERSION_FILE, 'utf8'))
+    const version = String(versionJson.version || versionJson.build || '').trim()
+    if (version) return `${version}-${buildStamp}`
+  } catch {
+    // version.json prebuild sırasında oluşur; yoksa zaman damgasına düş.
+  }
+
+  return buildStamp
+}
+
+function addOrReplaceVersion(url: string, version: string) {
+  if (/^(?:https?:)?\/\//.test(url) || url.startsWith('data:') || url.startsWith('#')) {
+    return url
+  }
+
+  const [pathAndQuery, hash = ''] = url.split('#')
+  const [assetPath, query = ''] = pathAndQuery.split('?')
+  const params = new URLSearchParams(query)
+  params.set('v', version)
+  const nextQuery = params.toString()
+
+  return `${assetPath}${nextQuery ? `?${nextQuery}` : ''}${hash ? `#${hash}` : ''}`
+}
+
+function versionHtmlAssets(content: string, version: string) {
+  return content.replace(
+    /\b(src|href)=["']([^"']+\.(?:js|css))(\?[^"']*)?(#[^"']*)?["']/g,
+    (_match, attr: string, assetPath: string, query = '', hash = '') => {
+      const nextUrl = addOrReplaceVersion(`${assetPath}${query}${hash}`, version)
+      return `${attr}="${nextUrl}"`
+    },
+  )
+}
+
+function versionStaticImports(content: string, version: string) {
+  return content.replace(
+    /\bfrom\s+["']([^"']+\.js)(\?[^"']*)?(#[^"']*)?["']/g,
+    (_match, assetPath: string, query = '', hash = '') => {
+      const nextUrl = addOrReplaceVersion(`${assetPath}${query}${hash}`, version)
+      return `from '${nextUrl}'`
+    },
+  )
+}
+
+function listFilesRecursive(dir: string, extension: string) {
+  if (!fs.existsSync(dir)) return []
+
+  const files: string[] = []
+  fs.readdirSync(dir, { withFileTypes: true }).forEach((entry) => {
+    const entryPath = path.join(dir, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...listFilesRecursive(entryPath, extension))
+      return
+    }
+    if (entry.isFile() && entryPath.endsWith(extension)) {
+      files.push(entryPath)
+    }
+  })
+
+  return files
+}
+
+function applyStorymapCacheBusting(distStorymapDir: string) {
+  const version = getBuildVersion()
+  const htmlFiles = ['index.html', 'app.html', 'view.html', 'LoginRedirect.html']
+
+  htmlFiles.forEach((fileName) => {
+    const filePath = path.join(distStorymapDir, fileName)
+    if (!fs.existsSync(filePath)) return
+
+    const content = fs.readFileSync(filePath, 'utf8')
+    fs.writeFileSync(filePath, versionHtmlAssets(content, version), 'utf8')
+  })
+
+  listFilesRecursive(path.join(distStorymapDir, 'src'), '.js').forEach((filePath) => {
+    const content = fs.readFileSync(filePath, 'utf8')
+    fs.writeFileSync(filePath, versionStaticImports(content, version), 'utf8')
+  })
 }
 
 function serveVideoModal() {
