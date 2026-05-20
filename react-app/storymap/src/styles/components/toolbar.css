@@ -928,6 +928,10 @@
         font-size: 10px;
         top: 60px;
     }
+
+    .maplibregl-ctrl-top-right {
+        top: 44px !important;
+    }
 }
 
 /* Küçük mobil cihazlar */
@@ -1041,9 +1045,9 @@
         font-size: 10px;
     }
 
-    /* Mobilde harita kontrollerini panelin altında kalmayacak şekilde sola al */
+    /* Mobilde harita kontrollerini panelin altında kalmayacak şekilde sola ve daha yukarı al */
     .maplibregl-ctrl-top-right {
-        top: 64px !important;
+        top: 36px !important;
         right: auto !important;
         left: calc(8px + env(safe-area-inset-left)) !important;
     }
