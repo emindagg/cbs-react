@@ -47,18 +47,26 @@ export class MapMarkers {
         const isNumber = options.isNumber || false;
         
         if (isTeardrop) {
-            // Damla şekli (%35 büyütülmüş, beyaz border)
+            // Damla şekli için dış elementi sadece konumlandırılabilir transparan bir kutu yapalım
             el.style.width = '27px';
             el.style.height = '36px';
-            el.style.backgroundColor = options.color || '#10b981';
-            el.style.borderRadius = '50% 50% 50% 0';
-            el.style.transform = 'rotate(-45deg)';
-            el.style.border = '2px solid #fff';
+            el.style.backgroundColor = 'transparent';
             el.style.cursor = 'pointer';
-            el.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
-            el.style.display = 'flex';
-            el.style.alignItems = 'center';
-            el.style.justifyContent = 'center';
+            el.style.position = 'relative';
+
+            // İç damla kapsayıcısı (wrapper)
+            const wrapper = document.createElement('div');
+            wrapper.style.width = '100%';
+            wrapper.style.height = '100%';
+            wrapper.style.backgroundColor = options.color || '#10b981';
+            wrapper.style.borderRadius = '50% 50% 50% 0';
+            wrapper.style.transform = 'rotate(-45deg)';
+            wrapper.style.border = '2px solid #fff';
+            wrapper.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+            wrapper.style.display = 'flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.justifyContent = 'center';
+            wrapper.style.boxSizing = 'border-box';
 
             // İkon ekle
             const icon = document.createElement('i');
@@ -66,7 +74,8 @@ export class MapMarkers {
             icon.style.color = 'white';
             icon.style.fontSize = '11px';
             icon.style.transform = 'rotate(45deg)'; // Damla döndürüldüğü için ikonu düzelt
-            el.appendChild(icon);
+            wrapper.appendChild(icon);
+            el.appendChild(wrapper);
         } else if (isNumber) {
             // Sayı şekli (%35 büyütülmüş, beyaz border)
             el.style.width = '27px';
@@ -88,6 +97,7 @@ export class MapMarkers {
             numberSpan.style.fontSize = '12px';
             numberSpan.style.fontWeight = 'bold';
             numberSpan.style.fontFamily = 'Arial, sans-serif';
+            numberSpan.style.pointerEvents = 'none';
             el.appendChild(numberSpan);
         } else {
             // Yuvarlak şekil (%35 büyütülmüş, beyaz border)

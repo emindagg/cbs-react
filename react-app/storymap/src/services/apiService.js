@@ -321,6 +321,14 @@ class ApiService {
      */
     getMediaUrl(url) {
         if (!url) return '';
+        
+        // Eğer url bir nesne ise (örn: { type, name, url, caption }), içinden url veya name alanını çekelim
+        if (typeof url === 'object') {
+            url = url.url || url.name || '';
+        }
+        
+        if (typeof url !== 'string') return '';
+        
         // Already a full URL or base64 data → return as-is
         if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
             return url;

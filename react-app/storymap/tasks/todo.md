@@ -1,21 +1,30 @@
-# Görev: GeoJSON İçe Aktarımında Renk Değişimi Hatasının Düzeltilmesi
+# Görev 1: İçe Aktarılan ve Paylaşılan Storymap Projelerinde Marker İkonlarının Bozulması Hatasının Çözülmesi (TAMAMLANDI)
+Tarih: 2026-05-20
+
+## Sonuç
+Başarıyla tamamlandı. Hikaye haritası (Storymap) projelerinde, dışa/içe aktarım (import/export) işlemlerinde ve paylaşım sayfalarında tüm marker'ların orijinal stilleri (damla şekli, pin ikonu, renk vb.) korundu.
+
+---
+
+# Görev 2: Teardrop (Damla) Marker İkonlarının Haritada Bozuk ve Yamuk Görünmesi Hatasının Çözülmesi
 Tarih: 2026-05-20
 
 ## Bağlam
-CBS verisi (GeoJSON vb.) içe aktarıldığında oluşan çizim nesnelerinin rengi değiştirildiğinde, haritadaki salt okunur katmanlar gizli olduğundan ve Mapbox GL Draw eklentisindeki aktif çizim rengi dinamik güncellenemediğinden renk değişimi haritaya anında yansımamaktadır. Ayrıca detay görünümünden çıkıldığında veya kaydedildiğinde koordinat/renk uyuşmazlığı nedeniyle çizimler haritadan silinebilmektedir. Konsolda da `Unknown action: import` uyarısı yer almaktadır.
+Haritada damla (`teardrop`) şekli seçildiğinde veya bu şekle sahip projeler içe aktarıldığında, MapLibre GL'in dış marker elementinin `transform` özelliğini ezmesinden ötürü damla şeklinin yamulması (sivri ucunun sol alta bakması) ve içindeki ikonun yan yatması sorununun çözülmesi gerekmektedir. 
 
 ## Plan
-- [x] Adım 1: `PointManager.js` dosyasındaki `addDrawing` metodunu `drawingType` ve `mapLayerId` değerlerini esnek şekilde alacak şekilde güncellemek.
-- [x] Adım 2: `ModalComponent.js` içindeki `onImportDataSubmit` metodunda çizimler eklenirken `type` ve `drawingType` alanlarının doğru gönderildiğinden emin olmak.
-- [x] Adım 3: `ActionManager.js` içindeki `handleAction` switch-case yapısına `case 'import':` ekleyerek konsoldaki `Unknown action: import` uyarısını gidermek.
-- [x] Adım 4: `ModalComponent.js` içindeki `onPointStyleUpdate` metodunu, renk değiştiğinde Mapbox Draw koordinatlarını alacak, derinlik kontrolüyle LineString/Polygon formatlarını garanti altına alacak, `source.setData` ile salt okunur katmanı güncelleyecek ve `visible` yaparak rengi haritada anında gösterecek şekilde güncellemek.
-- [x] Adım 5: `ModalComponent.js` içindeki `onPointEditEnd` metodunu, kaydetme/bitirme esnasında derinlik kontrolüyle `source.setData` çağırıp ardından `updateDrawingColor` tetikleyerek çizimin nihai rengini garanti altına alacak şekilde güncellemek.
+- [x] **Adım 1:** `src/components/map/modules/MapMarkers.js` dosyasında `addMarker` metodunda `isTeardrop` durumunu iç kapsayıcı (`wrapper`) mimarisiyle yeniden tasarlamak.
+- [x] **Adım 2:** `src/components/storymap/StoryMapComponent.js` dosyasında `createMarkerElement` metodunda `shape === 'teardrop'` durumunu benzer iç kapsayıcı (`wrapper`) mimarisine uyarlamak.
+- [x] **Adım 2.1:** `src/components/ModalComponent.js` dosyasında `addMarkerToMapForViewMode` metodundaki `isTeardrop` kısmının iç kapsayıcı (`wrapper`) yapısı ile güncellenmesi.
+- [x] **Adım 3:** Editör ve izleme modlarında damlaların dikey olarak düzgün durduğunu, içindeki ikonların dik ve hizalı olduğunu doğrulamak.
 
-## Doğrulama kriterleri
-- [x] İçe aktarılan çizim nesnelerinde `mapLayerId` ve `drawingType` alanlarının doğru set edilmesi.
-- [x] Konsoldaki `Unknown action: import` uyarısının tamamen kaybolması.
-- [x] Renk değiştiğinde haritadaki poligon/çizgi renginin anında güncellenmesi.
-- [x] Kaydetme işlemi sonrasında veya renk seçildiğinde çizimin haritadan kaybolmaması.
+## Doğrulama Kriterleri
+- [x] Damla marker ucu tam dikey olarak aşağıyı gösterecek.
+- [x] Damla marker içindeki ikon 45 derece yan yatmayacak, tamamen düzgün (dik) duracak.
+- [x] İçe aktarılan projelerdeki damla markerlar hatasız çizilecek.
+- [x] Dosyalar UTF-8 olarak kaydedilecek ve Türkçe karakterler bozulmayacak.
 
 ## Sonuç
-CBS verisi içe aktarımı sonrası renk değiştirme ve çizimin haritadan kaybolması hataları kökten çözülmüştür. Koordinat dizisi derinlik kontrolü sayesinde Mapbox GL JS geçersiz GeoJSON almamakta ve çizimler asla haritadan silinmemektedir. Renk güncellemeleri hem düzenleme anında hem de kaydetme sonrasında anlık olarak yansıtılmaktadır. `import` eylem uyarısı konsoldan giderilmiştir.
+Başarıyla tamamlandı! Sorunun iki boyutu vardı:
+1. **Varsayılan şekil hatası:** `PointManager.js`'de varsayılan `shape` değeri yanlışlıkla `'teardrop'` olarak bırakılmıştı. İçe aktarılan verilerde `shape` alanı yoksa tüm marker'lar zorla damla şekline dönüştürülüyordu. Bu değer `'circle'` olarak düzeltildi.
+2. **MapLibre transform çakışması:** Damla şekli kullanıldığında MapLibre'nin dış element transform'unu ezmesi nedeniyle damla yamuluyordu. Tüm marker çizim mekanizmalarında (MapMarkers.js, StoryMapComponent.js, ModalComponent.js) iç kapsayıcı (`wrapper`) div mimarisine geçildi.

@@ -900,7 +900,7 @@ export class ModalComponent {
                     color: color,
                     icon: point.icon || 'fa-map-marker-alt',
                     shape: point.shape || 'circle',
-                    isNumber: true,
+                    isNumber: point.isNumber !== undefined ? point.isNumber : true,
                     number: point.number || 1,
                     popup: `<div style="font-weight: 600; color: #374151;">${point.title}</div>`
                 });
@@ -1037,9 +1037,9 @@ export class ModalComponent {
 
                 // Marker ekle
                 const marker = this.mapComponent.addMarker(event.coords, {
-                    color: color,
-                    icon: event.importance === 5 ? 'fa-star' : 'fa-clock',
-                    shape: 'circle',
+                    color: event.color || color,
+                    icon: event.icon || (event.importance === 5 ? 'fa-star' : 'fa-clock'),
+                    shape: event.shape || 'circle',
                     popup: `<div style="font-weight: 600; color: #374151;">${event.title}</div>
                             <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">${event.date || ''}</div>`
                 });
@@ -3082,22 +3082,32 @@ export class ModalComponent {
                 font-size: 12px;
                 font-weight: bold;
                 font-family: Arial, sans-serif;
+                pointer-events: none;
             `;
             el.appendChild(numberSpan);
         } else if (isTeardrop) {
-            // Damla şekli (%35 büyütülmüş, beyaz border)
+            // Damla şekli için dış elementi sadece konumlandırılabilir transparan bir kutu yapalım
             el.style.cssText = `
                 width: 27px;
                 height: 36px;
+                background-color: transparent;
+                cursor: pointer;
+                position: relative;
+            `;
+            
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = `
+                width: 100%;
+                height: 100%;
                 background-color: ${point.color || '#10b981'};
                 border-radius: 50% 50% 50% 0;
                 transform: rotate(-45deg);
                 border: 2px solid #fff;
-                cursor: pointer;
                 box-shadow: 0 2px 6px rgba(0,0,0,0.3);
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                box-sizing: border-box;
             `;
             
             const icon = document.createElement('i');
@@ -3107,7 +3117,8 @@ export class ModalComponent {
                 font-size: 11px;
                 transform: rotate(45deg);
             `;
-            el.appendChild(icon);
+            wrapper.appendChild(icon);
+            el.appendChild(wrapper);
         } else {
             // Yuvarlak marker (%35 büyütülmüş, beyaz border)
             el.style.cssText = `
@@ -3152,6 +3163,24 @@ export class ModalComponent {
         
         // Point'e marker referansını ekle
         point.marker = marker;
+
+        // Editör modundaysak marker tıklandığında yan panel detay/düzenleme görünümünü aç
+        if (this.sidebarComponent && !this.sidebarComponent.viewMode && point.id) {
+            el.addEventListener('click', (e) => {
+                if (this.mapComponent?.markers?.shouldSuppressMarkerClick?.()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                if (this.mapComponent?.wasRecentlyDragged?.()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                this.sidebarComponent.showPointDetail(point.id);
+                e.stopPropagation();
+            });
+        }
     }
 
     /**

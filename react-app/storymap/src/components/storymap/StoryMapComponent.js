@@ -190,43 +190,92 @@ export class StoryMapComponent {
         const color = step.color || (isNumber ? '#3b82f6' : '#ef4444');
 
         el.className = 'storymap-marker';
-        el.style.cssText = `
-            width: ${shape === 'teardrop' ? '30px' : '30px'};
-            height: ${shape === 'teardrop' ? '38px' : '30px'};
-            background-color: ${color};
-            border: 2px solid white;
-            border-radius: ${shape === 'teardrop' ? '50% 50% 50% 0' : '50%'};
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
-            cursor: pointer;
-            transform: ${shape === 'teardrop' ? 'rotate(-45deg)' : 'none'};
-        `;
 
-        if (isNumber) {
-            const numberSpan = document.createElement('span');
-            numberSpan.textContent = step.number || index + 1;
-            numberSpan.style.cssText = `
-                color: white;
-                font-size: 12px;
-                font-weight: bold;
-                font-family: Arial, sans-serif;
-                transform: ${shape === 'teardrop' ? 'rotate(45deg)' : 'none'};
+        if (shape === 'teardrop') {
+            // Damla şekli için dış elementi sadece konumlandırılabilir transparan bir kutu yapalım
+            el.style.cssText = `
+                width: 30px;
+                height: 38px;
+                background-color: transparent;
+                cursor: pointer;
+                position: relative;
             `;
-            el.appendChild(numberSpan);
+
+            // İç damla kapsayıcısı (wrapper)
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = `
+                width: 100%;
+                height: 100%;
+                background-color: ${color};
+                border: 2px solid white;
+                border-radius: 50% 50% 50% 0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transform: rotate(-45deg);
+                box-sizing: border-box;
+            `;
+
+            if (isNumber) {
+                const numberSpan = document.createElement('span');
+                numberSpan.textContent = step.number || index + 1;
+                numberSpan.style.cssText = `
+                    color: white;
+                    font-size: 12px;
+                    font-weight: bold;
+                    font-family: Arial, sans-serif;
+                    transform: rotate(45deg);
+                `;
+                wrapper.appendChild(numberSpan);
+            } else {
+                const icon = document.createElement('i');
+                icon.className = `fa-solid ${step.icon || 'fa-map-marker-alt'}`;
+                icon.style.cssText = `
+                    color: white;
+                    font-size: 11px;
+                    transform: rotate(45deg);
+                `;
+                wrapper.appendChild(icon);
+            }
+            el.appendChild(wrapper);
         } else {
-            const icon = document.createElement('i');
-            icon.className = `fa-solid ${step.icon || 'fa-map-marker-alt'}`;
-            icon.style.cssText = `
+            // Normal yuvarlak şekil
+            el.style.cssText = `
+                width: 30px;
+                height: 30px;
+                background-color: ${color};
+                border: 2px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 color: white;
-                font-size: 11px;
-                transform: ${shape === 'teardrop' ? 'rotate(45deg)' : 'none'};
+                font-weight: bold;
+                font-size: 12px;
+                cursor: pointer;
             `;
-            el.appendChild(icon);
+
+            if (isNumber) {
+                const numberSpan = document.createElement('span');
+                numberSpan.textContent = step.number || index + 1;
+                numberSpan.style.cssText = `
+                    color: white;
+                    font-size: 12px;
+                    font-weight: bold;
+                    font-family: Arial, sans-serif;
+                `;
+                el.appendChild(numberSpan);
+            } else {
+                const icon = document.createElement('i');
+                icon.className = `fa-solid ${step.icon || 'fa-map-marker-alt'}`;
+                icon.style.cssText = `
+                    color: white;
+                    font-size: 11px;
+                `;
+                el.appendChild(icon);
+            }
         }
 
         return el;

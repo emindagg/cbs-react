@@ -109,7 +109,7 @@ export class DetailPanel {
         const counterEl = document.querySelector('.detail-panel__image-counter');
         
         if (imageEl && images[this.currentImageIndex]) {
-            const rawUrl = images[this.currentImageIndex].url || images[this.currentImageIndex];
+            const rawUrl = images[this.currentImageIndex].url || images[this.currentImageIndex].name || images[this.currentImageIndex];
             imageEl.src = apiService.getMediaUrl(rawUrl);
         }
         if (counterEl) {
@@ -184,7 +184,7 @@ export class DetailPanel {
                                 <i class="fa-solid fa-chevron-left"></i>
                             </button>
                         ` : ''}
-                        <img src="${apiService.getMediaUrl(images[0]?.url || images[0])}" alt="${point.title}" id="detail-image" style="cursor: pointer;">
+                        <img src="${apiService.getMediaUrl(images[0]?.url || images[0]?.name || images[0])}" alt="${point.title}" id="detail-image" style="cursor: pointer;">
                         ${hasMultipleImages ? `
                             <button class="detail-panel__image-nav detail-panel__image-nav--next" id="image-next">
                                 <i class="fa-solid fa-chevron-right"></i>
