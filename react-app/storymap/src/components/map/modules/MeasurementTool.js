@@ -37,6 +37,8 @@ export class MeasurementTool {
         
         // Marker drag flag
         this.isDragging = false;
+        this.lastTouchAt = 0;
+        this.touchStartPoint = null;
         
         // First point hover detection
         this.isHoveringFirstPoint = false;
@@ -46,6 +48,8 @@ export class MeasurementTool {
         
         // Bind methods
         this.handleMapClick = this.handleMapClick.bind(this);
+        this.handleMapTouchStart = this.handleMapTouchStart.bind(this);
+        this.handleMapTouchEnd = this.handleMapTouchEnd.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onDoubleClick = this.onDoubleClick.bind(this);
@@ -108,8 +112,8 @@ export class MeasurementTool {
                 type: 'line',
                 source: this.lineSourceId,
                 paint: {
-                    'line-color': '#212121',
-                    'line-width': 3,
+                    'line-color': '#0f172a',
+                    'line-width': 4,
                     'line-opacity': 1
                 }
             });
@@ -130,9 +134,9 @@ export class MeasurementTool {
                 type: 'line',
                 source: this.ghostSourceId,
                 paint: {
-                    'line-color': '#212121',
-                    'line-width': 2,
-                    'line-opacity': 0.7
+                    'line-color': '#0f172a',
+                    'line-width': 3,
+                    'line-opacity': 0.85
                 }
             });
         }
@@ -161,6 +165,8 @@ export class MeasurementTool {
         
         // Event listener'ları ekle
         this.map.on('click', this.handleMapClick);
+        this.map.on('touchstart', this.handleMapTouchStart);
+        this.map.on('touchend', this.handleMapTouchEnd);
         this.map.on('mousemove', this.onMouseMove);
         this.map.on('dblclick', this.onDoubleClick);
         document.addEventListener('keydown', this.onKeyDown);
@@ -190,6 +196,8 @@ export class MeasurementTool {
         
         // Event listener'ları kaldır
         this.map.off('click', this.handleMapClick);
+        this.map.off('touchstart', this.handleMapTouchStart);
+        this.map.off('touchend', this.handleMapTouchEnd);
         this.map.off('mousemove', this.onMouseMove);
         this.map.off('dblclick', this.onDoubleClick);
         document.removeEventListener('keydown', this.onKeyDown);
@@ -230,9 +238,76 @@ export class MeasurementTool {
      */
     handleMapClick(e) {
         if (!this.isActive || this.isDragging) return;
-        
-        const clickPoint = { lng: e.lngLat.lng, lat: e.lngLat.lat };
-        
+
+        // Mobilde touchend ile nokta eklendiyse sentetik click'i yut.
+        if (Date.now() - this.lastTouchAt < 450) return;
+
+        this.addPointFromLngLat(e.lngLat);
+    }
+
+    /**
+     * Mobil dokunma başlangıcı
+     */
+    handleMapTouchStart(e) {
+        if (!this.isActive || this.isDragging) return;
+
+        const touch = e.originalEvent?.touches?.[0];
+        if (!touch) return;
+
+        this.touchStartPoint = {
+            x: touch.clientX,
+            y: touch.clientY,
+            time: Date.now()
+        };
+    }
+
+    /**
+     * Mobil dokunma bitişi - haritaya nokta ekle
+     */
+    handleMapTouchEnd(e) {
+        if (!this.isActive || this.isDragging) return;
+
+        const touch = e.originalEvent?.changedTouches?.[0];
+        if (!touch || !this.touchStartPoint) return;
+
+        const dx = touch.clientX - this.touchStartPoint.x;
+        const dy = touch.clientY - this.touchStartPoint.y;
+        const distance = Math.sqrt((dx * dx) + (dy * dy));
+        const duration = Date.now() - this.touchStartPoint.time;
+        this.touchStartPoint = null;
+
+        // Pan/zoom hareketlerini ölçüm noktası sayma.
+        if (distance > 12 || duration > 700) return;
+
+        const lngLat = e.lngLat || this.getLngLatFromTouch(touch);
+        if (!lngLat) return;
+
+        this.lastTouchAt = Date.now();
+        this.addPointFromLngLat(lngLat);
+    }
+
+    /**
+     * Touch koordinatını harita koordinatına çevir
+     */
+    getLngLatFromTouch(touch) {
+        const canvas = this.map.getCanvas();
+        const rect = canvas.getBoundingClientRect();
+        const point = [
+            touch.clientX - rect.left,
+            touch.clientY - rect.top
+        ];
+        const lngLat = this.map.unproject(point);
+        return lngLat ? { lng: lngLat.lng, lat: lngLat.lat } : null;
+    }
+
+    /**
+     * Ölçüm noktasını ekle
+     */
+    addPointFromLngLat(lngLat) {
+        if (!lngLat) return;
+
+        const clickPoint = { lng: lngLat.lng, lat: lngLat.lat };
+
         // Eğer poligon kapalıysa, düzenleme modundayız - yeni tıklama yok
         if (this.isClosed) return;
         

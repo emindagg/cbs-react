@@ -929,6 +929,12 @@
         top: 60px;
     }
 
+    .measurement-tool-marker {
+        width: 14px;
+        height: 14px;
+        border-width: 3px;
+    }
+
     .maplibregl-ctrl-top-right {
         top: 44px !important;
     }
@@ -1043,6 +1049,11 @@
 
     .measurement-tool-panel__value {
         font-size: 10px;
+    }
+
+    .measurement-tool-marker {
+        width: 16px;
+        height: 16px;
     }
 
     /* Mobilde harita kontrollerini panelin altında kalmayacak şekilde sola ve daha yukarı al */
