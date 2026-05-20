@@ -299,6 +299,13 @@ function setupFooterListeners(sidebar) {
         });
     }
 
+    const importBtn = container.querySelector('#btn-import-data-sidebar');
+    if (importBtn) {
+        importBtn.addEventListener('click', () => {
+            if (sidebar.onImportDataOpen) sidebar.onImportDataOpen();
+        });
+    }
+
     const storyMapViewBtn = container.querySelector('#btn-storymap-view');
     if (storyMapViewBtn) {
         storyMapViewBtn.addEventListener('click', () => {

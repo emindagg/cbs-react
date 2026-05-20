@@ -32,6 +32,7 @@ export class ToolbarComponent {
                     this.onImportDataSubmit(data);
                 }
             };
+            this.hideToolbarImportButton();
         }
 
         // View mode artık geçici çizim yapabilir, araçları devre dışı bırakma
@@ -68,6 +69,19 @@ export class ToolbarComponent {
         if (this.toolbar) {
             this.toolbar.classList.add('hidden');
             this.toolbar.style.removeProperty('display');
+        }
+    }
+
+    openImportPanel() {
+        if (this.importPanel) {
+            this.importPanel.open();
+        }
+    }
+
+    hideToolbarImportButton() {
+        const importBtn = this.toolbar?.querySelector('#btn-import-data');
+        if (importBtn) {
+            importBtn.style.display = 'none';
         }
     }
 

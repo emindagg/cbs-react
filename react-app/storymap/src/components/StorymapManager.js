@@ -92,7 +92,7 @@ export class StorymapManager {
                         ` : ''}
                         <button class="btn btn--secondary" id="btn-import">
                             <i class="fas fa-upload"></i>
-                            İçeri Aktar
+                            Projeyi İçe Aktar
                         </button>
                         <button class="btn btn--primary" id="btn-create-new">
                             <i class="fas fa-plus"></i>

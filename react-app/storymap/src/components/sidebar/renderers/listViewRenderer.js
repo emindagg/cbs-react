@@ -71,6 +71,10 @@ export function renderListView(context) {
                     <i class="fa-solid ${saveButtonIcon}"></i>
                     <span>${saveButtonText}</span>
                 </button>
+                <button class="sidebar__footer-btn sidebar__footer-btn--secondary" id="btn-import-data-sidebar">
+                    <i class="fa-solid fa-file-import"></i>
+                    <span>Veri Yükle</span>
+                </button>
                 <button class="sidebar__footer-btn sidebar__footer-btn--secondary" id="btn-export">
                     <i class="fa-solid fa-download"></i>
                     <span>Dışa Aktar</span>

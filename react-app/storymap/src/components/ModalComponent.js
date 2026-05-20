@@ -215,6 +215,9 @@ export class ModalComponent {
                 this.toolbarComponent = new ToolbarComponent(this.viewMode);
                 this.toolbarComponent.init(this.mapComponent, this.sidebarComponent, this.viewMode);
                 this.toolbarComponent.show();
+                this.sidebarComponent.onImportDataOpen = () => {
+                    this.toolbarComponent.openImportPanel();
+                };
 
                 // Paylaşmadan önce kaydetme callback'i (sadece edit mode'da)
                 if (!this.viewMode && this.toolbarComponent.actionManager) {
