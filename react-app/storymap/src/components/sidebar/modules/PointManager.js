@@ -33,6 +33,7 @@ export class PointManager {
             number: pointData.number || null,
             zoom: pointData.zoom,
             media: pointData.media || [],
+            embeds: pointData.embeds || [],
             // Rota alanları (varsa koru)
             visitDay: pointData.visitDay,
             duration: pointData.duration,

@@ -85,4 +85,29 @@ Tarih: 2026-05-20
 Başarıyla tamamlandı! 
 Öğretmenler için harici video ekleme (YouTube, Vimeo, MP4 linki vb.) ve oynatma altyapısı sisteme entegre edildi. Arayüzün premium duruşunu korumak adına tarayıcının varsayılan prompt kutusu yerine, dosya yükleme alanının içerisine yerleşen çok şık ve gizlenebilen bir link giriş formu uygulandı. YouTube videoları için önizleme gridinde otomatik thumbnail çekilmesi sağlandı. Lightbox ve Storymap sunum katmanlarında bu linklerin iframe (embed) ile oynatılması başarıyla entegre edildi ve pnpm build:mebi testi sıfır hata ile tamamlandı. Commit yapılmadan değişiklikler çalışma dizininde bırakıldı.
 
+---
+
+# Görev 5: Öğretmenlere Özel Yerleştir Bloğunu Geri Ekleme
+Tarih: 2026-05-20
+
+## Bağlam
+Silinen "Yerleştir" özelliğinin video bağlantısı akışından ayrı olarak geri eklenmesi gerekmektedir. Bu özellik yalnızca öğretmenler tarafından kullanılmalı; öğrenciler yerleştirme ekleyememeli, silememeli veya düzenleyememelidir.
+
+## Plan
+- [x] Adım 1: Yerleştirme blokları için `embeds` veri alanını nokta modeline geri eklemek.
+- [x] Adım 2: Detay paneline öğretmenlere özel "Yerleştir" butonu ve formu eklemek.
+- [x] Adım 3: Yerleştirme ekleme/silme/düzenleme handler'larını öğrenciye kapalı olacak şekilde bağlamak.
+- [x] Adım 4: Sağ detay paneli ve StoryMap sunumunda yerleştirmeleri medya galerisinden ayrı göstermek.
+- [x] Adım 5: Sözdizimi, UTF-8 ve doğrudan dosya bağlantısı kontrollerini yapmak.
+
+## Doğrulama kriterleri
+- [x] Öğretmen kullanıcı "Yerleştir" ekleyebilir.
+- [x] Öğrenci kullanıcı "Yerleştir" ekleme/silme/düzenleme kontrollerini göremez.
+- [x] Yerleştirme verisi backend değişikliği olmadan mevcut JSON içinde saklanır.
+- [x] Doğrudan medya dosyaları yerleştirme bloğu olarak kabul edilmez.
+- [x] Türkçe karakterler korunur.
+
+## Sonuç
+Başarıyla tamamlandı. Yerleştir bloğu ayrı `embeds` alanı ile geri eklendi ve yönetim kontrolleri öğretmen rolüyle sınırlandı.
+
 

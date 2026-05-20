@@ -2,8 +2,9 @@
  * Detay görünümü event handler'ları
  */
 
-import { renderMediaItems } from '../renderers/index.js';
-import { isVideoFile } from '../../../utils/mediaType.js';
+import { renderMediaItems, renderEmbedItems } from '../renderers/index.js';
+import { getEmbedSourceUrl, isEmbedContent, isVideoFile } from '../../../utils/mediaType.js';
+import { authManager } from '../../../services/authManager.js';
 
 export function setupDetailListeners(sidebar) {
     const container = sidebar.container;
@@ -66,8 +67,16 @@ function setupMediaUploadListeners(sidebar) {
     const linkInput = container.querySelector('#media-video-link-input');
     const linkSubmitBtn = container.querySelector('#media-video-link-submit');
     const linkCancelBtn = container.querySelector('#media-video-link-cancel');
+
+    const embedBtn = container.querySelector('#media-embed-btn');
+    const embedInputContainer = container.querySelector('#embed-input-container');
+    const embedTitleInput = container.querySelector('#embed-title-input');
+    const embedUrlInput = container.querySelector('#embed-url-input');
+    const embedSubmitBtn = container.querySelector('#embed-submit');
+    const embedCancelBtn = container.querySelector('#embed-cancel');
     
     setupMediaItemListeners(sidebar, container);
+    setupEmbedItemListeners(sidebar, container);
 
     if (!mediaUploadArea || !photoInput || !videoInput) return;
     
@@ -75,6 +84,69 @@ function setupMediaUploadListeners(sidebar) {
         photoBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             photoInput.click();
+        });
+    }
+
+    if (embedBtn && embedInputContainer && !authManager.isStudent()) {
+        embedBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = embedInputContainer.style.display === 'none';
+            embedInputContainer.style.display = isHidden ? 'block' : 'none';
+            if (isHidden && embedUrlInput) {
+                embedUrlInput.focus();
+            }
+        });
+    }
+
+    if (embedCancelBtn && embedInputContainer && !authManager.isStudent()) {
+        embedCancelBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            embedInputContainer.style.display = 'none';
+            if (embedTitleInput) embedTitleInput.value = '';
+            if (embedUrlInput) embedUrlInput.value = '';
+        });
+    }
+
+    if (embedSubmitBtn && embedUrlInput && embedInputContainer && !authManager.isStudent()) {
+        embedSubmitBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const rawInput = embedUrlInput.value.trim();
+            const sourceUrl = getEmbedSourceUrl(rawInput);
+
+            if (!sourceUrl) {
+                alert('Lütfen bir yerleştirme bağlantısı veya iframe kodu giriniz!');
+                return;
+            }
+
+            const embedItem = {
+                type: 'embed',
+                url: sourceUrl,
+                title: embedTitleInput?.value.trim() || 'Yerleştirme',
+                caption: '',
+                source: 'embed'
+            };
+
+            if (!isEmbedContent(embedItem)) {
+                alert('Lütfen geçerli bir http/https yerleştirme bağlantısı giriniz. Doğrudan dosya bağlantıları yerleştirme olarak eklenemez.');
+                return;
+            }
+
+            if (!sidebar.editingPoint.embeds) {
+                sidebar.editingPoint.embeds = [];
+            }
+
+            sidebar.editingPoint.embeds.push(embedItem);
+            if (embedTitleInput) embedTitleInput.value = '';
+            embedUrlInput.value = '';
+            embedInputContainer.style.display = 'none';
+            updateEmbedGrid(sidebar);
+        });
+
+        embedUrlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                embedSubmitBtn.click();
+            }
         });
     }
 
@@ -164,6 +236,56 @@ function setupMediaUploadListeners(sidebar) {
         });
     }
 
+}
+
+/**
+ * Yerleştirme bloğu listener'ları
+ */
+function setupEmbedItemListeners(sidebar, root) {
+    if (authManager.isStudent()) return;
+
+    const embedRemoveBtns = root.querySelectorAll('.sidebar__embed-remove');
+    embedRemoveBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.dataset.embedIndex, 10);
+            removeEmbed(sidebar, index);
+        });
+    });
+
+    const titleInputs = root.querySelectorAll('.sidebar__embed-title-input');
+    titleInputs.forEach(input => {
+        input.addEventListener('input', (e) => {
+            const index = parseInt(input.dataset.embedIndex, 10);
+            if (sidebar.editingPoint.embeds && sidebar.editingPoint.embeds[index]) {
+                sidebar.editingPoint.embeds[index].title = e.target.value;
+            }
+        });
+    });
+
+    const urlInputs = root.querySelectorAll('.sidebar__embed-url');
+    urlInputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+            const index = parseInt(input.dataset.embedIndex, 10);
+            const sourceUrl = getEmbedSourceUrl(e.target.value.trim());
+            const embedItem = {
+                ...(sidebar.editingPoint.embeds?.[index] || {}),
+                type: 'embed',
+                url: sourceUrl
+            };
+
+            if (!isEmbedContent(embedItem)) {
+                alert('Lütfen geçerli bir http/https yerleştirme bağlantısı giriniz.');
+                e.target.value = sidebar.editingPoint.embeds?.[index]?.url || '';
+                return;
+            }
+
+            if (sidebar.editingPoint.embeds && sidebar.editingPoint.embeds[index]) {
+                sidebar.editingPoint.embeds[index].url = sourceUrl;
+                updateEmbedGrid(sidebar);
+            }
+        });
+    });
 }
 
 /**
@@ -305,6 +427,18 @@ function removeMedia(sidebar, index) {
 }
 
 /**
+ * Yerleştirme bloğu silme işleyici
+ */
+function removeEmbed(sidebar, index) {
+    if (authManager.isStudent()) return;
+
+    if (sidebar.editingPoint.embeds && sidebar.editingPoint.embeds[index]) {
+        sidebar.editingPoint.embeds.splice(index, 1);
+        updateEmbedGrid(sidebar);
+    }
+}
+
+/**
  * Medya grid'ini günceller
  */
 function updateMediaGrid(sidebar) {
@@ -313,6 +447,18 @@ function updateMediaGrid(sidebar) {
     
     mediaGrid.innerHTML = renderMediaItems(sidebar.editingPoint.media);
     setupMediaItemListeners(sidebar, mediaGrid);
+}
+
+/**
+ * Yerleştirme grid'ini günceller
+ */
+function updateEmbedGrid(sidebar) {
+    const embedGrid = sidebar.container.querySelector('#embed-grid');
+    if (!embedGrid) return;
+
+    const canEdit = !sidebar.viewMode && !authManager.isStudent();
+    embedGrid.innerHTML = renderEmbedItems(sidebar.editingPoint.embeds || [], { canEdit });
+    setupEmbedItemListeners(sidebar, embedGrid);
 }
 
 /**

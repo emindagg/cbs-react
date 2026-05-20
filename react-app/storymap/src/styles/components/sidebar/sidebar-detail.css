@@ -350,6 +350,216 @@
     flex-shrink: 0;
 }
 
+/* ========================================
+   YERLEŞTİRME BLOKLARI
+   ======================================== */
+
+.sidebar__embed-section {
+    margin: 0 0 20px;
+    padding: 10px 0 0;
+    border-top: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.sidebar__embed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.sidebar__embed-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.sidebar__embed-title i {
+    color: #111827;
+    font-size: 12px;
+}
+
+.sidebar__embed-add-btn {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background: #fff;
+    color: #059669;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex: 0 0 auto;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.sidebar__embed-add-btn:hover {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+    color: #047857;
+}
+
+.sidebar__embed-add-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    width: max-content;
+    max-width: 220px;
+    padding: 7px 9px;
+    border-radius: 6px;
+    background: #111827;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.22);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-2px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 30;
+}
+
+.sidebar__embed-add-btn[data-tooltip]:hover::after,
+.sidebar__embed-add-btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.sidebar__embed-grid {
+    display: grid;
+    gap: 8px;
+}
+
+.sidebar__embed-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.82);
+    display: grid;
+    gap: 7px;
+}
+
+.sidebar__embed-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar__embed-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: #eef2ff;
+    color: #3730a3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    font-size: 12px;
+}
+
+.sidebar__embed-meta {
+    min-width: 0;
+    flex: 1;
+}
+
+.sidebar__embed-name,
+.sidebar__embed-url-preview {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar__embed-name {
+    color: #111827;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sidebar__embed-url-preview {
+    color: #6b7280;
+    font-size: 11px;
+}
+
+.sidebar__embed-remove {
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: #b91c1c;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.sidebar__embed-title-input,
+.sidebar__embed-url,
+.sidebar__embed-form input,
+.sidebar__embed-form textarea {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 7px 9px;
+    background: #fff;
+    color: #1f2937;
+    font: inherit;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+.sidebar__embed-form {
+    margin-top: 8px;
+}
+
+.sidebar__embed-form-grid {
+    display: grid;
+    gap: 8px;
+}
+
+.sidebar__embed-form textarea {
+    resize: vertical;
+}
+
+.sidebar__embed-form-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.sidebar__embed-submit,
+.sidebar__embed-cancel {
+    border-radius: 6px;
+    padding: 7px 11px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.sidebar__embed-submit {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+}
+
+.sidebar__embed-cancel {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+}
+
 
 
 @media (max-width: 480px) {

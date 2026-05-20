@@ -3,7 +3,22 @@
  */
 
 import { apiService } from '../../../services/apiService.js';
-import { getMediaRawUrl, isVideoMedia, isEmbedVideo, getYouTubeId } from '../../../utils/mediaType.js';
+import {
+    getMediaRawUrl,
+    isVideoMedia,
+    isEmbedVideo,
+    getYouTubeId,
+    getEmbedSourceUrl
+} from '../../../utils/mediaType.js';
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 /**
  * Medya öğelerini render eder
@@ -62,5 +77,55 @@ export function renderMediaItems(media) {
                    value="${item.caption || ''}">
         </div>
     `;
+    }).join('');
+}
+
+/**
+ * Yerleştirme bloklarını render eder.
+ * @param {Array} embeds - Yerleştirme blokları dizisi
+ * @param {Object} options
+ * @returns {string} HTML string
+ */
+export function renderEmbedItems(embeds, options = {}) {
+    const canEdit = options.canEdit === true;
+
+    if (!embeds || embeds.length === 0) {
+        return '';
+    }
+
+    return embeds.map((item, index) => {
+        const title = item.title || item.name || `Yerleştir ${index + 1}`;
+        const url = getEmbedSourceUrl(item);
+
+        return `
+            <div class="sidebar__embed-item" data-embed-index="${index}">
+                <div class="sidebar__embed-preview">
+                    <div class="sidebar__embed-icon">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <div class="sidebar__embed-meta">
+                        <div class="sidebar__embed-name">${escapeHtml(title)}</div>
+                        <div class="sidebar__embed-url-preview">${escapeHtml(url)}</div>
+                    </div>
+                    ${canEdit ? `
+                    <button type="button" class="sidebar__embed-remove" data-embed-index="${index}" title="Yerleştirmeyi sil">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                    ` : ''}
+                </div>
+                ${canEdit ? `
+                <input type="text"
+                       class="sidebar__embed-title-input"
+                       data-embed-index="${index}"
+                       placeholder="Yerleştirme başlığı"
+                       value="${escapeHtml(title)}">
+                <input type="text"
+                       class="sidebar__embed-url"
+                       data-embed-index="${index}"
+                       placeholder="Yerleştirme bağlantısı"
+                       value="${escapeHtml(url)}">
+                ` : ''}
+            </div>
+        `;
     }).join('');
 }

@@ -4,7 +4,16 @@
  */
 
 import { apiService } from '../../services/apiService.js';
-import { getMediaRawUrl, isVideoMedia, isEmbedVideo, getEmbedVideoUrl } from '../../utils/mediaType.js';
+import { getMediaRawUrl, isVideoMedia, isEmbedVideo, getEmbedVideoUrl, isEmbedContent } from '../../utils/mediaType.js';
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 export class StoryMapRenderer {
     constructor(containerId, data) {
@@ -124,6 +133,8 @@ export class StoryMapRenderer {
 
                 ${this.renderMedia(step.media)}
 
+                ${this.renderEmbeds(step.embeds)}
+
                 ${step.content ? `<div class="storymap-section__content">${step.content}</div>` : ''}
 
                 ${this.renderFacts(step.facts)}
@@ -183,6 +194,46 @@ export class StoryMapRenderer {
                 </div>
             `;
         }).join('');
+    }
+
+    /**
+     * Render embed blocks
+     */
+    renderEmbeds(embeds) {
+        if (!embeds || embeds.length === 0) {
+            return '';
+        }
+
+        return embeds
+            .filter(item => isEmbedContent(item))
+            .map((item, index) => {
+                const embedUrl = getEmbedVideoUrl(item);
+                const title = item.title || item.name || `Yerleştirme ${index + 1}`;
+
+                return `
+                    <div class="storymap-section__media storymap-section__embed">
+                        <div class="storymap-section__embed-header" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px;">
+                            <h3 style="margin: 0; font-size: 16px;">${escapeHtml(title)}</h3>
+                            <a href="${escapeHtml(embedUrl)}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               title="Yeni sekmede aç"
+                               aria-label="Yeni sekmede aç"
+                               style="width: 30px; height: 30px; color: #1f4f46; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; font-size: 17px;">
+                                <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        <iframe src="${escapeHtml(embedUrl)}"
+                                class="storymap-section__video"
+                                style="border: 0; width: 100%; aspect-ratio: 16/9;"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen></iframe>
+                        ${item.caption ? `<p class="storymap-section__caption">${escapeHtml(item.caption)}</p>` : ''}
+                    </div>
+                `;
+            })
+            .join('');
     }
 
     /**

@@ -210,6 +210,7 @@ export class SidebarComponent {
                 ? point.zoom
                 : (typeof this.onGetCurrentZoom === 'function' ? this.onGetCurrentZoom() : null),
             media: point.media ? point.media.map(m => ({ ...m })) : [],
+            embeds: point.embeds ? point.embeds.map(embed => ({ ...embed })) : [],
             // Rota alanları
             visitDay: point.visitDay,
             duration: point.duration,
@@ -240,6 +241,7 @@ export class SidebarComponent {
 
         // Varsayılan değerler
         if (!this.editingPoint.media) this.editingPoint.media = [];
+        if (!this.editingPoint.embeds) this.editingPoint.embeds = [];
         if (!this.editingPoint.style) this.editingPoint.style = 'default';
         if (!this.editingPoint.icon) this.editingPoint.icon = 'fa-map-marker-alt';
         if (!this.editingPoint.color) this.editingPoint.color = '#ef4444';
@@ -492,6 +494,7 @@ export class SidebarComponent {
                 title: this.editingPoint.title,
                 description: this.editingPoint.description,
                 media: this.editingPoint.media,
+                embeds: this.editingPoint.embeds,
                 style: this.editingPoint.style,
                 color: this.editingPoint.color,
                 icon: this.editingPoint.icon,

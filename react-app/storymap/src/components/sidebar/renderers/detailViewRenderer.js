@@ -8,7 +8,7 @@ import {
     TEXT_ANNOTATION_STYLES,
     LEADER_LINE_STYLES
 } from '../constants/index.js';
-import { renderMediaItems } from './mediaRenderer.js';
+import { renderMediaItems, renderEmbedItems } from './mediaRenderer.js';
 import { authManager } from '../../../services/authManager.js';
 
 
@@ -40,6 +40,8 @@ export function renderDetailView(context) {
 
     const selectedStyle = availableStyles.find(s => s.id === point.style) || availableStyles[0];
     const inputDisabled = viewMode ? 'disabled' : '';
+    const canManageEmbeds = !viewMode && !authManager.isStudent();
+    const hasEmbeds = Array.isArray(point.embeds) && point.embeds.length > 0;
 
     return `
         <div class="sidebar ${isOpen ? '' : 'sidebar--closed'}">
@@ -82,15 +84,12 @@ export function renderDetailView(context) {
                                     <i class="fa-solid fa-video"></i>
                                     <span>Video Ekle</span>
                                 </button>
-                                ${!authManager.isStudent() ? `
                                 <button type="button" class="sidebar__media-upload-btn" id="media-video-link-btn">
                                     <i class="fa-solid fa-link"></i>
                                     <span>Video Bağlantısı Ekle</span>
                                 </button>
-                                ` : ''}
                             </div>
                             <small>Dosyaları buraya sürükleyip bırakabilirsiniz</small>
-                            ${!authManager.isStudent() ? `
                             <div class="sidebar__media-link-input-container" id="media-link-input-container" style="display: none;">
                                 <div class="sidebar__media-link-input-row">
                                     <input type="text" 
@@ -108,13 +107,57 @@ export function renderDetailView(context) {
                                     </button>
                                 </div>
                             </div>
-                            ` : ''}
                         </div>
                         <input type="file" id="media-photo-input" accept="image/*" multiple hidden>
                         <input type="file" id="media-video-input" accept="video/*" multiple hidden>
                     </div>
                     ` : ''}
                 </div>
+
+                ${(canManageEmbeds || hasEmbeds) ? `
+                <!-- Yerleştirme Blokları -->
+                <div class="sidebar__embed-section">
+                    <div class="sidebar__embed-header">
+                        <div class="sidebar__embed-title">
+                            <i class="fa-solid fa-code"></i>
+                            <span>Yerleştir</span>
+                        </div>
+                        ${canManageEmbeds ? `
+                        <button type="button"
+                                class="sidebar__embed-add-btn"
+                                id="media-embed-btn"
+                                title="Web uygulamalarını hikâyenize kolayca ekleyin."
+                                aria-label="Web uygulamalarını hikâyenize kolayca ekleyin."
+                                data-tooltip="Web uygulamalarını hikâyenize kolayca ekleyin.">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        ` : ''}
+                    </div>
+                    <div class="sidebar__embed-grid" id="embed-grid">
+                        ${renderEmbedItems(point.embeds || [], { canEdit: canManageEmbeds })}
+                    </div>
+                    ${canManageEmbeds ? `
+                    <div class="sidebar__embed-form" id="embed-input-container" style="display: none;">
+                        <div class="sidebar__embed-form-grid">
+                            <input type="text"
+                                   id="embed-title-input"
+                                   placeholder="Başlık (isteğe bağlı)">
+                            <textarea id="embed-url-input"
+                                      placeholder="URL veya iframe kodu yapıştırın..."
+                                      rows="3"></textarea>
+                            <div class="sidebar__embed-form-actions">
+                                <button type="button" id="embed-submit" class="sidebar__embed-submit">
+                                    Ekle
+                                </button>
+                                <button type="button" id="embed-cancel" class="sidebar__embed-cancel">
+                                    İptal
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
 
                 <!-- Title Input -->
                 <div class="sidebar__detail-field">

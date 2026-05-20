@@ -26,7 +26,7 @@ function getUrlHostname(rawUrl) {
     if (!rawUrl || typeof rawUrl !== 'string') return '';
 
     try {
-        return new URL(rawUrl).hostname.toLowerCase();
+        return new URL(getEmbedSourceUrl(rawUrl)).hostname.toLowerCase();
     } catch {
         return '';
     }
@@ -39,7 +39,7 @@ function isTrustedMebDomain(hostname) {
 }
 
 function hasDirectMediaExtension(rawUrl) {
-    const cleanUrl = rawUrl.toLowerCase().split('?')[0].split('#')[0];
+    const cleanUrl = getEmbedSourceUrl(rawUrl).toLowerCase().split('?')[0].split('#')[0];
     return DIRECT_MEDIA_EXTENSIONS.some(extension => cleanUrl.endsWith(extension));
 }
 
@@ -52,6 +52,25 @@ export function getMediaRawUrl(mediaItem) {
     if (!mediaItem) return '';
     if (typeof mediaItem === 'string') return mediaItem;
     return mediaItem.url || mediaItem.name || '';
+}
+
+/**
+ * URL veya iframe kodundan yerleştirilebilir kaynak URL'sini alır.
+ * @param {Object|string} mediaItem
+ * @returns {string}
+ */
+export function getEmbedSourceUrl(mediaItem) {
+    const rawValue = getMediaRawUrl(mediaItem);
+    if (!rawValue || typeof rawValue !== 'string') return '';
+
+    const iframeSrcMatch = rawValue.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+    const sourceUrl = iframeSrcMatch?.[1] || rawValue.trim();
+
+    if (/^www\./i.test(sourceUrl)) {
+        return `https://${sourceUrl}`;
+    }
+
+    return sourceUrl;
 }
 
 /**
@@ -92,7 +111,7 @@ export function isVideoFile(file) {
  */
 export function isEmbedVideo(mediaItem) {
     if (!mediaItem) return false;
-    const rawUrl = getMediaRawUrl(mediaItem);
+    const rawUrl = getEmbedSourceUrl(mediaItem);
     if (typeof rawUrl !== 'string') return false;
 
     const type = getMediaType(mediaItem);
@@ -110,12 +129,34 @@ export function isEmbedVideo(mediaItem) {
 }
 
 /**
+ * Öğenin ayrı bir yerleştirme bloğu olup olmadığını belirler.
+ * @param {Object|string} mediaItem
+ * @returns {boolean}
+ */
+export function isEmbedContent(mediaItem) {
+    if (!mediaItem) return false;
+    const type = getMediaType(mediaItem);
+    if (type !== 'embed') return false;
+
+    const rawUrl = getEmbedSourceUrl(mediaItem);
+    if (!rawUrl || hasDirectMediaExtension(rawUrl)) return false;
+
+    try {
+        const url = new URL(rawUrl);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
+/**
  * YouTube videosunun benzersiz ID'sini döndürür.
  * @param {string} url
  * @returns {string|null}
  */
 export function getYouTubeId(url) {
     if (typeof url !== 'string') return null;
+    url = getEmbedSourceUrl(url);
     const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/;
     const match = url.match(ytRegex);
     return match ? match[1] : null;
@@ -128,6 +169,7 @@ export function getYouTubeId(url) {
  */
 export function getDailymotionId(url) {
     if (typeof url !== 'string') return null;
+    url = getEmbedSourceUrl(url);
     const dailymotionRegex = /(?:dailymotion\.com\/video\/|dai\.ly\/)([a-zA-Z0-9]+)/;
     const match = url.match(dailymotionRegex);
     return match ? match[1] : null;
@@ -139,7 +181,7 @@ export function getDailymotionId(url) {
  * @returns {string}
  */
 export function getEmbedVideoUrl(mediaItem) {
-    const rawUrl = getMediaRawUrl(mediaItem);
+    const rawUrl = getEmbedSourceUrl(mediaItem);
     if (!rawUrl || typeof rawUrl !== 'string') return '';
 
     // YouTube kontrolü ve dönüşümü

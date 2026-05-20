@@ -3,7 +3,16 @@
  */
 
 import { apiService } from '../../../services/apiService.js';
-import { getMediaRawUrl, isVideoMedia, isEmbedVideo, getEmbedVideoUrl } from '../../../utils/mediaType.js';
+import { getMediaRawUrl, isVideoMedia, isEmbedVideo, getEmbedVideoUrl, isEmbedContent } from '../../../utils/mediaType.js';
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 export class DetailPanel {
     constructor(sidebarComponent) {
@@ -160,6 +169,47 @@ export class DetailPanel {
     }
 
     /**
+     * Panel içindeki yerleştirme bloklarını oluşturur
+     * @param {Array} embeds
+     * @returns {string}
+     */
+    renderDetailEmbeds(embeds = []) {
+        const validEmbeds = embeds.filter(item => isEmbedContent(item));
+        if (validEmbeds.length === 0) return '';
+
+        return `
+            <div class="detail-panel__embeds" style="display: grid; gap: 14px; padding: 0 16px 16px;">
+                ${validEmbeds.map((item, index) => {
+                    const embedUrl = getEmbedVideoUrl(item);
+                    const title = item.title || item.name || `Yerleştirme ${index + 1}`;
+
+                    return `
+                        <div class="detail-panel__embed" style="display: grid; gap: 8px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                                <h4 style="margin: 0; font-size: 13px; color: #111827;">${escapeHtml(title)}</h4>
+                                <a href="${escapeHtml(embedUrl)}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   title="Yeni sekmede aç"
+                                   aria-label="Yeni sekmede aç"
+                                   style="width: 26px; height: 26px; color: #1f4f46; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; font-size: 16px;">
+                                    <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                            <iframe src="${escapeHtml(embedUrl)}"
+                                    class="detail-panel__embed-frame"
+                                    style="border: 0; width: 100%; aspect-ratio: 16/9; background: #111827; border-radius: 8px;"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    referrerpolicy="strict-origin-when-cross-origin"
+                                    allowfullscreen></iframe>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    /**
      * Paneli render eder
      */
     render() {
@@ -167,6 +217,7 @@ export class DetailPanel {
         if (!point) return;
 
         const images = point.media || [];
+        const embeds = point.embeds || [];
         const hasMultipleImages = images.length > 1;
         const currentIndex = this.pointIndex;
         const totalPoints = this.sidebar.points.length;
@@ -237,6 +288,8 @@ export class DetailPanel {
                         ` : ''}
                     </div>
                 ` : ''}
+
+                ${this.renderDetailEmbeds(embeds)}
 
                 <!-- Açıklama -->
                 <div class="detail-panel__content">

@@ -1906,6 +1906,7 @@ export class ModalComponent {
                     style: p.style,
                     zoom: p.zoom,
                     media: p.media,
+                    embeds: p.embeds,
                     // Timeline fields
                     date: p.date,
                     time: p.time,
@@ -2043,6 +2044,15 @@ export class ModalComponent {
                               type: m.type,
                               name: m.name,
                               caption: m.caption
+                          }))
+                        : [],
+                    embeds: Array.isArray(p.embeds)
+                        ? p.embeds.map((embed) => ({
+                              type: 'embed',
+                              url: embed.url,
+                              title: embed.title,
+                              caption: embed.caption,
+                              source: embed.source || 'embed'
                           }))
                         : []
                 };
@@ -2606,6 +2616,7 @@ export class ModalComponent {
                         coords: coords,
                         zoom: this.getPointZoom(point, 12),
                         media: point.media || [],
+                        embeds: point.embeds || [],
                         facts: point.facts || [],
                         tags: point.tags || [],
                         isDrawing: point.isDrawing || false,
