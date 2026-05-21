@@ -21,16 +21,16 @@ export function useFeaturePopup() {
   const map = useMapStore(s => s.mapInstance)
   const items = useDataManagementStore(s => s.items)
   const drawMode = useDataManagementStore(s => s.drawMode)
-  const setSelectedItems = useDataManagementStore(s => s.setSelectedItems)
-  const clearSelectedItems = useDataManagementStore(s => s.clearSelectedItems)
+  const setActiveItem = useDataManagementStore(s => s.setActiveItem)
+  const clearActiveItem = useDataManagementStore(s => s.clearActiveItem)
   const [popup, setPopup] = useState<FeaturePopupState | null>(null)
 
   const close = useCallback(() => setPopup(null), [])
 
   const selectItem = useCallback((item: DataItem | null) => {
-    if (item) setSelectedItems([item.id])
+    if (item) setActiveItem(item.id)
     setPopup(prev => prev ? { ...prev, selected: item } : null)
-  }, [setSelectedItems])
+  }, [setActiveItem])
 
   useEffect(() => {
     if (!map) return
@@ -44,7 +44,7 @@ export function useFeaturePopup() {
       const features = map.queryRenderedFeatures(e.point, { layers: existingLayers })
       if (!features.length) {
         setPopup(null)
-        clearSelectedItems()
+        clearActiveItem()
         return
       }
 
@@ -58,11 +58,11 @@ export function useFeaturePopup() {
 
       if (!dataItems.length) {
         setPopup(null)
-        clearSelectedItems()
+        clearActiveItem()
         return
       }
 
-      setSelectedItems(dataItems.map(item => item.id))
+      setActiveItem(dataItems[0].id)
       setPopup({
         lngLat: [e.lngLat.lng, e.lngLat.lat],
         candidates: dataItems,
@@ -91,7 +91,7 @@ export function useFeaturePopup() {
       map.off('mousemove', handleMouseMove)
       map.getCanvas().style.cursor = ''
     }
-  }, [map, items, drawMode, setSelectedItems, clearSelectedItems])
+  }, [map, items, drawMode, setActiveItem, clearActiveItem])
 
   return { popup, close, selectItem }
 }

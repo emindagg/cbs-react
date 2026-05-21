@@ -144,17 +144,17 @@ describe('useDataManagementStore clearBufferAnalysisItems', () => {
     expect(state.importedLayerName).toBeNull()
   })
 
-  it('sets unique selected items and keeps active item aligned with first selection', () => {
+  it('sets unique selected items without changing active map highlight', () => {
     const first = createItem({ id: 'first' })
     const second = createItem({ id: 'second' })
 
-    useDataManagementStore.setState({ items: [first, second] })
+    useDataManagementStore.setState({ items: [first, second], activeItemId: 'first' })
 
     useDataManagementStore.getState().setSelectedItems(['second', 'second', 'missing', 'first'])
 
     const state = useDataManagementStore.getState()
     expect(state.selectedItemIds).toEqual(['second', 'first'])
-    expect(state.activeItemId).toBe('second')
+    expect(state.activeItemId).toBe('first')
   })
 
   it('clears removed item ids from table-map selection state', () => {
@@ -171,7 +171,7 @@ describe('useDataManagementStore clearBufferAnalysisItems', () => {
 
     const state = useDataManagementStore.getState()
     expect(state.selectedItemIds).toEqual(['second'])
-    expect(state.activeItemId).toBe('second')
+    expect(state.activeItemId).toBeNull()
   })
 })
 

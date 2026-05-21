@@ -66,3 +66,26 @@ Alt çekmeceye dönüştürülen öznitelik tablosunun yalnızca yüksekliği ay
 
 ## Sonuç
 Panel genişliği için `vw` tabanlı state eklendi. Kullanıcı artık alt çekmecenin sol veya sağ kenarından sürükleyerek öznitelik tablosunun genişliğini ayarlayabilir.
+
+---
+
+# Görev: Tablo Checkbox Seçimi ve Harita Vurgusunu Ayırma
+Tarih: 2026-05-21
+
+## Bağlam
+Öznitelik tablosunda checkbox seçimi toplu silme işlemi için kullanılmalı; satırdaki `Ad` hücresine tıklamak ise checkbox'ı işaretlemeden yalnızca haritadaki ilgili geometriyi vurgulamalı.
+
+## Plan
+- [x] Adım 1: Harita vurgusunu `activeItemId`, checkbox seçimlerini `selectedItemIds` üzerinden ayrı çalışacak hale getir.
+- [x] Adım 2: `Ad` hücresine tıklanınca yalnızca harita vurgusunu güncelle.
+- [x] Adım 3: Test, build ve Türkçe karakter kontrolünü çalıştır.
+
+## Doğrulama kriterleri
+- [x] `Ad` hücresine tıklamak checkbox'ı işaretlememeli.
+- [x] `Ad` hücresine tıklamak haritada ilgili geometriyi vurgulamalı.
+- [x] Checkbox seçimi toplu silme işlemi için ayrı kalmalı.
+- [x] İlgili testler ve build başarılı olmalı.
+- [x] Türkçe karakterler bozulmadan kalmalı.
+
+## Sonuç
+Checkbox seçimleri toplu işlem state'i olarak bırakıldı. `Ad` hücresine tıklamak artık checkbox'ı işaretlemeden yalnızca harita vurgusunu güncelliyor.

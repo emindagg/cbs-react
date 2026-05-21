@@ -86,6 +86,7 @@ export interface DataManagementStore {
   toggleImportedLayerVisibility: () => void
   toggleImportedSourceVisibility: (sourceLabel: string) => void
   setActiveItem: (id: string | null) => void
+  clearActiveItem: () => void
   setSelectedItems: (ids: string[]) => void
   toggleSelectedItem: (id: string) => void
   clearSelectedItems: () => void

@@ -110,7 +110,7 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
       items: nextItems,
       hasImportedData: stillHasImported,
       importedLayerName: stillHasImported ? state.importedLayerName : null,
-      activeItemId: state.activeItemId === id ? selectedItemIds[0] ?? null : state.activeItemId,
+      activeItemId: state.activeItemId === id ? null : state.activeItemId,
       selectedItemIds,
       editingItemId: state.editingItemId === id ? null : state.editingItemId,
     }
@@ -157,13 +157,15 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
     }
   }),
 
-  setActiveItem: (id) => set({ activeItemId: id, selectedItemIds: id ? [id] : [] }),
+  setActiveItem: (id) => set((state) => ({
+    activeItemId: id && state.items.some(item => item.id === id) ? id : null,
+  })),
+  clearActiveItem: () => set({ activeItemId: null }),
   setSelectedItems: (ids) => set((state) => {
     const existingIds = new Set(state.items.map(item => item.id))
     const selectedItemIds = uniqueIds(ids).filter(id => existingIds.has(id))
     return {
       selectedItemIds,
-      activeItemId: selectedItemIds[0] ?? null,
     }
   }),
   toggleSelectedItem: (id) => set((state) => {
@@ -174,10 +176,9 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
       : [...state.selectedItemIds, id]
     return {
       selectedItemIds,
-      activeItemId: selectedItemIds[0] ?? null,
     }
   }),
-  clearSelectedItems: () => set({ activeItemId: null, selectedItemIds: [] }),
+  clearSelectedItems: () => set({ selectedItemIds: [] }),
   updateLayerStyle: (styles) => {
     const nextStyles = { ...get().layerStyles, ...styles }
     set({ layerStyles: nextStyles })

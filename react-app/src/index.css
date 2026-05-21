@@ -779,6 +779,19 @@ body {
     background-color: #f0f4ff !important;
 }
 
+.ag-row.attribute-table-active-row {
+    background-color: #e0f7ff !important;
+}
+
+.ag-row.attribute-table-active-row .ag-cell {
+    border-top: 1px solid #22d3ee !important;
+    border-bottom: 1px solid #22d3ee !important;
+}
+
+.ag-row.attribute-table-active-row .ag-cell:first-child {
+    border-left: 2px solid #06b6d4 !important;
+}
+
 .ag-row-even {
     background-color: #ffffff;
 }

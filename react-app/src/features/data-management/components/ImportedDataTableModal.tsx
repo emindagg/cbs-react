@@ -1,7 +1,9 @@
 import type {
+  CellClickedEvent,
   CellValueChangedEvent,
   ColDef,
   GetRowIdParams,
+  RowClassRules,
   SelectionChangedEvent,
 } from 'ag-grid-community'
 import { themeQuartz } from 'ag-grid-community'
@@ -61,6 +63,8 @@ const DEFAULT_DRAWER_WIDTH_VW = 96
 const MIN_DRAWER_WIDTH_VW = 44
 const MAX_DRAWER_WIDTH_VW = 98
 const PERCENT_MULTIPLIER = 100
+const TABLE_ROW_HEIGHT = 28
+const TABLE_HEADER_HEIGHT = 42
 
 export interface ConfirmState {
   title: string
@@ -205,6 +209,10 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
   const removeItem = useDataManagementStore(s => s.removeItem)
   const selectedItemIds = useDataManagementStore(s => s.selectedItemIds)
   const setSelectedItems = useDataManagementStore(s => s.setSelectedItems)
+  const clearSelectedItems = useDataManagementStore(s => s.clearSelectedItems)
+  const activeItemId = useDataManagementStore(s => s.activeItemId)
+  const setActiveItem = useDataManagementStore(s => s.setActiveItem)
+  const clearActiveItem = useDataManagementStore(s => s.clearActiveItem)
   const gridRef = useRef<AgGridReact>(null)
   const pendingEdits = useRef<Map<string, Record<string, unknown>>>(new Map())
   const isSyncingSelection = useRef(false)
@@ -257,6 +265,17 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
     setSelectedItems(ids)
   }, [setSelectedItems])
 
+  const onCellClicked = useCallback((event: CellClickedEvent) => {
+    if (event.colDef.field !== '__name') return
+    const id = event.data?.__id as string | undefined
+    if (!id) return
+    if (id === activeItemId) {
+      clearActiveItem()
+      return
+    }
+    setActiveItem(id)
+  }, [activeItemId, clearActiveItem, setActiveItem])
+
   const filteredItems = useMemo(
     () => items.filter(item => !sourceFilter || item.source === sourceFilter),
     [items, sourceFilter],
@@ -292,6 +311,17 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
     isSyncingSelection.current = false
   }, [rowData, selectedItemIds])
 
+  useEffect(() => {
+    const api = gridRef.current?.api
+    if (!api) return
+
+    api.redrawRows()
+    if (!activeItemId) return
+    const node = api.getRowNode(activeItemId)
+    if (!node) return
+    api.ensureNodeVisible(node, 'middle')
+  }, [activeItemId])
+
   const columnDefs = useMemo<ColDef[]>(() => [
     { field: '__name', headerName: 'Ad', minWidth: 180, pinned: 'left', editable: false },
     { field: '__geometry', headerName: 'Geometri', minWidth: 140, editable: false },
@@ -316,6 +346,9 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
   }), [])
 
   const getRowId = useCallback((params: GetRowIdParams) => params.data.__id as string, [])
+  const rowClassRules = useMemo<RowClassRules>(() => ({
+    'attribute-table-active-row': params => params.data?.__id === activeItemId,
+  }), [activeItemId])
 
   const onCellValueChanged = useCallback((e: CellValueChangedEvent) => {
     const id = e.data.__id as string
@@ -374,6 +407,31 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
     setIsAddingColumn(false)
     setNewColumnName('')
   }, [newColumnName, propertyKeys, addPropertyColumn, sourceFilter])
+
+  const clearGridSelection = useCallback(() => {
+    const api = gridRef.current?.api
+    if (!api) return
+
+    isSyncingSelection.current = true
+    api.deselectAll()
+    isSyncingSelection.current = false
+  }, [])
+
+  const handleCancelOrClose = useCallback(() => {
+    if (isAddingColumn) {
+      setIsAddingColumn(false)
+      setNewColumnName('')
+      return
+    }
+
+    if (selectedCount > 0) {
+      clearGridSelection()
+      clearSelectedItems()
+      return
+    }
+
+    handleClose()
+  }, [clearGridSelection, clearSelectedItems, handleClose, isAddingColumn, selectedCount])
 
   const handleResizeStart = useCallback((event: ReactPointerEvent<HTMLDivElement>, mode: ResizeMode) => {
     event.preventDefault()
@@ -543,9 +601,10 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
               )}
               <button
                 type="button"
-                onClick={handleClose}
+                onClick={handleCancelOrClose}
                 className="w-8 h-8 border border-slate-200 rounded-lg inline-flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
-                aria-label="Kapat"
+                aria-label={isAddingColumn || selectedCount > 0 ? 'İşlemi iptal et' : 'Kapat'}
+                title={isAddingColumn || selectedCount > 0 ? 'İşlemi iptal et' : 'Kapat'}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -561,10 +620,14 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
                 getRowId={getRowId}
+                rowClassRules={rowClassRules}
+                rowHeight={TABLE_ROW_HEIGHT}
+                headerHeight={TABLE_HEADER_HEIGHT}
                 suppressMovableColumns
                 animateRows={false}
                 localeText={agGridTurkishLocaleText}
                 onCellValueChanged={onCellValueChanged}
+                onCellClicked={onCellClicked}
                 onSelectionChanged={onSelectionChanged}
                 rowSelection={{
                   mode: 'multiRow',
