@@ -645,6 +645,8 @@
 
 .sidebar__embed-form-actions {
     display: flex;
+    justify-content: center; /* Butonları yatayda tam ortalar */
+    align-items: center;
     gap: 8px;
 }
 
