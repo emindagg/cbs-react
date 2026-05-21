@@ -151,11 +151,11 @@ export function renderDetailView(context) {
                                       placeholder="URL veya iframe kodu yapıştırın..."
                                       rows="3"></textarea>
                             <div class="sidebar__embed-form-actions">
-                                <button type="button" id="embed-submit" class="sidebar__embed-submit">
-                                    Ekle
-                                </button>
                                 <button type="button" id="embed-cancel" class="sidebar__embed-cancel">
                                     İptal
+                                </button>
+                                <button type="button" id="embed-submit" class="sidebar__embed-submit">
+                                    Ekle
                                 </button>
                             </div>
                         </div>
