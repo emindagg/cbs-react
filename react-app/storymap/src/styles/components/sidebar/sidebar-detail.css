@@ -343,12 +343,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #0056b3; /* 2. görseldeki gibi şık lacivert/mavi */
+    color: #475569; /* Şık Slate rengi (lacivert yerine modernize edildi) */
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.3px;
     text-transform: none; /* Büyük harf zorunluluğu kaldırıldı */
-    border-bottom: 1px dashed rgba(0, 86, 179, 0.2);
+    border-bottom: 1px dashed rgba(71, 85, 105, 0.2);
     padding-bottom: 6px;
 }
 
@@ -385,13 +385,18 @@
 .sidebar__media-link-form-actions {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: 8px;
     width: 100%;
 }
 
 .sidebar__media-link-btn-cancel,
 .sidebar__media-link-btn-submit {
-    padding: 8px 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px; /* Sabit yükseklik - dikey kaymaları ve hizalama sorunlarını engeller */
+    padding: 0 16px; /* Dikey padding sıfırlandı, height kontrol ediyor */
     border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
@@ -417,11 +422,13 @@
 .sidebar__media-link-btn-submit {
     background: #587b6a; /* Premium Adaçayı Yeşili (Sage Green) */
     color: #fff;
+    border: 1px solid transparent; /* İptal butonuyla tam piksel uyumu */
     box-shadow: 0 2px 4px rgba(88, 123, 106, 0.2);
 }
 
 .sidebar__media-link-btn-submit:hover {
     background: #456254; /* Koyu Adaçayı Yeşili */
+    border-color: transparent;
     box-shadow: 0 4px 8px rgba(69, 98, 84, 0.35);
     transform: translateY(-1px);
 }
@@ -436,6 +443,10 @@
     background-color: rgba(16, 185, 129, 0.02) !important;
     cursor: default;
     padding: 24px 20px; /* Dikeyde biraz daha kompaktlaşsın ama genişliği kullansın */
+}
+
+.sidebar__media-upload--link-active .sidebar__media-upload-content {
+    padding-bottom: 16px; /* Butonların alttan taşmasını önlemek için ekstra boşluk */
 }
 
 .sidebar__media-upload--link-active .sidebar__media-upload-actions,
