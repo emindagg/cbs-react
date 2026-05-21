@@ -16,6 +16,8 @@ import {
   NumberEditorModule,
   CellStyleModule,
   RenderApiModule,
+  RowApiModule,
+  ScrollApiModule,
   RowStyleModule,
   RowSelectionModule,
   ModuleRegistry,
@@ -39,6 +41,8 @@ export const editorModules = [
   NumberEditorModule,
   CellStyleModule,
   RenderApiModule,
+  RowApiModule,
+  ScrollApiModule,
   RowStyleModule,
 ]
 
