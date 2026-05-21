@@ -96,10 +96,8 @@ export function renderDetailView(context) {
                                     <span>Video Bağlantısı Ekle</span>
                                 </div>
                                 <div class="sidebar__media-link-input-wrapper">
-                                    <i class="fa-solid fa-video sidebar__media-link-input-icon"></i>
                                     <input type="text" 
-                                           id="media-video-link-input" 
-                                           placeholder="YouTube, Vimeo vb. video adresi yapıştırın...">
+                                           id="media-video-link-input">
                                 </div>
                                 <div class="sidebar__media-link-form-actions">
                                     <button type="button" 
