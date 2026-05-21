@@ -343,12 +343,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #059669; /* Proje yeşili ile uyumlu */
+    color: #0056b3; /* 2. görseldeki gibi şık lacivert/mavi */
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.3px;
-    text-transform: uppercase;
-    border-bottom: 1px dashed rgba(16, 185, 129, 0.2);
+    text-transform: none; /* Büyük harf zorunluluğu kaldırıldı */
+    border-bottom: 1px dashed rgba(0, 86, 179, 0.2);
     padding-bottom: 6px;
 }
 
@@ -415,14 +415,14 @@
 }
 
 .sidebar__media-link-btn-submit {
-    background: #10b981; /* Projenin yeşil birincil rengi */
+    background: #587b6a; /* Premium Adaçayı Yeşili (Sage Green) */
     color: #fff;
-    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 2px 4px rgba(88, 123, 106, 0.2);
 }
 
 .sidebar__media-link-btn-submit:hover {
-    background: #059669;
-    box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+    background: #456254; /* Koyu Adaçayı Yeşili */
+    box-shadow: 0 4px 8px rgba(69, 98, 84, 0.35);
     transform: translateY(-1px);
 }
 
@@ -642,9 +642,21 @@
 }
 
 .sidebar__embed-submit {
-    background: #2563eb;
+    background: #587b6a; /* Premium Adaçayı Yeşili (Sage Green) */
     color: #fff;
     border: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(88, 123, 106, 0.2);
+}
+
+.sidebar__embed-submit:hover {
+    background: #456254; /* Koyu Adaçayı Yeşili */
+    box-shadow: 0 4px 8px rgba(69, 98, 84, 0.35);
+    transform: translateY(-1px);
+}
+
+.sidebar__embed-submit:active {
+    transform: translateY(0);
 }
 
 .sidebar__embed-cancel {
