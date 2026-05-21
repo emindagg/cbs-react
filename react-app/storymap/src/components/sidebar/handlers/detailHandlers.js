@@ -312,44 +312,60 @@ function setupEmbedItemListeners(sidebar, root) {
  * Medya kartı listener'ları
  */
 function setupMediaItemListeners(sidebar, root) {
-    const mediaPreviewItems = root.querySelectorAll('[data-media-preview]');
-    mediaPreviewItems.forEach(preview => {
-        preview.addEventListener('click', () => {
+    if (!root) return;
+    if (root._hasMediaItemListeners) return;
+    root._hasMediaItemListeners = true;
+
+    // Lightbox, silme ve açıklama düzenleme (kalem) için tek bir click delegasyonu
+    root.addEventListener('click', (e) => {
+        // 1. Açıklama düzenleme (kalem) butonu tıklandıysa
+        const editBtn = e.target.closest('.sidebar__media-edit-caption');
+        if (editBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const index = parseInt(editBtn.dataset.mediaIndex, 10);
+            const captionInput = root.querySelector(`.sidebar__media-caption[data-media-index="${index}"]`);
+            if (captionInput) {
+                captionInput.focus();
+                // İmleci metnin sonuna almak için
+                const val = captionInput.value;
+                captionInput.value = '';
+                captionInput.value = val;
+            }
+            return;
+        }
+
+        // 2. Medya silme (çarpı) butonu tıklandıysa
+        const removeBtn = e.target.closest('.sidebar__media-remove');
+        if (removeBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const index = parseInt(removeBtn.dataset.mediaIndex, 10);
+            removeMedia(sidebar, index);
+            return;
+        }
+
+        // 3. Medya önizleme (lightbox) tıklandıysa (butonlar harici)
+        const preview = e.target.closest('[data-media-preview]');
+        if (preview && !e.target.closest('.sidebar__media-remove') && !e.target.closest('.sidebar__media-edit-caption')) {
+            e.preventDefault();
+            e.stopPropagation();
             const index = parseInt(preview.dataset.mediaPreview, 10);
             if (sidebar.lightbox && sidebar.editingPoint?.media?.[index]) {
                 sidebar.lightbox.open(sidebar.editingPoint.media, index);
             }
-        });
+        }
     });
 
-    const mediaRemoveBtns = root.querySelectorAll('.sidebar__media-remove');
-    mediaRemoveBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const index = parseInt(btn.dataset.mediaIndex);
-            removeMedia(sidebar, index);
-        });
-    });
-
-    const captionEditBtns = root.querySelectorAll('.sidebar__media-edit-caption');
-    captionEditBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const index = parseInt(btn.dataset.mediaIndex, 10);
-            const captionInput = root.querySelector(`.sidebar__media-caption[data-media-index="${index}"]`);
-            if (captionInput) captionInput.focus();
-        });
-    });
-
-    // Medya caption inputları
-    const captionInputs = root.querySelectorAll('.sidebar__media-caption');
-    captionInputs.forEach(input => {
-        input.addEventListener('input', (e) => {
-            const index = parseInt(input.dataset.mediaIndex);
+    // Medya açıklama (caption) girdileri için input olay delegasyonu
+    root.addEventListener('input', (e) => {
+        const input = e.target.closest('.sidebar__media-caption');
+        if (input) {
+            const index = parseInt(input.dataset.mediaIndex, 10);
             if (sidebar.editingPoint.media && sidebar.editingPoint.media[index]) {
-                sidebar.editingPoint.media[index].caption = e.target.value;
+                sidebar.editingPoint.media[index].caption = input.value;
             }
-        });
+        }
     });
 }
 
