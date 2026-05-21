@@ -178,7 +178,7 @@ export class DetailPanel {
         if (validEmbeds.length === 0) return '';
 
         return `
-            <div class="detail-panel__embeds" style="display: grid; gap: 14px; padding: 0 16px 16px;">
+            <div class="detail-panel__embeds" style="display: grid; gap: 14px; padding: 0 0 16px;">
                 ${validEmbeds.map((item, index) => {
                     const embedUrl = getEmbedVideoUrl(item);
                     const title = item.title || item.name || `Yerleştirme ${index + 1}`;
@@ -269,30 +269,32 @@ export class DetailPanel {
                     <h3 class="detail-panel__title">${point.title || `Öge ${currentIndex + 1}`}</h3>
                 </div>
 
-                <!-- Medya Galerisi -->
-                ${images.length > 0 ? `
-                    <div class="detail-panel__image">
-                        ${hasMultipleImages ? `
-                            <button class="detail-panel__image-nav detail-panel__image-nav--prev" id="image-prev">
-                                <i class="fa-solid fa-chevron-left"></i>
-                            </button>
-                        ` : ''}
-                        <div class="detail-panel__media" id="detail-media" style="cursor: pointer;">
-                            ${this.renderDetailMedia(images[0], point)}
-                        </div>
-                        ${hasMultipleImages ? `
-                            <button class="detail-panel__image-nav detail-panel__image-nav--next" id="image-next">
-                                <i class="fa-solid fa-chevron-right"></i>
-                            </button>
-                            <div class="detail-panel__image-counter">${this.currentImageIndex + 1} / ${images.length}</div>
-                        ` : ''}
-                    </div>
-                ` : ''}
-
-                ${this.renderDetailEmbeds(embeds)}
-
-                <!-- Açıklama -->
+                <!-- İçerik -->
                 <div class="detail-panel__content">
+                    <!-- Medya Galerisi -->
+                    ${images.length > 0 ? `
+                        <div class="detail-panel__image" style="margin-bottom: 16px; border-radius: 8px;">
+                            ${hasMultipleImages ? `
+                                <button class="detail-panel__image-nav detail-panel__image-nav--prev" id="image-prev">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                            ` : ''}
+                            <div class="detail-panel__media" id="detail-media" style="cursor: pointer;">
+                                ${this.renderDetailMedia(images[0], point)}
+                            </div>
+                            ${hasMultipleImages ? `
+                                <button class="detail-panel__image-nav detail-panel__image-nav--next" id="image-next">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                                <div class="detail-panel__image-counter">${this.currentImageIndex + 1} / ${images.length}</div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
+                    <!-- Yerleştirmeler -->
+                    ${this.renderDetailEmbeds(embeds)}
+
+                    <!-- Açıklama -->
                     ${point.description ? `
                         <p class="detail-panel__description">${point.description}</p>
                     ` : '<p class="detail-panel__description detail-panel__description--empty">Açıklama eklenmemiş</p>'}
