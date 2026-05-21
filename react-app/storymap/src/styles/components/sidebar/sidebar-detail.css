@@ -395,17 +395,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 36px; /* Sabit yükseklik - dikey kaymaları ve hizalama sorunlarını engeller */
-    padding: 0 16px; /* Dikey padding sıfırlandı, height kontrol ediyor */
-    border-radius: 8px;
-    font-size: 13px;
+    height: 28px; /* Daha kompakt ve zarif yükseklik */
+    min-height: 28px;
+    max-height: 28px;
+    padding: 0 12px; /* Yatay dolgu daraltıldı */
+    border-radius: 6px; /* Kompakt görünüm için yuvarlatma azaltıldı */
+    font-size: 12px; /* Yazı boyutu daha zarif yapıldı */
     font-weight: 600;
+    line-height: 1;
     cursor: pointer;
     transition: all 0.2s ease;
     box-sizing: border-box;
-    min-width: 80px;
+    min-width: 70px; /* Kompakt genişlik */
     text-align: center;
     border: none;
+    margin: 0;
 }
 
 .sidebar__media-link-btn-cancel {
