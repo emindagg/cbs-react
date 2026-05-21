@@ -6,7 +6,8 @@ import type {
 } from 'ag-grid-community'
 import { themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
-import { AlertTriangle, Check, Loader2, Plus, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Check, GripHorizontal, GripVertical, Loader2, Plus, Trash2, X } from 'lucide-react'
+import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -50,8 +51,16 @@ interface ImportedDataTableModalProps {
 }
 
 type ConfirmVariant = 'danger' | 'default'
+type ResizeMode = 'height' | 'left-width' | 'right-width'
 
 const DELETE_CONFIRM_DELAY_MS = 1500
+const DEFAULT_DRAWER_HEIGHT_VH = 38
+const MIN_DRAWER_HEIGHT_VH = 26
+const MAX_DRAWER_HEIGHT_VH = 72
+const DEFAULT_DRAWER_WIDTH_VW = 96
+const MIN_DRAWER_WIDTH_VW = 44
+const MAX_DRAWER_WIDTH_VW = 98
+const PERCENT_MULTIPLIER = 100
 
 export interface ConfirmState {
   title: string
@@ -203,6 +212,15 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
   const [confirm, setConfirm] = useState<ConfirmState | null>(null)
   const [isAddingColumn, setIsAddingColumn] = useState(false)
   const [newColumnName, setNewColumnName] = useState('')
+  const [drawerHeight, setDrawerHeight] = useState(DEFAULT_DRAWER_HEIGHT_VH)
+  const [drawerWidth, setDrawerWidth] = useState(DEFAULT_DRAWER_WIDTH_VW)
+  const resizeStartRef = useRef<{
+    mode: ResizeMode
+    startX: number
+    startY: number
+    startHeight: number
+    startWidth: number
+  } | null>(null)
 
   const dropPendingEdits = useCallback((ids: string[]) => {
     let changed = false
@@ -357,18 +375,98 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
     setNewColumnName('')
   }, [newColumnName, propertyKeys, addPropertyColumn, sourceFilter])
 
+  const handleResizeStart = useCallback((event: ReactPointerEvent<HTMLDivElement>, mode: ResizeMode) => {
+    event.preventDefault()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    resizeStartRef.current = {
+      mode,
+      startX: event.clientX,
+      startY: event.clientY,
+      startHeight: drawerHeight,
+      startWidth: drawerWidth,
+    }
+  }, [drawerHeight, drawerWidth])
+
+  const handleResizeMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    const resizeStart = resizeStartRef.current
+    if (!resizeStart) return
+
+    if (resizeStart.mode === 'height') {
+      const deltaVh = ((resizeStart.startY - event.clientY) / window.innerHeight) * PERCENT_MULTIPLIER
+      const nextHeight = Math.min(
+        MAX_DRAWER_HEIGHT_VH,
+        Math.max(MIN_DRAWER_HEIGHT_VH, resizeStart.startHeight + deltaVh),
+      )
+      setDrawerHeight(nextHeight)
+      return
+    }
+
+    const dragDistance = resizeStart.mode === 'left-width'
+      ? resizeStart.startX - event.clientX
+      : event.clientX - resizeStart.startX
+    const deltaVw = (dragDistance / window.innerWidth) * PERCENT_MULTIPLIER
+    const nextWidth = Math.min(
+      MAX_DRAWER_WIDTH_VW,
+      Math.max(MIN_DRAWER_WIDTH_VW, resizeStart.startWidth + deltaVw),
+    )
+    setDrawerWidth(nextWidth)
+  }, [])
+
+  const handleResizeEnd = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!resizeStartRef.current) return
+    resizeStartRef.current = null
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }, [])
+
   if (!isOpen) return null
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-[2050] bg-slate-900/40 p-4 flex items-center justify-center">
-        <div className="w-full max-w-6xl h-[84vh] bg-white border border-slate-200 rounded-xl shadow-xl flex flex-col overflow-hidden">
-          <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-            <div>
+      <div className="fixed inset-x-0 bottom-0 z-[2050] pointer-events-none px-3 pb-3 sm:px-4">
+        <section
+          aria-label="Öznitelik Tablosu"
+          className="pointer-events-auto relative mx-auto flex flex-col overflow-hidden rounded-t-xl border border-slate-200 bg-white/95 shadow-[0_-18px_48px_rgba(15,23,42,0.18)] backdrop-blur-md"
+          style={{
+            height: `${drawerHeight}vh`,
+            width: `min(${drawerWidth}vw, calc(100vw - 24px))`,
+          }}
+        >
+          <div
+            className="absolute inset-y-0 left-0 z-10 flex w-3 cursor-col-resize touch-none items-center justify-center text-slate-300 hover:bg-cyan-50/70 hover:text-cyan-600"
+            onPointerDown={event => handleResizeStart(event, 'left-width')}
+            onPointerMove={handleResizeMove}
+            onPointerUp={handleResizeEnd}
+            onPointerCancel={handleResizeEnd}
+            title="Panel genişliğini değiştirmek için sürükleyin"
+          >
+            <GripVertical className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div
+            className="absolute inset-y-0 right-0 z-10 flex w-3 cursor-col-resize touch-none items-center justify-center text-slate-300 hover:bg-cyan-50/70 hover:text-cyan-600"
+            onPointerDown={event => handleResizeStart(event, 'right-width')}
+            onPointerMove={handleResizeMove}
+            onPointerUp={handleResizeEnd}
+            onPointerCancel={handleResizeEnd}
+            title="Panel genişliğini değiştirmek için sürükleyin"
+          >
+            <GripVertical className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div
+            className="flex h-5 cursor-row-resize touch-none items-center justify-center border-b border-slate-200 bg-slate-50 text-slate-400 hover:text-slate-600"
+            onPointerDown={event => handleResizeStart(event, 'height')}
+            onPointerMove={handleResizeMove}
+            onPointerUp={handleResizeEnd}
+            onPointerCancel={handleResizeEnd}
+            title="Panel yüksekliğini değiştirmek için sürükleyin"
+          >
+            <GripHorizontal className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
               <h2 className="text-sm font-semibold text-slate-900">Öznitelik Tablosu</h2>
-              <p className="text-xs text-slate-500">{rowData.length} satır — hücreye çift tıklayarak düzenleyin</p>
+              <p className="text-xs text-slate-500">{rowData.length} satır - hücreye çift tıklayarak düzenleyin</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {isAddingColumn ? (
                 <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg pr-1 pl-1">
                   <input
@@ -486,7 +584,7 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
               />
             </div>
           </div>
-        </div>
+        </section>
       </div>
       <ConfirmDialog state={confirm} onCancel={() => setConfirm(null)} />
     </>,
