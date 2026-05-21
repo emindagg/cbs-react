@@ -312,45 +312,156 @@
 .sidebar__media-upload-content small {
     color: #6b7280;
     font-size: 11px;
+
+.sidebar__media-upload-content small {
+    color: #6b7280;
+    font-size: 11px;
     font-weight: 400;
     text-align: center;
     align-self: center;
 }
 
-/* ---- Video Bağlantısı form satırı ---- */
-.sidebar__media-link-input-container {
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.sidebar__media-link-input-row {
+/* ---- Video Bağlantısı form tasarımı ---- */
+.sidebar__media-link-form {
     display: flex;
-    gap: 6px;
+    flex-direction: column;
+    gap: 14px;
     width: 100%;
+    text-align: left;
     box-sizing: border-box;
+    animation: formFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.sidebar__media-link-input-row input {
-    flex: 1;
+@keyframes formFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sidebar__media-link-form-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #059669; /* Proje yeşili ile uyumlu */
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    border-bottom: 1px dashed rgba(16, 185, 129, 0.2);
+    padding-bottom: 6px;
+}
+
+.sidebar__media-link-form-header i {
+    font-size: 14px;
+}
+
+.sidebar__media-link-input-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar__media-link-input-icon {
+    position: absolute;
+    left: 12px;
+    color: #9ca3af;
+    font-size: 14px;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.sidebar__media-link-input-wrapper input {
+    width: 100%;
     min-width: 0;
-    padding: 6px 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    padding: 10px 12px 10px 36px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
     font-size: 13px;
     outline: none;
     background: #fff;
     color: #1f2937;
+    transition: all 0.2s ease;
     box-sizing: border-box;
 }
 
-.sidebar__media-link-input-row button {
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
+.sidebar__media-link-input-wrapper input::placeholder {
+    color: #9ca3af;
+}
+
+.sidebar__media-link-input-wrapper input:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.sidebar__media-link-input-wrapper input:focus + .sidebar__media-link-input-icon {
+    color: #10b981;
+}
+
+.sidebar__media-link-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 100%;
+}
+
+.sidebar__media-link-btn-cancel,
+.sidebar__media-link-btn-submit {
+    padding: 8px 16px;
+    border-radius: 8px;
     font-size: 13px;
-    white-space: nowrap;
-    flex-shrink: 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    min-width: 80px;
+    text-align: center;
+    border: none;
+}
+
+.sidebar__media-link-btn-cancel {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+}
+
+.sidebar__media-link-btn-cancel:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.sidebar__media-link-btn-submit {
+    background: #10b981; /* Projenin yeşil birincil rengi */
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.sidebar__media-link-btn-submit:hover {
+    background: #059669;
+    box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+    transform: translateY(-1px);
+}
+
+.sidebar__media-link-btn-submit:active {
+    transform: translateY(0);
+}
+
+/* Yükleme alanının form açıkken geçiş durumları */
+.sidebar__media-upload--link-active {
+    border-color: #10b981;
+    background-color: rgba(16, 185, 129, 0.02) !important;
+    cursor: default;
+    padding: 24px 20px; /* Dikeyde biraz daha kompaktlaşsın ama genişliği kullansın */
+}
+
+.sidebar__media-upload--link-active .sidebar__media-upload-actions,
+.sidebar__media-upload--link-active small {
+    display: none !important;
 }
 
 /* ========================================

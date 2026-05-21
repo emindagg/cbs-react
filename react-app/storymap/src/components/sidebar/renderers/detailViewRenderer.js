@@ -90,20 +90,27 @@ export function renderDetailView(context) {
                                 </button>
                             </div>
                             <small>Dosyaları buraya sürükleyip bırakabilirsiniz</small>
-                            <div class="sidebar__media-link-input-container" id="media-link-input-container" style="display: none;">
-                                <div class="sidebar__media-link-input-row">
+                            <div class="sidebar__media-link-form" id="media-link-input-container" style="display: none;">
+                                <div class="sidebar__media-link-form-header">
+                                    <i class="fa-solid fa-link"></i>
+                                    <span>Video Bağlantısı Ekle</span>
+                                </div>
+                                <div class="sidebar__media-link-input-wrapper">
+                                    <i class="fa-solid fa-video sidebar__media-link-input-icon"></i>
                                     <input type="text" 
                                            id="media-video-link-input" 
-                                           placeholder="Video bağlantısı girin...">
-                                    <button type="button" 
-                                            id="media-video-link-submit" 
-                                            style="background: #2563eb; color: #fff; border: none;">
-                                        Ekle
-                                    </button>
+                                           placeholder="YouTube, Vimeo vb. video adresi yapıştırın...">
+                                </div>
+                                <div class="sidebar__media-link-form-actions">
                                     <button type="button" 
                                             id="media-video-link-cancel" 
-                                            style="background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db;">
+                                            class="sidebar__media-link-btn-cancel">
                                         İptal
+                                    </button>
+                                    <button type="button" 
+                                            id="media-video-link-submit" 
+                                            class="sidebar__media-link-btn-submit">
+                                        Ekle
                                     </button>
                                 </div>
                             </div>

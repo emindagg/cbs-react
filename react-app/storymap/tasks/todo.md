@@ -1,113 +1,29 @@
-# Görev 1: İçe Aktarılan ve Paylaşılan Storymap Projelerinde Marker İkonlarının Bozulması Hatasının Çözülmesi (TAMAMLANDI)
-Tarih: 2026-05-20
-
-## Sonuç
-Başarıyla tamamlandı. Hikaye haritası (Storymap) projelerinde, dışa/içe aktarım (import/export) işlemlerinde ve paylaşım sayfalarında tüm marker'ların orijinal stilleri (damla şekli, pin ikonu, renk vb.) korundu.
-
----
-
-# Görev 2: Teardrop (Damla) Marker İkonlarının Haritada Bozuk ve Yamuk Görünmesi Hatasının Çözülmesi
-Tarih: 2026-05-20
+# Görev: Video Bağlantısı Giriş Alanının Yeniden Tasarlanması
+Tarih: 2026-05-21
 
 ## Bağlam
-Haritada damla (`teardrop`) şekli seçildiğinde veya bu şekle sahip projeler içe aktarıldığında, MapLibre GL'in dış marker elementinin `transform` özelliğini ezmesinden ötürü damla şeklinin yamulması (sivri ucunun sol alta bakması) ve içindeki ikonun yan yatması sorununun çözülmesi gerekmektedir. 
+Mevcut detay görünümündeki "Video Bağlantısı Ekle" arayüzü, yükleme paneli (`sidebar__media-upload`) içerisindeki dar alana sıkışmış durumdadır. Link giriş alanı ve ekleme/iptal butonları tek satırda aşırı dar ve kalabalık görünmekte, uzun URL girişlerinde kötü bir kullanıcı deneyimi sunmaktadır. Frontend Design ve Ultrathink prensiplerini uygulayarak bu alanı profesyonel, modern, geniş ve göz alıcı bir arayüze kavuşturacağız.
 
 ## Plan
-- [x] **Adım 1:** `src/components/map/modules/MapMarkers.js` dosyasında `addMarker` metodunda `isTeardrop` durumunu iç kapsayıcı (`wrapper`) mimarisiyle yeniden tasarlamak.
-- [x] **Adım 2:** `src/components/storymap/StoryMapComponent.js` dosyasında `createMarkerElement` metodunda `shape === 'teardrop'` durumunu benzer iç kapsayıcı (`wrapper`) mimarisine uyarlamak.
-- [x] **Adım 2.1:** `src/components/ModalComponent.js` dosyasında `addMarkerToMapForViewMode` metodundaki `isTeardrop` kısmının iç kapsayıcı (`wrapper`) yapısı ile güncellenmesi.
-- [x] **Adım 3:** Editör ve izleme modlarında damlaların dikey olarak düzgün durduğunu, içindeki ikonların dik ve hizalı olduğunu doğrulamak.
-
-## Doğrulama Kriterleri
-- [x] Damla marker ucu tam dikey olarak aşağıyı gösterecek.
-- [x] Damla marker içindeki ikon 45 derece yan yatmayacak, tamamen düzgün (dik) duracak.
-- [x] İçe aktarılan projelerdeki damla markerlar hatasız çizilecek.
-- [x] Dosyalar UTF-8 olarak kaydedilecek ve Türkçe karakterler bozulmayacak.
-
-## Sonuç
-Başarıyla tamamlandı! Sorunun iki boyutu vardı:
-1. **Varsayılan şekil hatası:** `PointManager.js`'de varsayılan `shape` değeri yanlışlıkla `'teardrop'` olarak bırakılmıştı. İçe aktarılan verilerde `shape` alanı yoksa tüm marker'lar zorla damla şekline dönüştürülüyordu. Bu değer `'circle'` olarak düzeltildi.
-2. **MapLibre transform çakışması:** Damla şekli kullanıldığında MapLibre'nin dış element transform'unu ezmesi nedeniyle damla yamuluyordu. Tüm marker çizim mekanizmalarında (MapMarkers.js, StoryMapComponent.js, ModalComponent.js) iç kapsayıcı (`wrapper`) div mimarisine geçildi.
-
----
-
-# Görev 3: Backend Güncellemelerinin Entegre Edilmesi
-Tarih: 2026-05-20
-
-## Bağlam
-Backend tarafındaki iki ana değişikliğin frontend'e uyarlanması gerekmektedir:
-1. `LoginResponse` modeline eklenen `Ogrencimi` (bool) ve `Adsoyad` (string) alanlarının oturumda saklanması.
-2. Dosya yükleme sistemine eklenen `/Dosya/video` endpoint'inin kullanılması ve video yükleme boyut sınırının 50 MB'a çıkarılması.
-
-## Plan
-- [x] **Adım 1:** `src/services/authManager.js` dosyasında `Ogrencimi` ve `Adsoyad` alanlarını session storage'da saklayacak ve yönetecek şekilde güncellemeler yapılması.
-- [x] **Adım 2:** `src/loginRedirectMain.js` dosyasında login api response'undan bu yeni alanların okunarak `authManager.saveAuth`'a parametre olarak aktarılması.
-- [x] **Adım 3:** `src/services/apiService.js` dosyasında `/Dosya/video` endpoint'ine POST isteği gönderen `uploadVideo(file)` metodunun eklenmesi.
-- [x] **Adım 4:** `src/components/sidebar/modules/MediaManager.js` dosyasında video yüklemelerinde `apiService.uploadVideo` fonksiyonunun çağrılmasının sağlanması.
-- [x] **Adım 5:** `src/components/sidebar/handlers/detailHandlers.js` dosyasında video yükleme boyut sınırının (MAX_VIDEO_SIZE) 30 MB'tan 50 MB'a yükseltilmesi.
-
-## Doğrulama Kriterleri
-- [x] Giriş yapıldığında kullanıcının ad-soyad ve öğrenci bilgisi session storage'a kaydedilecek, çıkış yapıldığında silinecek.
-- [x] Resim yüklemeleri `/Dosya` endpoint'ini, video yüklemeleri ise `/Dosya/video` endpoint'ini kullanacak.
-- [x] Video boyutu üst sınırı frontend üzerinde 50 MB olarak kontrol edilecek.
-- [x] Türkçe karakterler bozulmadan UTF-8 encoding ile kaydedilecek.
-
-## Sonuç
-Başarıyla tamamlandı!
-1. `LoginResponse` modelindeki `Ogrencimi` ve `Adsoyad` alanları oturum yönetim sistemine (`AuthManager`) entegre edildi. LoginRedirect akışından bu alanlar esnek (büyük/küçük harf bağımsız) okunup oturuma kaydediliyor. Çıkış yapıldığında session storage üzerinden başarıyla temizleniyor.
-2. `/Dosya/video` endpoint'i `ApiService`'e eklendi. `MediaManager` üzerinden resimler `/Dosya`, videolar ise `/Dosya/video` endpoint'ine gönderilecek şekilde yönlendirildi.
-3. Frontend video yükleme boyutu sınırı, backend'in yeni sınırı olan 50 MB limitine yükseltildi. Tüm kodlar UTF-8 karakter setine uygun olarak kaydedildi ve Türkçe karakter bütünlüğü korundu.
-
----
-
-# Görev 4: Öğretmenler İçin Video Linki Ekleme Desteği
-Tarih: 2026-05-20
-
-## Bağlam
-Öğretmenlerin dosya yükleme limitlerine takılmadan YouTube, Vimeo veya doğrudan MP4 linki gibi harici video bağlantılarını hikaye haritalarına ekleyebilmesi ve bu videoların tüm arayüzlerde (Detay, Lightbox, Storymap) oynatılabilmesi istenmektedir.
-
-## Plan
-- [x] **Adım 1:** `src/utils/mediaType.js` dosyasına harici video ve embed (YouTube/Vimeo) linklerini ayrıştıran yardımcı metotların eklenmesi.
-- [x] **Adım 2:** `src/components/sidebar/renderers/detailViewRenderer.js` dosyasına öğretmen yetki kontrolü (`!authManager.isStudent()`) eklenerek "Video Linki Ekle" butonu ve şık bir link giriş formunun yerleştirilmesi.
-- [x] **Adım 3:** `src/components/sidebar/renderers/mediaRenderer.js` dosyasında harici video linkleri için uygun thumbnail (afiş) render mantığının geliştirilmesi.
-- [x] **Adım 4:** `src/components/sidebar/handlers/detailHandlers.js` dosyasında "Video Linki Ekle" butonu ve formu için olay dinleyicilerinin kurulması, verinin doğrulanıp `editingPoint.media` dizisine eklenmesi.
-- [x] **Adım 5:** `src/components/sidebar/modules/Lightbox.js` büyük medya görünümünde embed videoların `<iframe>` ile render edilerek oynatılmasının sağlanması.
-- [x] **Adım 6:** `src/components/storymap/StoryMapRenderer.js` sunum akışında embed videoların `<iframe>` ile render edilerek oynatılmasının sağlanması.
-
-## Doğrulama Kriterleri
-- [x] Öğretmen giriş yaptığında "Video Linki Ekle" butonu ve link giriş formu görüntülenecek.
-- [x] Öğrenci giriş yaptığında bu alanlar gizli kalacak.
-- [x] YouTube linkleri eklendiğinde detay panelinde otomatik afiş (thumbnail) görüntülenecek.
-- [x] Lightbox ve Storymap sunum modlarında YouTube/Vimeo videoları `iframe` ile oynatılabilecek.
-- [x] Türkçe karakterler korunacak ve dosyalar UTF-8 kodlamasında kaydedilecek.
-
-## Sonuç
-Başarıyla tamamlandı! 
-Öğretmenler için harici video ekleme (YouTube, Vimeo, MP4 linki vb.) ve oynatma altyapısı sisteme entegre edildi. Arayüzün premium duruşunu korumak adına tarayıcının varsayılan prompt kutusu yerine, dosya yükleme alanının içerisine yerleşen çok şık ve gizlenebilen bir link giriş formu uygulandı. YouTube videoları için önizleme gridinde otomatik thumbnail çekilmesi sağlandı. Lightbox ve Storymap sunum katmanlarında bu linklerin iframe (embed) ile oynatılması başarıyla entegre edildi ve pnpm build:mebi testi sıfır hata ile tamamlandı. Commit yapılmadan değişiklikler çalışma dizininde bırakıldı.
-
----
-
-# Görev 5: Öğretmenlere Özel Yerleştir Bloğunu Geri Ekleme
-Tarih: 2026-05-20
-
-## Bağlam
-Silinen "Yerleştir" özelliğinin video bağlantısı akışından ayrı olarak geri eklenmesi gerekmektedir. Bu özellik yalnızca öğretmenler tarafından kullanılmalı; öğrenciler yerleştirme ekleyememeli, silememeli veya düzenleyememelidir.
-
-## Plan
-- [x] Adım 1: Yerleştirme blokları için `embeds` veri alanını nokta modeline geri eklemek.
-- [x] Adım 2: Detay paneline öğretmenlere özel "Yerleştir" butonu ve formu eklemek.
-- [x] Adım 3: Yerleştirme ekleme/silme/düzenleme handler'larını öğrenciye kapalı olacak şekilde bağlamak.
-- [x] Adım 4: Sağ detay paneli ve StoryMap sunumunda yerleştirmeleri medya galerisinden ayrı göstermek.
-- [x] Adım 5: Sözdizimi, UTF-8 ve doğrudan dosya bağlantısı kontrollerini yapmak.
+- [ ] **Adım 1: HTML Yapısının Yenilenmesi (`src/components/sidebar/renderers/detailViewRenderer.js`)**
+  - "Video Bağlantısı Ekle" tıklandığında tüm yükleme kutusunun akıcı bir şekilde dönüşmesini sağlayacak şekilde yapıyı düzenlemek.
+  - Link giriş formunu tam genişlikte, ikon destekli ve bağımsız bir form bloğu haline getirmek.
+  - Form açıkken diğer buton gruplarını (`sidebar__media-upload-actions`) ve sürükle-bırak metnini gizleyecek yapısal sınıfları eklemek.
+- [ ] **Adım 2: CSS Tasarım Sisteminin ve Animasyonların Eklenmesi (`src/styles/components/sidebar/sidebar-detail.css`)**
+  - Arayüze modern "Avant-Garde" estetiği kazandırmak: Yumuşak gölgeler, mikro etkileşimler, odaklanma (focus) efektleri ve gradyanlı çerçeveler.
+  - Link giriş formunun dikey ve dengeli bir yerleşime kavuşturulması: Tam genişlikte şık bir input, hemen altında yan yana konumlanan estetik "İptal" (ghost/outline) ve "Ekle" (projenin yeşil temasına uyumlu birincil) butonları.
+  - Form açılış/kapanışları için pürüzsüz dikey genişleme (`grid-template-rows` veya `transition` bazlı) ve opaklık (fade-in) animasyonları tasarlamak.
+- [ ] **Adım 3: Etkileşim Yönetiminin Güncellenmesi (`src/components/sidebar/handlers/detailHandlers.js`)**
+  - Butona tıklandığında yükleme kartına `.sidebar__media-upload--link-active` gibi bir durum sınıfı eklenerek CSS üzerinden tüm elemanların yumuşakça dönüşmesini sağlamak.
+  - İptal ve Ekle butonlarına tıklandığında bu durum sınıfını kaldırmak ve arayüzü eski haline döndürmek.
+  - Form açıldığında girdi alanına otomatik odaklanma (focus) yapılması.
 
 ## Doğrulama kriterleri
-- [x] Öğretmen kullanıcı "Yerleştir" ekleyebilir.
-- [x] Öğrenci kullanıcı "Yerleştir" ekleme/silme/düzenleme kontrollerini göremez.
-- [x] Yerleştirme verisi backend değişikliği olmadan mevcut JSON içinde saklanır.
-- [x] Doğrudan medya dosyaları yerleştirme bloğu olarak kabul edilmez.
-- [x] Türkçe karakterler korunur.
+- [ ] Arayüzün görsel olarak "bootstrapped" veya ucuz görünümden uzak, son derece premium durması.
+- [ ] Link giriş alanının dikey olarak genişlemesi, uzun URL'lerin rahatça görülebilmesi.
+- [ ] Butonların Türkçe karakterlerinin korunması ve dilde bozulma olmaması.
+- [ ] Sürükle-bırak davranışının ve diğer dosya seçme akışlarının form açıkken çakışmaması.
+- [ ] Tüm animasyon ve geçişlerin 60fps akıcılığında çalışması.
 
 ## Sonuç
-Başarıyla tamamlandı. Yerleştir bloğu ayrı `embeds` alanı ile geri eklendi ve yönetim kontrolleri öğretmen rolüyle sınırlandı.
-
-
+[Tamamlandığında doldurulacaktır]

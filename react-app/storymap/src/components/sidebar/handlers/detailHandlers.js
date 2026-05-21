@@ -163,8 +163,17 @@ function setupMediaUploadListeners(sidebar) {
             e.stopPropagation();
             const isHidden = linkInputContainer.style.display === 'none';
             linkInputContainer.style.display = isHidden ? 'block' : 'none';
-            if (isHidden && linkInput) {
-                linkInput.focus();
+            if (isHidden) {
+                if (mediaUploadArea) {
+                    mediaUploadArea.classList.add('sidebar__media-upload--link-active');
+                }
+                if (linkInput) {
+                    setTimeout(() => linkInput.focus(), 50);
+                }
+            } else {
+                if (mediaUploadArea) {
+                    mediaUploadArea.classList.remove('sidebar__media-upload--link-active');
+                }
             }
         });
     }
@@ -173,6 +182,9 @@ function setupMediaUploadListeners(sidebar) {
         linkCancelBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             linkInputContainer.style.display = 'none';
+            if (mediaUploadArea) {
+                mediaUploadArea.classList.remove('sidebar__media-upload--link-active');
+            }
             if (linkInput) linkInput.value = '';
         });
     }
@@ -204,6 +216,9 @@ function setupMediaUploadListeners(sidebar) {
 
                 linkInput.value = '';
                 linkInputContainer.style.display = 'none';
+                if (mediaUploadArea) {
+                    mediaUploadArea.classList.remove('sidebar__media-upload--link-active');
+                }
                 updateMediaGrid(sidebar);
             } catch (err) {
                 alert('Lütfen geçerli bir internet adresi (URL) giriniz!');
