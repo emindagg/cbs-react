@@ -1,9 +1,9 @@
 import type {
-  CellClickedEvent,
   CellValueChangedEvent,
   ColDef,
   GetRowIdParams,
   RowClassRules,
+  RowClickedEvent,
   SelectionChangedEvent,
 } from 'ag-grid-community'
 import { themeQuartz } from 'ag-grid-community'
@@ -313,8 +313,8 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
     setSelectedItems(ids)
   }, [setSelectedItems])
 
-  const onCellClicked = useCallback((event: CellClickedEvent) => {
-    if (event.colDef.field !== '__name') return
+  const onRowClicked = useCallback((event: RowClickedEvent) => {
+    if (event.event instanceof MouseEvent && event.event.detail > 1) return
     const id = event.data?.__id as string | undefined
     if (!id) return
     if (id === activeItemId) {
@@ -753,7 +753,7 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
                 animateRows={false}
                 localeText={agGridTurkishLocaleText}
                 onCellValueChanged={onCellValueChanged}
-                onCellClicked={onCellClicked}
+                onRowClicked={onRowClicked}
                 onSelectionChanged={onSelectionChanged}
                 rowSelection={{
                   mode: 'multiRow',
