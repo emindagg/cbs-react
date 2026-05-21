@@ -5,6 +5,13 @@ import { useClusteringStore } from '@/stores/useClusteringStore'
 
 export type { DataItem }
 
+const uniqueIds = (ids: string[]) => [...new Set(ids)]
+
+const selectedIdsAfterRemoval = (selectedItemIds: string[], removedIds: string[]) => {
+  if (selectedItemIds.length === 0) return selectedItemIds
+  const removed = new Set(removedIds)
+  return selectedItemIds.filter(id => !removed.has(id))
+}
 
 /** ImportedDataManagerFab — Yüklü Veriler satır anahtarı ile uyumlu */
 function importedSourceRowKey(item: DataItem) {
@@ -63,6 +70,7 @@ const toEditableDrawState = (item: DataItem): { drawMode: 'line' | 'polygon'; dr
 export const useDataManagementStore = create<DataManagementStore>()((set, get) => ({
   items: [],
   activeItemId: null,
+  selectedItemIds: [],
   hasImportedData: false,
   importedLayerName: null,
   layerStyles: defaultLayerStyles,
@@ -90,17 +98,20 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
       hasImportedData: nextItems.some(item => item.source === 'imported'),
       importedLayerName: importedName,
       activeItemId: state.activeItemId,
+      selectedItemIds: state.selectedItemIds,
     }
   }),
 
   removeItem: (id) => set((state) => {
     const nextItems = state.items.filter(i => i.id !== id)
     const stillHasImported = nextItems.some(item => item.source === 'imported')
+    const selectedItemIds = selectedIdsAfterRemoval(state.selectedItemIds, [id])
     return {
       items: nextItems,
       hasImportedData: stillHasImported,
       importedLayerName: stillHasImported ? state.importedLayerName : null,
-      activeItemId: state.activeItemId === id ? null : state.activeItemId,
+      activeItemId: state.activeItemId === id ? selectedItemIds[0] ?? null : state.activeItemId,
+      selectedItemIds,
       editingItemId: state.editingItemId === id ? null : state.editingItemId,
     }
   }),
@@ -116,6 +127,9 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
     activeItemId: state.activeItemId && state.items.some(item => item.id === state.activeItemId && item.source === 'drawn')
       ? state.activeItemId
       : null,
+    selectedItemIds: state.selectedItemIds.filter(id =>
+      state.items.some(item => item.id === id && item.source === 'drawn'),
+    ),
   })),
 
   toggleImportedLayerVisibility: () => set((state) => {
@@ -143,7 +157,27 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
     }
   }),
 
-  setActiveItem: (id) => set({ activeItemId: id }),
+  setActiveItem: (id) => set({ activeItemId: id, selectedItemIds: id ? [id] : [] }),
+  setSelectedItems: (ids) => set((state) => {
+    const existingIds = new Set(state.items.map(item => item.id))
+    const selectedItemIds = uniqueIds(ids).filter(id => existingIds.has(id))
+    return {
+      selectedItemIds,
+      activeItemId: selectedItemIds[0] ?? null,
+    }
+  }),
+  toggleSelectedItem: (id) => set((state) => {
+    if (!state.items.some(item => item.id === id)) return state
+    const exists = state.selectedItemIds.includes(id)
+    const selectedItemIds = exists
+      ? state.selectedItemIds.filter(selectedId => selectedId !== id)
+      : [...state.selectedItemIds, id]
+    return {
+      selectedItemIds,
+      activeItemId: selectedItemIds[0] ?? null,
+    }
+  }),
+  clearSelectedItems: () => set({ activeItemId: null, selectedItemIds: [] }),
   updateLayerStyle: (styles) => {
     const nextStyles = { ...get().layerStyles, ...styles }
     set({ layerStyles: nextStyles })
@@ -232,6 +266,7 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
   clearAll: () => set({
     items: [],
     activeItemId: null,
+    selectedItemIds: [],
     hasImportedData: false,
     importedLayerName: null,
     layerStyles: defaultLayerStyles,
@@ -247,6 +282,7 @@ export const useDataManagementStore = create<DataManagementStore>()((set, get) =
     return {
       items: nextItems,
       activeItemId: activeItemStillExists ? state.activeItemId : null,
+      selectedItemIds: state.selectedItemIds.filter(id => nextItems.some(item => item.id === id)),
       hasImportedData: nextItems.some(item => item.source === 'imported'),
       importedLayerName: nextItems.some(item => item.source === 'imported')
         ? state.importedLayerName

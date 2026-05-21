@@ -128,7 +128,7 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
               className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${isDanger
                 ? 'bg-[#FFF1F0] text-[#FF3B30] border-[#FFC9C5]'
                 : 'bg-slate-100 text-slate-700 border-slate-200'
-                }`}
+              }`}
             >
               <AlertTriangle className="h-5 w-5" strokeWidth={2.1} aria-hidden="true" />
             </div>
@@ -161,7 +161,7 @@ export function ConfirmDialog({ state, onCancel }: ConfirmDialogProps) {
             className={`inline-flex h-9 min-w-[92px] items-center justify-center gap-1.5 rounded-lg px-3.5 text-[13px] font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-75 ${isDanger
               ? 'bg-red-600 hover:bg-red-700'
               : 'bg-slate-900 hover:bg-slate-800'
-              }`}
+            }`}
           >
             {confirmIcon}
             {isSubmitting ? 'İşleniyor...' : state.confirmLabel}
@@ -194,10 +194,12 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
   const updateItemProperties = useDataManagementStore(s => s.updateItemProperties)
   const addPropertyColumn = useDataManagementStore(s => s.addPropertyColumn)
   const removeItem = useDataManagementStore(s => s.removeItem)
+  const selectedItemIds = useDataManagementStore(s => s.selectedItemIds)
+  const setSelectedItems = useDataManagementStore(s => s.setSelectedItems)
   const gridRef = useRef<AgGridReact>(null)
   const pendingEdits = useRef<Map<string, Record<string, unknown>>>(new Map())
+  const isSyncingSelection = useRef(false)
   const [pendingCount, setPendingCount] = useState(0)
-  const [selectedCount, setSelectedCount] = useState(0)
   const [confirm, setConfirm] = useState<ConfirmState | null>(null)
   const [isAddingColumn, setIsAddingColumn] = useState(false)
   const [newColumnName, setNewColumnName] = useState('')
@@ -225,15 +227,17 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
         await new Promise(resolve => setTimeout(resolve, DELETE_CONFIRM_DELAY_MS))
         dropPendingEdits(ids)
         ids.forEach(id => removeItem(id))
-        setSelectedCount(0)
         setConfirm(null)
       },
     })
   }, [dropPendingEdits, removeItem])
 
   const onSelectionChanged = useCallback((event: SelectionChangedEvent) => {
-    setSelectedCount(event.api.getSelectedRows().length)
-  }, [])
+    if (isSyncingSelection.current) return
+    const selected = event.api.getSelectedRows() as Array<{ __id: string }>
+    const ids = selected.map(row => row.__id)
+    setSelectedItems(ids)
+  }, [setSelectedItems])
 
   const filteredItems = useMemo(
     () => items.filter(item => !sourceFilter || item.source === sourceFilter),
@@ -250,7 +254,25 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
   }, [filteredItems])
 
   const rowData = useMemo(() => buildRowData(items, sourceFilter), [items, sourceFilter])
+  const selectedCount = useMemo(() => {
+    const visibleIds = new Set(rowData.map(row => row.__id as string))
+    return selectedItemIds.filter(id => visibleIds.has(id)).length
+  }, [rowData, selectedItemIds])
 
+  useEffect(() => {
+    const api = gridRef.current?.api
+    if (!api) return
+
+    const visibleIds = new Set(rowData.map(row => row.__id as string))
+    const selectedIds = new Set(selectedItemIds.filter(id => visibleIds.has(id)))
+
+    isSyncingSelection.current = true
+    api.forEachNode((node) => {
+      const id = node.data?.__id as string | undefined
+      node.setSelected(Boolean(id && selectedIds.has(id)))
+    })
+    isSyncingSelection.current = false
+  }, [rowData, selectedItemIds])
 
   const columnDefs = useMemo<ColDef[]>(() => [
     { field: '__name', headerName: 'Ad', minWidth: 180, pinned: 'left', editable: false },
@@ -312,14 +334,12 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
         onConfirm: () => {
           pendingEdits.current.clear()
           setPendingCount(0)
-          setSelectedCount(0)
           setConfirm(null)
           onClose()
         },
       })
       return
     }
-    setSelectedCount(0)
     onClose()
   }, [onClose, setPendingCount])
 

@@ -64,6 +64,7 @@ export interface MapperData {
 export interface DataManagementStore {
   items: DataItem[]
   activeItemId: string | null
+  selectedItemIds: string[]
   hasImportedData: boolean
   importedLayerName: string | null
   layerStyles: LayerStyles
@@ -85,11 +86,14 @@ export interface DataManagementStore {
   toggleImportedLayerVisibility: () => void
   toggleImportedSourceVisibility: (sourceLabel: string) => void
   setActiveItem: (id: string | null) => void
+  setSelectedItems: (ids: string[]) => void
+  toggleSelectedItem: (id: string) => void
+  clearSelectedItems: () => void
   updateLayerStyle: (styles: Partial<LayerStyles>) => void
   updateItemFillColor: (id: string, fillColor: string) => void
   /** Aynı dosya/kaynak (source satırı) altındaki tüm içe aktarılan öğelere dolgu rengi uygular */
   updateImportedSourceFillColor: (sourceKey: string, fillColor: string) => void
-  addPropertyColumn: (columnName: string, defaultValue?: any, sourceFilter?: DataItemSource) => void
+  addPropertyColumn: (columnName: string, defaultValue?: unknown, sourceFilter?: DataItemSource) => void
   updateItem: (id: string, updates: Partial<Pick<DataItem, 'name' | 'date' | 'geometry'>>) => void
   updateItemGeometry: (id: string, geometry: Geometry) => void
   updateItemProperties: (id: string, properties: Record<string, unknown>) => void
