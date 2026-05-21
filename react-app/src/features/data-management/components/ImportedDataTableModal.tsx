@@ -53,18 +53,68 @@ interface ImportedDataTableModalProps {
 }
 
 type ConfirmVariant = 'danger' | 'default'
-type ResizeMode = 'height' | 'left-width' | 'right-width'
+type InteractionMode =
+  | 'move'
+  | 'resize-left'
+  | 'resize-right'
+  | 'resize-top'
+  | 'resize-bottom'
+  | 'resize-top-left'
+  | 'resize-top-right'
+  | 'resize-bottom-left'
+  | 'resize-bottom-right'
+
+interface FloatingRect {
+  left: number
+  top: number
+  width: number
+  height: number
+}
 
 const DELETE_CONFIRM_DELAY_MS = 1500
-const DEFAULT_DRAWER_HEIGHT_VH = 38
-const MIN_DRAWER_HEIGHT_VH = 26
-const MAX_DRAWER_HEIGHT_VH = 72
-const DEFAULT_DRAWER_WIDTH_VW = 96
-const MIN_DRAWER_WIDTH_VW = 44
-const MAX_DRAWER_WIDTH_VW = 98
-const PERCENT_MULTIPLIER = 100
+const DEFAULT_WINDOW_HEIGHT_RATIO = 0.38
+const DEFAULT_WINDOW_WIDTH_RATIO = 0.96
+const MIN_WINDOW_WIDTH = 520
+const MIN_WINDOW_HEIGHT = 220
+const VIEWPORT_PADDING = 12
 const TABLE_ROW_HEIGHT = 28
 const TABLE_HEADER_HEIGHT = 42
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
+}
+
+function getViewportSize() {
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }
+}
+
+function clampFloatingRect(rect: FloatingRect): FloatingRect {
+  const viewport = getViewportSize()
+  const maxWidth = Math.max(MIN_WINDOW_WIDTH, viewport.width - (VIEWPORT_PADDING * 2))
+  const maxHeight = Math.max(MIN_WINDOW_HEIGHT, viewport.height - (VIEWPORT_PADDING * 2))
+  const width = clamp(rect.width, Math.min(MIN_WINDOW_WIDTH, maxWidth), maxWidth)
+  const height = clamp(rect.height, Math.min(MIN_WINDOW_HEIGHT, maxHeight), maxHeight)
+  const left = clamp(rect.left, VIEWPORT_PADDING, viewport.width - width - VIEWPORT_PADDING)
+  const top = clamp(rect.top, VIEWPORT_PADDING, viewport.height - height - VIEWPORT_PADDING)
+
+  return { left, top, width, height }
+}
+
+function createDefaultFloatingRect(): FloatingRect {
+  const viewport = getViewportSize()
+  const width = Math.min(viewport.width - (VIEWPORT_PADDING * 2), viewport.width * DEFAULT_WINDOW_WIDTH_RATIO)
+  const height = Math.min(viewport.height - (VIEWPORT_PADDING * 2), viewport.height * DEFAULT_WINDOW_HEIGHT_RATIO)
+
+  return clampFloatingRect({
+    left: (viewport.width - width) / 2,
+    top: viewport.height - height - VIEWPORT_PADDING,
+    width,
+    height,
+  })
+}
 
 export interface ConfirmState {
   title: string
@@ -220,14 +270,12 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
   const [confirm, setConfirm] = useState<ConfirmState | null>(null)
   const [isAddingColumn, setIsAddingColumn] = useState(false)
   const [newColumnName, setNewColumnName] = useState('')
-  const [drawerHeight, setDrawerHeight] = useState(DEFAULT_DRAWER_HEIGHT_VH)
-  const [drawerWidth, setDrawerWidth] = useState(DEFAULT_DRAWER_WIDTH_VW)
-  const resizeStartRef = useRef<{
-    mode: ResizeMode
+  const [windowRect, setWindowRect] = useState<FloatingRect>(() => createDefaultFloatingRect())
+  const interactionStartRef = useRef<{
+    mode: InteractionMode
     startX: number
     startY: number
-    startHeight: number
-    startWidth: number
+    startRect: FloatingRect
   } | null>(null)
 
   const dropPendingEdits = useCallback((ids: string[]) => {
@@ -295,6 +343,15 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
     const visibleIds = new Set(rowData.map(row => row.__id as string))
     return selectedItemIds.filter(id => visibleIds.has(id)).length
   }, [rowData, selectedItemIds])
+
+  useEffect(() => {
+    const handleViewportResize = () => {
+      setWindowRect(current => clampFloatingRect(current))
+    }
+
+    window.addEventListener('resize', handleViewportResize)
+    return () => window.removeEventListener('resize', handleViewportResize)
+  }, [])
 
   useEffect(() => {
     const api = gridRef.current?.api
@@ -433,46 +490,65 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
     handleClose()
   }, [clearGridSelection, clearSelectedItems, handleClose, isAddingColumn, selectedCount])
 
-  const handleResizeStart = useCallback((event: ReactPointerEvent<HTMLDivElement>, mode: ResizeMode) => {
+  const handleInteractionStart = useCallback((event: ReactPointerEvent<HTMLDivElement>, mode: InteractionMode) => {
     event.preventDefault()
     event.currentTarget.setPointerCapture(event.pointerId)
-    resizeStartRef.current = {
+    interactionStartRef.current = {
       mode,
       startX: event.clientX,
       startY: event.clientY,
-      startHeight: drawerHeight,
-      startWidth: drawerWidth,
+      startRect: windowRect,
     }
-  }, [drawerHeight, drawerWidth])
+  }, [windowRect])
 
-  const handleResizeMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    const resizeStart = resizeStartRef.current
-    if (!resizeStart) return
+  const handleInteractionMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    const interactionStart = interactionStartRef.current
+    if (!interactionStart) return
 
-    if (resizeStart.mode === 'height') {
-      const deltaVh = ((resizeStart.startY - event.clientY) / window.innerHeight) * PERCENT_MULTIPLIER
-      const nextHeight = Math.min(
-        MAX_DRAWER_HEIGHT_VH,
-        Math.max(MIN_DRAWER_HEIGHT_VH, resizeStart.startHeight + deltaVh),
-      )
-      setDrawerHeight(nextHeight)
+    const dx = event.clientX - interactionStart.startX
+    const dy = event.clientY - interactionStart.startY
+    const { mode, startRect } = interactionStart
+
+    if (mode === 'move') {
+      setWindowRect(clampFloatingRect({
+        ...startRect,
+        left: startRect.left + dx,
+        top: startRect.top + dy,
+      }))
       return
     }
 
-    const dragDistance = resizeStart.mode === 'left-width'
-      ? resizeStart.startX - event.clientX
-      : event.clientX - resizeStart.startX
-    const deltaVw = (dragDistance / window.innerWidth) * PERCENT_MULTIPLIER
-    const nextWidth = Math.min(
-      MAX_DRAWER_WIDTH_VW,
-      Math.max(MIN_DRAWER_WIDTH_VW, resizeStart.startWidth + deltaVw),
-    )
-    setDrawerWidth(nextWidth)
+    const startRight = startRect.left + startRect.width
+    const startBottom = startRect.top + startRect.height
+    let left = startRect.left
+    let top = startRect.top
+    let width = startRect.width
+    let height = startRect.height
+
+    if (mode.includes('left')) {
+      left = Math.min(startRight - MIN_WINDOW_WIDTH, startRect.left + dx)
+      width = startRight - left
+    }
+
+    if (mode.includes('right')) {
+      width = Math.max(MIN_WINDOW_WIDTH, startRect.width + dx)
+    }
+
+    if (mode.includes('top')) {
+      top = Math.min(startBottom - MIN_WINDOW_HEIGHT, startRect.top + dy)
+      height = startBottom - top
+    }
+
+    if (mode.includes('bottom')) {
+      height = Math.max(MIN_WINDOW_HEIGHT, startRect.height + dy)
+    }
+
+    setWindowRect(clampFloatingRect({ left, top, width, height }))
   }, [])
 
-  const handleResizeEnd = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    if (!resizeStartRef.current) return
-    resizeStartRef.current = null
+  const handleInteractionEnd = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!interactionStartRef.current) return
+    interactionStartRef.current = null
     event.currentTarget.releasePointerCapture(event.pointerId)
   }, [])
 
@@ -480,42 +556,92 @@ export function ImportedDataTableModal({ isOpen, onClose, items, sourceFilter }:
 
   return createPortal(
     <>
-      <div className="fixed inset-x-0 bottom-0 z-[2050] pointer-events-none px-3 pb-3 sm:px-4">
+      <div className="fixed inset-0 z-[2050] pointer-events-none">
         <section
           aria-label="Öznitelik Tablosu"
-          className="pointer-events-auto relative mx-auto flex flex-col overflow-hidden rounded-t-xl border border-slate-200 bg-white/95 shadow-[0_-18px_48px_rgba(15,23,42,0.18)] backdrop-blur-md"
+          className="pointer-events-auto absolute flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white/95 shadow-[0_18px_48px_rgba(15,23,42,0.22)] backdrop-blur-md"
           style={{
-            height: `${drawerHeight}vh`,
-            width: `min(${drawerWidth}vw, calc(100vw - 24px))`,
+            height: windowRect.height,
+            left: windowRect.left,
+            top: windowRect.top,
+            width: windowRect.width,
           }}
         >
           <div
-            className="absolute inset-y-0 left-0 z-10 flex w-3 cursor-col-resize touch-none items-center justify-center text-slate-300 hover:bg-cyan-50/70 hover:text-cyan-600"
-            onPointerDown={event => handleResizeStart(event, 'left-width')}
-            onPointerMove={handleResizeMove}
-            onPointerUp={handleResizeEnd}
-            onPointerCancel={handleResizeEnd}
+            className="absolute inset-y-4 left-0 z-10 flex w-3 cursor-col-resize touch-none items-center justify-center text-slate-300 hover:bg-cyan-50/70 hover:text-cyan-600"
+            onPointerDown={event => handleInteractionStart(event, 'resize-left')}
+            onPointerMove={handleInteractionMove}
+            onPointerUp={handleInteractionEnd}
+            onPointerCancel={handleInteractionEnd}
             title="Panel genişliğini değiştirmek için sürükleyin"
           >
             <GripVertical className="h-4 w-4" aria-hidden="true" />
           </div>
           <div
-            className="absolute inset-y-0 right-0 z-10 flex w-3 cursor-col-resize touch-none items-center justify-center text-slate-300 hover:bg-cyan-50/70 hover:text-cyan-600"
-            onPointerDown={event => handleResizeStart(event, 'right-width')}
-            onPointerMove={handleResizeMove}
-            onPointerUp={handleResizeEnd}
-            onPointerCancel={handleResizeEnd}
+            className="absolute inset-y-4 right-0 z-10 flex w-3 cursor-col-resize touch-none items-center justify-center text-slate-300 hover:bg-cyan-50/70 hover:text-cyan-600"
+            onPointerDown={event => handleInteractionStart(event, 'resize-right')}
+            onPointerMove={handleInteractionMove}
+            onPointerUp={handleInteractionEnd}
+            onPointerCancel={handleInteractionEnd}
             title="Panel genişliğini değiştirmek için sürükleyin"
           >
             <GripVertical className="h-4 w-4" aria-hidden="true" />
           </div>
           <div
-            className="flex h-5 cursor-row-resize touch-none items-center justify-center border-b border-slate-200 bg-slate-50 text-slate-400 hover:text-slate-600"
-            onPointerDown={event => handleResizeStart(event, 'height')}
-            onPointerMove={handleResizeMove}
-            onPointerUp={handleResizeEnd}
-            onPointerCancel={handleResizeEnd}
+            className="absolute inset-x-4 top-0 z-10 h-2 cursor-row-resize touch-none"
+            onPointerDown={event => handleInteractionStart(event, 'resize-top')}
+            onPointerMove={handleInteractionMove}
+            onPointerUp={handleInteractionEnd}
+            onPointerCancel={handleInteractionEnd}
             title="Panel yüksekliğini değiştirmek için sürükleyin"
+          />
+          <div
+            className="absolute inset-x-4 bottom-0 z-10 h-2 cursor-row-resize touch-none"
+            onPointerDown={event => handleInteractionStart(event, 'resize-bottom')}
+            onPointerMove={handleInteractionMove}
+            onPointerUp={handleInteractionEnd}
+            onPointerCancel={handleInteractionEnd}
+            title="Panel yüksekliğini değiştirmek için sürükleyin"
+          />
+          <div
+            className="absolute left-0 top-0 z-20 h-4 w-4 cursor-nwse-resize touch-none"
+            onPointerDown={event => handleInteractionStart(event, 'resize-top-left')}
+            onPointerMove={handleInteractionMove}
+            onPointerUp={handleInteractionEnd}
+            onPointerCancel={handleInteractionEnd}
+            title="Paneli köşeden boyutlandırın"
+          />
+          <div
+            className="absolute right-0 top-0 z-20 h-4 w-4 cursor-nesw-resize touch-none"
+            onPointerDown={event => handleInteractionStart(event, 'resize-top-right')}
+            onPointerMove={handleInteractionMove}
+            onPointerUp={handleInteractionEnd}
+            onPointerCancel={handleInteractionEnd}
+            title="Paneli köşeden boyutlandırın"
+          />
+          <div
+            className="absolute bottom-0 left-0 z-20 h-4 w-4 cursor-nesw-resize touch-none"
+            onPointerDown={event => handleInteractionStart(event, 'resize-bottom-left')}
+            onPointerMove={handleInteractionMove}
+            onPointerUp={handleInteractionEnd}
+            onPointerCancel={handleInteractionEnd}
+            title="Paneli köşeden boyutlandırın"
+          />
+          <div
+            className="absolute bottom-0 right-0 z-20 h-4 w-4 cursor-nwse-resize touch-none"
+            onPointerDown={event => handleInteractionStart(event, 'resize-bottom-right')}
+            onPointerMove={handleInteractionMove}
+            onPointerUp={handleInteractionEnd}
+            onPointerCancel={handleInteractionEnd}
+            title="Paneli köşeden boyutlandırın"
+          />
+          <div
+            className="flex h-5 cursor-move touch-none items-center justify-center border-b border-slate-200 bg-slate-50 text-slate-400 hover:text-slate-600"
+            onPointerDown={event => handleInteractionStart(event, 'move')}
+            onPointerMove={handleInteractionMove}
+            onPointerUp={handleInteractionEnd}
+            onPointerCancel={handleInteractionEnd}
+            title="Paneli taşımak için sürükleyin"
           >
             <GripHorizontal className="h-4 w-4" aria-hidden="true" />
           </div>

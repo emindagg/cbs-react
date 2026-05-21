@@ -16,7 +16,7 @@ const SELECTION_POINT_RADIUS_DELTA = 2
 // Pure function - renk/boyut style'ları hariç, sadece geometri + kimlik + etiket
 // Renk/opaklık güncellemeleri useLayerStyleSync hook'u tarafından setPaintProperty ile yapılır
 // labelField değişince rebuild tetiklenir (intentional - nadir bir aksiyon)
-function buildFeature(i: DataItem, activeItemId: string | null, labelField: string): Feature {
+function buildFeature(i: DataItem, highlightedIds: Set<string>, labelField: string): Feature {
   const rawStyle = i.properties.style
   const style: StyleProperties = isStyleProperties(rawStyle) ? rawStyle : {}
   const customFillColor = style.fillColor ? style.fillColor : null
@@ -29,7 +29,7 @@ function buildFeature(i: DataItem, activeItemId: string | null, labelField: stri
     properties: {
       id: i.id,
       name: i.name,
-      selected: i.id === activeItemId,
+      selected: highlightedIds.has(i.id),
       customFillColor,
       labelText: labelValue !== null && labelValue !== undefined ? String(labelValue) : '',
     },
@@ -50,6 +50,7 @@ export default function DataLayer() {
   const items = useDataManagementStore(state => state.items)
   const editingItemId = useDataManagementStore(state => state.editingItemId)
   const activeItemId = useDataManagementStore(state => state.activeItemId)
+  const selectedItemIds = useDataManagementStore(state => state.selectedItemIds)
   const labelField = useDataManagementStore(state => state.layerStyles.labelField)
   const defaultFillColor = useDataManagementStore(state => state.layerStyles.fillColor)
   const layerOpacity = useDataManagementStore(state => state.layerStyles.opacity)
@@ -93,26 +94,32 @@ export default function DataLayer() {
     })
   }, [items, timelineActive, timeEnd, getEffectiveStart, numericFilter, editingItemId])
 
+  const highlightedIds = useMemo(() => {
+    const ids = new Set(selectedItemIds)
+    if (activeItemId) ids.add(activeItemId)
+    return ids
+  }, [activeItemId, selectedItemIds])
+
   const pointData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: visibleItems
       .filter(i => i.geometry.type === 'Point' || i.geometry.type === 'MultiPoint')
-      .map(i => buildFeature(i, activeItemId, labelField)),
-  }), [visibleItems, activeItemId, labelField])
+      .map(i => buildFeature(i, highlightedIds, labelField)),
+  }), [visibleItems, highlightedIds, labelField])
 
   const lineData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: visibleItems
       .filter(i => i.geometry.type === 'LineString' || i.geometry.type === 'MultiLineString')
-      .map(i => buildFeature(i, activeItemId, labelField)),
-  }), [visibleItems, activeItemId, labelField])
+      .map(i => buildFeature(i, highlightedIds, labelField)),
+  }), [visibleItems, highlightedIds, labelField])
 
   const polygonData = useMemo((): FeatureCollection => ({
     type: 'FeatureCollection',
     features: visibleItems
       .filter(i => i.geometry.type === 'Polygon' || i.geometry.type === 'MultiPolygon')
-      .map(i => buildFeature(i, activeItemId, labelField)),
-  }), [visibleItems, activeItemId, labelField])
+      .map(i => buildFeature(i, highlightedIds, labelField)),
+  }), [visibleItems, highlightedIds, labelField])
 
   return (
     <>

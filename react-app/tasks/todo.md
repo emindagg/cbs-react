@@ -89,3 +89,29 @@ Tarih: 2026-05-21
 
 ## Sonuç
 Checkbox seçimleri toplu işlem state'i olarak bırakıldı. `Ad` hücresine tıklamak artık checkbox'ı işaretlemeden yalnızca harita vurgusunu güncelliyor.
+
+---
+
+# Görev: Öznitelik Tablosunu Floating Pencereye Dönüştürme
+Tarih: 2026-05-21
+
+## Bağlam
+Öznitelik tablosu alt çekmece olarak çalışıyordu; kullanıcı ArcGIS benzeri floating pencere deneyimi istedi. Panel harita üzerinde taşınabilir ve serbest boyutlandırılabilir olmalı.
+
+## Plan
+- [x] Adım 1: Panel konum ve boyut state'ini piksel tabanlı `FloatingRect` yapısına dönüştür.
+- [x] Adım 2: Üst tutamaçtan panel taşıma davranışı ekle.
+- [x] Adım 3: Kenar ve köşelerden serbest resize davranışı ekle.
+- [x] Adım 4: Paneli viewport dışına taşmayacak şekilde sınırla.
+- [x] Adım 5: Test, build ve Türkçe karakter kontrolünü çalıştır.
+
+## Doğrulama kriterleri
+- [x] Panel üst tutamaçtan taşınabilmeli.
+- [x] Panel sol, sağ, üst, alt ve köşe tutamaçlarından boyutlandırılabilmeli.
+- [x] Panel ekran dışına çıkarılamamalı.
+- [x] Tablo-harita vurgusu ve checkbox davranışı korunmalı.
+- [x] İlgili testler ve build başarılı olmalı.
+- [x] Türkçe karakterler bozulmadan kalmalı.
+
+## Sonuç
+Öznitelik tablosu floating pencereye dönüştürüldü. Panel üst tutamaçtan taşınabiliyor, kenar ve köşelerden serbest boyutlandırılabiliyor ve viewport dışına çıkması engelleniyor.
