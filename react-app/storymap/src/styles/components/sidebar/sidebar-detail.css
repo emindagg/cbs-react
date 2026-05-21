@@ -396,18 +396,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 28px; /* Daha kompakt ve zarif yükseklik */
-    min-height: 28px;
-    max-height: 28px;
-    padding: 0 12px; /* Yatay dolgu daraltıldı */
-    border-radius: 6px; /* Kompakt görünüm için yuvarlatma azaltıldı */
-    font-size: 12px; /* Yazı boyutu daha zarif yapıldı */
+    padding: 7px 11px; /* Yerleştir butonlarıyla birebir aynı dolgu */
+    border-radius: 6px; /* Birebir aynı köşe yuvarlatma */
+    font-size: 12px; /* Birebir aynı yazı boyutu */
     font-weight: 600;
-    line-height: 1;
     cursor: pointer;
     transition: all 0.2s ease;
     box-sizing: border-box;
-    min-width: 70px; /* Kompakt genişlik */
     text-align: center;
     border: none;
     margin: 0;
