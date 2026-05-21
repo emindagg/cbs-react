@@ -192,10 +192,15 @@ function setupMediaUploadListeners(sidebar) {
     if (linkSubmitBtn && linkInput && linkInputContainer) {
         linkSubmitBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const link = linkInput.value.trim();
+            let link = linkInput.value.trim();
             if (!link) {
                 alert('Lütfen bir video bağlantısı giriniz!');
                 return;
+            }
+
+            // Protokol (http:// veya https://) eksikse otomatik olarak ekle
+            if (!/^https?:\/\//i.test(link)) {
+                link = 'https://' + link;
             }
 
             try {
