@@ -92,8 +92,12 @@ export function renderDetailView(context) {
                             <small>Dosyaları buraya sürükleyip bırakabilirsiniz</small>
                             <div class="sidebar__media-link-form" id="media-link-input-container" style="display: none;">
                                 <div class="sidebar__media-link-form-header">
-                                    <i class="fa-solid fa-link"></i>
-                                    <span>Video Bağlantısı Ekle</span>
+                                    <div class="sidebar__media-link-icon-box">
+                                        <i class="fa-solid fa-link"></i>
+                                    </div>
+                                    <div class="sidebar__media-link-header-text">
+                                        <h4 class="sidebar__media-link-title">Video Bağlantısı Ekle</h4>
+                                    </div>
                                 </div>
                                 <div class="sidebar__media-link-input-wrapper">
                                     <input type="text" 
