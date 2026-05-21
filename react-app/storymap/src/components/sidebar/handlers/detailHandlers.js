@@ -483,6 +483,15 @@ function updateMediaGrid(sidebar) {
     
     mediaGrid.innerHTML = renderMediaItems(sidebar.editingPoint.media);
     setupMediaItemListeners(sidebar, mediaGrid);
+
+    // Sağ taraftaki detay paneli açıksa ve düzenlenen noktayı gösteriyorsa anında güncelle
+    if (sidebar.detailPanel && sidebar.detailPanel.isOpen && sidebar.editingPoint) {
+        const pointIndex = sidebar.pointManager.findPointIndex(sidebar.editingPoint.originalId);
+        if (sidebar.detailPanel.pointIndex === pointIndex) {
+            sidebar.detailPanel.point.media = sidebar.editingPoint.media;
+            sidebar.detailPanel.render();
+        }
+    }
 }
 
 /**
@@ -495,6 +504,15 @@ function updateEmbedGrid(sidebar) {
     const canEdit = !sidebar.viewMode && !authManager.isStudent();
     embedGrid.innerHTML = renderEmbedItems(sidebar.editingPoint.embeds || [], { canEdit });
     setupEmbedItemListeners(sidebar, embedGrid);
+
+    // Sağ taraftaki detay paneli açıksa ve düzenlenen noktayı gösteriyorsa anında güncelle
+    if (sidebar.detailPanel && sidebar.detailPanel.isOpen && sidebar.editingPoint) {
+        const pointIndex = sidebar.pointManager.findPointIndex(sidebar.editingPoint.originalId);
+        if (sidebar.detailPanel.pointIndex === pointIndex) {
+            sidebar.detailPanel.point.embeds = sidebar.editingPoint.embeds;
+            sidebar.detailPanel.render();
+        }
+    }
 }
 
 /**

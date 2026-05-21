@@ -549,6 +549,12 @@ export class SidebarComponent {
                 const timelineData = this.onGetTimelineData();
                 this.updateTimelineData(timelineData);
             }
+
+            // Sağ taraftaki detay paneli açıksa ve düzenlenen noktayı gösteriyorsa anında güncelle
+            if (this.detailPanel && this.detailPanel.isOpen && this.detailPanel.pointIndex === pointIndex) {
+                this.detailPanel.point = updatedPoint;
+                this.detailPanel.render();
+            }
         } else {
             console.error('[SidebarComponent] savePointDetail: Point not found at index:', pointIndex);
         }
