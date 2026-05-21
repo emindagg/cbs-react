@@ -384,10 +384,11 @@
 
 .sidebar__media-link-form-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center; /* Ortalanmış butonlar */
     align-items: center;
     gap: 8px;
     width: 100%;
+    margin-top: 10px; /* Giriş alanından şık bir dikey boşluk (üst üste binmeyi önler) */
 }
 
 .sidebar__media-link-btn-cancel,
