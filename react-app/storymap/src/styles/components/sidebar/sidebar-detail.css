@@ -343,12 +343,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #475569; /* Şık Slate rengi (lacivert yerine modernize edildi) */
+    color: #111827; /* İstenen koyu antrasit tonu */
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.3px;
     text-transform: none; /* Büyük harf zorunluluğu kaldırıldı */
-    border-bottom: 1px dashed rgba(71, 85, 105, 0.2);
+    border-bottom: 1px dashed rgba(17, 24, 39, 0.15);
     padding-bottom: 6px;
 }
 
